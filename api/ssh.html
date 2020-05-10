@@ -185,7 +185,7 @@
 Used for giving commands, uploading, and downloading files.</p>
 <dl class="py class">
 <dt id="arc.job.ssh.SSHClient">
-<em class="property">class </em><code class="sig-prename descclassname">arc.job.ssh.</code><code class="sig-name descname">SSHClient</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">server</span><span class="o">=</span><span class="default_value">''</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/job/ssh.html#SSHClient"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.job.ssh.SSHClient" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">arc.job.ssh.</code><code class="sig-name descname">SSHClient</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">server</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">''</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/job/ssh.html#SSHClient"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.job.ssh.SSHClient" title="Permalink to this definition">¶</a></dt>
 <dd><p>This is a class for communicating with remote servers via SSH.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -236,87 +236,239 @@ Used for giving commands, uploading, and downloading files.</p>
 </dl>
 </dd></dl>
 
+<dl class="py attribute">
+<dt id="arc.job.ssh.SSHClient._ssh">
+<code class="sig-name descname">_ssh</code><a class="headerlink" href="#arc.job.ssh.SSHClient._ssh" title="Permalink to this definition">¶</a></dt>
+<dd><p>A high-level representation of a session with an SSH server.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>paramiko.SSHClient</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="arc.job.ssh.SSHClient._sftp">
+<code class="sig-name descname">_sftp</code><a class="headerlink" href="#arc.job.ssh.SSHClient._sftp" title="Permalink to this definition">¶</a></dt>
+<dd><p>SFTP client used to perform remote file operations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>paramiko.sftp_client.SFTPClient</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="arc.job.ssh.SSHClient.change_mode">
+<code class="sig-name descname">change_mode</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mode</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">path</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">recursive</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>bool<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">remote_path</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">''</span></em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="../_modules/arc/job/ssh.html#SSHClient.change_mode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.job.ssh.SSHClient.change_mode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Change the mode to a file or a directory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mode</strong> (<em>str</em>) – The mode change to be applied, can be either octal or symbolic.</p></li>
+<li><p><strong>path</strong> (<em>str</em>) – The path to the file or the directory to be changed.</p></li>
+<li><p><strong>recursive</strong> (<em>Optional</em><em>[</em><em>bool</em><em>]</em>) – Whether to recursively change the mode to all files
+under a directory.``True`` for recursively change.</p></li>
+<li><p><strong>remote_path</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The directory path at which the command will be executed.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py method">
 <dt id="arc.job.ssh.SSHClient.check_job_status">
-<code class="sig-name descname">check_job_status</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">job_id</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/job/ssh.html#SSHClient.check_job_status"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.job.ssh.SSHClient.check_job_status" title="Permalink to this definition">¶</a></dt>
-<dd><p>A modulator method of _check_job_status()</p>
+<code class="sig-name descname">check_job_status</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">job_id</span><span class="p">:</span> <span class="n">int</span></em><span class="sig-paren">)</span> &#x2192; str<a class="reference internal" href="../_modules/arc/job/ssh.html#SSHClient.check_job_status"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.job.ssh.SSHClient.check_job_status" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check job’s status.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>job_id</strong> (<em>int</em>) – The job’s ID.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>Possible statuses: <cite>before_submission</cite>, <cite>running</cite>, <cite>errored on node xx</cite>,</dt><dd><p><cite>done</cite>, and <cite>errored: …</cite></p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt id="arc.job.ssh.SSHClient.check_running_jobs_ids">
-<code class="sig-name descname">check_running_jobs_ids</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/job/ssh.html#SSHClient.check_running_jobs_ids"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.job.ssh.SSHClient.check_running_jobs_ids" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return a list of <code class="docutils literal notranslate"><span class="pre">int</span></code> representing job IDs of all jobs submitted by the user on a server</p>
+<code class="sig-name descname">check_running_jobs_ids</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; list<a class="reference internal" href="../_modules/arc/job/ssh.html#SSHClient.check_running_jobs_ids"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.job.ssh.SSHClient.check_running_jobs_ids" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check all jobs submitted by the user on a server.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A list of job IDs</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="arc.job.ssh.SSHClient.close">
+<code class="sig-name descname">close</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="../_modules/arc/job/ssh.html#SSHClient.close"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.job.ssh.SSHClient.close" title="Permalink to this definition">¶</a></dt>
+<dd><p>Close the connection to paramiko SSHClient and SFTPClient</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="arc.job.ssh.SSHClient.connect">
-<code class="sig-name descname">connect</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/job/ssh.html#SSHClient.connect"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.job.ssh.SSHClient.connect" title="Permalink to this definition">¶</a></dt>
-<dd><p>A helper function for calling self.try_connecting until successful</p>
+<code class="sig-name descname">connect</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="../_modules/arc/job/ssh.html#SSHClient.connect"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.job.ssh.SSHClient.connect" title="Permalink to this definition">¶</a></dt>
+<dd><p>A modulator function for _connect(). Connect to the server.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><strong>ServerError</strong> – Cannot connect to the server with maximum times to try</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt id="arc.job.ssh.SSHClient.delete_job">
-<code class="sig-name descname">delete_job</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">job_id</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/job/ssh.html#SSHClient.delete_job"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.job.ssh.SSHClient.delete_job" title="Permalink to this definition">¶</a></dt>
-<dd><p>Deletes a running job</p>
+<code class="sig-name descname">delete_job</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">job_id</span><span class="p">:</span> <span class="n">Union<span class="p">[</span>int<span class="p">, </span>str<span class="p">]</span></span></em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="../_modules/arc/job/ssh.html#SSHClient.delete_job"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.job.ssh.SSHClient.delete_job" title="Permalink to this definition">¶</a></dt>
+<dd><p>Deletes a running job.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>job_id</strong> (<em>Union</em><em>[</em><em>int</em><em>, </em><em>str</em><em>]</em>) – The job’s ID.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="arc.job.ssh.SSHClient.delete_jobs">
+<code class="sig-name descname">delete_jobs</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">jobs</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>List<span class="p">[</span>Union<span class="p">[</span>str<span class="p">, </span>int<span class="p">]</span><span class="p">]</span><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="../_modules/arc/job/ssh.html#SSHClient.delete_jobs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.job.ssh.SSHClient.delete_jobs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete all of the jobs on a specific server.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>jobs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><em>str</em><em>, </em><em>int</em><em>]</em><em>]</em>) – Specific ARC job IDs to delete.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt id="arc.job.ssh.SSHClient.download_file">
-<code class="sig-name descname">download_file</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">remote_file_path</span></em>, <em class="sig-param"><span class="n">local_file_path</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/job/ssh.html#SSHClient.download_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.job.ssh.SSHClient.download_file" title="Permalink to this definition">¶</a></dt>
-<dd><p>Download a file from <cite>remote_file_path</cite> to <cite>local_file_path</cite>.</p>
+<code class="sig-name descname">download_file</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">remote_file_path</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">local_file_path</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="../_modules/arc/job/ssh.html#SSHClient.download_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.job.ssh.SSHClient.download_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Download a file from the server.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>remote_file_path</strong> (<em>str</em>) – The remote path to be downloaded from.</p></li>
+<li><p><strong>local_file_path</strong> (<em>str</em>) – The local path to be downloaded to.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>ServerError</strong> – If the file cannot be downloaded with maximum times to try</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
-<dt id="arc.job.ssh.SSHClient.get_last_modified_time">
-<code class="sig-name descname">get_last_modified_time</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">remote_file_path</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/job/ssh.html#SSHClient.get_last_modified_time"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.job.ssh.SSHClient.get_last_modified_time" title="Permalink to this definition">¶</a></dt>
-<dd><p>returns the last modified time of <cite>remote_file_path</cite> in a datetime format</p>
+<dt id="arc.job.ssh.SSHClient.find_package">
+<code class="sig-name descname">find_package</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">package_name</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span> &#x2192; list<a class="reference internal" href="../_modules/arc/job/ssh.html#SSHClient.find_package"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.job.ssh.SSHClient.find_package" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find the path to the package.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>package_name</strong> (<em>str</em>) – The name of the package to search for.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
-<dt id="arc.job.ssh.SSHClient.read_remote_file">
-<code class="sig-name descname">read_remote_file</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">remote_path</span></em>, <em class="sig-param"><span class="n">filename</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/job/ssh.html#SSHClient.read_remote_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.job.ssh.SSHClient.read_remote_file" title="Permalink to this definition">¶</a></dt>
-<dd><p>Read a remote file. <cite>remote_path</cite> is the remote path (required), a <cite>filename</cite> is also required.
-Returns the file’s content.</p>
+<dt id="arc.job.ssh.SSHClient.list_available_nodes">
+<code class="sig-name descname">list_available_nodes</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; list<a class="reference internal" href="../_modules/arc/job/ssh.html#SSHClient.list_available_nodes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.job.ssh.SSHClient.list_available_nodes" title="Permalink to this definition">¶</a></dt>
+<dd><p>List available nodes on the server.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>lines of the node hostnames.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>list</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
-<dt id="arc.job.ssh.SSHClient.send_command_to_server">
-<code class="sig-name descname">send_command_to_server</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">command</span></em>, <em class="sig-param"><span class="n">remote_path</span><span class="o">=</span><span class="default_value">''</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/job/ssh.html#SSHClient.send_command_to_server"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.job.ssh.SSHClient.send_command_to_server" title="Permalink to this definition">¶</a></dt>
-<dd><p>Send commands to server. <cite>command</cite> is either a sting or an array of string commands to send.
-If remote_path is not an empty string, the command will be executed in the directory path it points to.
-Returns lists of stdout, stderr corresponding to the commands sent.</p>
+<dt id="arc.job.ssh.SSHClient.list_dir">
+<code class="sig-name descname">list_dir</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">remote_path</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">''</span></em><span class="sig-paren">)</span> &#x2192; list<a class="reference internal" href="../_modules/arc/job/ssh.html#SSHClient.list_dir"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.job.ssh.SSHClient.list_dir" title="Permalink to this definition">¶</a></dt>
+<dd><p>List directory contents.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>remote_path</strong> (<em>str</em><em>, </em><em>optional</em>) – The directory path at which the command will be executed.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt id="arc.job.ssh.SSHClient.submit_job">
-<code class="sig-name descname">submit_job</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">remote_path</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/job/ssh.html#SSHClient.submit_job"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.job.ssh.SSHClient.submit_job" title="Permalink to this definition">¶</a></dt>
-<dd><p>Submit a job</p>
-</dd></dl>
-
-<dl class="py method">
-<dt id="arc.job.ssh.SSHClient.try_connecting">
-<code class="sig-name descname">try_connecting</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/job/ssh.html#SSHClient.try_connecting"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.job.ssh.SSHClient.try_connecting" title="Permalink to this definition">¶</a></dt>
-<dd><p>A helper function for connecting via paramiko, returns the <cite>sftp</cite> and <cite>ssh</cite> objects</p>
+<code class="sig-name descname">submit_job</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">remote_path</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span> &#x2192; Tuple<span class="p">[</span>str<span class="p">, </span>int<span class="p">]</span><a class="reference internal" href="../_modules/arc/job/ssh.html#SSHClient.submit_job"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.job.ssh.SSHClient.submit_job" title="Permalink to this definition">¶</a></dt>
+<dd><p>Submit a job to the server.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>remote_path</strong> (<em>str</em>) – The remote path contains the input file
+and the submission script.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p>A string indicate the status of job submission.
+Either <cite>errored</cite> or <cite>submitted</cite>.</p></li>
+<li><p>The job ID of the submitted job.</p></li>
+</ul>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Tuple[str, int]</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt id="arc.job.ssh.SSHClient.upload_file">
-<code class="sig-name descname">upload_file</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">remote_file_path</span></em>, <em class="sig-param"><span class="n">local_file_path</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">file_string</span><span class="o">=</span><span class="default_value">''</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/job/ssh.html#SSHClient.upload_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.job.ssh.SSHClient.upload_file" title="Permalink to this definition">¶</a></dt>
-<dd><p>Upload <cite>local_file_path</cite> or the contents of <cite>file_string</cite> to <cite>remote_file_path</cite>.
-Either <cite>file_string</cite> or <cite>local_file_path</cite> must be given.</p>
+<code class="sig-name descname">upload_file</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">remote_file_path</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">local_file_path</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">''</span></em>, <em class="sig-param"><span class="n">file_string</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">''</span></em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="../_modules/arc/job/ssh.html#SSHClient.upload_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.job.ssh.SSHClient.upload_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Upload a local file or contents from a string to the remote server.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>remote_file_path</strong> (<em>str</em>) – The path to write into on the remote server.</p></li>
+<li><p><strong>local_file_path</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The local file path to be copied to the remote location.</p></li>
+<li><p><strong>file_string</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The file content to be copied and saved as the remote file.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>InputError</strong> – If both <cite>local_file_path</cite> or <cite>file_string</cite> are invalid,
+    or <cite>local_file_path</cite> does not exists.</p></li>
+<li><p><strong>ServerError</strong> – If the file cannot be uploaded with maximum times to try</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
 
 <dl class="py function">
+<dt id="arc.job.ssh.check_connections">
+<code class="sig-prename descclassname">arc.job.ssh.</code><code class="sig-name descname">check_connections</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">function</span><span class="p">:</span> <span class="n">Callable[[…], Any]</span></em><span class="sig-paren">)</span> &#x2192; Callable[[…], Any]<a class="reference internal" href="../_modules/arc/job/ssh.html#check_connections"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.job.ssh.check_connections" title="Permalink to this definition">¶</a></dt>
+<dd><p>A decorator designned for <code class="docutils literal notranslate"><span class="pre">SSHClient``to</span> <span class="pre">check</span> <span class="pre">SSH</span> <span class="pre">connections</span> <span class="pre">before</span>
+<span class="pre">calling</span> <span class="pre">a</span> <span class="pre">method.</span> <span class="pre">It</span> <span class="pre">first</span> <span class="pre">checks</span> <span class="pre">if</span> <span class="pre">``self._ssh</span></code> is available in a
+SSHClient instance and then checks if you can send <code class="docutils literal notranslate"><span class="pre">ls</span></code> and get response
+to make sure your connection still alive. If connection is bad, this
+decorator will reconnect the SSH channel, to avoid connection related
+error when executing the method.</p>
+</dd></dl>
+
+<dl class="py function">
 <dt id="arc.job.ssh.check_job_status_in_stdout">
-<code class="sig-prename descclassname">arc.job.ssh.</code><code class="sig-name descname">check_job_status_in_stdout</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">job_id</span></em>, <em class="sig-param"><span class="n">stdout</span></em>, <em class="sig-param"><span class="n">server</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/job/ssh.html#check_job_status_in_stdout"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.job.ssh.check_job_status_in_stdout" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">arc.job.ssh.</code><code class="sig-name descname">check_job_status_in_stdout</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">job_id</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">stdout</span><span class="p">:</span> <span class="n">Union<span class="p">[</span>list<span class="p">, </span>str<span class="p">]</span></span></em>, <em class="sig-param"><span class="n">server</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span> &#x2192; str<a class="reference internal" href="../_modules/arc/job/ssh.html#check_job_status_in_stdout"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.job.ssh.check_job_status_in_stdout" title="Permalink to this definition">¶</a></dt>
 <dd><p>A helper function for checking job status.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>job_id</strong> (<em>int</em>) – the job ID recognized by the server.</p></li>
-<li><p><strong>stdout</strong> (<em>list</em><em>, </em><em>str</em>) – The output of a queue status check.</p></li>
+<li><p><strong>stdout</strong> (<em>Union</em><em>[</em><em>list</em><em>, </em><em>str</em><em>]</em>) – The output of a queue status check.</p></li>
 <li><p><strong>server</strong> (<em>str</em>) – The server name.</p></li>
 </ul>
 </dd>
@@ -331,7 +483,7 @@ Either <cite>file_string</cite> or <cite>local_file_path</cite> must be given.</
 
 <dl class="py function">
 <dt id="arc.job.ssh.delete_all_arc_jobs">
-<code class="sig-prename descclassname">arc.job.ssh.</code><code class="sig-name descname">delete_all_arc_jobs</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">server_list</span></em>, <em class="sig-param"><span class="n">jobs</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/job/ssh.html#delete_all_arc_jobs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.job.ssh.delete_all_arc_jobs" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">arc.job.ssh.</code><code class="sig-name descname">delete_all_arc_jobs</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">server_list</span><span class="p">:</span> <span class="n">list</span></em>, <em class="sig-param"><span class="n">jobs</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>List<span class="p">[</span>str<span class="p">]</span><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="../_modules/arc/job/ssh.html#delete_all_arc_jobs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.job.ssh.delete_all_arc_jobs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Delete all ARC-spawned jobs (with job name starting with <cite>a</cite> and a digit) from :list:servers
 (<cite>servers</cite> could also be a string of one server name)
 Make sure you know what you’re doing, so unrelated jobs won’t be deleted…
@@ -341,23 +493,6 @@ Useful when terminating ARC while some (ghost) jobs are still running.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>server_list</strong> (<em>list</em>) – List of servers to delete ARC jobs from.</p></li>
 <li><p><strong>jobs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><em>str</em><em>]</em><em>]</em>) – Specific ARC job IDs to delete.</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt id="arc.job.ssh.write_file">
-<code class="sig-prename descclassname">arc.job.ssh.</code><code class="sig-name descname">write_file</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sftp</span></em>, <em class="sig-param"><span class="n">remote_file_path</span></em>, <em class="sig-param"><span class="n">local_file_path</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">file_string</span><span class="o">=</span><span class="default_value">''</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/job/ssh.html#write_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.job.ssh.write_file" title="Permalink to this definition">¶</a></dt>
-<dd><p>Write a file. If <cite>file_string</cite> is given, write it as the content of the file.
-Else, if <cite>local_file_path</cite> is given, copy it to <cite>remote_file_path</cite>.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>sftp</strong> (<em>paramiko's SFTP</em>) – The SFTP object.</p></li>
-<li><p><strong>remote_file_path</strong> (<em>str</em>) – The path to write into on the remote server.</p></li>
-<li><p><strong>local_file_path</strong> (<em>str</em><em>, </em><em>optional</em>) – A local file path to be copied into the remote location.</p></li>
-<li><p><strong>file_string</strong> (<em>str</em>) – The file content to be copied and saved as the remote file.</p></li>
 </ul>
 </dd>
 </dl>
