@@ -112,6 +112,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#disable-comparisons-with-the-rmg-database">Disable comparisons with the RMG database</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#use-solvent-corrections">Use solvent corrections</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#batch-delete-arc-jobs">Batch delete ARC jobs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#choose-modified-classical-arrhenius-equation-form-for-rate-coefficient-fitting">Choose modified/classical Arrhenius equation form for rate coefficient fitting</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="output.html">Output</a></li>
@@ -956,6 +957,30 @@ one can supply an ARC job ID, and ALL jobs related to the project of the given j
 </div>
 <p>Note that either a <code class="docutils literal notranslate"><span class="pre">-a</span></code>, a <code class="docutils literal notranslate"><span class="pre">-p</span></code>, or a <code class="docutils literal notranslate"><span class="pre">-j</span></code> flag must be given.
 All flags can be combined with the optional <code class="docutils literal notranslate"><span class="pre">-s</span></code> flag.</p>
+</div>
+<div class="section" id="choose-modified-classical-arrhenius-equation-form-for-rate-coefficient-fitting">
+<h2>Choose modified/classical Arrhenius equation form for rate coefficient fitting<a class="headerlink" href="#choose-modified-classical-arrhenius-equation-form-for-rate-coefficient-fitting" title="Permalink to this headline">¶</a></h2>
+<p>ARC uses statistical mechanics software packages (e.g., Arkane) to compute rate coefficients for chemical reactions from
+the results of quantum chemistry calculations. By default, ARC instructs the statmech programs to compute rate
+coefficients in the modified three-parameter Arrhenius equation format:</p>
+<blockquote>
+<div><div class="math">
+<p><span class="math">k(T) = A \left( \frac{T}{T_0} \right)^n \exp \left( -\frac{E_a}{RT} \right)</span></p>
+</div></div></blockquote>
+<p>Alternatively, the user may request to compute the rate coefficients in the classical two-parameter Arrhenius format:</p>
+<blockquote>
+<div><div class="math">
+<p><span class="math">k(T) = A \exp \left( -\frac{E_a}{RT} \right)</span></p>
+</div></div></blockquote>
+<p>by setting the <code class="docutils literal notranslate"><span class="pre">three_params</span></code> attribute to <code class="docutils literal notranslate"><span class="pre">False</span></code> (it is <code class="docutils literal notranslate"><span class="pre">True</span></code> by default). For example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">project</span><span class="p">:</span> <span class="n">use_classical_arrhenius_eqn_for_rate_calc_demo</span>
+<span class="n">three_params</span><span class="p">:</span> <span class="kc">False</span>
+</pre></div>
+</div>
+<p>instructs the relevant statmech program to compute rate coefficients in the classical two-parameter Arrhenius format for
+all reactions in the same ARC project.</p>
+<p>Advanced: to recompute the rate coefficient in the modified three-parameter Arrhenius equation format, simply change
+<code class="docutils literal notranslate"><span class="pre">three_params</span></code> to <code class="docutils literal notranslate"><span class="pre">True</span></code> in the ARC project’s restart.yml file, and then restart ARC.</p>
 </div>
 </div>
 
