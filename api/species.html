@@ -95,16 +95,21 @@
 <li class="toctree-l2 current"><a class="current reference internal" href="#">arc.species.species</a></li>
 <li class="toctree-l2"><a class="reference internal" href="converter.html">arc.species.converter</a></li>
 <li class="toctree-l2"><a class="reference internal" href="conformers.html">arc.species.conformers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="vectors.html">arc.species.vectors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="zmat.html">arc.species.zmat</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reaction.html">arc.reaction</a></li>
 <li class="toctree-l2"><a class="reference internal" href="scheduler.html">arc.scheduler</a></li>
 <li class="toctree-l2"><a class="reference internal" href="job.html">arc.job.job</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ssh.html">arc.job.ssh</a></li>
 <li class="toctree-l2"><a class="reference internal" href="local.html">arc.job.local</a></li>
+<li class="toctree-l2"><a class="reference internal" href="trsh.html">arc.job.trsh</a></li>
 <li class="toctree-l2"><a class="reference internal" href="parser.html">arc.parser</a></li>
 <li class="toctree-l2"><a class="reference internal" href="plotter.html">arc.plotter</a></li>
 <li class="toctree-l2"><a class="reference internal" href="processor.html">arc.processor</a></li>
 <li class="toctree-l2"><a class="reference internal" href="rmgdb.html">arc.rmgdb</a></li>
 <li class="toctree-l2"><a class="reference internal" href="common.html">arc.common</a></li>
+<li class="toctree-l2"><a class="reference internal" href="level.html">arc.level</a></li>
+<li class="toctree-l2"><a class="reference internal" href="scale.html">arc.utils.scale</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../tools.html">Standalone tools</a></li>
@@ -940,7 +945,7 @@ generating conformers. <code class="docutils literal notranslate"><span class="p
 
 <dl class="py method">
 <dt id="arc.species.species.ARCSpecies.check_xyz_isomorphism">
-<code class="sig-name descname">check_xyz_isomorphism</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mol</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">xyz</span><span class="p">:</span> <span class="n">dict</span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">allow_nonisomorphic_2d</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">verbose</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em><span class="sig-paren">)</span> &#x2192; bool<a class="reference internal" href="../_modules/arc/species/species.html#ARCSpecies.check_xyz_isomorphism"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.species.ARCSpecies.check_xyz_isomorphism" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">check_xyz_isomorphism</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mol</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>rmgpy.molecule.molecule.Molecule<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">xyz</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>dict<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">allow_nonisomorphic_2d</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>bool<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">verbose</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>bool<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">True</span></em><span class="sig-paren">)</span> &#x2192; bool<a class="reference internal" href="../_modules/arc/species/species.html#ARCSpecies.check_xyz_isomorphism"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.species.ARCSpecies.check_xyz_isomorphism" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check whether the perception of self.final_xyz or <code class="docutils literal notranslate"><span class="pre">xyz</span></code> is isomorphic with self.mol.
 If it is not isomorphic, compliant coordinates will be checked (equivalent to checking isomorphism without
 bond order information, only does not necessitates a molecule object, directly checks bond lengths)</p>
@@ -964,7 +969,7 @@ bond order information, only does not necessitates a molecule object, directly c
 
 <dl class="py method">
 <dt id="arc.species.species.ARCSpecies.determine_multiplicity">
-<code class="sig-name descname">determine_multiplicity</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">smiles</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">adjlist</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">mol</span><span class="p">:</span> <span class="n">rmgpy.molecule.molecule.Molecule</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/species/species.html#ARCSpecies.determine_multiplicity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.species.ARCSpecies.determine_multiplicity" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">determine_multiplicity</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">smiles</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">adjlist</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">mol</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>rmgpy.molecule.molecule.Molecule<span class="p">]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/species/species.html#ARCSpecies.determine_multiplicity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.species.ARCSpecies.determine_multiplicity" title="Permalink to this definition">¶</a></dt>
 <dd><p>Determine the spin multiplicity of the species</p>
 </dd></dl>
 
@@ -1208,7 +1213,7 @@ The mol_list attribute is used for identifying rotors and generating conformers,
 
 <dl class="py method">
 <dt id="arc.species.species.ARCSpecies.set_transport_data">
-<code class="sig-name descname">set_transport_data</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">lj_path</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">opt_path</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">bath_gas</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">opt_level</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">freq_path</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">''</span></em>, <em class="sig-param"><span class="n">freq_level</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/species/species.html#ARCSpecies.set_transport_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.species.ARCSpecies.set_transport_data" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">set_transport_data</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">lj_path</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">opt_path</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">bath_gas</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">opt_level</span><span class="p">:</span> <span class="n"><a class="reference internal" href="level.html#arc.level.Level" title="arc.level.Level">arc.level.Level</a></span></em>, <em class="sig-param"><span class="n">freq_path</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">''</span></em>, <em class="sig-param"><span class="n">freq_level</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span><a class="reference internal" href="level.html#arc.level.Level" title="arc.level.Level">arc.level.Level</a><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/species/species.html#ARCSpecies.set_transport_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.species.ARCSpecies.set_transport_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set the species.transport_data attribute after a Lennard-Jones calculation (via OneDMin).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1216,9 +1221,9 @@ The mol_list attribute is used for identifying rotors and generating conformers,
 <li><p><strong>lj_path</strong> (<em>str</em>) – The path to a oneDMin job output file.</p></li>
 <li><p><strong>opt_path</strong> (<em>str</em>) – The path to an opt job output file.</p></li>
 <li><p><strong>bath_gas</strong> (<em>str</em>) – The oneDMin job bath gas.</p></li>
-<li><p><strong>opt_level</strong> (<em>str</em>) – The optimization level of theory.</p></li>
+<li><p><strong>opt_level</strong> (<a class="reference internal" href="level.html#arc.level.Level" title="arc.level.Level"><em>Level</em></a>) – The optimization level of theory.</p></li>
 <li><p><strong>freq_path</strong> (<em>str</em><em>, </em><em>optional</em>) – The path to a frequencies job output file.</p></li>
-<li><p><strong>freq_level</strong> (<em>str</em><em>, </em><em>optional</em>) – The frequencies level of theory.</p></li>
+<li><p><strong>freq_level</strong> (<a class="reference internal" href="level.html#arc.level.Level" title="arc.level.Level"><em>Level</em></a><em>, </em><em>optional</em>) – The frequencies level of theory.</p></li>
 </ul>
 </dd>
 </dl>
@@ -1228,7 +1233,7 @@ The mol_list attribute is used for identifying rotors and generating conformers,
 
 <dl class="py class">
 <dt id="arc.species.species.TSGuess">
-<em class="property">class </em><code class="sig-prename descclassname">arc.species.species.</code><code class="sig-name descname">TSGuess</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">method</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">reactants_xyz</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">products_xyz</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">family</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">xyz</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">rmg_reaction</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">ts_dict</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">energy</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/species/species.html#TSGuess"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.species.TSGuess" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">arc.species.species.</code><code class="sig-name descname">TSGuess</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">method</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">reactants_xyz</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>list<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">products_xyz</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>list<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">family</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">xyz</span><span class="p">:</span> <span class="n">Union[dict, str, None]</span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">rmg_reaction</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>rmgpy.reaction.Reaction<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">ts_dict</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>dict<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">energy</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>float<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/species/species.html#TSGuess"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.species.TSGuess" title="Permalink to this definition">¶</a></dt>
 <dd><p>TSGuess class</p>
 <p>The user can define xyz directly, and the default <cite>method</cite> will be ‘User guess’.
 Alternatively, either ARC or the user can provide reactant/s and product/s geometries with a specified <cite>method</cite>.
@@ -1564,7 +1569,7 @@ below 120% of the single bond length of the respective elements.</p>
 
 <dl class="py function">
 <dt id="arc.species.species.determine_rotor_symmetry">
-<code class="sig-prename descclassname">arc.species.species.</code><code class="sig-name descname">determine_rotor_symmetry</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">label</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">pivots</span><span class="p">:</span> <span class="n">list</span></em>, <em class="sig-param"><span class="n">rotor_path</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">''</span></em>, <em class="sig-param"><span class="n">energies</span><span class="p">:</span> <span class="n">list</span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">return_num_wells</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/species/species.html#determine_rotor_symmetry"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.species.determine_rotor_symmetry" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">arc.species.species.</code><code class="sig-name descname">determine_rotor_symmetry</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">label</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">pivots</span><span class="p">:</span> <span class="n">Union<span class="p">[</span>list<span class="p">, </span>str<span class="p">]</span></span></em>, <em class="sig-param"><span class="n">rotor_path</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">''</span></em>, <em class="sig-param"><span class="n">energies</span><span class="p">:</span> <span class="n">Union[list, numpy.ndarray, None]</span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">return_num_wells</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">log</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em><span class="sig-paren">)</span> &#x2192; Tuple<span class="p">[</span>int<span class="p">, </span>float<span class="p">, </span>Optional<span class="p">[</span>int<span class="p">]</span><span class="p">]</span><a class="reference internal" href="../_modules/arc/species/species.html#determine_rotor_symmetry"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.species.determine_rotor_symmetry" title="Permalink to this definition">¶</a></dt>
 <dd><p>Determine the rotor symmetry number from a potential energy scan.
 The <em>worst</em> resolution for each peak and valley is determined.
 The first criterion for a symmetric rotor is that the highest peak and the lowest peak must be within the
@@ -1575,36 +1580,27 @@ the highest peak value. This is only applied if the highest peak is above 2 kJ/m
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>label</strong> (<em>str</em>) – The species label (used for error messages).</p></li>
-<li><p><strong>pivots</strong> (<em>list</em><em>, </em><em>optional</em>) – A list of two atom indices representing the torsion pivots.</p></li>
+<li><p><strong>pivots</strong> (<em>list</em><em>, </em><em>str</em><em>, </em><em>optional</em>) – A list of two atom indices representing the torsion pivots.</p></li>
 <li><p><strong>rotor_path</strong> (<em>str</em>) – The path to an ESS output rotor scan file.</p></li>
 <li><p><strong>energies</strong> (<em>list</em><em>, </em><em>optional</em>) – The list of energies in the scan in kJ/mol.</p></li>
 <li><p><strong>return_num_wells</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to also return the number of wells, <code class="docutils literal notranslate"><span class="pre">True</span></code> to return,
 default is <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p></li>
+<li><p><strong>log</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to log info, error, and warning messages.</p></li>
 </ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>The symmetry number (int)</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>int</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>The highest torsional energy barrier in kJ/mol.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>float</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>The number of peaks, only returned if <code class="docutils literal notranslate"><span class="pre">return_len_peaks</span></code> is <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>int (optional)</p>
 </dd>
 <dt class="field-even">Raises</dt>
 <dd class="field-even"><ul class="simple">
 <li><p><strong>InputError</strong> – If both or none of the rotor_path and energy arguments are given,</p></li>
 <li><p><strong>or if rotor_path does not point to an existing file.</strong> – </p></li>
 </ul>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>int: The symmetry number
+float: The highest torsional energy barrier in kJ/mol.
+int (optional): The number of peaks, only returned if <code class="docutils literal notranslate"><span class="pre">return_len_peaks</span></code> is <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>Tuple[int, float, int]</p>
 </dd>
 </dl>
 </dd></dl>

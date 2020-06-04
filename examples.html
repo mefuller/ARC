@@ -196,7 +196,10 @@ Multiple species are defined using SMILES / an XYZ list / InChI:</p>
 
 <span class="n">level_of_theory</span><span class="p">:</span> <span class="n">CCSD</span><span class="p">(</span><span class="n">T</span><span class="p">)</span><span class="o">-</span><span class="n">F12</span><span class="o">/</span><span class="n">cc</span><span class="o">-</span><span class="n">pVTZ</span><span class="o">-</span><span class="n">F12</span><span class="o">//</span><span class="n">wb97xd</span><span class="o">/</span><span class="n">def2tzvp</span>
 <span class="n">scan_level</span><span class="p">:</span> <span class="n">wb97xd</span><span class="o">/</span><span class="n">def2tzvp</span>
-<span class="n">conformer_level</span><span class="p">:</span> <span class="n">b3lyp</span><span class="o">/</span><span class="mi">6</span><span class="o">-</span><span class="mi">311</span><span class="o">+</span><span class="n">g</span><span class="p">(</span><span class="n">d</span><span class="p">,</span><span class="n">p</span><span class="p">)</span>
+<span class="n">conformer_level</span><span class="p">:</span>
+  <span class="n">method</span><span class="p">:</span> <span class="n">b3lyp</span>
+  <span class="n">basis</span><span class="p">:</span> <span class="s1">&#39;6-311+g(d,p)&#39;</span>
+  <span class="n">dispersion</span><span class="p">:</span> <span class="n">empiricaldispersion</span><span class="o">=</span><span class="n">gd3bj</span>
 
 <span class="n">species</span><span class="p">:</span>
 
@@ -239,12 +242,12 @@ isn’t set, and ARC will use the default in settings.py unless directed otherwi
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">level_of_theory</span><span class="p">:</span> <span class="n">CBS</span><span class="o">-</span><span class="n">QB3</span>
 </pre></div>
 </div>
-<p>Note that for composite methods the default <code class="docutils literal notranslate"><span class="pre">freq_level</span></code> and <code class="docutils literal notranslate"><span class="pre">scan_level</span></code> may have different
-default values than for non-composite methods (defined in settings.py). Yes, an independent
-frequencies calculation job is executed after a composite job just so that the Hamiltonian will
+<p>Note that for composite methods the <code class="docutils literal notranslate"><span class="pre">freq_level</span></code> and <code class="docutils literal notranslate"><span class="pre">scan_level</span></code> may have different
+default values than for non-composite methods (defined in settings.py). Note: an independent
+frequencies calculation job is automatically executed after a composite job just so that the Hamiltonian will
 be outputted.</p>
-<p>For detailed discussion on specifying job level of theory (e.g., including auxiliary basis sets and DFT dispersions),
-see see <span class="xref std std-ref">Specify job level of theory</span>.</p>
+<p>For detailed discussion on specifying levels of theory (e.g., including auxiliary basis sets and DFT dispersions),
+see see <a class="reference internal" href="advanced.html#levels"><span class="std std-ref">Levels of theory</span></a>.</p>
 <p>The same example as above ran via the API (e.g., in <a class="reference external" href="https://jupyter.org/">Jupyter notebooks</a>) would look like the following:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">arc</span> <span class="kn">import</span> <span class="n">ARC</span>
 <span class="kn">from</span> <span class="nn">arc.species</span> <span class="kn">import</span> <span class="n">ARCSpecies</span>
@@ -276,15 +279,17 @@ see see <span class="xref std std-ref">Specify job level of theory</span>.</p>
 
 <span class="n">spc3</span> <span class="o">=</span> <span class="n">ARCSpecies</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s1">&#39;propanol&#39;</span><span class="p">,</span> <span class="n">inchi</span><span class="o">=</span><span class="s1">&#39;InChI=1S/C3H8O/c1-2-3-4/h4H,2-3H2,1H3&#39;</span><span class="p">)</span>
 
-<span class="n">arc0</span> <span class="o">=</span> <span class="n">ARC</span><span class="p">(</span><span class="n">project</span><span class="o">=</span><span class="s1">&#39;arc_demo_1&#39;</span><span class="p">,</span>
-           <span class="n">ess_settings</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;gaussian&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;local&#39;</span><span class="p">,</span> <span class="s1">&#39;server1&#39;</span><span class="p">],</span> <span class="s1">&#39;molpro&#39;</span><span class="p">:</span> <span class="s1">&#39;server1&#39;</span><span class="p">,</span> <span class="s1">&#39;qchem&#39;</span><span class="p">:</span> <span class="s1">&#39;server2&#39;</span><span class="p">},</span>
-           <span class="n">job_types</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;rotors&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;conformers&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;fine&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;freq&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;opt&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="n">sp</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span>
-           <span class="n">max_job_time</span><span class="o">=</span><span class="mi">24</span><span class="p">,</span>
-           <span class="n">level_of_theory</span><span class="o">=</span><span class="s1">&#39;CCSD(T)-F12/cc-pVTZ-F12//wb97xd/def2tzvp&#39;</span><span class="p">,</span>
-           <span class="n">scan_level</span><span class="o">=</span><span class="s1">&#39;wb97xd/def2tzvp&#39;</span><span class="p">,</span>
-           <span class="n">conformer_level</span><span class="o">=</span><span class="s1">&#39;b3lyp/6-311+g(d,p)&#39;</span><span class="p">)</span>
+<span class="n">arc</span> <span class="o">=</span> <span class="n">ARC</span><span class="p">(</span><span class="n">project</span><span class="o">=</span><span class="s1">&#39;arc_demo_1&#39;</span><span class="p">,</span>
+          <span class="n">ess_settings</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;gaussian&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;local&#39;</span><span class="p">,</span> <span class="s1">&#39;server1&#39;</span><span class="p">],</span> <span class="s1">&#39;molpro&#39;</span><span class="p">:</span> <span class="s1">&#39;server1&#39;</span><span class="p">,</span> <span class="s1">&#39;qchem&#39;</span><span class="p">:</span> <span class="s1">&#39;server2&#39;</span><span class="p">},</span>
+          <span class="n">job_types</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;rotors&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;conformers&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;fine&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;freq&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;opt&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="n">sp</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span>
+          <span class="n">max_job_time</span><span class="o">=</span><span class="mi">24</span><span class="p">,</span>
+          <span class="n">level_of_theory</span><span class="o">=</span><span class="s1">&#39;CCSD(T)-F12/cc-pVTZ-F12//wb97xd/def2tzvp&#39;</span><span class="p">,</span>
+          <span class="n">scan_level</span><span class="o">=</span><span class="s1">&#39;wb97xd/def2tzvp&#39;</span><span class="p">,</span>
+          <span class="n">conformer_level</span><span class="o">=</span><span class="s1">&#39;b3lyp/6-311+g(d,p)&#39;</span><span class="p">,</span>
+          <span class="n">species</span><span class="o">=</span><span class="p">[</span><span class="n">spc1</span><span class="p">,</span> <span class="n">spc2</span><span class="p">,</span> <span class="n">spc3</span><span class="p">],</span>
+          <span class="p">)</span>
 
-<span class="n">arc0</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+<span class="n">arc</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>

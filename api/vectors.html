@@ -1,0 +1,519 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>arc.species.vectors &mdash; ARC 1.1.0 Documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="arc.species.zmat" href="zmat.html" />
+    <link rel="prev" title="arc.species.conformers" href="conformers.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> ARC
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../running.html">Running ARC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced.html">Advanced Features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../output.html">Output</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">ARC’s API</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="main.html">arc.main</a></li>
+<li class="toctree-l2"><a class="reference internal" href="species.html">arc.species.species</a></li>
+<li class="toctree-l2"><a class="reference internal" href="converter.html">arc.species.converter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="conformers.html">arc.species.conformers</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">arc.species.vectors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="zmat.html">arc.species.zmat</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reaction.html">arc.reaction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="scheduler.html">arc.scheduler</a></li>
+<li class="toctree-l2"><a class="reference internal" href="job.html">arc.job.job</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ssh.html">arc.job.ssh</a></li>
+<li class="toctree-l2"><a class="reference internal" href="local.html">arc.job.local</a></li>
+<li class="toctree-l2"><a class="reference internal" href="trsh.html">arc.job.trsh</a></li>
+<li class="toctree-l2"><a class="reference internal" href="parser.html">arc.parser</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plotter.html">arc.plotter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="processor.html">arc.processor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rmgdb.html">arc.rmgdb</a></li>
+<li class="toctree-l2"><a class="reference internal" href="common.html">arc.common</a></li>
+<li class="toctree-l2"><a class="reference internal" href="level.html">arc.level</a></li>
+<li class="toctree-l2"><a class="reference internal" href="scale.html">arc.utils.scale</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../tools.html">Standalone tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../release.html">Release notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../credits.html">Credits</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contribute.html">Contribute</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../cite.html">How to cite ARC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../licence.html">Licence</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">ARC</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="index.html">ARC’s API</a> &raquo;</li>
+        
+      <li>arc.species.vectors</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/api/vectors.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-arc.species.vectors">
+<span id="arc-species-vectors"></span><span id="vectors"></span><h1>arc.species.vectors<a class="headerlink" href="#module-arc.species.vectors" title="Permalink to this headline">¶</a></h1>
+<p>A module for manipulating vectors</p>
+<dl class="py function">
+<dt id="arc.species.vectors.calculate_angle">
+<code class="sig-prename descclassname">arc.species.vectors.</code><code class="sig-name descname">calculate_angle</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">coords</span><span class="p">:</span> <span class="n">list</span></em>, <em class="sig-param"><span class="n">atoms</span><span class="p">:</span> <span class="n">list</span></em>, <em class="sig-param"><span class="n">index</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">0</span></em>, <em class="sig-param"><span class="n">units</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">'degs'</span></em><span class="sig-paren">)</span> &#x2192; float<a class="reference internal" href="../_modules/arc/species/vectors.html#calculate_angle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.vectors.calculate_angle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate an angle.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>coords</strong> (<em>list</em><em>, </em><em>tuple</em><em>, </em><em>dict</em>) – The array-format or tuple-format coordinates, or the xyz dict.</p></li>
+<li><p><strong>atoms</strong> (<em>list</em>) – The 3 atoms defining the angle.</p></li>
+<li><p><strong>index</strong> (<em>int</em><em>, </em><em>optional</em>) – Whether <code class="docutils literal notranslate"><span class="pre">atoms</span></code> is 0-indexed or 1-indexed (values are 0 or 1).</p></li>
+<li><p><strong>units</strong> (<em>str</em><em>, </em><em>optional</em>) – The desired units, either ‘rads’ for radians, or ‘degs’ for degrees.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>VectorsError</strong> – If <code class="docutils literal notranslate"><span class="pre">index</span></code> is out of range, or <code class="docutils literal notranslate"><span class="pre">atoms</span></code> is of wrong length or has repeating indices.</p></li>
+<li><p><strong>TypeError</strong> – If <code class="docutils literal notranslate"><span class="pre">coords</span></code> is of wrong type.</p></li>
+</ul>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The angle.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="arc.species.vectors.calculate_dihedral_angle">
+<code class="sig-prename descclassname">arc.species.vectors.</code><code class="sig-name descname">calculate_dihedral_angle</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">coords</span><span class="p">:</span> <span class="n">list</span></em>, <em class="sig-param"><span class="n">torsion</span><span class="p">:</span> <span class="n">list</span></em>, <em class="sig-param"><span class="n">index</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">0</span></em>, <em class="sig-param"><span class="n">units</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">'degs'</span></em><span class="sig-paren">)</span> &#x2192; float<a class="reference internal" href="../_modules/arc/species/vectors.html#calculate_dihedral_angle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.vectors.calculate_dihedral_angle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate a dihedral angle.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>coords</strong> (<em>list</em><em>, </em><em>tuple</em><em>, </em><em>dict</em>) – The array-format or tuple-format coordinates, or the xyz dict.</p></li>
+<li><p><strong>torsion</strong> (<em>list</em>) – The 4 atoms defining the dihedral angle.</p></li>
+<li><p><strong>index</strong> (<em>int</em><em>, </em><em>optional</em>) – Whether <code class="docutils literal notranslate"><span class="pre">torsion</span></code> is 0-indexed or 1-indexed (values are 0 or 1).</p></li>
+<li><p><strong>units</strong> (<em>str</em><em>, </em><em>optional</em>) – The desired units, either ‘rads’ for radians, or ‘degs’ for degrees.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>VectorsError</strong> – If <code class="docutils literal notranslate"><span class="pre">index</span></code> is out of range, or <code class="docutils literal notranslate"><span class="pre">torsion</span></code> is of wrong length or has repeating indices.</p></li>
+<li><p><strong>TypeError</strong> – If <code class="docutils literal notranslate"><span class="pre">coords</span></code> is of wrong type.</p></li>
+</ul>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The dihedral angle in a 0-360 degrees range.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="arc.species.vectors.calculate_distance">
+<code class="sig-prename descclassname">arc.species.vectors.</code><code class="sig-name descname">calculate_distance</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">coords</span><span class="p">:</span> <span class="n">list</span></em>, <em class="sig-param"><span class="n">atoms</span><span class="p">:</span> <span class="n">list</span></em>, <em class="sig-param"><span class="n">index</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">0</span></em><span class="sig-paren">)</span> &#x2192; float<a class="reference internal" href="../_modules/arc/species/vectors.html#calculate_distance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.vectors.calculate_distance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate a distance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>coords</strong> (<em>list</em><em>, </em><em>tuple</em><em>, </em><em>dict</em>) – The array-format or tuple-format coordinates, or the xyz dict.</p></li>
+<li><p><strong>atoms</strong> (<em>list</em>) – The 2 atoms to calculate defining the vector for which the length will be calculated.</p></li>
+<li><p><strong>index</strong> (<em>int</em><em>, </em><em>optional</em>) – Whether <code class="docutils literal notranslate"><span class="pre">atoms</span></code> is 0-indexed or 1-indexed (values are 0 or 1).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>VectorsError</strong> – If <code class="docutils literal notranslate"><span class="pre">index</span></code> is out of range, or <code class="docutils literal notranslate"><span class="pre">atoms</span></code> is of wrong length or has repeating indices.</p></li>
+<li><p><strong>TypeError</strong> – If <code class="docutils literal notranslate"><span class="pre">coords</span></code> is of wrong type.</p></li>
+</ul>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The distance in the coords units.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="arc.species.vectors.get_angle">
+<code class="sig-prename descclassname">arc.species.vectors.</code><code class="sig-name descname">get_angle</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">v1</span><span class="p">:</span> <span class="n">list</span></em>, <em class="sig-param"><span class="n">v2</span><span class="p">:</span> <span class="n">list</span></em>, <em class="sig-param"><span class="n">units</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">'rads'</span></em><span class="sig-paren">)</span> &#x2192; float<a class="reference internal" href="../_modules/arc/species/vectors.html#get_angle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.vectors.get_angle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the angle between two vectors.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>v1</strong> (<em>list</em>) – Vector 1.</p></li>
+<li><p><strong>v2</strong> (<em>list</em>) – Vector 2.</p></li>
+<li><p><strong>units</strong> (<em>str</em><em>, </em><em>optional</em>) – The desired units, either ‘rads’ for radians, or ‘degs’ for degrees.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>VectorsError</strong> – If <code class="docutils literal notranslate"><span class="pre">v1</span></code> and <code class="docutils literal notranslate"><span class="pre">v2</span></code> are of different lengths.</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The angle between <code class="docutils literal notranslate"><span class="pre">v1</span></code> and <code class="docutils literal notranslate"><span class="pre">v2</span></code> in the desired units.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="arc.species.vectors.get_dihedral">
+<code class="sig-prename descclassname">arc.species.vectors.</code><code class="sig-name descname">get_dihedral</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">v1</span><span class="p">:</span> <span class="n">list</span></em>, <em class="sig-param"><span class="n">v2</span><span class="p">:</span> <span class="n">list</span></em>, <em class="sig-param"><span class="n">v3</span><span class="p">:</span> <span class="n">list</span></em>, <em class="sig-param"><span class="n">units</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">'degs'</span></em><span class="sig-paren">)</span> &#x2192; float<a class="reference internal" href="../_modules/arc/species/vectors.html#get_dihedral"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.vectors.get_dihedral" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the dihedral angle between three vectors.
+<code class="docutils literal notranslate"><span class="pre">v2</span></code> connects between <code class="docutils literal notranslate"><span class="pre">v1</span></code> and <code class="docutils literal notranslate"><span class="pre">v3</span></code>.
+Inspired by ASE Atoms.get_dihedral().</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>v1</strong> (<em>list</em>) – Vector 1.</p></li>
+<li><p><strong>v2</strong> (<em>list</em>) – Vector 2.</p></li>
+<li><p><strong>v3</strong> (<em>list</em>) – Vector 3.</p></li>
+<li><p><strong>units</strong> (<em>str</em><em>, </em><em>optional</em>) – The desired units, either ‘rads’ for radians, or ‘degs’ for degrees.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>VectorsError</strong> – If either <code class="docutils literal notranslate"><span class="pre">v1</span></code> or <code class="docutils literal notranslate"><span class="pre">v2</span></code> have lengths different than three.</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The dihedral angle between <code class="docutils literal notranslate"><span class="pre">v1</span></code> and <code class="docutils literal notranslate"><span class="pre">v2</span></code> in the desired units.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="arc.species.vectors.get_lp_vector">
+<code class="sig-prename descclassname">arc.species.vectors.</code><code class="sig-name descname">get_lp_vector</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">label</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">mol</span><span class="p">:</span> <span class="n">rmgpy.molecule.molecule.Molecule</span></em>, <em class="sig-param"><span class="n">xyz</span><span class="p">:</span> <span class="n">dict</span></em>, <em class="sig-param"><span class="n">pivot</span><span class="p">:</span> <span class="n">int</span></em><span class="sig-paren">)</span> &#x2192; list<a class="reference internal" href="../_modules/arc/species/vectors.html#get_lp_vector"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.vectors.get_lp_vector" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a vector from the pivotal atom in the molecule towards its lone electron pair (lp).
+The approach is to reverse the average of the three unit vectors between the pivotal atom and its neighbors.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>label</strong> (<em>str</em>) – The species’ label.</p></li>
+<li><p><strong>mol</strong> (<em>Molecule</em>) – The 2D graph representation of the molecule.</p></li>
+<li><p><strong>xyz</strong> (<em>dict</em>) – The 3D coordinates of the molecule with the same atom order as in mol.</p></li>
+<li><p><strong>pivot</strong> (<em>int</em>) – The 0-index of the pivotal atom of interest.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>VectorsError</strong> – If the lp vector cannot be attained.</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A unit vector pointing from the pivotal (nitrogen) atom towards its lone electron pairs orbital.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="arc.species.vectors.get_normal">
+<code class="sig-prename descclassname">arc.species.vectors.</code><code class="sig-name descname">get_normal</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">v1</span><span class="p">:</span> <span class="n">list</span></em>, <em class="sig-param"><span class="n">v2</span><span class="p">:</span> <span class="n">list</span></em><span class="sig-paren">)</span> &#x2192; list<a class="reference internal" href="../_modules/arc/species/vectors.html#get_normal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.vectors.get_normal" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate a normal vector using cross multiplication.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>v1</strong> (<em>list</em>) – Vector 1.</p></li>
+<li><p><strong>v2</strong> (<em>list</em>) – Vector 2.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A normal unit vector to v1 and v2.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="arc.species.vectors.get_vector">
+<code class="sig-prename descclassname">arc.species.vectors.</code><code class="sig-name descname">get_vector</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pivot</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">anchor</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">xyz</span><span class="p">:</span> <span class="n">dict</span></em><span class="sig-paren">)</span> &#x2192; list<a class="reference internal" href="../_modules/arc/species/vectors.html#get_vector"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.vectors.get_vector" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a vector between two atoms in the molecule (pointing from pivot to anchor).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pivot</strong> (<em>int</em>) – The 0-index of the pivotal atom around which groups are to be translated.</p></li>
+<li><p><strong>anchor</strong> (<em>int</em>) – The 0-index of an additional atom in the molecule.</p></li>
+<li><p><strong>xyz</strong> (<em>dict</em>) – The 3D coordinates of the molecule with the same atom order as in mol.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A vector pointing from the pivotal atom towards the anchor atom.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="arc.species.vectors.get_vector_length">
+<code class="sig-prename descclassname">arc.species.vectors.</code><code class="sig-name descname">get_vector_length</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">v</span><span class="p">:</span> <span class="n">list</span></em><span class="sig-paren">)</span> &#x2192; float<a class="reference internal" href="../_modules/arc/species/vectors.html#get_vector_length"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.vectors.get_vector_length" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the length of an ND vector</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>v</strong> (<em>list</em>) – The vector.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The vector’s length.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="arc.species.vectors.rotate_vector">
+<code class="sig-prename descclassname">arc.species.vectors.</code><code class="sig-name descname">rotate_vector</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">point_a</span><span class="p">:</span> <span class="n">list</span></em>, <em class="sig-param"><span class="n">point_b</span><span class="p">:</span> <span class="n">list</span></em>, <em class="sig-param"><span class="n">normal</span><span class="p">:</span> <span class="n">list</span></em>, <em class="sig-param"><span class="n">theta</span><span class="p">:</span> <span class="n">float</span></em><span class="sig-paren">)</span> &#x2192; list<a class="reference internal" href="../_modules/arc/species/vectors.html#rotate_vector"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.vectors.rotate_vector" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rotate a vector in 3D space around a given axis by a certain angle.</p>
+<p>Inspired by <a class="reference external" href="https://stackoverflow.com/questions/6802577/rotation-of-3d-vector">https://stackoverflow.com/questions/6802577/rotation-of-3d-vector</a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>point_a</strong> (<em>list</em>) – The 3D coordinates of the starting point (point A) of the vector to be rotated.</p></li>
+<li><p><strong>point_b</strong> (<em>list</em>) – The 3D coordinates of the ending point (point B) of the vector to be rotated.</p></li>
+<li><p><strong>normal</strong> (<em>list</em>) – The axis to be rotated around.</p></li>
+<li><p><strong>theta</strong> (<em>float</em>) – The degree in radians by which to rotate.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The rotated vector (the new coordinates for point B).</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="arc.species.vectors.set_vector_length">
+<code class="sig-prename descclassname">arc.species.vectors.</code><code class="sig-name descname">set_vector_length</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">vector</span><span class="p">:</span> <span class="n">list</span></em>, <em class="sig-param"><span class="n">length</span><span class="p">:</span> <span class="n">float</span></em><span class="sig-paren">)</span> &#x2192; list<a class="reference internal" href="../_modules/arc/species/vectors.html#set_vector_length"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.vectors.set_vector_length" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the length of a 3D vector.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>vector</strong> (<em>list</em>) – The vector to process.</p></li>
+<li><p><strong>length</strong> (<em>float</em>) – The desired length to set.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A vector with the desired length.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="arc.species.vectors.unit_vector">
+<code class="sig-prename descclassname">arc.species.vectors.</code><code class="sig-name descname">unit_vector</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">vector</span><span class="p">:</span> <span class="n">list</span></em><span class="sig-paren">)</span> &#x2192; list<a class="reference internal" href="../_modules/arc/species/vectors.html#unit_vector"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.vectors.unit_vector" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate a unit vector in the same direction as the input vector.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>vector</strong> (<em>list</em>) – The input vector.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The unit vector.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="zmat.html" class="btn btn-neutral float-right" title="arc.species.zmat" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="conformers.html" class="btn btn-neutral float-left" title="arc.species.conformers" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018-2020, Alon Grinberg Dana
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

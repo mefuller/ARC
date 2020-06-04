@@ -158,10 +158,7 @@
            <div itemprop="articleBody">
             
   <h1>Source code for arc.plotter</h1><div class="highlight"><pre>
-<span></span><span class="ch">#!/usr/bin/env python3</span>
-<span class="c1"># encoding: utf-8</span>
-
-<span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">A module for plotting and saving output files such as RMG libraries.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
@@ -176,6 +173,7 @@
 <span class="kn">import</span> <span class="nn">shutil</span>
 <span class="kn">from</span> <span class="nn">matplotlib.backends.backend_pdf</span> <span class="kn">import</span> <span class="n">PdfPages</span>
 <span class="kn">from</span> <span class="nn">mpl_toolkits.mplot3d</span> <span class="kn">import</span> <span class="n">Axes3D</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span>
 
 <span class="kn">import</span> <span class="nn">py3Dmol</span> <span class="k">as</span> <span class="nn">p3D</span>
 <span class="kn">import</span> <span class="nn">qcelemental</span> <span class="k">as</span> <span class="nn">qcel</span>
@@ -190,12 +188,12 @@
 <span class="kn">from</span> <span class="nn">rmgpy.species</span> <span class="kn">import</span> <span class="n">Species</span>
 
 <span class="kn">from</span> <span class="nn">arc.common</span> <span class="kn">import</span> <span class="p">(</span><span class="n">extermum_list</span><span class="p">,</span>
-                        <span class="n">format_level_of_theory_for_logging</span><span class="p">,</span>
                         <span class="n">get_logger</span><span class="p">,</span>
                         <span class="n">is_notebook</span><span class="p">,</span>
                         <span class="n">save_yaml_file</span><span class="p">,</span>
                         <span class="n">sort_two_lists_by_the_first</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">arc.exceptions</span> <span class="kn">import</span> <span class="n">InputError</span><span class="p">,</span> <span class="n">SanitizationError</span>
+<span class="kn">from</span> <span class="nn">arc.level</span> <span class="kn">import</span> <span class="n">Level</span>
 <span class="kn">from</span> <span class="nn">arc.parser</span> <span class="kn">import</span> <span class="n">parse_trajectory</span>
 <span class="kn">from</span> <span class="nn">arc.species.converter</span> <span class="kn">import</span> <span class="p">(</span><span class="n">check_xyz_dict</span><span class="p">,</span>
                                    <span class="n">get_xyz_radius</span><span class="p">,</span>
@@ -494,9 +492,11 @@
 
 <span class="c1"># *** Parity and kinetic plots ***</span>
 
-<div class="viewcode-block" id="draw_thermo_parity_plots"><a class="viewcode-back" href="../../api/plotter.html#arc.plotter.draw_thermo_parity_plots">[docs]</a><span class="k">def</span> <span class="nf">draw_thermo_parity_plots</span><span class="p">(</span><span class="n">species_list</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="draw_thermo_parity_plots"><a class="viewcode-back" href="../../api/plotter.html#arc.plotter.draw_thermo_parity_plots">[docs]</a><span class="k">def</span> <span class="nf">draw_thermo_parity_plots</span><span class="p">(</span><span class="n">species_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
+                             <span class="n">path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Draws parity plots of calculated thermo and RMG&#39;s estimates.</span>
+<span class="sd">    Saves a thermo.info file if a ``path`` is specified.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        species_list (list): Species to compare.</span>
@@ -547,15 +547,15 @@
     <span class="n">min_var</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">var_arc</span> <span class="o">+</span> <span class="n">var_rmg</span><span class="p">)</span>
     <span class="n">max_var</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">var_arc</span> <span class="o">+</span> <span class="n">var_rmg</span><span class="p">)</span>
     <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">),</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">120</span><span class="p">)</span>
-    <span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">)</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">)</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">var_label</span><span class="si">}</span><span class="s1"> parity plot&#39;</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">label</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">labels</span><span class="p">):</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">var_arc</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">var_rmg</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">)</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">([</span><span class="n">min_var</span><span class="p">,</span> <span class="n">max_var</span><span class="p">],</span> <span class="p">[</span><span class="n">min_var</span><span class="p">,</span> <span class="n">max_var</span><span class="p">],</span> <span class="s1">&#39;b-&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">var_label</span><span class="si">}</span><span class="s1"> calculated by ARC (</span><span class="si">{</span><span class="n">var_units</span><span class="si">}</span><span class="s1">)&#39;</span><span class="p">)</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">var_label</span><span class="si">}</span><span class="s1"> determined by RMG (</span><span class="si">{</span><span class="n">var_units</span><span class="si">}</span><span class="s1">)&#39;</span><span class="p">)</span>
-    <span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">(</span><span class="n">min_var</span><span class="p">,</span> <span class="n">max_var</span> <span class="o">*</span> <span class="mf">1.1</span><span class="p">)</span>
-    <span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">(</span><span class="n">min_var</span><span class="p">,</span> <span class="n">max_var</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">(</span><span class="n">min_var</span> <span class="o">-</span> <span class="nb">max</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">min_var</span> <span class="o">*</span> <span class="mf">0.1</span><span class="p">),</span> <span class="mi">10</span><span class="p">),</span> <span class="n">max_var</span> <span class="o">+</span> <span class="nb">max</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">max_var</span> <span class="o">*</span> <span class="mf">0.1</span><span class="p">),</span> <span class="mi">10</span><span class="p">))</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">(</span><span class="n">min_var</span> <span class="o">-</span> <span class="nb">max</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">min_var</span> <span class="o">*</span> <span class="mf">0.1</span><span class="p">),</span> <span class="mi">10</span><span class="p">),</span> <span class="n">max_var</span> <span class="o">+</span> <span class="nb">max</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">max_var</span> <span class="o">*</span> <span class="mf">0.1</span><span class="p">),</span> <span class="mi">10</span><span class="p">))</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">shadow</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="s1">&#39;best&#39;</span><span class="p">)</span>
     <span class="c1"># txt_height = 0.04 * (plt.ylim[1] - plt.ylim[0])  # plt.ylim and plt.xlim return a tuple</span>
     <span class="c1"># txt_width = 0.02 * (plt.xlim[1] - plt.xlim[0])</span>
@@ -954,8 +954,16 @@
         <span class="n">kinetics_library</span><span class="o">.</span><span class="n">save_dictionary</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lib_path</span><span class="p">,</span> <span class="s1">&#39;dictionary.txt&#39;</span><span class="p">))</span></div>
 
 
-<div class="viewcode-block" id="save_conformers_file"><a class="viewcode-back" href="../../api/plotter.html#arc.plotter.save_conformers_file">[docs]</a><span class="k">def</span> <span class="nf">save_conformers_file</span><span class="p">(</span><span class="n">project_directory</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">xyzs</span><span class="p">,</span> <span class="n">level_of_theory</span><span class="p">,</span> <span class="n">multiplicity</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">charge</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">is_ts</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                         <span class="n">energies</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ts_methods</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="save_conformers_file"><a class="viewcode-back" href="../../api/plotter.html#arc.plotter.save_conformers_file">[docs]</a><span class="k">def</span> <span class="nf">save_conformers_file</span><span class="p">(</span><span class="n">project_directory</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                         <span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                         <span class="n">xyzs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">dict</span><span class="p">],</span>
+                         <span class="n">level_of_theory</span><span class="p">:</span> <span class="n">Level</span><span class="p">,</span>
+                         <span class="n">multiplicity</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                         <span class="n">charge</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                         <span class="n">is_ts</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                         <span class="n">energies</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                         <span class="n">ts_methods</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                         <span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Save the conformers before or after optimization.</span>
 <span class="sd">    If energies are given, the conformers are considered to be optimized.</span>
@@ -964,7 +972,7 @@
 <span class="sd">        project_directory (str): The path to the project&#39;s directory.</span>
 <span class="sd">        label (str): The species label.</span>
 <span class="sd">        xyzs (list): Entries are dict-format xyz coordinates of conformers.</span>
-<span class="sd">        level_of_theory (dict or str): The level of theory used for the conformers optimization.</span>
+<span class="sd">        level_of_theory (Level): The level of theory used for the conformers optimization.</span>
 <span class="sd">        multiplicity (int, optional): The species multiplicity, used for perceiving the molecule.</span>
 <span class="sd">        charge (int, optional): The species charge, used for perceiving the molecule.</span>
 <span class="sd">        is_ts (bool, optional): Whether the species represents a TS. True if it does.</span>
@@ -986,8 +994,7 @@
     <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">conf_path</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
         <span class="n">content</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
         <span class="k">if</span> <span class="n">optimized</span><span class="p">:</span>
-            <span class="n">content</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;Conformers for </span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s1">, optimized at the &#39;</span> \
-                       <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">format_level_of_theory_for_logging</span><span class="p">(</span><span class="n">level_of_theory</span><span class="p">)</span><span class="si">}</span><span class="s1"> level:</span><span class="se">\n\n</span><span class="s1">&#39;</span>
+            <span class="n">content</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;Conformers for </span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s1">, optimized at the </span><span class="si">{</span><span class="n">level_of_theory</span><span class="o">.</span><span class="n">simple</span><span class="p">()</span><span class="si">}</span><span class="s1"> level:</span><span class="se">\n\n</span><span class="s1">&#39;</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">xyz</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">xyzs</span><span class="p">):</span>
             <span class="n">content</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;conformer </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">:</span><span class="se">\n</span><span class="s1">&#39;</span>
             <span class="k">if</span> <span class="n">xyz</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>

@@ -35,7 +35,7 @@
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="arc.reaction" href="reaction.html" />
+    <link rel="next" title="arc.species.vectors" href="vectors.html" />
     <link rel="prev" title="arc.species.converter" href="converter.html" /> 
 </head>
 
@@ -95,16 +95,21 @@
 <li class="toctree-l2"><a class="reference internal" href="species.html">arc.species.species</a></li>
 <li class="toctree-l2"><a class="reference internal" href="converter.html">arc.species.converter</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">arc.species.conformers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="vectors.html">arc.species.vectors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="zmat.html">arc.species.zmat</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reaction.html">arc.reaction</a></li>
 <li class="toctree-l2"><a class="reference internal" href="scheduler.html">arc.scheduler</a></li>
 <li class="toctree-l2"><a class="reference internal" href="job.html">arc.job.job</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ssh.html">arc.job.ssh</a></li>
 <li class="toctree-l2"><a class="reference internal" href="local.html">arc.job.local</a></li>
+<li class="toctree-l2"><a class="reference internal" href="trsh.html">arc.job.trsh</a></li>
 <li class="toctree-l2"><a class="reference internal" href="parser.html">arc.parser</a></li>
 <li class="toctree-l2"><a class="reference internal" href="plotter.html">arc.plotter</a></li>
 <li class="toctree-l2"><a class="reference internal" href="processor.html">arc.processor</a></li>
 <li class="toctree-l2"><a class="reference internal" href="rmgdb.html">arc.rmgdb</a></li>
 <li class="toctree-l2"><a class="reference internal" href="common.html">arc.common</a></li>
+<li class="toctree-l2"><a class="reference internal" href="level.html">arc.level</a></li>
+<li class="toctree-l2"><a class="reference internal" href="scale.html">arc.utils.scale</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../tools.html">Standalone tools</a></li>
@@ -422,7 +427,7 @@ All atom indices are 0-indexed.</p>
 
 <dl class="py function">
 <dt id="arc.species.conformers.determine_number_of_conformers_to_generate">
-<code class="sig-prename descclassname">arc.species.conformers.</code><code class="sig-name descname">determine_number_of_conformers_to_generate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">label</span></em>, <em class="sig-param"><span class="n">heavy_atoms</span></em>, <em class="sig-param"><span class="n">torsion_num</span></em>, <em class="sig-param"><span class="n">mol</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">xyz</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">minimalist</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/species/conformers.html#determine_number_of_conformers_to_generate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.conformers.determine_number_of_conformers_to_generate" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">arc.species.conformers.</code><code class="sig-name descname">determine_number_of_conformers_to_generate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">label</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">heavy_atoms</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">torsion_num</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">mol</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>rmgpy.molecule.molecule.Molecule<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">xyz</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>dict<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">minimalist</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em><span class="sig-paren">)</span> &#x2192; Tuple<span class="p">[</span>int<span class="p">, </span>int<span class="p">]</span><a class="reference internal" href="../_modules/arc/species/conformers.html#determine_number_of_conformers_to_generate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.conformers.determine_number_of_conformers_to_generate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Determine the number of conformers to generate using molecular mechanics</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -436,20 +441,18 @@ All atom indices are 0-indexed.</p>
 before fitting a force field. True to be minimalistic.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>The number of conformers to generate.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>int</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>The number of chiral centers.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>int</p>
-</dd>
 <dt class="field-even">Raises</dt>
 <dd class="field-even"><p><strong>ConformerError</strong> – If the number of conformers to generate cannot be determined.</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><ul class="simple">
+<li><p>The number of conformers to generate.</p></li>
+<li><p>The number of chiral centers.</p></li>
+</ul>
+</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>Tuple[int, int]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -662,7 +665,7 @@ rotation symmetry numbers (sigma).</p></li>
 
 <dl class="py function">
 <dt id="arc.species.conformers.generate_conformers">
-<code class="sig-prename descclassname">arc.species.conformers.</code><code class="sig-name descname">generate_conformers</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mol_list</span></em>, <em class="sig-param"><span class="n">label</span></em>, <em class="sig-param"><span class="n">xyzs</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">torsions</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">tops</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">charge</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">multiplicity</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">num_confs_to_generate</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">n_confs</span><span class="o">=</span><span class="default_value">10</span></em>, <em class="sig-param"><span class="n">e_confs</span><span class="o">=</span><span class="default_value">5.0</span></em>, <em class="sig-param"><span class="n">de_threshold</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">smeared_scan_res</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">combination_threshold</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">force_field</span><span class="o">=</span><span class="default_value">'MMFF94s'</span></em>, <em class="sig-param"><span class="n">max_combination_iterations</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">diastereomers</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">return_all_conformers</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">plot_path</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">print_logs</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span> &#x2192; list<a class="reference internal" href="../_modules/arc/species/conformers.html#generate_conformers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.conformers.generate_conformers" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">arc.species.conformers.</code><code class="sig-name descname">generate_conformers</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mol_list</span></em>, <em class="sig-param"><span class="n">label</span></em>, <em class="sig-param"><span class="n">xyzs</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">torsions</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">tops</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">charge</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">multiplicity</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">num_confs_to_generate</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">n_confs</span><span class="o">=</span><span class="default_value">10</span></em>, <em class="sig-param"><span class="n">e_confs</span><span class="o">=</span><span class="default_value">5.0</span></em>, <em class="sig-param"><span class="n">de_threshold</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">smeared_scan_res</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">combination_threshold</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">force_field</span><span class="o">=</span><span class="default_value">'MMFF94s'</span></em>, <em class="sig-param"><span class="n">max_combination_iterations</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">diastereomers</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">return_all_conformers</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">plot_path</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">print_logs</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span> &#x2192; Union[list, Tuple[list, list], None]<a class="reference internal" href="../_modules/arc/species/conformers.html#generate_conformers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.conformers.generate_conformers" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate conformers for (non-TS) species starting from a list of RMG Molecules.
 (resonance structures are assumed to have already been generated and included in the molecule list)</p>
 <dl class="field-list simple">
@@ -760,7 +763,7 @@ Also consider user guesses in <cite>xyzs</cite></p>
 
 <dl class="py function">
 <dt id="arc.species.conformers.get_force_field_energies">
-<code class="sig-prename descclassname">arc.species.conformers.</code><code class="sig-name descname">get_force_field_energies</code><span class="sig-paren">(</span><em class="sig-param">label: str</em>, <em class="sig-param">mol: rmgpy.molecule.molecule.Molecule</em>, <em class="sig-param">num_confs: int = None</em>, <em class="sig-param">xyz: dict = None</em>, <em class="sig-param">force_field: str = 'MMFF94s'</em>, <em class="sig-param">optimize: bool = True</em>, <em class="sig-param">try_ob: bool = True</em>, <em class="sig-param">suppress_warning: bool = False) -&gt; (&lt;class 'list'&gt;</em>, <em class="sig-param">&lt;class 'list'&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/species/conformers.html#get_force_field_energies"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.conformers.get_force_field_energies" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">arc.species.conformers.</code><code class="sig-name descname">get_force_field_energies</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">label</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">mol</span><span class="p">:</span> <span class="n">rmgpy.molecule.molecule.Molecule</span></em>, <em class="sig-param"><span class="n">num_confs</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">xyz</span><span class="p">:</span> <span class="n">dict</span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">force_field</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">'MMFF94s'</span></em>, <em class="sig-param"><span class="n">optimize</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">try_ob</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">suppress_warning</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em><span class="sig-paren">)</span> &#x2192; Tuple<span class="p">[</span>list<span class="p">, </span>list<span class="p">]</span><a class="reference internal" href="../_modules/arc/species/conformers.html#get_force_field_energies"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.conformers.get_force_field_energies" title="Permalink to this definition">¶</a></dt>
 <dd><p>Determine force field energies using RDKit.
 If <code class="docutils literal notranslate"><span class="pre">num_confs</span></code> is given, random 3D geometries will be generated. If xyz is given, it will be directly used instead.
 The coordinates are returned in the order of atoms in mol.</p>
@@ -1335,7 +1338,7 @@ If the pivotal atom has exactly one lone pair, consider it as well as a dummy at
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="reaction.html" class="btn btn-neutral float-right" title="arc.reaction" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="vectors.html" class="btn btn-neutral float-right" title="arc.species.vectors" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="converter.html" class="btn btn-neutral float-left" title="arc.species.converter" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>

@@ -95,16 +95,21 @@
 <li class="toctree-l2"><a class="reference internal" href="species.html">arc.species.species</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">arc.species.converter</a></li>
 <li class="toctree-l2"><a class="reference internal" href="conformers.html">arc.species.conformers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="vectors.html">arc.species.vectors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="zmat.html">arc.species.zmat</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reaction.html">arc.reaction</a></li>
 <li class="toctree-l2"><a class="reference internal" href="scheduler.html">arc.scheduler</a></li>
 <li class="toctree-l2"><a class="reference internal" href="job.html">arc.job.job</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ssh.html">arc.job.ssh</a></li>
 <li class="toctree-l2"><a class="reference internal" href="local.html">arc.job.local</a></li>
+<li class="toctree-l2"><a class="reference internal" href="trsh.html">arc.job.trsh</a></li>
 <li class="toctree-l2"><a class="reference internal" href="parser.html">arc.parser</a></li>
 <li class="toctree-l2"><a class="reference internal" href="plotter.html">arc.plotter</a></li>
 <li class="toctree-l2"><a class="reference internal" href="processor.html">arc.processor</a></li>
 <li class="toctree-l2"><a class="reference internal" href="rmgdb.html">arc.rmgdb</a></li>
 <li class="toctree-l2"><a class="reference internal" href="common.html">arc.common</a></li>
+<li class="toctree-l2"><a class="reference internal" href="level.html">arc.level</a></li>
+<li class="toctree-l2"><a class="reference internal" href="scale.html">arc.utils.scale</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../tools.html">Standalone tools</a></li>
@@ -443,12 +448,15 @@ will result in a length, angle, or a dihedral angle parameter, respectively.</p>
 
 <dl class="py function">
 <dt id="arc.species.converter.ics_to_scan_constraints">
-<code class="sig-prename descclassname">arc.species.converter.</code><code class="sig-name descname">ics_to_scan_constraints</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ics</span><span class="p">:</span> <span class="n">list</span></em>, <em class="sig-param"><span class="n">software</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">'gaussian'</span></em><span class="sig-paren">)</span> &#x2192; str<a class="reference internal" href="../_modules/arc/species/converter.html#ics_to_scan_constraints"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.converter.ics_to_scan_constraints" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">arc.species.converter.</code><code class="sig-name descname">ics_to_scan_constraints</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ics</span><span class="p">:</span> <span class="n">list</span></em>, <em class="sig-param"><span class="n">software</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">'gaussian'</span></em><span class="sig-paren">)</span> &#x2192; str<a class="reference internal" href="../_modules/arc/species/converter.html#ics_to_scan_constraints"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.converter.ics_to_scan_constraints" title="Permalink to this definition">¶</a></dt>
 <dd><p>A helper function for converting internal coordinate (ic) info
 into a str block which can be read as scan constraints by ESS.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>ics</strong> (<em>list</em>) – A list of internal coordinates (ic, stored as lists of atom indices).</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ics</strong> (<em>list</em>) – A list of internal coordinates (ic, stored as lists of atom indices).</p></li>
+<li><p><strong>software</strong> (<em>str</em><em>, </em><em>optional</em>) – The electronic structure software.</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>A str block can be read as scan constraints by ESS.</p>
@@ -501,7 +509,7 @@ Mandatory if the modification type is ‘group’ or ‘groups’.</p></li>
 
 <dl class="py function">
 <dt id="arc.species.converter.molecules_from_xyz">
-<code class="sig-prename descclassname">arc.species.converter.</code><code class="sig-name descname">molecules_from_xyz</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">xyz</span></em>, <em class="sig-param"><span class="n">multiplicity</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">charge</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/species/converter.html#molecules_from_xyz"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.converter.molecules_from_xyz" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">arc.species.converter.</code><code class="sig-name descname">molecules_from_xyz</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">xyz</span><span class="p">:</span> <span class="n">Union[dict, str, None]</span></em>, <em class="sig-param"><span class="n">multiplicity</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>int<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">charge</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">0</span></em><span class="sig-paren">)</span> &#x2192; Tuple<span class="p">[</span>Optional<span class="p">[</span>rmgpy.molecule.molecule.Molecule<span class="p">]</span><span class="p">, </span>Optional<span class="p">[</span>rmgpy.molecule.molecule.Molecule<span class="p">]</span><span class="p">]</span><a class="reference internal" href="../_modules/arc/species/converter.html#molecules_from_xyz"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.converter.molecules_from_xyz" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creating RMG:Molecule objects from xyz with correct atom labeling.
 Based on the MolGraph.perceive_smiles method.
 If <cite>multiplicity</cite> is given, the returned species multiplicity will be set to it.</p>

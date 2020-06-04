@@ -158,10 +158,7 @@
            <div itemprop="articleBody">
             
   <h1>Source code for arc.job.ssh</h1><div class="highlight"><pre>
-<span></span><span class="ch">#!/usr/bin/env python3</span>
-<span class="c1"># encoding: utf-8</span>
-
-<span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">A module for SSHing into servers.</span>
 <span class="sd">Used for giving commands, uploading, and downloading files.</span>
 
@@ -254,7 +251,7 @@
     <span class="nd">@check_connections</span>
     <span class="k">def</span> <span class="nf">_send_command_to_server</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> 
                                 <span class="n">command</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">],</span> 
-                                <span class="n">remote_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                                <span class="n">remote_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
                                 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">list</span><span class="p">,</span> <span class="nb">list</span><span class="p">]:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        A wrapper for exec_command in paramiko.SSHClient. Send commands to the server. </span>
@@ -283,20 +280,20 @@
         <span class="k">try</span><span class="p">:</span>
             <span class="n">_</span><span class="p">,</span> <span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ssh</span><span class="o">.</span><span class="n">exec_command</span><span class="p">(</span><span class="n">command</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>  <span class="c1"># SSHException: Timeout opening channel.</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;ssh timed-out in the first trial. Got:</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;ssh timed-out in the first trial. Got: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
             <span class="k">try</span><span class="p">:</span>  <span class="c1"># try again</span>
                 <span class="n">_</span><span class="p">,</span> <span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ssh</span><span class="o">.</span><span class="n">exec_command</span><span class="p">(</span><span class="n">command</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;ssh timed-out after two trials. Got:</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
-                <span class="k">return</span> <span class="p">[</span><span class="s1">&#39;&#39;</span><span class="p">,],</span> <span class="p">[</span><span class="s1">&#39;ssh timed-out after two trials&#39;</span><span class="p">,]</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;ssh timed-out after two trials. Got: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="p">[</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="p">],</span> <span class="p">[</span><span class="s1">&#39;ssh timed-out after two trials&#39;</span><span class="p">,</span> <span class="p">]</span>
         <span class="n">stdout</span> <span class="o">=</span> <span class="n">stdout</span><span class="o">.</span><span class="n">readlines</span><span class="p">()</span>
         <span class="n">stderr</span> <span class="o">=</span> <span class="n">stderr</span><span class="o">.</span><span class="n">readlines</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span>
 
 <div class="viewcode-block" id="SSHClient.upload_file"><a class="viewcode-back" href="../../../api/ssh.html#arc.job.ssh.SSHClient.upload_file">[docs]</a>    <span class="k">def</span> <span class="nf">upload_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                     <span class="n">remote_file_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-                    <span class="n">local_file_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
-                    <span class="n">file_string</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                    <span class="n">local_file_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                    <span class="n">file_string</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
                     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Upload a local file or contents from a string to the remote server.</span>
@@ -417,7 +414,7 @@
 <span class="sd">        Delete all of the jobs on a specific server.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">                jobs (Optional[List[str, int]]): Specific ARC job IDs to delete.</span>
+<span class="sd">                jobs (List[str, int], optional): Specific ARC job IDs to delete.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">jobs_message</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">jobs</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">if</span> <span class="n">jobs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s1">&#39;all&#39;</span>
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Deleting </span><span class="si">{</span><span class="n">jobs_message</span><span class="si">}</span><span class="s1"> ARC jobs from </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">server</span><span class="si">}</span><span class="s1">...&#39;</span><span class="p">)</span>
@@ -604,8 +601,8 @@
 <div class="viewcode-block" id="SSHClient.change_mode"><a class="viewcode-back" href="../../../api/ssh.html#arc.job.ssh.SSHClient.change_mode">[docs]</a>    <span class="k">def</span> <span class="nf">change_mode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                     <span class="n">mode</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
                     <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-                    <span class="n">recursive</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-                    <span class="n">remote_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                    <span class="n">recursive</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                    <span class="n">remote_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
                     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Change the mode to a file or a directory.</span>
@@ -613,9 +610,9 @@
 <span class="sd">        Args:</span>
 <span class="sd">            mode (str): The mode change to be applied, can be either octal or symbolic.</span>
 <span class="sd">            path (str): The path to the file or the directory to be changed.</span>
-<span class="sd">            recursive (Optional[bool]): Whether to recursively change the mode to all files</span>
+<span class="sd">            recursive (bool, optional): Whether to recursively change the mode to all files</span>
 <span class="sd">                                        under a directory.``True`` for recursively change.</span>
-<span class="sd">            remote_path (Optional[str]): The directory path at which the command will be executed.</span>
+<span class="sd">            remote_path (str, optional): The directory path at which the command will be executed.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">recursive</span> <span class="o">=</span> <span class="s1">&#39;-R&#39;</span> <span class="k">if</span> <span class="n">recursive</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span>
         <span class="n">command</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;chmod </span><span class="si">{</span><span class="n">recursive</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="n">mode</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s1">&#39;</span>
@@ -709,7 +706,9 @@
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Unknown cluster software </span><span class="si">{</span><span class="n">servers</span><span class="p">[</span><span class="n">server</span><span class="p">][</span><span class="s2">&quot;cluster_soft&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="delete_all_arc_jobs"><a class="viewcode-back" href="../../../api/ssh.html#arc.job.ssh.delete_all_arc_jobs">[docs]</a><span class="k">def</span> <span class="nf">delete_all_arc_jobs</span><span class="p">(</span><span class="n">server_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="n">jobs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="delete_all_arc_jobs"><a class="viewcode-back" href="../../../api/ssh.html#arc.job.ssh.delete_all_arc_jobs">[docs]</a><span class="k">def</span> <span class="nf">delete_all_arc_jobs</span><span class="p">(</span><span class="n">server_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
+                        <span class="n">jobs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                        <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Delete all ARC-spawned jobs (with job name starting with `a` and a digit) from :list:servers</span>
 <span class="sd">    (`servers` could also be a string of one server name)</span>

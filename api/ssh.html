@@ -95,16 +95,21 @@
 <li class="toctree-l2"><a class="reference internal" href="species.html">arc.species.species</a></li>
 <li class="toctree-l2"><a class="reference internal" href="converter.html">arc.species.converter</a></li>
 <li class="toctree-l2"><a class="reference internal" href="conformers.html">arc.species.conformers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="vectors.html">arc.species.vectors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="zmat.html">arc.species.zmat</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reaction.html">arc.reaction</a></li>
 <li class="toctree-l2"><a class="reference internal" href="scheduler.html">arc.scheduler</a></li>
 <li class="toctree-l2"><a class="reference internal" href="job.html">arc.job.job</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">arc.job.ssh</a></li>
 <li class="toctree-l2"><a class="reference internal" href="local.html">arc.job.local</a></li>
+<li class="toctree-l2"><a class="reference internal" href="trsh.html">arc.job.trsh</a></li>
 <li class="toctree-l2"><a class="reference internal" href="parser.html">arc.parser</a></li>
 <li class="toctree-l2"><a class="reference internal" href="plotter.html">arc.plotter</a></li>
 <li class="toctree-l2"><a class="reference internal" href="processor.html">arc.processor</a></li>
 <li class="toctree-l2"><a class="reference internal" href="rmgdb.html">arc.rmgdb</a></li>
 <li class="toctree-l2"><a class="reference internal" href="common.html">arc.common</a></li>
+<li class="toctree-l2"><a class="reference internal" href="level.html">arc.level</a></li>
+<li class="toctree-l2"><a class="reference internal" href="scale.html">arc.utils.scale</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../tools.html">Standalone tools</a></li>
@@ -260,16 +265,16 @@ Used for giving commands, uploading, and downloading files.</p>
 
 <dl class="py method">
 <dt id="arc.job.ssh.SSHClient.change_mode">
-<code class="sig-name descname">change_mode</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mode</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">path</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">recursive</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>bool<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">remote_path</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">''</span></em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="../_modules/arc/job/ssh.html#SSHClient.change_mode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.job.ssh.SSHClient.change_mode" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">change_mode</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mode</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">path</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">recursive</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">remote_path</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">''</span></em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="../_modules/arc/job/ssh.html#SSHClient.change_mode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.job.ssh.SSHClient.change_mode" title="Permalink to this definition">¶</a></dt>
 <dd><p>Change the mode to a file or a directory.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>mode</strong> (<em>str</em>) – The mode change to be applied, can be either octal or symbolic.</p></li>
 <li><p><strong>path</strong> (<em>str</em>) – The path to the file or the directory to be changed.</p></li>
-<li><p><strong>recursive</strong> (<em>Optional</em><em>[</em><em>bool</em><em>]</em>) – Whether to recursively change the mode to all files
+<li><p><strong>recursive</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to recursively change the mode to all files
 under a directory.``True`` for recursively change.</p></li>
-<li><p><strong>remote_path</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The directory path at which the command will be executed.</p></li>
+<li><p><strong>remote_path</strong> (<em>str</em><em>, </em><em>optional</em>) – The directory path at which the command will be executed.</p></li>
 </ul>
 </dd>
 </dl>
@@ -344,7 +349,7 @@ under a directory.``True`` for recursively change.</p></li>
 <dd><p>Delete all of the jobs on a specific server.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>jobs</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><em>str</em><em>, </em><em>int</em><em>]</em><em>]</em>) – Specific ARC job IDs to delete.</p>
+<dd class="field-odd"><p><strong>jobs</strong> (<em>List</em><em>[</em><em>str</em><em>, </em><em>int</em><em>]</em><em>, </em><em>optional</em>) – Specific ARC job IDs to delete.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -427,7 +432,7 @@ Either <cite>errored</cite> or <cite>submitted</cite>.</p></li>
 
 <dl class="py method">
 <dt id="arc.job.ssh.SSHClient.upload_file">
-<code class="sig-name descname">upload_file</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">remote_file_path</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">local_file_path</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">''</span></em>, <em class="sig-param"><span class="n">file_string</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">''</span></em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="../_modules/arc/job/ssh.html#SSHClient.upload_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.job.ssh.SSHClient.upload_file" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">upload_file</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">remote_file_path</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">local_file_path</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">''</span></em>, <em class="sig-param"><span class="n">file_string</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">''</span></em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="../_modules/arc/job/ssh.html#SSHClient.upload_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.job.ssh.SSHClient.upload_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>Upload a local file or contents from a string to the remote server.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>

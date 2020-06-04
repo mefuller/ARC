@@ -158,23 +158,21 @@
            <div itemprop="articleBody">
             
   <h1>Source code for arc.processor</h1><div class="highlight"><pre>
-<span></span><span class="ch">#!/usr/bin/env python3</span>
-<span class="c1"># encoding: utf-8</span>
-
-<span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">Processor module for computing thermodynamic properties and rate coefficients using statistical mechanics.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">shutil</span>
 <span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Type</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Type</span>
 
 <span class="kn">from</span> <span class="nn">rmgpy.data.rmg</span> <span class="kn">import</span> <span class="n">RMGDatabase</span>
 
 <span class="kn">import</span> <span class="nn">arc.plotter</span> <span class="k">as</span> <span class="nn">plotter</span>
 <span class="kn">import</span> <span class="nn">arc.rmgdb</span> <span class="k">as</span> <span class="nn">rmgdb</span>
 <span class="kn">from</span> <span class="nn">arc.common</span> <span class="kn">import</span> <span class="n">get_logger</span>
+<span class="kn">from</span> <span class="nn">arc.level</span> <span class="kn">import</span> <span class="n">Level</span>
 <span class="kn">from</span> <span class="nn">arc.statmech.factory</span> <span class="kn">import</span> <span class="n">statmech_factory</span>
 
 
@@ -187,18 +185,20 @@
 <span class="sd">    The available adapters are a finite set.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">arkane</span> <span class="o">=</span> <span class="s1">&#39;arkane&#39;</span>
-    <span class="n">mess</span> <span class="o">=</span> <span class="s1">&#39;mess&#39;</span></div>
+    <span class="n">arkane</span> <span class="o">=</span> <span class="s1">&#39;arkane&#39;</span></div>
+    <span class="c1"># mesmer = &#39;mesmer&#39;</span>
+    <span class="c1"># mess = &#39;mess&#39;</span>
 
 
-<div class="viewcode-block" id="process_arc_project"><a class="viewcode-back" href="../../api/processor.html#arc.processor.process_arc_project">[docs]</a><span class="k">def</span> <span class="nf">process_arc_project</span><span class="p">(</span><span class="n">statmech_adapter</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+<div class="viewcode-block" id="process_arc_project"><a class="viewcode-back" href="../../api/processor.html#arc.processor.process_arc_project">[docs]</a><span class="k">def</span> <span class="nf">process_arc_project</span><span class="p">(</span><span class="n">thermo_adapter</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                        <span class="n">kinetics_adapter</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
                         <span class="n">project</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
                         <span class="n">project_directory</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
                         <span class="n">species_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
                         <span class="n">reactions</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
                         <span class="n">output_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
-                        <span class="n">use_bac</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
-                        <span class="n">sp_level</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                        <span class="n">bac_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                        <span class="n">sp_level</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Level</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                         <span class="n">freq_scale_factor</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
                         <span class="n">compute_thermo</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
                         <span class="n">compute_rates</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
@@ -207,24 +207,25 @@
                         <span class="n">T_max</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                         <span class="n">T_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span>
                         <span class="n">lib_long_desc</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
-                        <span class="n">rmg_database</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">RMGDatabase</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                        <span class="n">rmg_database</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">RMGDatabase</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                         <span class="n">compare_to_rmg</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
                         <span class="n">three_params</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
                         <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Process an RMG project, generate thermo and rate coefficients using statistical mechanics (statmech).</span>
+<span class="sd">    Process an ARC project, generate thermo and rate coefficients using statistical mechanics (statmech).</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        statmech_adapter (str): The software to use for the statistical mechanics computations.</span>
+<span class="sd">        thermo_adapter (str): The software to use for calculating thermodynamic data.</span>
+<span class="sd">        kinetics_adapter (str): The software to use for calculating rate coefficients.</span>
 <span class="sd">        project (str): The ARC project name.</span>
 <span class="sd">        project_directory (str): The path to the ARC project directory.</span>
 <span class="sd">        species_dict (dict): Keys are labels, values are ARCSpecies objects.</span>
 <span class="sd">        reactions (list): Entries are ARCReaction objects.</span>
 <span class="sd">        output_dict (dict): Keys are labels, values are output file paths.</span>
 <span class="sd">                            See Scheduler for a description of this dictionary.</span>
-<span class="sd">        use_bac (bool): Whether or not to use bond additivity corrections (BACs) for thermo calculations.</span>
-<span class="sd">        sp_level (str, optional): The level of theory used for the single point energy calculation.</span>
-<span class="sd">                                  (could be a composite method), used for determining energy corrections.</span>
+<span class="sd">        bac_type (str, optional): The bond additivity correction type. &#39;p&#39; for Petersson- or &#39;m&#39; for Melius-type BAC.</span>
+<span class="sd">                                  ``None`` to not use BAC.</span>
+<span class="sd">        sp_level (Level, optional): The level of theory used for energy corrections.</span>
 <span class="sd">        freq_scale_factor (float, optional): The harmonic frequencies scaling factor.</span>
 <span class="sd">        compute_thermo (bool, optional): Whether to compute thermodynamic properties for the provided species.</span>
 <span class="sd">        compute_rates (bool, optional): Whether to compute high pressure limit rate coefficients.</span>
@@ -258,7 +259,9 @@
     <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">output_directory</span><span class="p">):</span>
         <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">output_directory</span><span class="p">)</span>
 
-    <span class="n">statmech_adapter_label</span> <span class="o">=</span> <span class="n">StatmechEnum</span><span class="p">(</span><span class="n">statmech_adapter</span><span class="p">)</span>  <span class="c1"># guarantees that the adapter is supported</span>
+    <span class="c1"># guarantees that the adapters are supported:</span>
+    <span class="n">thermo_adapter_label</span> <span class="o">=</span> <span class="n">StatmechEnum</span><span class="p">(</span><span class="n">thermo_adapter</span><span class="p">)</span>
+    <span class="n">kinetics_adapter_label</span> <span class="o">=</span> <span class="n">StatmechEnum</span><span class="p">(</span><span class="n">kinetics_adapter</span><span class="p">)</span>
 
     <span class="c1"># 1. Rates</span>
     <span class="k">if</span> <span class="n">compute_rates</span><span class="p">:</span>
@@ -273,10 +276,10 @@
                         <span class="k">continue</span>
                     <span class="n">considered_labels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">species</span><span class="o">.</span><span class="n">label</span><span class="p">)</span>
                     <span class="k">if</span> <span class="n">output_dict</span><span class="p">[</span><span class="n">species</span><span class="o">.</span><span class="n">label</span><span class="p">][</span><span class="s1">&#39;convergence&#39;</span><span class="p">]:</span>
-                        <span class="n">statmech_adapter</span> <span class="o">=</span> <span class="n">statmech_factory</span><span class="p">(</span><span class="n">statmech_adapter_label</span><span class="o">=</span><span class="n">statmech_adapter_label</span><span class="p">,</span>
+                        <span class="n">statmech_adapter</span> <span class="o">=</span> <span class="n">statmech_factory</span><span class="p">(</span><span class="n">statmech_adapter_label</span><span class="o">=</span><span class="n">kinetics_adapter_label</span><span class="p">,</span>
                                                             <span class="n">output_directory</span><span class="o">=</span><span class="n">output_directory</span><span class="p">,</span>
                                                             <span class="n">output_dict</span><span class="o">=</span><span class="n">output_dict</span><span class="p">,</span>
-                                                            <span class="n">use_bac</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                                                            <span class="n">bac_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                                                             <span class="n">sp_level</span><span class="o">=</span><span class="n">sp_level</span><span class="p">,</span>
                                                             <span class="n">freq_scale_factor</span><span class="o">=</span><span class="n">freq_scale_factor</span><span class="p">,</span>
                                                             <span class="n">species</span><span class="o">=</span><span class="n">species</span><span class="p">,</span>
@@ -288,10 +291,10 @@
                         <span class="n">unconverged_species</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">species</span><span class="p">)</span>
                         <span class="n">species_converged</span> <span class="o">=</span> <span class="kc">False</span>
                 <span class="k">if</span> <span class="n">species_converged</span><span class="p">:</span>
-                    <span class="n">statmech_adapter</span> <span class="o">=</span> <span class="n">statmech_factory</span><span class="p">(</span><span class="n">statmech_adapter_label</span><span class="o">=</span><span class="n">statmech_adapter_label</span><span class="p">,</span>
+                    <span class="n">statmech_adapter</span> <span class="o">=</span> <span class="n">statmech_factory</span><span class="p">(</span><span class="n">statmech_adapter_label</span><span class="o">=</span><span class="n">kinetics_adapter_label</span><span class="p">,</span>
                                                         <span class="n">output_directory</span><span class="o">=</span><span class="n">output_directory</span><span class="p">,</span>
                                                         <span class="n">output_dict</span><span class="o">=</span><span class="n">output_dict</span><span class="p">,</span>
-                                                        <span class="n">use_bac</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                                                        <span class="n">bac_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                                                         <span class="n">sp_level</span><span class="o">=</span><span class="n">sp_level</span><span class="p">,</span>
                                                         <span class="n">freq_scale_factor</span><span class="o">=</span><span class="n">freq_scale_factor</span><span class="p">,</span>
                                                         <span class="n">reaction</span><span class="o">=</span><span class="n">reaction</span><span class="p">,</span>
@@ -318,10 +321,10 @@
     <span class="k">if</span> <span class="n">compute_thermo</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">species</span> <span class="ow">in</span> <span class="n">species_dict</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
             <span class="k">if</span> <span class="p">(</span><span class="n">species</span><span class="o">.</span><span class="n">compute_thermo</span> <span class="ow">or</span> <span class="n">species</span><span class="o">.</span><span class="n">e0_only</span><span class="p">)</span> <span class="ow">and</span> <span class="n">output_dict</span><span class="p">[</span><span class="n">species</span><span class="o">.</span><span class="n">label</span><span class="p">][</span><span class="s1">&#39;convergence&#39;</span><span class="p">]:</span>
-                <span class="n">statmech_adapter</span> <span class="o">=</span> <span class="n">statmech_factory</span><span class="p">(</span><span class="n">statmech_adapter_label</span><span class="o">=</span><span class="n">statmech_adapter_label</span><span class="p">,</span>
+                <span class="n">statmech_adapter</span> <span class="o">=</span> <span class="n">statmech_factory</span><span class="p">(</span><span class="n">statmech_adapter_label</span><span class="o">=</span><span class="n">thermo_adapter_label</span><span class="p">,</span>
                                                     <span class="n">output_directory</span><span class="o">=</span><span class="n">output_directory</span><span class="p">,</span>
                                                     <span class="n">output_dict</span><span class="o">=</span><span class="n">output_dict</span><span class="p">,</span>
-                                                    <span class="n">use_bac</span><span class="o">=</span><span class="n">use_bac</span><span class="p">,</span>
+                                                    <span class="n">bac_type</span><span class="o">=</span><span class="n">bac_type</span><span class="p">,</span>
                                                     <span class="n">sp_level</span><span class="o">=</span><span class="n">sp_level</span><span class="p">,</span>
                                                     <span class="n">freq_scale_factor</span><span class="o">=</span><span class="n">freq_scale_factor</span><span class="p">,</span>
                                                     <span class="n">species</span><span class="o">=</span><span class="n">species</span><span class="p">,</span>
@@ -403,7 +406,7 @@
             <span class="n">species</span><span class="o">.</span><span class="n">rmg_thermo</span> <span class="o">=</span> <span class="n">rmg_database</span><span class="o">.</span><span class="n">thermo</span><span class="o">.</span><span class="n">get_thermo_data</span><span class="p">(</span><span class="n">species</span><span class="o">.</span><span class="n">rmg_species</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Could not estimate thermo for species </span><span class="si">{</span><span class="n">species</span><span class="o">.</span><span class="n">label</span><span class="si">}</span><span class="s1"> using RMG, possibly due to a missing &#39;</span>
-                        <span class="sa">f</span><span class="s1">&#39;2D structure. Not including this species in the parity plots.</span><span class="se">\n</span><span class="s1">Got: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+                        <span class="sa">f</span><span class="s1">&#39;2D structure. Not including this species in the parity plots. Got:</span><span class="se">\n</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">species_to_compare</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">species</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">species_to_compare</span><span class="p">:</span>
@@ -484,7 +487,8 @@
             <span class="k">for</span> <span class="n">species</span> <span class="ow">in</span> <span class="n">species_dict</span><span class="o">.</span><span class="n">values</span><span class="p">()]):</span>
         <span class="n">load_thermo_libs</span> <span class="o">=</span> <span class="kc">True</span>
     <span class="k">if</span> <span class="n">rmg_database</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="p">(</span><span class="n">load_kinetic_libs</span> <span class="ow">or</span> <span class="n">load_thermo_libs</span><span class="p">):</span>
-        <span class="n">rmgdb</span><span class="o">.</span><span class="n">load_rmg_database</span><span class="p">(</span><span class="n">rmgdb</span><span class="o">=</span><span class="n">rmg_database</span><span class="p">,</span> <span class="n">load_thermo_libs</span><span class="o">=</span><span class="n">load_thermo_libs</span><span class="p">,</span>
+        <span class="n">rmgdb</span><span class="o">.</span><span class="n">load_rmg_database</span><span class="p">(</span><span class="n">rmgdb</span><span class="o">=</span><span class="n">rmg_database</span><span class="p">,</span>
+                                <span class="n">load_thermo_libs</span><span class="o">=</span><span class="n">load_thermo_libs</span><span class="p">,</span>
                                 <span class="n">load_kinetic_libs</span><span class="o">=</span><span class="n">load_kinetic_libs</span><span class="p">)</span></div>
 
 

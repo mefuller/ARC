@@ -158,10 +158,7 @@
            <div itemprop="articleBody">
             
   <h1>Source code for arc.species.species</h1><div class="highlight"><pre>
-<span></span><span class="ch">#!/usr/bin/env python3</span>
-<span class="c1"># encoding: utf-8</span>
-
-<span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">A module for representing stationary points (chemical species and transition states).</span>
 <span class="sd">If the species is a transition state (TS), its ``ts_guesses`` attribute will have one or more ``TSGuess`` objects.</span>
 <span class="sd">&quot;&quot;&quot;</span>
@@ -169,7 +166,7 @@
 <span class="kn">import</span> <span class="nn">datetime</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
 
 <span class="kn">import</span> <span class="nn">rmgpy.molecule.element</span> <span class="k">as</span> <span class="nn">elements</span>
 <span class="kn">from</span> <span class="nn">arkane.common</span> <span class="kn">import</span> <span class="n">ArkaneSpecies</span><span class="p">,</span> <span class="n">symbol_by_number</span>
@@ -187,7 +184,8 @@
                         <span class="n">determine_top_group_indices</span><span class="p">,</span>
                         <span class="n">get_logger</span><span class="p">,</span>
                         <span class="n">get_single_bond_length</span><span class="p">)</span>
-<span class="kn">from</span> <span class="nn">arc.exceptions</span> <span class="kn">import</span> <span class="n">SpeciesError</span><span class="p">,</span> <span class="n">RotorError</span><span class="p">,</span> <span class="n">InputError</span><span class="p">,</span> <span class="n">TSError</span><span class="p">,</span> <span class="n">SanitizationError</span>
+<span class="kn">from</span> <span class="nn">arc.exceptions</span> <span class="kn">import</span> <span class="n">SpeciesError</span><span class="p">,</span> <span class="n">RotorError</span><span class="p">,</span> <span class="n">InputError</span><span class="p">,</span> <span class="n">TSError</span>
+<span class="kn">from</span> <span class="nn">arc.level</span> <span class="kn">import</span> <span class="n">Level</span>
 <span class="kn">from</span> <span class="nn">arc.parser</span> <span class="kn">import</span> <span class="p">(</span><span class="n">parse_1d_scan_energies</span><span class="p">,</span>
                         <span class="n">parse_dipole_moment</span><span class="p">,</span>
                         <span class="n">parse_polarizability</span><span class="p">,</span>
@@ -688,17 +686,21 @@
         <span class="n">species_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
         <span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;force_field&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">force_field</span>
         <span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;is_ts&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_ts</span>
-        <span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;t1&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">t1</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">t1</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;t1&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">t1</span>
         <span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;label&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">label</span>
         <span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;long_thermo_description&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">long_thermo_description</span>
         <span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;multiplicity&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">multiplicity</span>
         <span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;charge&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">charge</span>
         <span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;compute_thermo&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_thermo</span>
         <span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;number_of_rotors&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">number_of_rotors</span>
-        <span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;external_symmetry&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">external_symmetry</span>
-        <span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;optical_isomers&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">optical_isomers</span>
-        <span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;neg_freqs_trshed&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">neg_freqs_trshed</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span> \
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">neg_freqs_trshed</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">neg_freqs_trshed</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">external_symmetry</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;external_symmetry&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">external_symmetry</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">optical_isomers</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;optical_isomers&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">optical_isomers</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">neg_freqs_trshed</span><span class="p">:</span>
+            <span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;neg_freqs_trshed&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">neg_freqs_trshed</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span> \
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">neg_freqs_trshed</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">neg_freqs_trshed</span>
         <span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;arkane_file&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">arkane_file</span>
         <span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;consider_all_diastereomers&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">consider_all_diastereomers</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_ts</span><span class="p">:</span>
@@ -901,7 +903,7 @@
             <span class="k">raise</span> <span class="n">SpeciesError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;The .bdes argument must be a list, got </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">bdes</span><span class="si">}</span><span class="s1"> which is a </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bdes</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">rotors_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
         <span class="k">if</span> <span class="s1">&#39;rotors_dict&#39;</span> <span class="ow">in</span> <span class="n">species_dict</span> <span class="ow">and</span> <span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;rotors_dict&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">rotors_dict</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rotors_dict</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">if</span> <span class="s1">&#39;rotors_dict&#39;</span> <span class="ow">in</span> <span class="n">species_dict</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">rotors_dict</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">rotor_dict</span> <span class="ow">in</span> <span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;rotors_dict&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">rotors_dict</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
@@ -1281,7 +1283,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">deg_increment</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">deg_abs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">InputError</span><span class="p">(</span><span class="s1">&#39;Either deg_increment or deg_abs must be specified.&#39;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">deg_increment</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">deg_increment</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span><span class="nb">float</span><span class="p">)):</span>
+        <span class="k">if</span> <span class="n">deg_increment</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">deg_increment</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;deg_increment must be a float, got </span><span class="si">{</span><span class="n">deg_increment</span><span class="si">}</span><span class="s1"> which is a </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">deg_increment</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">deg_abs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">deg_abs</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;deg_abs must be a float, got </span><span class="si">{</span><span class="n">deg_abs</span><span class="si">}</span><span class="s1"> which is a </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">deg_abs</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
@@ -1299,7 +1301,7 @@
                     <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n\n</span><span class="s1">&#39;</span><span class="p">)</span>
                     <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">rotor</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">rotors_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
                         <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Rotor </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1"> with pivots </span><span class="si">{</span><span class="n">rotor</span><span class="p">[</span><span class="s2">&quot;pivots&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1"> was set &#39;</span>
-                                    <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">rotor</span><span class="p">[</span><span class="s2">&quot;times_dihedral_set&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1"> times&#39;</span><span class="p">)</span>
+                                     <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">rotor</span><span class="p">[</span><span class="s2">&quot;times_dihedral_set&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1"> times&#39;</span><span class="p">)</span>
                     <span class="n">rotor</span><span class="p">[</span><span class="s1">&#39;success&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
                     <span class="n">rotor</span><span class="p">[</span><span class="s1">&#39;invalidation_reason&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;rotor set too many (</span><span class="si">{</span><span class="n">rotor</span><span class="p">[</span><span class="s2">&quot;times_dihedral_set&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1">) times&#39;</span>
                     <span class="k">return</span>
@@ -1335,7 +1337,7 @@
 <div class="viewcode-block" id="ARCSpecies.determine_multiplicity"><a class="viewcode-back" href="../../../api/species.html#arc.species.species.ARCSpecies.determine_multiplicity">[docs]</a>    <span class="k">def</span> <span class="nf">determine_multiplicity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                                <span class="n">smiles</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
                                <span class="n">adjlist</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-                               <span class="n">mol</span><span class="p">:</span> <span class="n">Molecule</span><span class="p">):</span>
+                               <span class="n">mol</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Molecule</span><span class="p">]):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Determine the spin multiplicity of the species</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1524,9 +1526,9 @@
                            <span class="n">lj_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
                            <span class="n">opt_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
                            <span class="n">bath_gas</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-                           <span class="n">opt_level</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-                           <span class="n">freq_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
-                           <span class="n">freq_level</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+                           <span class="n">opt_level</span><span class="p">:</span> <span class="n">Level</span><span class="p">,</span>
+                           <span class="n">freq_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                           <span class="n">freq_level</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Level</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Set the species.transport_data attribute after a Lennard-Jones calculation (via OneDMin).</span>
 
@@ -1534,9 +1536,9 @@
 <span class="sd">            lj_path (str): The path to a oneDMin job output file.</span>
 <span class="sd">            opt_path (str): The path to an opt job output file.</span>
 <span class="sd">            bath_gas (str): The oneDMin job bath gas.</span>
-<span class="sd">            opt_level (str): The optimization level of theory.</span>
+<span class="sd">            opt_level (Level): The optimization level of theory.</span>
 <span class="sd">            freq_path (str, optional): The path to a frequencies job output file.</span>
-<span class="sd">            freq_level (str, optional): The frequencies level of theory.</span>
+<span class="sd">            freq_level (Level, optional): The frequencies level of theory.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">original_comment</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">transport_data</span><span class="o">.</span><span class="n">comment</span>
         <span class="n">comment</span> <span class="o">=</span> <span class="s1">&#39;L-J coefficients calculated by OneDMin using a DF-MP2/aug-cc-pVDZ potential energy surface &#39;</span> \
@@ -1563,13 +1565,13 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">number_of_atoms</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
             <span class="n">dipole_moment</span> <span class="o">=</span> <span class="n">parse_dipole_moment</span><span class="p">(</span><span class="n">opt_path</span><span class="p">)</span> <span class="ow">or</span> <span class="mi">0</span>
             <span class="k">if</span> <span class="n">dipole_moment</span><span class="p">:</span>
-                <span class="n">comment</span> <span class="o">+=</span> <span class="s1">&#39;; Dipole moment was calculated at the </span><span class="si">{0}</span><span class="s1"> level of theory&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">opt_level</span><span class="p">)</span>
+                <span class="n">comment</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;; Dipole moment was calculated at the </span><span class="si">{</span><span class="n">opt_level</span><span class="o">.</span><span class="n">simple</span><span class="p">()</span><span class="si">}</span><span class="s1"> level of theory&#39;</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">dipole_moment</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">polar</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">transport_data</span><span class="o">.</span><span class="n">polarizability</span> <span class="ow">or</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;angstroms^3&#39;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">freq_path</span><span class="p">:</span>
             <span class="n">polar</span> <span class="o">=</span> <span class="p">(</span><span class="n">parse_polarizability</span><span class="p">(</span><span class="n">freq_path</span><span class="p">),</span> <span class="s1">&#39;angstroms^3&#39;</span><span class="p">)</span>
-            <span class="n">comment</span> <span class="o">+=</span> <span class="s1">&#39;; Polarizability was calculated at the </span><span class="si">{0}</span><span class="s1"> level of theory&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">freq_level</span><span class="p">)</span>
+            <span class="n">comment</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;; Polarizability was calculated at the </span><span class="si">{</span><span class="n">freq_level</span><span class="o">.</span><span class="n">simple</span><span class="p">()</span><span class="si">}</span><span class="s1"> level of theory&#39;</span>
         <span class="n">comment</span> <span class="o">+=</span> <span class="s1">&#39;; Rotational Relaxation Collision Number was not determined, default value is 2&#39;</span>
         <span class="k">if</span> <span class="n">original_comment</span><span class="p">:</span>
             <span class="n">comment</span> <span class="o">+=</span> <span class="s1">&#39;; &#39;</span> <span class="o">+</span> <span class="n">original_comment</span>
@@ -1584,10 +1586,10 @@
         <span class="p">)</span></div>
 
 <div class="viewcode-block" id="ARCSpecies.check_xyz_isomorphism"><a class="viewcode-back" href="../../../api/species.html#arc.species.species.ARCSpecies.check_xyz_isomorphism">[docs]</a>    <span class="k">def</span> <span class="nf">check_xyz_isomorphism</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
-                              <span class="n">mol</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                              <span class="n">xyz</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                              <span class="n">allow_nonisomorphic_2d</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-                              <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+                              <span class="n">mol</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Molecule</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                              <span class="n">xyz</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                              <span class="n">allow_nonisomorphic_2d</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                              <span class="n">verbose</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
                               <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Check whether the perception of self.final_xyz or ``xyz`` is isomorphic with self.mol.</span>
@@ -1881,8 +1883,15 @@
 <span class="sd">                     Assigned only if self.success is ``True``.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">reactants_xyz</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">products_xyz</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">family</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">xyz</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                 <span class="n">rmg_reaction</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ts_dict</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">energy</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">method</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">reactants_xyz</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">list</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">products_xyz</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">list</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">family</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">xyz</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">rmg_reaction</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Reaction</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">ts_dict</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">energy</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
 
         <span class="k">if</span> <span class="n">ts_dict</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="c1"># Reading from a dictionary</span>
@@ -2101,10 +2110,12 @@
 
 
 <div class="viewcode-block" id="determine_rotor_symmetry"><a class="viewcode-back" href="../../../api/species.html#arc.species.species.determine_rotor_symmetry">[docs]</a><span class="k">def</span> <span class="nf">determine_rotor_symmetry</span><span class="p">(</span><span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-                             <span class="n">pivots</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
+                             <span class="n">pivots</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">list</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span>
                              <span class="n">rotor_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
-                             <span class="n">energies</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                             <span class="n">return_num_wells</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+                             <span class="n">energies</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">list</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                             <span class="n">return_num_wells</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                             <span class="n">log</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+                             <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]]:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Determine the rotor symmetry number from a potential energy scan.</span>
 <span class="sd">    The *worst* resolution for each peak and valley is determined.</span>
@@ -2115,22 +2126,22 @@
 
 <span class="sd">    Args:</span>
 <span class="sd">        label (str): The species label (used for error messages).</span>
-<span class="sd">        pivots (list, optional): A list of two atom indices representing the torsion pivots.</span>
+<span class="sd">        pivots (list, str, optional): A list of two atom indices representing the torsion pivots.</span>
 <span class="sd">        rotor_path (str): The path to an ESS output rotor scan file.</span>
 <span class="sd">        energies (list, optional): The list of energies in the scan in kJ/mol.</span>
 <span class="sd">        return_num_wells (bool, optional): Whether to also return the number of wells, ``True`` to return,</span>
 <span class="sd">                                           default is ``False``.</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        int: The symmetry number (int)</span>
-<span class="sd">    Returns:</span>
-<span class="sd">        float: The highest torsional energy barrier in kJ/mol.</span>
-<span class="sd">    Returns:</span>
-<span class="sd">        int (optional): The number of peaks, only returned if ``return_len_peaks`` is ``True``.</span>
+<span class="sd">        log (bool, optional): Whether to log info, error, and warning messages.</span>
 
 <span class="sd">    Raises:</span>
 <span class="sd">        InputError: If both or none of the rotor_path and energy arguments are given,</span>
 <span class="sd">        or if rotor_path does not point to an existing file.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Tuple[int, float, int]:</span>
+<span class="sd">            int: The symmetry number</span>
+<span class="sd">            float: The highest torsional energy barrier in kJ/mol.</span>
+<span class="sd">            int (optional): The number of peaks, only returned if ``return_len_peaks`` is ``True``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">rotor_path</span> <span class="ow">and</span> <span class="n">energies</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">InputError</span><span class="p">(</span><span class="s1">&#39;Expected either rotor_path or energies, got neither&#39;</span><span class="p">)</span>
@@ -2176,12 +2187,13 @@
     <span class="c1"># The number of peaks and valley must always be the same (what goes up must come down), if it isn&#39;t then there&#39;s</span>
     <span class="c1"># something seriously wrong with the scan</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">peaks</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">valleys</span><span class="p">):</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Rotor of species </span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s1"> between pivots </span><span class="si">{</span><span class="n">pivots</span><span class="si">}</span><span class="s1"> does not have the same number &#39;</span>
-                     <span class="sa">f</span><span class="s1">&#39;of peaks (</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">peaks</span><span class="p">)</span><span class="si">}</span><span class="s1">) and valleys (</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">valleys</span><span class="p">)</span><span class="si">}</span><span class="s1">).&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">log</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Rotor of species </span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s1"> between pivots </span><span class="si">{</span><span class="n">pivots</span><span class="si">}</span><span class="s1"> does not have the same number &#39;</span>
+                         <span class="sa">f</span><span class="s1">&#39;of peaks (</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">peaks</span><span class="p">)</span><span class="si">}</span><span class="s1">) and valleys (</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">valleys</span><span class="p">)</span><span class="si">}</span><span class="s1">).&#39;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">return_num_wells</span><span class="p">:</span>
             <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">peaks</span><span class="p">),</span> <span class="n">max_e</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">peaks</span><span class="p">)</span>  <span class="c1"># this works for CC(=O)[O]</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">peaks</span><span class="p">),</span> <span class="n">max_e</span>  <span class="c1"># this works for CC(=O)[O]</span>
+            <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">peaks</span><span class="p">),</span> <span class="n">max_e</span><span class="p">,</span> <span class="kc">None</span>  <span class="c1"># this works for CC(=O)[O]</span>
     <span class="n">min_peak</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">peaks</span><span class="p">)</span>
     <span class="n">max_peak</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">peaks</span><span class="p">)</span>
     <span class="n">min_valley</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">valleys</span><span class="p">)</span>
@@ -2204,16 +2216,17 @@
         <span class="c1"># We declare this rotor as symmetric and the symmetry number is the number of peaks (and valleys)</span>
         <span class="n">symmetry</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">peaks</span><span class="p">)</span>
         <span class="n">reason</span> <span class="o">=</span> <span class="s1">&#39;number of peaks and valleys, all within the determined resolution criteria&#39;</span>
-    <span class="k">if</span> <span class="n">symmetry</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Determined symmetry number </span><span class="si">{</span><span class="n">symmetry</span><span class="si">}</span><span class="s1"> for rotor of species </span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s1"> between pivots </span><span class="si">{</span><span class="n">pivots</span><span class="si">}</span><span class="s1">; &#39;</span>
-                    <span class="sa">f</span><span class="s1">&#39;you should make sure this makes sense&#39;</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Determined a symmetry number of </span><span class="si">{</span><span class="n">symmetry</span><span class="si">}</span><span class="s1"> for rotor of species </span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s1"> between pivots </span><span class="si">{</span><span class="n">pivots</span><span class="si">}</span><span class="s1"> &#39;</span>
-                    <span class="sa">f</span><span class="s1">&#39;based on the </span><span class="si">{</span><span class="n">reason</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">log</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">symmetry</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Determined symmetry number </span><span class="si">{</span><span class="n">symmetry</span><span class="si">}</span><span class="s1"> for rotor of species </span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s1"> between pivots </span><span class="si">{</span><span class="n">pivots</span><span class="si">}</span><span class="s1">; &#39;</span>
+                        <span class="sa">f</span><span class="s1">&#39;you should make sure this makes sense.&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Determined a symmetry number of </span><span class="si">{</span><span class="n">symmetry</span><span class="si">}</span><span class="s1"> for rotor of species </span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s1"> between pivots &#39;</span>
+                        <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">pivots</span><span class="si">}</span><span class="s1"> based on the </span><span class="si">{</span><span class="n">reason</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">return_num_wells</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">symmetry</span><span class="p">,</span> <span class="n">max_e</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">peaks</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">symmetry</span><span class="p">,</span> <span class="n">max_e</span></div>
+        <span class="k">return</span> <span class="n">symmetry</span><span class="p">,</span> <span class="n">max_e</span><span class="p">,</span> <span class="kc">None</span></div>
 
 
 <div class="viewcode-block" id="cyclic_index_i_plus_1"><a class="viewcode-back" href="../../../api/species.html#arc.species.species.cyclic_index_i_plus_1">[docs]</a><span class="k">def</span> <span class="nf">cyclic_index_i_plus_1</span><span class="p">(</span><span class="n">i</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>

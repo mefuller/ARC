@@ -95,16 +95,21 @@
 <li class="toctree-l2"><a class="reference internal" href="species.html">arc.species.species</a></li>
 <li class="toctree-l2"><a class="reference internal" href="converter.html">arc.species.converter</a></li>
 <li class="toctree-l2"><a class="reference internal" href="conformers.html">arc.species.conformers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="vectors.html">arc.species.vectors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="zmat.html">arc.species.zmat</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reaction.html">arc.reaction</a></li>
 <li class="toctree-l2"><a class="reference internal" href="scheduler.html">arc.scheduler</a></li>
 <li class="toctree-l2"><a class="reference internal" href="job.html">arc.job.job</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ssh.html">arc.job.ssh</a></li>
 <li class="toctree-l2"><a class="reference internal" href="local.html">arc.job.local</a></li>
+<li class="toctree-l2"><a class="reference internal" href="trsh.html">arc.job.trsh</a></li>
 <li class="toctree-l2"><a class="reference internal" href="parser.html">arc.parser</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">arc.plotter</a></li>
 <li class="toctree-l2"><a class="reference internal" href="processor.html">arc.processor</a></li>
 <li class="toctree-l2"><a class="reference internal" href="rmgdb.html">arc.rmgdb</a></li>
 <li class="toctree-l2"><a class="reference internal" href="common.html">arc.common</a></li>
+<li class="toctree-l2"><a class="reference internal" href="level.html">arc.level</a></li>
+<li class="toctree-l2"><a class="reference internal" href="scale.html">arc.utils.scale</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../tools.html">Standalone tools</a></li>
@@ -282,8 +287,9 @@ and an .rmg_reactions list with RMG rates.</p></li>
 
 <dl class="py function">
 <dt id="arc.plotter.draw_thermo_parity_plots">
-<code class="sig-prename descclassname">arc.plotter.</code><code class="sig-name descname">draw_thermo_parity_plots</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">species_list</span></em>, <em class="sig-param"><span class="n">path</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/plotter.html#draw_thermo_parity_plots"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.plotter.draw_thermo_parity_plots" title="Permalink to this definition">¶</a></dt>
-<dd><p>Draws parity plots of calculated thermo and RMG’s estimates.</p>
+<code class="sig-prename descclassname">arc.plotter.</code><code class="sig-name descname">draw_thermo_parity_plots</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">species_list</span><span class="p">:</span> <span class="n">list</span></em>, <em class="sig-param"><span class="n">path</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/plotter.html#draw_thermo_parity_plots"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.plotter.draw_thermo_parity_plots" title="Permalink to this definition">¶</a></dt>
+<dd><p>Draws parity plots of calculated thermo and RMG’s estimates.
+Saves a thermo.info file if a <code class="docutils literal notranslate"><span class="pre">path</span></code> is specified.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -469,7 +475,7 @@ Each entry in such a list is a well dictionary with the following keys:
 
 <dl class="py function">
 <dt id="arc.plotter.save_conformers_file">
-<code class="sig-prename descclassname">arc.plotter.</code><code class="sig-name descname">save_conformers_file</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">project_directory</span></em>, <em class="sig-param"><span class="n">label</span></em>, <em class="sig-param"><span class="n">xyzs</span></em>, <em class="sig-param"><span class="n">level_of_theory</span></em>, <em class="sig-param"><span class="n">multiplicity</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">charge</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">is_ts</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">energies</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">ts_methods</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/plotter.html#save_conformers_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.plotter.save_conformers_file" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">arc.plotter.</code><code class="sig-name descname">save_conformers_file</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">project_directory</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">label</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">xyzs</span><span class="p">:</span> <span class="n">List<span class="p">[</span>dict<span class="p">]</span></span></em>, <em class="sig-param"><span class="n">level_of_theory</span><span class="p">:</span> <span class="n"><a class="reference internal" href="level.html#arc.level.Level" title="arc.level.Level">arc.level.Level</a></span></em>, <em class="sig-param"><span class="n">multiplicity</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>int<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">charge</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>int<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">is_ts</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">energies</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>List<span class="p">[</span>float<span class="p">]</span><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">ts_methods</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>List<span class="p">[</span>str<span class="p">]</span><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/plotter.html#save_conformers_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.plotter.save_conformers_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save the conformers before or after optimization.
 If energies are given, the conformers are considered to be optimized.</p>
 <dl class="field-list simple">
@@ -478,7 +484,7 @@ If energies are given, the conformers are considered to be optimized.</p>
 <li><p><strong>project_directory</strong> (<em>str</em>) – The path to the project’s directory.</p></li>
 <li><p><strong>label</strong> (<em>str</em>) – The species label.</p></li>
 <li><p><strong>xyzs</strong> (<em>list</em>) – Entries are dict-format xyz coordinates of conformers.</p></li>
-<li><p><strong>level_of_theory</strong> (<em>dict</em><em> or </em><em>str</em>) – The level of theory used for the conformers optimization.</p></li>
+<li><p><strong>level_of_theory</strong> (<a class="reference internal" href="level.html#arc.level.Level" title="arc.level.Level"><em>Level</em></a>) – The level of theory used for the conformers optimization.</p></li>
 <li><p><strong>multiplicity</strong> (<em>int</em><em>, </em><em>optional</em>) – The species multiplicity, used for perceiving the molecule.</p></li>
 <li><p><strong>charge</strong> (<em>int</em><em>, </em><em>optional</em>) – The species charge, used for perceiving the molecule.</p></li>
 <li><p><strong>is_ts</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether the species represents a TS. True if it does.</p></li>

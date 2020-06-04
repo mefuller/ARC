@@ -166,7 +166,7 @@
 <p><strong>ARC - Automated Rate Calculator</strong> is a software for automating
 electronic structure calculations relevant for chemical kinetic modeling.
 ARC has many advanced options, yet at its core it is simple: it accepts 2D
-graph representations of chemical species (e.g., <a class="reference external" href="https://en.wikipedia.org/wiki/Simplified_molecular-input_line-entry_system">SMILES</a> or <a class="reference external" href="http://reactionmechanismgenerator.github.io/RMG-Py/reference/molecule/adjlist.html">adjacency lists</a>),
+graph representations of chemical species (e.g., <a class="reference external" href="https://en.wikipedia.org/wiki/Simplified_molecular-input_line-entry_system">SMILES</a>, <a class="reference external" href="https://iupac.org/who-we-are/divisions/division-details/inchi/">InChI</a>, or <a class="reference external" href="http://reactionmechanismgenerator.github.io/RMG-Py/reference/molecule/adjlist.html">adjacency lists</a>),
 and  automatically executes, tracks, and processes relevant electronic structure
 jobs on user-defined servers. The principal outputs of ARC are thermodynamic properties
 (H, S, Cp) and high-pressure limit kinetic rate coefficients for the defined species
@@ -175,7 +175,7 @@ and reactions.
 <p>ARC is written in Python 3.7, and was made open-source under the <a class="reference internal" href="licence.html#licence"><span class="std std-ref">MIT licence</span></a>.</p>
 <p>We use ARC to facilitate our research and have made it available
 as a benefit to the community in the hopes that others may find it useful as well.
-Its code is hosted on <a class="reference external" href="https://github.com/ReactionMechanismGenerator/ARC">GitHub</a>, which is where comments, issues, and community
+The code is hosted on <a class="reference external" href="https://github.com/ReactionMechanismGenerator/ARC">GitHub</a>, which is where comments, issues, and community
 contributions are welcomed.</p>
 <p>The following pages describe how to install and execute ARC,
 show some advanced features and what to expect from its output.</p>
@@ -191,7 +191,7 @@ show some advanced features and what to expect from its output.</p>
 <li class="toctree-l2"><a class="reference internal" href="installation.html#associating-software-with-servers">Associating software with servers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="installation.html#cluster-software-definitions">Cluster software definitions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="installation.html#tests">Tests</a></li>
-<li class="toctree-l2"><a class="reference internal" href="installation.html#add-arc-aliases-to-your-bashrc-for-convenience">Add ARC aliases to your .bashrc (for convenience)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#optional-add-arc-aliases-to-your-bashrc-for-convenience">Optional: Add ARC aliases to your .bashrc (for convenience)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="installation.html#updating-arc">Updating ARC</a></li>
 </ul>
 </li>
@@ -208,8 +208,8 @@ show some advanced features and what to expect from its output.</p>
 <li class="toctree-l1"><a class="reference internal" href="advanced.html">Advanced Features</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="advanced.html#flexible-coordinates-xyz-input">Flexible coordinates (xyz) input</a></li>
 <li class="toctree-l2"><a class="reference internal" href="advanced.html#specify-a-specific-job-type-to-execute">Specify a specific job type to execute</a></li>
-<li class="toctree-l2"><a class="reference internal" href="advanced.html#specify-job-level-of-theory">Specify job level of theory</a></li>
-<li class="toctree-l2"><a class="reference internal" href="advanced.html#additional-job-options">Additional job options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="advanced.html#levels-of-theory">Levels of theory</a></li>
+<li class="toctree-l2"><a class="reference internal" href="advanced.html#adaptive-levels-of-theory">Adaptive levels of theory</a></li>
 <li class="toctree-l2"><a class="reference internal" href="advanced.html#control-job-memory-allocation">Control job memory allocation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="advanced.html#using-a-fine-dft-grid-for-optimization">Using a fine DFT grid for optimization</a></li>
 <li class="toctree-l2"><a class="reference internal" href="advanced.html#rotor-scans">Rotor scans</a></li>
@@ -218,7 +218,6 @@ show some advanced features and what to expect from its output.</p>
 <li class="toctree-l2"><a class="reference internal" href="advanced.html#troubleshooting">Troubleshooting</a></li>
 <li class="toctree-l2"><a class="reference internal" href="advanced.html#ess-check-files">ESS check files</a></li>
 <li class="toctree-l2"><a class="reference internal" href="advanced.html#frequency-scaling-factors">Frequency scaling factors</a></li>
-<li class="toctree-l2"><a class="reference internal" href="advanced.html#adaptive-levels-of-theory">Adaptive levels of theory</a></li>
 <li class="toctree-l2"><a class="reference internal" href="advanced.html#isomorphism-checks">Isomorphism checks</a></li>
 <li class="toctree-l2"><a class="reference internal" href="advanced.html#using-a-non-default-project-directory">Using a non-default project directory</a></li>
 <li class="toctree-l2"><a class="reference internal" href="advanced.html#visualizing-molecular-orbitals-mos">Visualizing molecular orbitals (MOs)</a></li>
@@ -238,16 +237,21 @@ show some advanced features and what to expect from its output.</p>
 <li class="toctree-l2"><a class="reference internal" href="api/species.html">arc.species.species</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/converter.html">arc.species.converter</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/conformers.html">arc.species.conformers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/vectors.html">arc.species.vectors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/zmat.html">arc.species.zmat</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/reaction.html">arc.reaction</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/scheduler.html">arc.scheduler</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/job.html">arc.job.job</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/ssh.html">arc.job.ssh</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/local.html">arc.job.local</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/trsh.html">arc.job.trsh</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/parser.html">arc.parser</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/plotter.html">arc.plotter</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/processor.html">arc.processor</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/rmgdb.html">arc.rmgdb</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/common.html">arc.common</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/level.html">arc.level</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/scale.html">arc.utils.scale</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="tools.html">Standalone tools</a><ul>

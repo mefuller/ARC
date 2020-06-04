@@ -91,8 +91,8 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Advanced Features</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#flexible-coordinates-xyz-input">Flexible coordinates (xyz) input</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#specify-a-specific-job-type-to-execute">Specify a specific job type to execute</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#specify-job-level-of-theory">Specify job level of theory</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#additional-job-options">Additional job options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#levels-of-theory">Levels of theory</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#adaptive-levels-of-theory">Adaptive levels of theory</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#control-job-memory-allocation">Control job memory allocation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#using-a-fine-dft-grid-for-optimization">Using a fine DFT grid for optimization</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#rotor-scans">Rotor scans</a></li>
@@ -101,7 +101,6 @@
 <li class="toctree-l2"><a class="reference internal" href="#troubleshooting">Troubleshooting</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#ess-check-files">ESS check files</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#frequency-scaling-factors">Frequency scaling factors</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#adaptive-levels-of-theory">Adaptive levels of theory</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#isomorphism-checks">Isomorphism checks</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#using-a-non-default-project-directory">Using a non-default project directory</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#visualizing-molecular-orbitals-mos">Visualizing molecular orbitals (MOs)</a></li>
@@ -199,9 +198,9 @@ See <a class="reference internal" href="examples.html#examples"><span class="std
 </div>
 <div class="section" id="specify-a-specific-job-type-to-execute">
 <h2>Specify a specific job type to execute<a class="headerlink" href="#specify-a-specific-job-type-to-execute" title="Permalink to this headline">¶</a></h2>
-<p>To run ARC with a particular job type, set <code class="docutils literal notranslate"><span class="pre">specific_job_type</span></code> to the job type you want.
+<p>To run ARC with a particular job type <strong>only</strong>, set <code class="docutils literal notranslate"><span class="pre">specific_job_type</span></code> to the job type you want.
 Currently, ARC supports the following job types: <code class="docutils literal notranslate"><span class="pre">conformers</span></code>, <code class="docutils literal notranslate"><span class="pre">opt</span></code>, <code class="docutils literal notranslate"><span class="pre">fine</span></code>, <code class="docutils literal notranslate"><span class="pre">freq</span></code>,
-<code class="docutils literal notranslate"><span class="pre">sp</span></code>, <code class="docutils literal notranslate"><span class="pre">rotors</span></code>, <code class="docutils literal notranslate"><span class="pre">onedmin</span></code>, <code class="docutils literal notranslate"><span class="pre">orbitals</span></code>, <code class="docutils literal notranslate"><span class="pre">bde</span></code>.</p>
+<code class="docutils literal notranslate"><span class="pre">sp</span></code>, <code class="docutils literal notranslate"><span class="pre">rotors</span></code>, <code class="docutils literal notranslate"><span class="pre">onedmin</span></code>, <code class="docutils literal notranslate"><span class="pre">orbitals</span></code>, <code class="docutils literal notranslate"><span class="pre">bde</span></code>, <code class="docutils literal notranslate"><span class="pre">irc</span></code>.</p>
 <p>Note: <code class="docutils literal notranslate"><span class="pre">specific_job_type</span></code> takes higher precedence than <code class="docutils literal notranslate"><span class="pre">job_types</span></code>. If you specify both attributes, ARC will
 dismiss the given <code class="docutils literal notranslate"><span class="pre">job_types</span></code> and will only populate the <code class="docutils literal notranslate"><span class="pre">job_types</span></code> dictionary using the given
 <code class="docutils literal notranslate"><span class="pre">specific_job_type</span></code>.</p>
@@ -222,55 +221,67 @@ dismiss the given <code class="docutils literal notranslate"><span class="pre">j
 </pre></div>
 </div>
 </div>
-<div class="section" id="specify-job-level-of-theory">
-<h2>Specify job level of theory<a class="headerlink" href="#specify-job-level-of-theory" title="Permalink to this headline">¶</a></h2>
-<p>It is possible to specify a level of theory to be used in specific job types (e.g., optimization, single point, etc.).
-If not specified, ARC will use the defaults in the <code class="docutils literal notranslate"><span class="pre">default_levels_of_theory</span></code> dictionary in settings.py.</p>
-<p>ARC has the flexibility of accepting various types of job level of theory specification in an input file. The most
-general syntax is a dictionary:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">job_type</span><span class="o">&gt;</span><span class="n">_level</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;method&#39;</span><span class="p">:</span> <span class="s1">&#39;method_string&#39;</span><span class="p">,</span> <span class="s1">&#39;basis&#39;</span><span class="p">:</span> <span class="s1">&#39;basis_string&#39;</span><span class="p">,</span> <span class="s1">&#39;auxiliary_basis&#39;</span><span class="p">:</span> <span class="s1">&#39;auxiliary_basis_string&#39;</span><span class="p">,</span> <span class="s1">&#39;dispersion&#39;</span><span class="p">:</span> <span class="s1">&#39;DFT_dispersion_string&#39;</span><span class="p">}</span>
-</pre></div>
-</div>
+<div class="section" id="levels-of-theory">
+<span id="levels"></span><h2>Levels of theory<a class="headerlink" href="#levels-of-theory" title="Permalink to this headline">¶</a></h2>
+<p>ARC’s <a class="reference internal" href="api/level.html#level"><span class="std std-ref">Level</span></a> class is meant to allow detailed and comprehensive specification of
+a level of theory. ARC allows users to specify a level of theory per job type, with some shortcuts
+as described below. Job types for which levels of theory may be specified (otherwise ARC will assume
+defaults values) are:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">conformer_level</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ts_guess_level</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">opt_level</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">freq_level</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">sp_level</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">composite_method</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">scan_level</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">irc_level</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">orbitals_level</span></code></p></li>
+</ul>
+</div></blockquote>
+<p>Each level may be defined either by a string or a dictionary.
+Specifying a string may only contain a method and a basis set where applicable, e.g.,
+<code class="docutils literal notranslate"><span class="pre">CBS-QB3</span></code> or <code class="docutils literal notranslate"><span class="pre">wb97xd/def2-tzvp</span></code>. The dictionary allows additional
+arguments to be defined: <code class="docutils literal notranslate"><span class="pre">method</span></code>, <code class="docutils literal notranslate"><span class="pre">basis</span></code>, <code class="docutils literal notranslate"><span class="pre">auxiliary_basis</span></code>, <code class="docutils literal notranslate"><span class="pre">dispersion</span></code>,
+<code class="docutils literal notranslate"><span class="pre">cabs</span></code> (complementary auxiliary basis set for F12 calculations), <code class="docutils literal notranslate"><span class="pre">software</span></code>,
+<code class="docutils literal notranslate"><span class="pre">software_version</span></code> (not used), <code class="docutils literal notranslate"><span class="pre">solvation_method</span></code>, <code class="docutils literal notranslate"><span class="pre">solvent</span></code>, <code class="docutils literal notranslate"><span class="pre">solvation_scheme_level</span></code>, <code class="docutils literal notranslate"><span class="pre">args</span></code>.</p>
 <p>For example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conformer_level</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;method&#39;</span><span class="p">:</span> <span class="s1">&#39;b3lyp&#39;</span><span class="p">,</span> <span class="s1">&#39;basis&#39;</span><span class="p">:</span> <span class="s1">&#39;6-31g(d,p)&#39;</span><span class="p">,</span> <span class="s1">&#39;dispersion&#39;</span><span class="p">:</span> <span class="s1">&#39;empiricaldispersion=gd3bj&#39;</span><span class="p">}</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conformer_level</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;method&#39;</span><span class="p">:</span> <span class="s1">&#39;b3lyp&#39;</span><span class="p">,</span>
+                  <span class="s1">&#39;basis&#39;</span><span class="p">:</span> <span class="s1">&#39;6-31g(d,p)&#39;</span><span class="p">,</span>
+                  <span class="s1">&#39;dispersion&#39;</span><span class="p">:</span> <span class="s1">&#39;empiricaldispersion=gd3bj&#39;</span><span class="p">,</span>
+                  <span class="p">}</span>
 </pre></div>
 </div>
-<p>specifies <code class="docutils literal notranslate"><span class="pre">b3lyp/6-31g(d,p)</span></code> model chemistry along with the <a class="reference external" href="https://onlinelibrary.wiley.com/doi/full/10.1002/jcc.21759">D3 version of Grimme’s dispersion with Becke-Johnson
-damping</a> for optimizing conformers.
-Notice that <code class="docutils literal notranslate"><span class="pre">empiricaldispersion=gd3bj</span></code> is the format required by <code class="docutils literal notranslate"><span class="pre">Gaussian</span></code>. In general, different ESS have various
-formats for specifying model chemistry. Make sure to pass the correct format based on the intended ESS that should be
-used.</p>
+<p>specifies <code class="docutils literal notranslate"><span class="pre">b3lyp/6-31g(d,p)</span></code> model chemistry along with the
+<a class="reference external" href="https://onlinelibrary.wiley.com/doi/full/10.1002/jcc.21759">D3 version of Grimme’s dispersion with Becke-Johnson damping</a> for optimizing conformers.
+Note that <code class="docutils literal notranslate"><span class="pre">empiricaldispersion=gd3bj</span></code> is the format required by <code class="docutils literal notranslate"><span class="pre">Gaussian</span></code>.
+In general, different ESS have various formats for specifying model chemistry.
+Make sure to pass the correct format based on the intended ESS that should be used.</p>
 <p>Another example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sp_level</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;method&#39;</span><span class="p">:</span> <span class="s1">&#39;DLPNO-CCSD(T)-F12&#39;</span><span class="p">,</span> <span class="s1">&#39;basis&#39;</span><span class="p">:</span> <span class="s1">&#39;cc-pVTZ-F12&#39;</span><span class="p">,</span> <span class="s1">&#39;auxiliary_basis&#39;</span><span class="p">:</span> <span class="s1">&#39;aug-cc-pVTZ/C cc-pVTZ-F12-CABS&#39;</span><span class="p">}</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sp_level</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;method&#39;</span><span class="p">:</span> <span class="s1">&#39;DLPNO-CCSD(T)-F12&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;basis&#39;</span><span class="p">:</span> <span class="s1">&#39;cc-pVTZ-F12&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;auxiliary_basis&#39;</span><span class="p">:</span> <span class="s1">&#39;aug-cc-pVTZ/C cc-pVTZ-F12-CABS&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;args&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;keyword&#39;</span> <span class="p">:{</span><span class="s1">&#39;opt_convergence&#39;</span><span class="p">:</span> <span class="s1">&#39;TightOpt&#39;</span><span class="p">}},</span>
+           <span class="s1">&#39;software&#39;</span><span class="p">:</span> <span class="s1">&#39;orca&#39;</span><span class="p">,</span>
+           <span class="p">}</span>
 </pre></div>
 </div>
-<p>specifies <code class="docutils literal notranslate"><span class="pre">DLPNO-CCSD(T)-F12/cc-pVTZ-F12</span></code> model chemistry along with two auxiliary basis sets <code class="docutils literal notranslate"><span class="pre">aug-cc-pVTZ/C</span></code> and
-<code class="docutils literal notranslate"><span class="pre">cc-pVTZ-F12-CABS</span></code> for single point calculation.</p>
-<p>The following job-specific level of theory arguments accept either a simple string (see “shortcuts” below) or the
-above-detailed dictionary specification: <code class="docutils literal notranslate"><span class="pre">conformer_level</span></code>, <code class="docutils literal notranslate"><span class="pre">opt_level</span></code>, <code class="docutils literal notranslate"><span class="pre">freq_level</span></code>, <code class="docutils literal notranslate"><span class="pre">sp_level</span></code>,
-<code class="docutils literal notranslate"><span class="pre">scan_level</span></code>, <code class="docutils literal notranslate"><span class="pre">ts_guess_level</span></code>, <code class="docutils literal notranslate"><span class="pre">orbitals_level</span></code>.</p>
-<p>Using dictionary to specify job level of theory is always recommended due to its clarity and flexibility. In addition,
-ARC supports several shortcuts.</p>
-<p>The job level of theory also accepts a string input with format <code class="docutils literal notranslate"><span class="pre">method</span></code> or <code class="docutils literal notranslate"><span class="pre">method/basis</span></code>. You may use this option
-only if the level of theory specification contains neither <code class="docutils literal notranslate"><span class="pre">auxiliary_basis</span></code> nor <code class="docutils literal notranslate"><span class="pre">dispersion</span></code>.</p>
-<p>For example:</p>
+<p>specifies <code class="docutils literal notranslate"><span class="pre">DLPNO-CCSD(T)-F12/cc-pVTZ-F12</span></code> model chemistry along with two auxiliary basis sets,
+<code class="docutils literal notranslate"><span class="pre">aug-cc-pVTZ/C</span></code> and <code class="docutils literal notranslate"><span class="pre">cc-pVTZ-F12-CABS</span></code>, with <code class="docutils literal notranslate"><span class="pre">TightOpt</span></code> for a single point energy calculation.</p>
+<p>THe following are examples for <strong>equivalent</strong> definitions:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">opt_level</span> <span class="o">=</span> <span class="s1">&#39;apfd/def2tzvp&#39;</span>
+<span class="n">opt_level</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;method&#39;</span><span class="p">:</span> <span class="s1">&#39;apfd&#39;</span><span class="p">,</span> <span class="s1">&#39;basis&#39;</span><span class="p">:</span> <span class="s1">&#39;def2tzvp&#39;</span><span class="p">}</span>
+
+<span class="n">conformer_level</span> <span class="o">=</span> <span class="s1">&#39;PM6&#39;</span>
+<span class="n">conformer_level</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;method&#39;</span><span class="p">:</span> <span class="s1">&#39;PM6&#39;</span><span class="p">}</span>
 </pre></div>
 </div>
-<p>is a shortcut for:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">opt_level</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;method&#39;</span><span class="p">:</span> <span class="s1">&#39;apfd&#39;</span><span class="p">,</span> <span class="s1">&#39;basis&#39;</span><span class="p">:</span> <span class="s1">&#39;def2tzvp&#39;</span><span class="p">}</span>
-</pre></div>
-</div>
-<p>Another example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conformer_level</span> <span class="o">=</span> <span class="s1">&#39;PM6&#39;</span>
-</pre></div>
-</div>
-<p>is a shortcut for:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conformer_level</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;method&#39;</span><span class="p">:</span> <span class="s1">&#39;PM6&#39;</span><span class="p">}</span>
-</pre></div>
-</div>
-<p>ARC also supports an additional argument (<code class="docutils literal notranslate"><span class="pre">level_of_theory</span></code>) as a shortcut to simultaneously specify <code class="docutils literal notranslate"><span class="pre">opt_level</span></code>,
-<code class="docutils literal notranslate"><span class="pre">freq_level</span></code>, <code class="docutils literal notranslate"><span class="pre">sp_level</span></code>, and <code class="docutils literal notranslate"><span class="pre">scan_level</span></code>.</p>
+<p>Note that the <code class="docutils literal notranslate"><span class="pre">cabs</span></code> and <code class="docutils literal notranslate"><span class="pre">solvation_scheme_level</span></code> arguments currently have no effect
+and will be implemented in future versions. The <code class="docutils literal notranslate"><span class="pre">software</span></code> argument is automatically determined
+unless specified by the user.</p>
+<p>ARC also supports an additional shortcut argument, <code class="docutils literal notranslate"><span class="pre">level_of_theory</span></code>,
+to simultaneously specify <code class="docutils literal notranslate"><span class="pre">opt_level</span></code>, <code class="docutils literal notranslate"><span class="pre">freq_level</span></code>, <code class="docutils literal notranslate"><span class="pre">sp_level</span></code>, and <code class="docutils literal notranslate"><span class="pre">scan_level</span></code>.</p>
 <p>For example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">level_of_theory</span><span class="p">:</span> <span class="s1">&#39;dlpno-ccsd(T)/def2tzvp//apfd/def2svp&#39;</span>
 </pre></div>
@@ -282,8 +293,8 @@ only if the level of theory specification contains neither <code class="docutils
 <span class="n">sp_level</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;method&#39;</span><span class="p">:</span> <span class="s1">&#39;dlpno-ccsd(T)&#39;</span><span class="p">,</span> <span class="s1">&#39;basis&#39;</span><span class="p">:</span> <span class="s1">&#39;def2tzvp&#39;</span><span class="p">}</span>
 </pre></div>
 </div>
-<p>Note: If <code class="docutils literal notranslate"><span class="pre">level_of_theory</span></code> does not contain the <code class="docutils literal notranslate"><span class="pre">//</span></code> deliminator but does contain <code class="docutils literal notranslate"><span class="pre">\/</span></code>, it is interpreted as intended
-for running all opt, freq, scan, and sp job types at that level.</p>
+<p>Note: If <code class="docutils literal notranslate"><span class="pre">level_of_theory</span></code> does not contain the <code class="docutils literal notranslate"><span class="pre">//</span></code> deliminator but does contain <code class="docutils literal notranslate"><span class="pre">\/</span></code>,
+it is interpreted as intended for running all opt, freq, scan, <strong>and sp</strong> job types at that level.</p>
 <p>For example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">level_of_theory</span><span class="p">:</span> <span class="s1">&#39;wb97xd/def2svp&#39;</span>
 </pre></div>
@@ -312,85 +323,91 @@ argument.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">opt_level</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;method&#39;</span><span class="p">:</span> <span class="s1">&#39;AM1&#39;</span><span class="p">}</span>
 </pre></div>
 </div>
-<p>To avoid conflicts and confusion, ARC will raise an <code class="docutils literal notranslate"><span class="pre">InputError</span></code> if both <code class="docutils literal notranslate"><span class="pre">level_of_theory</span></code> and <code class="docutils literal notranslate"><span class="pre">composite_method</span></code>
-are specified. Also, it is not good practice to specify <code class="docutils literal notranslate"><span class="pre">level_of_theory</span></code> along with <code class="docutils literal notranslate"><span class="pre">opt_level</span></code>,
-<code class="docutils literal notranslate"><span class="pre">freq_level</span></code>, and <code class="docutils literal notranslate"><span class="pre">sp_level</span></code>. If these arguments are specified simultaneously, ARC will overwrite
-<code class="docutils literal notranslate"><span class="pre">level_of_theory</span></code> with the values given in <code class="docutils literal notranslate"><span class="pre">opt_level</span></code>, <code class="docutils literal notranslate"><span class="pre">freq_level</span></code>, and <code class="docutils literal notranslate"><span class="pre">sp_level</span></code>.</p>
-</div>
-<div class="section" id="additional-job-options">
-<h2>Additional job options<a class="headerlink" href="#additional-job-options" title="Permalink to this headline">¶</a></h2>
-<p>Note: this feature currently has limited support for ESS other than <code class="docutils literal notranslate"><span class="pre">Orca</span></code>.</p>
-<p>ARC allows specification of job options (e.g., SCF convergence) at ease. By default, ARC uses default job options for
-each ESS and job type stored in the <code class="docutils literal notranslate"><span class="pre">ESS_default_options_dict</span></code> dictionary in the settings.py.</p>
-<p>ARC has the flexibility of accepting various types of job option specification in an input file. The most general
-syntax is a dictionary:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">job_additional_options</span> <span class="o">=</span> <span class="p">{</span><span class="n">ESS</span><span class="p">:</span> <span class="p">{</span><span class="n">job_type</span><span class="p">:</span>  <span class="p">{</span><span class="n">option_format</span><span class="p">:</span> <span class="p">{</span><span class="n">option_category</span><span class="p">:</span> <span class="n">option_specification</span><span class="p">}}}}</span>
-</pre></div>
-</div>
+<p>To avoid conflicts and confusion, ARC will raise an <code class="docutils literal notranslate"><span class="pre">InputError</span></code> if
+<code class="docutils literal notranslate"><span class="pre">level_of_theory</span></code> is specified along with <code class="docutils literal notranslate"><span class="pre">composite_method</span></code>, <code class="docutils literal notranslate"><span class="pre">opt_level</span></code>,
+or <code class="docutils literal notranslate"><span class="pre">sp_level</span></code>.</p>
+<p>A notable argument is <code class="docutils literal notranslate"><span class="pre">args</span></code>, which is a 2-level nested dictionary
+of additional directives to pass to the ESS.
+There are only two allowed keys for the first level, <code class="docutils literal notranslate"><span class="pre">keyword</span></code> and <code class="docutils literal notranslate"><span class="pre">block</span></code>.
+Entries under <code class="docutils literal notranslate"><span class="pre">keyword</span></code> will be added to the directive line of the ESS input file as keywords,
+while entries under <code class="docutils literal notranslate"><span class="pre">block</span></code> are treated as multiline strings and will be added after the
+directive line of the ESS input file. The corresponding values for these keywords are dictionaries as well.
+While specific keys are used by ARC internally for troubleshooting,
+users are encouraged use <code class="docutils literal notranslate"><span class="pre">general</span></code> as a key for any additional values.
+ARC can deduce the software to be used per level of theory using heuristics, yet since the values of <code class="docutils literal notranslate"><span class="pre">args</span></code>
+are software-dependent, it is highly recommended that users also specify the optional <code class="docutils literal notranslate"><span class="pre">software</span></code> argument
+to avoid using an incompatible software. For convenience,
+<code class="docutils literal notranslate"><span class="pre">args</span></code> can also be inputted as a sting or a list of strings which will be internallt converted to the correct
+dictionary format with <code class="docutils literal notranslate"><span class="pre">keyword</span></code> and <code class="docutils literal notranslate"><span class="pre">general</span></code> keys.</p>
 <p>For example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">job_additional_options</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;orca&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;opt&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;keyword&#39;</span> <span class="p">:{</span><span class="s1">&#39;opt_convergence&#39;</span><span class="p">:</span> <span class="s1">&#39;TightOpt&#39;</span><span class="p">}}}}</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">args</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;keyword&#39;</span> <span class="p">:{</span><span class="s1">&#39;opt_convergence&#39;</span><span class="p">:</span> <span class="s1">&#39;TightOpt&#39;</span><span class="p">},</span>
+        <span class="s1">&#39;block&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;general&#39;</span><span class="p">:</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">cf DryRun true </span><span class="se">\n</span><span class="s1"> end&#39;</span><span class="p">}}</span>
 </pre></div>
 </div>
-<p>sets the optimization convergence to <code class="docutils literal notranslate"><span class="pre">TightOpt</span></code> for geometry optimization jobs in Orca.</p>
 <p>Another example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">job_additional_options</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;orca&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;global&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;block&#39;</span> <span class="p">:{</span><span class="s1">&#39;generic&#39;</span><span class="p">:</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">cf DryRun true </span><span class="se">\n</span><span class="s1"> end&#39;</span><span class="p">}}}}</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">args</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;keyword&#39;</span> <span class="p">:{</span><span class="s1">&#39;general&#39;</span><span class="p">:</span> <span class="s1">&#39;iop(99/33=1)&#39;</span><span class="p">}}</span>
 </pre></div>
 </div>
-<p>instructs <code class="docutils literal notranslate"><span class="pre">Orca</span></code> to run a test job for determining the memory needed for the SCF module.</p>
-<p>Notice that ARC supports two kinds of <code class="docutils literal notranslate"><span class="pre">option_format</span></code>, which are <code class="docutils literal notranslate"><span class="pre">keyword</span></code> and <code class="docutils literal notranslate"><span class="pre">block</span></code>, because many ESS have
-these two methods to specify job options (e.g., <code class="docutils literal notranslate"><span class="pre">Orca</span></code>). Make sure to read the manual of the ESS that is intended to
-use to ensure correct format for specifying job options.</p>
-<p>Using dictionary to specify job option is always recommended due to its clarity and flexibility. The
-<code class="docutils literal notranslate"><span class="pre">ESS_default_options_dict</span></code> dictionary in the settings.py contains default <code class="docutils literal notranslate"><span class="pre">option_category</span></code>
-(e.g., <code class="docutils literal notranslate"><span class="pre">opt_convergence</span></code>, <code class="docutils literal notranslate"><span class="pre">scf_convergence</span></code>) that ARC use. Make sure to read the manual of the ESS that is
-intended to use to obtain a list of possible options. For example, <code class="docutils literal notranslate"><span class="pre">opt_convergence</span></code> can take values like
-<code class="docutils literal notranslate"><span class="pre">NormalOpt</span></code> and <code class="docutils literal notranslate"><span class="pre">TightOpt</span></code> as specified in the <code class="docutils literal notranslate"><span class="pre">Orca</span></code> <a class="reference external" href="https://cec.mpg.de/fileadmin/media/Forschung/ORCA/orca_manual_4_0_1.pdf">manual</a>.</p>
-<p>Use <code class="docutils literal notranslate"><span class="pre">generic</span></code> as a key for <code class="docutils literal notranslate"><span class="pre">option_category</span></code> that is not default in ARC.</p>
-<p>For example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">job_additional_options</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;gaussian&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;global&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;keyword&#39;</span> <span class="p">:{</span><span class="s1">&#39;generic&#39;</span><span class="p">:</span> <span class="s1">&#39;iop(99/33=1)&#39;</span><span class="p">}}}}</span>
+<p>will append <code class="docutils literal notranslate"><span class="pre">iop(99/33=1)</span></code> to the respective Gaussian job input file.</p>
+</div>
+<div class="section" id="adaptive-levels-of-theory">
+<h2>Adaptive levels of theory<a class="headerlink" href="#adaptive-levels-of-theory" title="Permalink to this headline">¶</a></h2>
+<p>ARC allows users to adapt the level of theory to the size of the molecule.
+To do so, pass the <code class="docutils literal notranslate"><span class="pre">adaptive_levels</span></code> attribute, which is a dictionary of
+levels of theory for ranges of the number of heavy (non-hydrogen) atoms in the
+molecule. Keys are tuples of (<code class="docutils literal notranslate"><span class="pre">min_num_atoms</span></code>, <code class="docutils literal notranslate"><span class="pre">max_num_atoms</span></code>), values are
+dictionaries with the a tuple of job type as the key (<code class="docutils literal notranslate"><span class="pre">opt</span></code>, <code class="docutils literal notranslate"><span class="pre">freq</span></code>, <code class="docutils literal notranslate"><span class="pre">sp</span></code>, <code class="docutils literal notranslate"><span class="pre">scan</span></code>)
+and the respective level of theory as a string or a dictionary is the value.
+Don’t forget to bound the entire range between 1 and <code class="docutils literal notranslate"><span class="pre">inf</span></code>, also make sure
+there aren’t any gaps in the heavy atom ranges. For example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">adaptive_levels</span> <span class="o">=</span> <span class="p">{(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">):</span>      <span class="p">{(</span><span class="s1">&#39;opt&#39;</span><span class="p">,</span> <span class="s1">&#39;freq&#39;</span><span class="p">):</span> <span class="s1">&#39;wb97xd/6-311+g(2d,2p)&#39;</span><span class="p">,</span>
+                                 <span class="s1">&#39;sp&#39;</span><span class="p">:</span> <span class="s1">&#39;ccsd(t)-f12/aug-cc-pvtz-f12&#39;</span><span class="p">},</span>
+                   <span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">15</span><span class="p">):</span>     <span class="p">{(</span><span class="s1">&#39;opt&#39;</span><span class="p">,</span> <span class="s1">&#39;freq&#39;</span><span class="p">):</span> <span class="s1">&#39;b3lyp/cbsb7&#39;</span><span class="p">,</span>
+                                 <span class="s1">&#39;sp&#39;</span><span class="p">:</span> <span class="s1">&#39;dlpno-ccsd(t)/def2-tzvp/c&#39;</span><span class="p">},</span>
+                   <span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mi">30</span><span class="p">):</span>    <span class="p">{(</span><span class="s1">&#39;opt&#39;</span><span class="p">,</span> <span class="s1">&#39;freq&#39;</span><span class="p">):</span> <span class="s1">&#39;b3lyp/6-31g(d,p)&#39;</span><span class="p">,</span>
+                                 <span class="s1">&#39;sp&#39;</span><span class="p">:</span> <span class="s1">&#39;wb97xd/6-311+g(2d,2p)&#39;</span><span class="p">},</span>
+                   <span class="p">(</span><span class="mi">31</span><span class="p">,</span> <span class="s1">&#39;inf&#39;</span><span class="p">):</span> <span class="p">{(</span><span class="s1">&#39;opt&#39;</span><span class="p">,</span> <span class="s1">&#39;freq&#39;</span><span class="p">):</span> <span class="s1">&#39;b3lyp/6-31g(d,p)&#39;</span><span class="p">,</span>
+                                 <span class="s1">&#39;sp&#39;</span><span class="p">:</span> <span class="s1">&#39;b3lyp/6-311+g(d,p)&#39;</span><span class="p">}}</span>
 </pre></div>
 </div>
-<p>will append <code class="docutils literal notranslate"><span class="pre">iop(99/33=1)</span></code> to all <code class="docutils literal notranslate"><span class="pre">Gaussian</span></code> job input scripts. In addition, ARC supports a shortcut.
-<code class="docutils literal notranslate"><span class="pre">job_shortcut_keywords</span></code> is a dictionary with ESS string as keys and job option keyword string as values.</p>
-<p>For example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">job_shortcut_keywords</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;gaussian&#39;</span><span class="p">:</span> <span class="s1">&#39;iop(99/33=1)&#39;</span><span class="p">}</span>
-</pre></div>
-</div>
-<p>is a shortcut of the previous example.</p>
+<p>Note that job types which are not specified in <code class="docutils literal notranslate"><span class="pre">adaptive_levels</span></code> will use no-adaptive
+(defined separately e.g., via <code class="docutils literal notranslate"><span class="pre">opt_level</span></code>, or using ARC’s defaults.</p>
 </div>
 <div class="section" id="control-job-memory-allocation">
 <h2>Control job memory allocation<a class="headerlink" href="#control-job-memory-allocation" title="Permalink to this headline">¶</a></h2>
-<p>To specify the amount of memory for all jobs in an ARC project, set <code class="docutils literal notranslate"><span class="pre">job_memory</span></code> with positive integer values in GB.</p>
-<p>Notice that user can change the total memory per node by setting the value of <code class="docutils literal notranslate"><span class="pre">memory</span></code> key in the servers dictionary
-under settings.py. This value will be treated as the maximum allowable memory, and memory-related troubleshooting
+<p>To specify the amount of memory for all jobs in an ARC project,
+set <code class="docutils literal notranslate"><span class="pre">job_memory</span></code> with a positive integer value (units are GB).</p>
+<p>Note that the total memory per node can be modified by setting the value of <code class="docutils literal notranslate"><span class="pre">memory</span></code>
+in the servers dictionary under settings.py.
+This value will be treated as the maximum allowable memory per node, and memory-related troubleshooting
 methods will not be allowed to request more than this value.</p>
-<p>If <code class="docutils literal notranslate"><span class="pre">job_memory</span></code> is not defined, ARC will initialize each job using 14 GB memory by default. In case a job crashes due
-to insufficient memory, ARC will try to resubmit that job asking for a higher memory allocation up to the specified
-maximal node <code class="docutils literal notranslate"><span class="pre">memory</span></code>.</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">job_memory</span></code> is not defined, ARC will initialize each job using 14 GB memory by default.
+In case a job crashes due to insufficient memory, ARC will try to resubmit that job asking for
+a higher memory allocation up to the specified maximal node <code class="docutils literal notranslate"><span class="pre">memory</span></code>.</p>
 </div>
 <div class="section" id="using-a-fine-dft-grid-for-optimization">
 <h2>Using a fine DFT grid for optimization<a class="headerlink" href="#using-a-fine-dft-grid-for-optimization" title="Permalink to this headline">¶</a></h2>
 <p>This option is turned on by default. If you’d like to turn it off,
 set <code class="docutils literal notranslate"><span class="pre">fine</span></code> in the <code class="docutils literal notranslate"><span class="pre">job_types</span></code> dictionary to <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p>
-<p>If turned on, ARC will spawn another optimization job after the first one converges
-with a fine grid settings, using the already optimized geometry.</p>
-<p>It is also possible to instruct ARC not to run the first optimization job and instead go straight to the fine
-optimization. To do this, set <code class="docutils literal notranslate"><span class="pre">fine:</span> <span class="pre">True</span></code> but <code class="docutils literal notranslate"><span class="pre">opt:</span> <span class="pre">False</span></code>.</p>
+<p>If turned on, ARC will spawn another DFT optimization job after the first one converges,
+now with a fine grid settings, using the already optimized geometry.</p>
+<p>It is also possible to instruct ARC not to run the first optimization job,
+and instead use a fine grid to begin with. To do so, set <code class="docutils literal notranslate"><span class="pre">fine:</span> <span class="pre">True</span></code> but <code class="docutils literal notranslate"><span class="pre">opt:</span> <span class="pre">False</span></code>.</p>
 <p>Note that this argument is called <code class="docutils literal notranslate"><span class="pre">fine</span></code> in ARC, although in practice
 it directs the ESS to use an <strong>ultrafine</strong> grid. See, for example, <a class="reference external" href="https://doi.org/10.26434/chemrxiv.8864204.v5">this study</a>
-describing the importance of a DFT grid.</p>
-<p>In Gaussian, this will add the following keywords:</p>
+describing the importance of the DFT grid.</p>
+<p>In Gaussian, <code class="docutils literal notranslate"><span class="pre">fine</span></code> will add the following directive:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">scf</span><span class="o">=</span><span class="p">(</span><span class="n">tight</span><span class="p">,</span> <span class="n">direct</span><span class="p">)</span> <span class="n">integral</span><span class="o">=</span><span class="p">(</span><span class="n">grid</span><span class="o">=</span><span class="n">ultrafine</span><span class="p">,</span> <span class="n">Acc2E</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>In QChem, this will add the following directives:</p>
+<p>In QChem, it will add the following directives:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">GEOM_OPT_TOL_GRADIENT</span>     <span class="mi">15</span>
 <span class="n">GEOM_OPT_TOL_DISPLACEMENT</span> <span class="mi">60</span>
 <span class="n">GEOM_OPT_TOL_ENERGY</span>       <span class="mi">5</span>
 <span class="n">XC_GRID</span>                   <span class="mi">3</span>
 </pre></div>
 </div>
-<p>In TeraChem, this will add the following directive:</p>
+<p>In TeraChem, it will add the following directives:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">dftgrid</span> <span class="mi">4</span>
 <span class="n">dynamicgrid</span> <span class="n">yes</span>
 </pre></div>
@@ -434,10 +451,12 @@ the ND scan, which is similar in principal to option B, but not directly control
 <li><p><code class="docutils literal notranslate"><span class="pre">cont_opt</span></code></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">ess</span></code></p></li>
 </ul>
-<p>The brute force methods will generate all the geometries in advance and submit all relevant jobs simultaneously.
-The continuous method will wait for the previous job to terminate, and use its geometry as the initial guess for
-the next job.</p>
-<p>Another set of three keys is allowed, adding <code class="docutils literal notranslate"><span class="pre">_diagonal</span></code> to each of the above keys. The secondary keys are therefore:</p>
+<p>The brute force methods will generate all the geometries in advance and submit all relevant
+jobs simultaneously.
+The continuous method will wait for the previous job to terminate, and use its geometry as the
+initial guess for the next job.</p>
+<p>Another set of three keys is allowed, adding <code class="docutils literal notranslate"><span class="pre">_diagonal</span></code> to each of the above keys.
+The secondary keys are therefore:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">brute_force_sp_diagonal</span></code></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">brute_force_opt_diagonal</span></code></p></li>
@@ -546,26 +565,6 @@ to determine it using <a href="#id10"><span class="problematic" id="id11">`Truhl
 calculations for a dataset of 15 small molecules. To avoid this, either pass a known frequency scaling
 factor using the <code class="docutils literal notranslate"><span class="pre">freq_scale_factor</span></code> attribute (see <a class="reference internal" href="examples.html#examples"><span class="std std-ref">examples</span></a>), or set the
 <code class="docutils literal notranslate"><span class="pre">calc_freq_factor</span></code> attribute to <code class="docutils literal notranslate"><span class="pre">False</span></code> (it is <code class="docutils literal notranslate"><span class="pre">True</span></code> by default).</p>
-</div>
-<div class="section" id="adaptive-levels-of-theory">
-<h2>Adaptive levels of theory<a class="headerlink" href="#adaptive-levels-of-theory" title="Permalink to this headline">¶</a></h2>
-<p>Often we’d like to adapt the levels of theory to the size of the molecule.
-To do so, pass the <code class="docutils literal notranslate"><span class="pre">adaptive_levels</span></code> attribute, which is a dictionary of
-levels of theory for ranges of the number of heavy (non-hydrogen) atoms in the
-molecule. Keys are tuples of (<code class="docutils literal notranslate"><span class="pre">min_num_atoms</span></code>, <code class="docutils literal notranslate"><span class="pre">max_num_atoms</span></code>), values are
-dictionaries with <code class="docutils literal notranslate"><span class="pre">optfreq</span></code> and <code class="docutils literal notranslate"><span class="pre">sp</span></code> as keys and levels of theory as values.
-Don’t forget to bound the entire range between 1 and <code class="docutils literal notranslate"><span class="pre">inf</span></code>, also make sure
-there aren’t any gaps in the heavy atom ranges. The below is in Python (not YAML) format:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">adaptive_levels</span> <span class="o">=</span> <span class="p">{(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">):</span>      <span class="p">{</span><span class="s1">&#39;optfreq&#39;</span><span class="p">:</span> <span class="s1">&#39;wb97xd/6-311+g(2d,2p)&#39;</span><span class="p">,</span>
-                                 <span class="s1">&#39;sp&#39;</span><span class="p">:</span> <span class="s1">&#39;ccsd(t)-f12/aug-cc-pvtz-f12&#39;</span><span class="p">},</span>
-                   <span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">15</span><span class="p">):</span>     <span class="p">{</span><span class="s1">&#39;optfreq&#39;</span><span class="p">:</span> <span class="s1">&#39;b3lyp/cbsb7&#39;</span><span class="p">,</span>
-                                 <span class="s1">&#39;sp&#39;</span><span class="p">:</span> <span class="s1">&#39;dlpno-ccsd(t)/def2-tzvp/c&#39;</span><span class="p">},</span>
-                   <span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mi">30</span><span class="p">):</span>    <span class="p">{</span><span class="s1">&#39;optfreq&#39;</span><span class="p">:</span> <span class="s1">&#39;b3lyp/6-31g(d,p)&#39;</span><span class="p">,</span>
-                                 <span class="s1">&#39;sp&#39;</span><span class="p">:</span> <span class="s1">&#39;wb97xd/6-311+g(2d,2p)&#39;</span><span class="p">},</span>
-                   <span class="p">(</span><span class="mi">31</span><span class="p">,</span> <span class="s1">&#39;inf&#39;</span><span class="p">):</span> <span class="p">{</span><span class="s1">&#39;optfreq&#39;</span><span class="p">:</span> <span class="s1">&#39;b3lyp/6-31g(d,p)&#39;</span><span class="p">,</span>
-                                 <span class="s1">&#39;sp&#39;</span><span class="p">:</span> <span class="s1">&#39;b3lyp/6-311+g(d,p)&#39;</span><span class="p">}}</span>
-</pre></div>
-</div>
 </div>
 <div class="section" id="isomorphism-checks">
 <h2>Isomorphism checks<a class="headerlink" href="#isomorphism-checks" title="Permalink to this headline">¶</a></h2>
@@ -903,15 +902,17 @@ file under the <code class="docutils literal notranslate"><span class="pre">outp
 </div>
 <div class="section" id="disable-comparisons-with-the-rmg-database">
 <h2>Disable comparisons with the RMG database<a class="headerlink" href="#disable-comparisons-with-the-rmg-database" title="Permalink to this headline">¶</a></h2>
-<p>By default, at the end of an ARC job, ARC will try to compare the calculated thermochemistry and kinetics to estimates
-from the RMG database. The comparison is saved as a parity plot in the output directory.</p>
-<p>Sometimes though, it is desirable to disable these comparisons with the RMG database. For example, although ARC will
-not crash due to any exceptions encountered while making the parity plots, it makes sense to disable these comparisons
-when dealing with species that cannot be estimated by the RMG database (e.g. because of the presence of atom types that
-are currently not supported). In other circumstances it may make sense to disable this comparison simply to save time
-by not having to load the RMG database if the comparison is not needed.</p>
-<p>To disable ARC from generating these parity plots, simply supply the following in the ARC input file (or as a keyword
-argument to the main ARC object if using the API):</p>
+<p>By default, at the end of an ARC job, ARC will try to compare the calculated
+thermochemistry and kinetics to estimates from the RMG database to assist the human reality-check.
+The comparison is saved as a parity plot in the output directory.</p>
+<p>Sometimes though, it is desirable to disable these comparisons with the RMG database.
+For example, although ARC will not crash due to any exceptions encountered while making
+the parity plots, it makes sense to disable these comparisons when dealing with species
+that cannot be estimated by the RMG database (e.g. because of the presence of atom types that
+are currently not supported). In other circumstances it may make sense to disable this comparison
+simply to save time by not having to load the entire RMG database.</p>
+<p>To disable ARC from generating these parity plots,
+simply pass the following argument to ARC:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">compare_to_rmg</span><span class="p">:</span> <span class="kc">False</span>
 </pre></div>
 </div>
@@ -920,9 +921,9 @@ argument to the main ARC object if using the API):</p>
 <div class="section" id="use-solvent-corrections">
 <h2>Use solvent corrections<a class="headerlink" href="#use-solvent-corrections" title="Permalink to this headline">¶</a></h2>
 <p>This feature is currently only implemented for jobs spawned using Gaussian.
-The <code class="docutils literal notranslate"><span class="pre">solvation</span></code> argument, if not <code class="docutils literal notranslate"><span class="pre">None</span></code>, requests that a calculation be performed in the presence of a solvent
-by placing the solute (the species) in a cavity within the solvent reaction field. This argument is a dictionary,
-with the following keys:</p>
+The <code class="docutils literal notranslate"><span class="pre">solvation</span></code> argument of a level of theory, if not <code class="docutils literal notranslate"><span class="pre">None</span></code>, requests that a calculation
+be performed in the presence of a solvent by placing the solute (the species) in a cavity within
+the solvent reaction field. This argument is a dictionary, with the following keys:</p>
 <blockquote>
 <div><ul class="simple">
 <li><p>‘method’ (optional values: ‘pcm’ (default), ‘cpcm’, ‘dipole’, ‘ipcm’, ‘scipcm’)</p></li>
@@ -930,7 +931,13 @@ with the following keys:</p>
 </ul>
 </div></blockquote>
 <p>Example:</p>
-<p>solvation = {‘method’: ‘pcm’, ‘solvent: ‘DiethylEther’}</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">opt_level</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;method&#39;</span><span class="p">:</span> <span class="s1">&#39;wb97xd&#39;</span><span class="p">,</span>
+             <span class="s1">&#39;basis&#39;</span><span class="p">:</span> <span class="s1">&#39;def2tzvp&#39;</span><span class="p">,</span>
+             <span class="s1">&#39;solvation&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;method&#39;</span><span class="p">:</span> <span class="s1">&#39;pcm&#39;</span><span class="p">,</span>
+                           <span class="s1">&#39;solvent: &#39;</span><span class="n">DiethylEther</span><span class="s1">&#39;},</span>
+            <span class="p">}</span>
+</pre></div>
+</div>
 <p>See <a class="reference external" href="https://gaussian.com/scrf/">https://gaussian.com/scrf/</a> for more details.</p>
 </div>
 <div class="section" id="batch-delete-arc-jobs">

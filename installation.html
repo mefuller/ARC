@@ -92,7 +92,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#associating-software-with-servers">Associating software with servers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#cluster-software-definitions">Cluster software definitions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#tests">Tests</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#add-arc-aliases-to-your-bashrc-for-convenience">Add ARC aliases to your .bashrc (for convenience)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#optional-add-arc-aliases-to-your-bashrc-for-convenience">Optional: Add ARC aliases to your .bashrc (for convenience)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#updating-arc">Updating ARC</a></li>
 </ul>
 </li>
@@ -173,7 +173,10 @@
             
   <div class="section" id="installation-instructions">
 <span id="installation"></span><h1>Installation instructions<a class="headerlink" href="#installation-instructions" title="Permalink to this headline">¶</a></h1>
-<p>Note: ARC was only tested on Linux (<a class="reference external" href="http://releases.ubuntu.com/18.04/">Ubuntu</a> 18.04.1 LTS) and Mac machines. We don’t expect it to work on Windows.</p>
+<dl class="simple">
+<dt>Note:</dt><dd><p>ARC was only tested on Linux (<a class="reference external" href="http://releases.ubuntu.com/18.04/">Ubuntu</a> 18.04.1 LTS) and Mac machines. We don’t expect it to work on Windows.</p>
+</dd>
+</dl>
 <p>ARC can be installed on a server, as well as on your local desktop / laptop, submitting jobs to the server/s.
 The instructions below make this differentiation when relevant (the only difference is that ARC should be aware
 of software installed on the same machine, where the communication isn’t done via SSH).</p>
@@ -182,12 +185,12 @@ of software installed on the same machine, where the communication isn’t done 
 <ul>
 <li><p>Download and install the <a class="reference external" href="https://www.anaconda.com/distribution/">Anaconda Python Platform</a> for Python 3.7 or higher if you haven’t already.</p></li>
 <li><p>Get git if you don’t have it already by typing sudo apt-get install git in a terminal.</p></li>
-<li><p>Clone ARC’s repository to by typing the following command in the desired folder (e.g., under <cite>~/home/Code/</cite>):</p>
+<li><p>Clone ARC’s repository to by typing the following command in the desired folder (e.g., under <cite>~/Code/</cite>):</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">ReactionMechanismGenerator</span><span class="o">/</span><span class="n">ARC</span><span class="o">.</span><span class="n">git</span>
 </pre></div>
 </div>
 </li>
-<li><p>Add ARC to your local path in .bashrc (make sure to change <cite>~/Path/to/ARC/</cite> accordingly):</p>
+<li><p>Add ARC to your local path in .bashrc (make sure to change <code class="docutils literal notranslate"><span class="pre">~/Path/to/ARC/</span></code> accordingly):</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>export PYTHONPATH=$PYTHONPATH:~/Path/to/ARC/
 </pre></div>
 </div>
@@ -197,12 +200,13 @@ of software installed on the same machine, where the communication isn’t done 
 <div class="section" id="install-dependencies">
 <span id="arce"></span><h2>Install dependencies<a class="headerlink" href="#install-dependencies" title="Permalink to this headline">¶</a></h2>
 <ul>
-<li><p>Install the latest DEVELOPER version of RMG (which has Arkane).
+<li><p>Install the latest <strong>DEVELOPER</strong> version of RMG (which has Arkane).
 It is recommended to follow RMG’s <a class="reference external" href="http://reactionmechanismgenerator.github.io/RMG-Py/users/rmg/installation/index.html#for-developers-installation-by-source-using-anaconda-environment">Developer installation by source using Anaconda</a> instructions.
 Make sure to add RMG-Py to your PATH and PYTHONPATH variables as explained in RMG’s documentation.</p></li>
 <li><p>If you’d like to use <a class="reference external" href="https://github.com/ReactionMechanismGenerator/AutoTST">AutoTST</a> in ARC (optional),
 clone it in a separate folder and add it to your PYTHONPATH just as well.</p></li>
-<li><p>Create the Anaconda environment for ARC:</p>
+<li><p>Create the Anaconda environment for ARC (after changing the directory to the
+installation folder by, e.g., <code class="docutils literal notranslate"><span class="pre">cd</span> <span class="pre">~/Code/ARC/</span></code>):</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">env</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="n">environment</span><span class="o">.</span><span class="n">yml</span>
 </pre></div>
 </div>
@@ -328,8 +332,8 @@ first commit these changes to a git branch.:</p>
 </li>
 </ul>
 </div>
-<div class="section" id="add-arc-aliases-to-your-bashrc-for-convenience">
-<span id="aliases"></span><h2>Add ARC aliases to your .bashrc (for convenience)<a class="headerlink" href="#add-arc-aliases-to-your-bashrc-for-convenience" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="optional-add-arc-aliases-to-your-bashrc-for-convenience">
+<span id="aliases"></span><h2>Optional: Add ARC aliases to your .bashrc (for convenience)<a class="headerlink" href="#optional-add-arc-aliases-to-your-bashrc-for-convenience" title="Permalink to this headline">¶</a></h2>
 <p>Below are optional aliases to make ARC (even) more convenient (make sure to change <cite>~/Path/to/ARC/</cite> accordingly).
 Add these to your <code class="docutils literal notranslate"><span class="pre">.bashrc</span></code> file (edit it by typing, e.g., <code class="docutils literal notranslate"><span class="pre">nano</span> <span class="pre">~/.bashrc</span></code>):</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>export arc_path=$HOME&#39;/Path/to/ARC/&#39;
@@ -344,8 +348,11 @@ alias j=&#39;cd $arc_path/ipython/ &amp;&amp; jupyter notebook&#39;
 <div class="section" id="updating-arc">
 <h2>Updating ARC<a class="headerlink" href="#updating-arc" title="Permalink to this headline">¶</a></h2>
 <p>ARC is being updated frequently. Make sure to update ARC and enjoy new features and bug fixes.</p>
-<p><strong>Note:</strong> It is highly recommended to backup files you manually changed in ARC before updating the version,
+<dl class="simple">
+<dt>Note:</dt><dd><p>It is highly recommended to backup files you manually changed in ARC before updating the version,
 these are usually <cite>ARC/arc/settings.py</cite> and <cite>ARC/arc/job/submit.py</cite>.</p>
+</dd>
+</dl>
 <p>You can update ARC to a specific version, or to the most recent developer version.
 To get the most recent developer version, do the following
 (and make sure to change <cite>~/Path/to/ARC/</cite> accordingly):</p>

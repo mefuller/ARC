@@ -1,0 +1,358 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>arc.level &mdash; ARC 1.1.0 Documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="arc.utils.scale" href="scale.html" />
+    <link rel="prev" title="arc.common" href="common.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> ARC
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../running.html">Running ARC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced.html">Advanced Features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../output.html">Output</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">ARC’s API</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="main.html">arc.main</a></li>
+<li class="toctree-l2"><a class="reference internal" href="species.html">arc.species.species</a></li>
+<li class="toctree-l2"><a class="reference internal" href="converter.html">arc.species.converter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="conformers.html">arc.species.conformers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="vectors.html">arc.species.vectors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="zmat.html">arc.species.zmat</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reaction.html">arc.reaction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="scheduler.html">arc.scheduler</a></li>
+<li class="toctree-l2"><a class="reference internal" href="job.html">arc.job.job</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ssh.html">arc.job.ssh</a></li>
+<li class="toctree-l2"><a class="reference internal" href="local.html">arc.job.local</a></li>
+<li class="toctree-l2"><a class="reference internal" href="trsh.html">arc.job.trsh</a></li>
+<li class="toctree-l2"><a class="reference internal" href="parser.html">arc.parser</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plotter.html">arc.plotter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="processor.html">arc.processor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rmgdb.html">arc.rmgdb</a></li>
+<li class="toctree-l2"><a class="reference internal" href="common.html">arc.common</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">arc.level</a></li>
+<li class="toctree-l2"><a class="reference internal" href="scale.html">arc.utils.scale</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../tools.html">Standalone tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../release.html">Release notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../credits.html">Credits</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contribute.html">Contribute</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../cite.html">How to cite ARC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../licence.html">Licence</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">ARC</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="index.html">ARC’s API</a> &raquo;</li>
+        
+      <li>arc.level</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/api/level.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-arc.level">
+<span id="arc-level"></span><span id="level"></span><h1>arc.level<a class="headerlink" href="#module-arc.level" title="Permalink to this headline">¶</a></h1>
+<p>A module for working with levels of theory.</p>
+<dl class="py class">
+<dt id="arc.level.Level">
+<em class="property">class </em><code class="sig-prename descclassname">arc.level.</code><code class="sig-name descname">Level</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">repr</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>Union<span class="p">[</span>str<span class="p">, </span>dict<span class="p">, </span>Level<span class="p">]</span><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">method</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">basis</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">auxiliary_basis</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">dispersion</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">cabs</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">method_type</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">software</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">software_version</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>Union<span class="p">[</span>int<span class="p">, </span>float<span class="p">, </span>str<span class="p">]</span><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">compatible_ess</span><span class="p">:</span> <span class="n">Optional[List[str, …]]</span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">solvation_method</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">solvent</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">solvation_scheme_level</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>Level<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">args</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>Union<span class="p">[</span>Dict<span class="p">[</span>str<span class="p">, </span>str<span class="p">]</span><span class="p">, </span>Iterable<span class="p">, </span>str<span class="p">]</span><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/level.html#Level"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.level.Level" title="Permalink to this definition">¶</a></dt>
+<dd><p>Uniquely defines the settings used for a quantum calculation level of theory.
+Either <code class="docutils literal notranslate"><span class="pre">repr</span></code> or <code class="docutils literal notranslate"><span class="pre">method</span></code> must be specified.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>repr</strong> (<em>str</em><em>, </em><em>dict</em><em>, </em><em>Level optional</em>) – A dictionary or a simple string representation of the level of theory,
+e.g. “wb97xd/def2-tzvp”, or {‘method’: ‘b3lyp’, ‘basis’: ‘6-31g’}.
+Not in <code class="docutils literal notranslate"><span class="pre">LevelOfTheory</span></code>.</p></li>
+<li><p><strong>method</strong> (<em>str</em><em>, </em><em>optional</em>) – Quantum chemistry method.</p></li>
+<li><p><strong>basis</strong> (<em>str</em><em>, </em><em>optional</em>) – Basis set.</p></li>
+<li><p><strong>auxiliary_basis</strong> (<em>str</em><em>, </em><em>optional</em>) – Auxiliary basis set for correlated methods.</p></li>
+<li><p><strong>dispersion</strong> (<em>str</em><em>, </em><em>optional</em>) – The DFT dispersion info (if not already included in method).</p></li>
+<li><p><strong>cabs</strong> (<em>str</em><em>, </em><em>optional</em>) – Complementary auxiliary basis set for F12 calculations.</p></li>
+<li><p><strong>method_type</strong> (<em>str</em><em>, </em><em>optional</em>) – The level of theory method type (DFT, wavefunction, force field, semi-empirical,
+or composite). Not in <code class="docutils literal notranslate"><span class="pre">LevelOfTheory</span></code>.</p></li>
+<li><p><strong>software</strong> (<em>str</em><em>, </em><em>optional</em>) – Quantum chemistry software.</p></li>
+<li><p><strong>software_version</strong> (<em>Union</em><em>[</em><em>int</em><em>, </em><em>float</em><em>, </em><em>str</em><em>]</em><em>, </em><em>optional</em>) – Quantum chemistry software version.</p></li>
+<li><p><strong>solvation_method</strong> (<em>str</em><em>, </em><em>optional</em>) – Solvation method.</p></li>
+<li><p><strong>solvent</strong> (<em>str</em><em>, </em><em>optional</em>) – The solvent. Values are strings of “known” solvents, see <a class="reference external" href="https://gaussian.com/scrf/">https://gaussian.com/scrf/</a>.</p></li>
+<li><p><strong>solvation_scheme_level</strong> (<a class="reference internal" href="#arc.level.Level" title="arc.level.Level"><em>Level</em></a><em>, </em><em>optional</em>) – A Level class representing the level of theory to calculate a
+solvation energy correction at. Not in <code class="docutils literal notranslate"><span class="pre">LevelOfTheory</span></code>.</p></li>
+<li><p><strong>args</strong> (<em>Dict</em><em>[</em><em>Dict</em><em>[</em><em>str</em><em>, </em><em>str</em><em>]</em><em>]</em><em>, </em><em>optional</em>) – Additional arguments provided to the software.
+Different than the <code class="docutils literal notranslate"><span class="pre">args</span></code> in <code class="docutils literal notranslate"><span class="pre">LevelOfTheory</span></code>.</p></li>
+<li><p><strong>compatible_ess</strong> (<em>list</em><em>, </em><em>optional</em>) – Entries are names of compatible ESS. Not in <code class="docutils literal notranslate"><span class="pre">LevelOfTheory</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="arc.level.Level.as_dict">
+<code class="sig-name descname">as_dict</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; dict<a class="reference internal" href="../_modules/arc/level.html#Level.as_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.level.Level.as_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a minimal dictionary representation from which the object can be reconstructed.
+Useful for ARC restart files.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="arc.level.Level.build">
+<code class="sig-name descname">build</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/level.html#Level.build"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.level.Level.build" title="Permalink to this definition">¶</a></dt>
+<dd><p>Assign object attributes from a dictionary representation of the object or a simple string (“method/basis”).
+Useful for ARC restart files.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="arc.level.Level.deduce_method_type">
+<code class="sig-name descname">deduce_method_type</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/level.html#Level.deduce_method_type"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.level.Level.deduce_method_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine the type of a model chemistry:
+DFT, wavefunction, force field, semi-empirical, or composite</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="arc.level.Level.deduce_software">
+<code class="sig-name descname">deduce_software</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">job_type</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/level.html#Level.deduce_software"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.level.Level.deduce_software" title="Permalink to this definition">¶</a></dt>
+<dd><p>Deduce the ESS to be used for a given level of theory.
+Populates the .software attribute.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>job_type</strong> (<em>str</em><em>, </em><em>optional</em>) – An ARC job type, assists in determining the software.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="arc.level.Level.determine_compatible_ess">
+<code class="sig-name descname">determine_compatible_ess</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/level.html#Level.determine_compatible_ess"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.level.Level.determine_compatible_ess" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine compatible ESS.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="arc.level.Level.lower">
+<code class="sig-name descname">lower</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/level.html#Level.lower"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.level.Level.lower" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set arguments to lowercase.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="arc.level.Level.simple">
+<code class="sig-name descname">simple</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; str<a class="reference internal" href="../_modules/arc/level.html#Level.simple"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.level.Level.simple" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a simple humane-readable string representation of the object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The simple level of theory string representation.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="arc.level.Level.to_arkane_level_of_theory">
+<code class="sig-name descname">to_arkane_level_of_theory</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">variant</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">bac_type</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">'p'</span></em>, <em class="sig-param"><span class="n">comprehensive</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">raise_error</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">warn</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em><span class="sig-paren">)</span> &#x2192; Optional<span class="p">[</span>arkane.modelchem.LevelOfTheory<span class="p">]</span><a class="reference internal" href="../_modules/arc/level.html#Level.to_arkane_level_of_theory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.level.Level.to_arkane_level_of_theory" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert <code class="docutils literal notranslate"><span class="pre">Level</span></code> to an Arkane <code class="docutils literal notranslate"><span class="pre">LevelOfTheory</span></code> instance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>variant</strong> (<em>str</em><em>, </em><em>optional</em>) – Return a variant of the Arkane <code class="docutils literal notranslate"><span class="pre">LevelOfTheory</span></code> that matches an Arkane query.
+Allowed values are <code class="docutils literal notranslate"><span class="pre">'freq'</span></code>, <code class="docutils literal notranslate"><span class="pre">'AEC'</span></code>, <code class="docutils literal notranslate"><span class="pre">'BEC'</span></code>. Returns <code class="docutils literal notranslate"><span class="pre">None</span></code> if no
+functioning variant was found.</p></li>
+<li><p><strong>bac_type</strong> (<em>str</em><em>, </em><em>optional</em>) – The BAC type (‘p’ or ‘m’) to use when searching for a <code class="docutils literal notranslate"><span class="pre">LevelOfTheory</span></code> variant
+for BAC.</p></li>
+<li><p><strong>comprehensive</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to consider all relevant arguments if not looking for a variant.</p></li>
+<li><p><strong>raise_error</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to raise an error if an AEC variant could not be found.</p></li>
+<li><p><strong>warn</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to output a warning if an AEC variant could not be found.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The respective Arkane <code class="docutils literal notranslate"><span class="pre">LevelOfTheory</span></code> object</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>LevelOfTheory</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="scale.html" class="btn btn-neutral float-right" title="arc.utils.scale" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="common.html" class="btn btn-neutral float-left" title="arc.common" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018-2020, Alon Grinberg Dana
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
