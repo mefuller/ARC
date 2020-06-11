@@ -216,6 +216,26 @@ Note: This implementation might also be problematic for aromatic species with un
 </dd></dl>
 
 <dl class="py function">
+<dt id="arc.species.converter.calc_rmsd">
+<code class="sig-prename descclassname">arc.species.converter.</code><code class="sig-name descname">calc_rmsd</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span><span class="p">:</span> <span class="n">numpy.core.multiarray.array</span></em>, <em class="sig-param"><span class="n">y</span><span class="p">:</span> <span class="n">numpy.core.multiarray.array</span></em><span class="sig-paren">)</span> &#x2192; float<a class="reference internal" href="../_modules/arc/species/converter.html#calc_rmsd"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.converter.calc_rmsd" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the root-mean-square deviation between two matrices.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>np.array</em>) – Matrix 1.</p></li>
+<li><p><strong>y</strong> (<em>np.array</em>) – Matrix 2.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The RMSD score of two matrices.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt id="arc.species.converter.check_isomorphism">
 <code class="sig-prename descclassname">arc.species.converter.</code><code class="sig-name descname">check_isomorphism</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mol1</span></em>, <em class="sig-param"><span class="n">mol2</span></em>, <em class="sig-param"><span class="n">filter_structures</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">convert_to_single_bonds</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/species/converter.html#check_isomorphism"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.converter.check_isomorphism" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert <code class="docutils literal notranslate"><span class="pre">mol1</span></code> and <code class="docutils literal notranslate"><span class="pre">mol2</span></code> to RMG Species objects, and generate resonance structures.
@@ -281,8 +301,43 @@ If a map isn’t given, a trivial one will be added.</p>
 </dd></dl>
 
 <dl class="py function">
+<dt id="arc.species.converter.cluster_confs_by_rmsd">
+<code class="sig-prename descclassname">arc.species.converter.</code><code class="sig-name descname">cluster_confs_by_rmsd</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">xyzs</span><span class="p">:</span> <span class="n">Iterable<span class="p">[</span>Dict<span class="p">[</span>str<span class="p">, </span>tuple<span class="p">]</span><span class="p">]</span></span></em>, <em class="sig-param"><span class="n">rmsd_threshold</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">0.01</span></em><span class="sig-paren">)</span> &#x2192; Tuple<span class="p">[</span>Dict<span class="p">[</span>str<span class="p">, </span>tuple<span class="p">]</span><span class="p">]</span><a class="reference internal" href="../_modules/arc/species/converter.html#cluster_confs_by_rmsd"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.converter.cluster_confs_by_rmsd" title="Permalink to this definition">¶</a></dt>
+<dd><p>Cluster conformers with the same atom orders using RMSD of distance matrices. Work for both TS and non-TS conformers.</p>
+<p>Intended for finding structurally distinct conformers from a pool of conformers.
+Suitable scenarios:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p>filter a pool of conformers with their geometry optimized at some level.</p></li>
+</ol>
+</div></blockquote>
+<dl class="simple">
+<dt>Not suitable for:</dt><dd><ol class="arabic simple">
+<li><p>cluster conformers (not optimized) that are sampling of a well or a saddle point (these conformers may have
+large difference in RMSE, but they really should be representing the same well or saddle point).</p></li>
+</ol>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>xyzs</strong> (<em>Iterable</em>) – Conformers with the same atom orders.</p></li>
+<li><p><strong>rmsd_threshold</strong> (<em>float</em>) – The minimum RMSD to consider two conformers as distinct
+(i.e., if rmsd &gt; rmsd_threshold, then two conformers are considered distinctive).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Conformers with distinctive geometries.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Tuple[Dict[str, tuple]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt id="arc.species.converter.compare_confs">
-<code class="sig-prename descclassname">arc.species.converter.</code><code class="sig-name descname">compare_confs</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">xyz1</span><span class="p">:</span> <span class="n">dict</span></em>, <em class="sig-param"><span class="n">xyz2</span><span class="p">:</span> <span class="n">dict</span></em>, <em class="sig-param"><span class="n">rtol</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">1e-05</span></em>, <em class="sig-param"><span class="n">atol</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">1e-05</span></em><span class="sig-paren">)</span> &#x2192; bool<a class="reference internal" href="../_modules/arc/species/converter.html#compare_confs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.converter.compare_confs" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">arc.species.converter.</code><code class="sig-name descname">compare_confs</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">xyz1</span><span class="p">:</span> <span class="n">dict</span></em>, <em class="sig-param"><span class="n">xyz2</span><span class="p">:</span> <span class="n">dict</span></em>, <em class="sig-param"><span class="n">rtol</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">1e-05</span></em>, <em class="sig-param"><span class="n">atol</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">1e-05</span></em>, <em class="sig-param"><span class="n">rmsd_score</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em><span class="sig-paren">)</span> &#x2192; Union<span class="p">[</span>float<span class="p">, </span>bool<span class="p">]</span><a class="reference internal" href="../_modules/arc/species/converter.html#compare_confs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.converter.compare_confs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compare two Cartesian coordinates representing conformers using distance matrices.</p>
 <p>The relative difference (<code class="docutils literal notranslate"><span class="pre">rtol</span></code> * abs(value in xyz2)) and the absolute difference <code class="docutils literal notranslate"><span class="pre">atol</span></code>
 are added together to compare against the absolute difference between (value in xyz1) and (value in xyz2).</p>
@@ -293,13 +348,19 @@ are added together to compare against the absolute difference between (value in 
 <li><p><strong>xyz2</strong> (<em>dict</em>) – Conformer 2.</p></li>
 <li><p><strong>rtol</strong> (<em>float</em>) – The relative tolerance parameter (see Notes).</p></li>
 <li><p><strong>atol</strong> (<em>float</em>) – The absolute tolerance parameter (see Notes).</p></li>
+<li><p><strong>rmsd_score</strong> (<em>bool</em>) – Whether to output a root-mean-square deviation score of the two distance matrices.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Whether the two conformers have almost equal atom distances. <code class="docutils literal notranslate"><span class="pre">True</span></code> if they do.</p>
+<dd class="field-even"><p><ul class="simple">
+<li><p>If <code class="docutils literal notranslate"><span class="pre">rmsd_score</span></code> is <code class="docutils literal notranslate"><span class="pre">False</span></code> (default): Whether the two conformers have almost equal atom distances.
+<code class="docutils literal notranslate"><span class="pre">True</span></code> if they do.</p></li>
+<li><p>If <code class="docutils literal notranslate"><span class="pre">rmsd_score</span></code> is <code class="docutils literal notranslate"><span class="pre">True</span></code>: The RMSD score of two distance matrices.</p></li>
+</ul>
+</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>bool</p>
+<dd class="field-odd"><p>Union[float, bool]</p>
 </dd>
 </dl>
 </dd></dl>

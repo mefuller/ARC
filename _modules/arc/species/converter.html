@@ -164,7 +164,7 @@
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
 
 <span class="kn">import</span> <span class="nn">pybel</span>
 <span class="kn">import</span> <span class="nn">qcelemental</span> <span class="k">as</span> <span class="nn">qcel</span>
@@ -1804,7 +1804,8 @@
                   <span class="n">xyz2</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
                   <span class="n">rtol</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-5</span><span class="p">,</span>
                   <span class="n">atol</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-5</span><span class="p">,</span>
-                  <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+                  <span class="n">rmsd_score</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                  <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">bool</span><span class="p">]:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Compare two Cartesian coordinates representing conformers using distance matrices.</span>
 
@@ -1816,14 +1817,70 @@
 <span class="sd">        xyz2 (dict): Conformer 2.</span>
 <span class="sd">        rtol (float): The relative tolerance parameter (see Notes).</span>
 <span class="sd">        atol (float): The absolute tolerance parameter (see Notes).</span>
+<span class="sd">        rmsd_score (bool): Whether to output a root-mean-square deviation score of the two distance matrices.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        bool: Whether the two conformers have almost equal atom distances. ``True`` if they do.</span>
+<span class="sd">        Union[float, bool]:</span>
+<span class="sd">            - If ``rmsd_score`` is ``False`` (default): Whether the two conformers have almost equal atom distances.</span>
+<span class="sd">              ``True`` if they do.</span>
+<span class="sd">            - If ``rmsd_score`` is ``True``: The RMSD score of two distance matrices.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">xyz1</span><span class="p">,</span> <span class="n">xyz2</span> <span class="o">=</span> <span class="n">check_xyz_dict</span><span class="p">(</span><span class="n">xyz1</span><span class="p">),</span> <span class="n">check_xyz_dict</span><span class="p">(</span><span class="n">xyz2</span><span class="p">)</span>
     <span class="n">dmat1</span><span class="p">,</span> <span class="n">dmat2</span> <span class="o">=</span> <span class="n">xyz_to_dmat</span><span class="p">(</span><span class="n">xyz1</span><span class="p">),</span> <span class="n">xyz_to_dmat</span><span class="p">(</span><span class="n">xyz2</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">almost_equal_lists</span><span class="p">(</span><span class="n">dmat1</span><span class="p">,</span> <span class="n">dmat2</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="n">rtol</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="n">atol</span><span class="p">)</span></div>
+    <span class="k">if</span> <span class="n">rmsd_score</span><span class="p">:</span>
+        <span class="c1"># distance matrix is symmetric, only need the upper triangular part to compute rmsd</span>
+        <span class="n">rmsd</span> <span class="o">=</span> <span class="n">calc_rmsd</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">triu</span><span class="p">(</span><span class="n">dmat1</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">triu</span><span class="p">(</span><span class="n">dmat2</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">rmsd</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">almost_equal_lists</span><span class="p">(</span><span class="n">dmat1</span><span class="p">,</span> <span class="n">dmat2</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="n">rtol</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="n">atol</span><span class="p">)</span></div>
 
+<div class="viewcode-block" id="calc_rmsd"><a class="viewcode-back" href="../../../api/converter.html#arc.species.converter.calc_rmsd">[docs]</a><span class="k">def</span> <span class="nf">calc_rmsd</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
+              <span class="n">y</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
+              <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute the root-mean-square deviation between two matrices.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        x (np.array): Matrix 1.</span>
+<span class="sd">        y (np.array): Matrix 2.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        float: The RMSD score of two matrices.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="n">x</span> <span class="o">-</span> <span class="n">y</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">sqr_sum</span> <span class="o">=</span> <span class="p">(</span><span class="n">d</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    <span class="n">rmsd</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">sqr_sum</span><span class="o">/</span><span class="n">n</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">rmsd</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="cluster_confs_by_rmsd"><a class="viewcode-back" href="../../../api/converter.html#arc.species.converter.cluster_confs_by_rmsd">[docs]</a><span class="k">def</span> <span class="nf">cluster_confs_by_rmsd</span><span class="p">(</span><span class="n">xyzs</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">]],</span>
+                          <span class="n">rmsd_threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-2</span><span class="p">,</span>
+                          <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">]]:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Cluster conformers with the same atom orders using RMSD of distance matrices. Work for both TS and non-TS conformers.</span>
+
+<span class="sd">    Intended for finding structurally distinct conformers from a pool of conformers.</span>
+<span class="sd">    Suitable scenarios:</span>
+<span class="sd">        1. filter a pool of conformers with their geometry optimized at some level.</span>
+<span class="sd">    Not suitable for:</span>
+<span class="sd">        1. cluster conformers (not optimized) that are sampling of a well or a saddle point (these conformers may have</span>
+<span class="sd">           large difference in RMSE, but they really should be representing the same well or saddle point).</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        xyzs (Iterable): Conformers with the same atom orders.</span>
+<span class="sd">        rmsd_threshold (float): The minimum RMSD to consider two conformers as distinct</span>
+<span class="sd">                                (i.e., if rmsd &gt; rmsd_threshold, then two conformers are considered distinctive).</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Tuple[Dict[str, tuple]]: Conformers with distinctive geometries.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">xyzs</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">xyzs</span><span class="p">)</span>
+    <span class="n">distinct_xyzs</span> <span class="o">=</span> <span class="p">[</span><span class="n">xyzs</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+    <span class="k">for</span> <span class="n">xyz</span> <span class="ow">in</span> <span class="n">xyzs</span><span class="p">:</span>
+        <span class="n">rmsd_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">compare_confs</span><span class="p">(</span><span class="n">xyz</span><span class="p">,</span> <span class="n">distinct_xyz</span><span class="p">,</span> <span class="n">rmsd_score</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">for</span> <span class="n">distinct_xyz</span> <span class="ow">in</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">distinct_xyzs</span><span class="p">)]</span>
+        <span class="k">if</span> <span class="nb">all</span><span class="p">([</span><span class="n">rmsd</span> <span class="o">&gt;</span> <span class="n">rmsd_threshold</span> <span class="k">for</span> <span class="n">rmsd</span> <span class="ow">in</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">rmsd_list</span><span class="p">)]):</span>
+            <span class="n">distinct_xyzs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">xyz</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">distinct_xyzs</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="ics_to_scan_constraints"><a class="viewcode-back" href="../../../api/converter.html#arc.species.converter.ics_to_scan_constraints">[docs]</a><span class="k">def</span> <span class="nf">ics_to_scan_constraints</span><span class="p">(</span><span class="n">ics</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
                             <span class="n">software</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;gaussian&#39;</span><span class="p">,</span>
