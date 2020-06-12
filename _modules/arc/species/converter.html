@@ -164,7 +164,7 @@
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
 
 <span class="kn">import</span> <span class="nn">pybel</span>
 <span class="kn">import</span> <span class="nn">qcelemental</span> <span class="k">as</span> <span class="nn">qcel</span>
@@ -961,20 +961,28 @@
     <span class="k">raise</span> <span class="n">ConverterError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Could not find var &quot;</span><span class="si">{</span><span class="n">var</span><span class="si">}</span><span class="s1">&quot; in zmat:</span><span class="se">\n</span><span class="si">{</span><span class="n">zmat_str</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="get_zmat_param_value"><a class="viewcode-back" href="../../../api/converter.html#arc.species.converter.get_zmat_param_value">[docs]</a><span class="k">def</span> <span class="nf">get_zmat_param_value</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">indices</span><span class="p">,</span> <span class="n">mol</span><span class="p">):</span>
+<div class="viewcode-block" id="get_zmat_param_value"><a class="viewcode-back" href="../../../api/converter.html#arc.species.converter.get_zmat_param_value">[docs]</a><span class="k">def</span> <span class="nf">get_zmat_param_value</span><span class="p">(</span><span class="n">coords</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">],</span>
+                         <span class="n">indices</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+                         <span class="n">mol</span><span class="p">:</span> <span class="n">Molecule</span><span class="p">,</span>
+                         <span class="n">index</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+                         <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Generates a zmat similarly to modify_coords(),</span>
 <span class="sd">    but instead of modifying it, only reports on the value of a requested parameter.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        coords (dict): Either cartesian (xyz) or internal (zmat) coordinates.</span>
-<span class="sd">        indices (list): The indices to change (0-indexed). Specifying a list of length 2, 3, or 4</span>
-<span class="sd">                        will result in a length, angle, or a dihedral angle parameter, respectively.</span>
+<span class="sd">        indices (list): The indices to change. Specifying a list of length 2, 3, or 4 will result in a</span>
+<span class="sd">                        bond length, angle, or a dihedral angle parameter, respectively.</span>
 <span class="sd">        mol (Molecule, optional): The corresponding RMG molecule with the connectivity information.</span>
+<span class="sd">        index (bool, optional): Whether the specified atoms are 0- or 1-indexed.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        float: The parameter value in Angstrom or degrees.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">index</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">index</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;The index argument must be either 0 or 1, got </span><span class="si">{</span><span class="n">index</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">)</span>
+    <span class="n">indices</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="n">index</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">indices</span><span class="p">]</span>  <span class="c1"># make sure indices are 0-indexed</span>
     <span class="n">modification_type</span> <span class="o">=</span> <span class="n">KEY_FROM_LEN</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">indices</span><span class="p">)]</span> <span class="o">+</span> <span class="s1">&#39;_&#39;</span> <span class="o">+</span> <span class="s1">&#39;atom&#39;</span>  <span class="c1"># e.g., R_atom</span>
     <span class="k">if</span> <span class="s1">&#39;map&#39;</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">coords</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
         <span class="c1"># a zmat was given, we actually need xyz to recreate a specific zmat for the parameter modification.</span>
@@ -992,11 +1000,19 @@
         <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="n">zmat</span><span class="p">[</span><span class="s2">&quot;vars&quot;</span><span class="p">][</span><span class="n">par</span><span class="p">]</span> <span class="k">for</span> <span class="n">par</span> <span class="ow">in</span> <span class="n">param</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="modify_coords"><a class="viewcode-back" href="../../../api/converter.html#arc.species.converter.modify_coords">[docs]</a><span class="k">def</span> <span class="nf">modify_coords</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">indices</span><span class="p">,</span> <span class="n">new_value</span><span class="p">,</span> <span class="n">modification_type</span><span class="p">,</span> <span class="n">mol</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="modify_coords"><a class="viewcode-back" href="../../../api/converter.html#arc.species.converter.modify_coords">[docs]</a><span class="k">def</span> <span class="nf">modify_coords</span><span class="p">(</span><span class="n">coords</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">],</span>
+                  <span class="n">indices</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+                  <span class="n">new_value</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+                  <span class="n">modification_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                  <span class="n">mol</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Molecule</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                  <span class="n">index</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+                  <span class="n">fragments</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                  <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">]:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Modify either a bond length, angle, or dihedral angle in the given coordinates.</span>
-<span class="sd">    The coordinates input could either be cartesian (preferred) or internal (will be first converter to cartesian,</span>
-<span class="sd">    then to internal back again since a specific zmat must be created).</span>
+<span class="sd">    The coordinates input could either be cartesian (preferred) or internal</span>
+<span class="sd">    (will be first converter to cartesian, then to internal back again</span>
+<span class="sd">    since a specific zmat must be created).</span>
 <span class="sd">    Internal coordinates will be used for the modification (using folding and unfolding).</span>
 
 <span class="sd">    Specifying an &#39;atom&#39; modification type will only translate/rotate the atom represented by the first index</span>
@@ -1008,21 +1024,26 @@
 
 <span class="sd">    Args:</span>
 <span class="sd">        coords (dict): Either cartesian (xyz) or internal (zmat) coordinates.</span>
-<span class="sd">        indices (list): The indices to change (0-indexed). Specifying a list of length 2, 3, or 4</span>
-<span class="sd">                        will result in changing a bond length, angle, or a dihedral angle, respectively.</span>
+<span class="sd">        indices (list): The indices to change. Specifying a list of length 2, 3, or 4 will result in changing</span>
+<span class="sd">                        a bond length, angle, or a dihedral angle, respectively.</span>
 <span class="sd">        new_value (float): The new value to set (in Angstrom or degrees).</span>
 <span class="sd">        modification_type (str): Either &#39;atom&#39;, &#39;group&#39;, or &#39;groups&#39; (&#39;groups&#39; is only allowed for dihedral angles).</span>
 <span class="sd">                                 Note that D &#39;groups&#39; is a composite constraint, equivalent to calling D &#39;group&#39;</span>
 <span class="sd">                                 for each 1st neighboring  atom in a torsion top.</span>
 <span class="sd">        mol (Molecule, optional): The corresponding RMG molecule with the connectivity information.</span>
 <span class="sd">                                  Mandatory if the modification type is &#39;group&#39; or &#39;groups&#39;.</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        dict: The respective cartesian (xyz) coordinates reflecting the desired modification.</span>
+<span class="sd">        index (bool, optional): Whether the specified atoms in ``indices`` and ``fragments`` are 0- or 1-indexed.</span>
+<span class="sd">        fragments (List[List[int]], optional):</span>
+<span class="sd">            Fragments represented by the species, i.e., as in a VdW well or a TS.</span>
+<span class="sd">            Entries are atom index lists of all atoms in a fragment, each list represents a different fragment.</span>
+<span class="sd">            indices are 0-indexed.</span>
 
 <span class="sd">    Raises:</span>
 <span class="sd">        InputError: If a group/s modification type is requested but ``mol`` is ``None``,</span>
 <span class="sd">                    or if a &#39;groups&#39; modification type was specified for R or A.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        dict: The respective cartesian (xyz) coordinates reflecting the desired modification.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">modification_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;atom&#39;</span><span class="p">,</span> <span class="s1">&#39;group&#39;</span><span class="p">,</span> <span class="s1">&#39;groups&#39;</span><span class="p">]:</span>
         <span class="k">raise</span> <span class="n">InputError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Allowed modification types are atom, group, or groups, got: </span><span class="si">{</span><span class="n">modification_type</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">)</span>
@@ -1032,12 +1053,29 @@
     <span class="k">if</span> <span class="n">modification_type</span> <span class="o">==</span> <span class="s1">&#39;groups&#39;</span> <span class="ow">and</span> <span class="n">modification_type</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;D&#39;</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">InputError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;The &quot;groups&quot; modification type is only supported for dihedrals (D), &#39;</span>
                          <span class="sa">f</span><span class="s1">&#39;not for an </span><span class="si">{</span><span class="n">modification_type</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s1"> parameter.&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">index</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">index</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;The index argument must be either 0 or 1, got </span><span class="si">{</span><span class="n">index</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">)</span>
     <span class="k">if</span> <span class="s1">&#39;map&#39;</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">coords</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
         <span class="c1"># a zmat was given, we actually need xyz to recreate a specific zmat for the parameter modification.</span>
         <span class="n">xyz</span> <span class="o">=</span> <span class="n">zmat_to_xyz</span><span class="p">(</span><span class="n">zmat</span><span class="o">=</span><span class="n">coords</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="c1"># coords represents xyz</span>
         <span class="n">xyz</span> <span class="o">=</span> <span class="n">coords</span>
+
+    <span class="n">indices</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="n">index</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">indices</span><span class="p">]</span>  <span class="c1"># make sure indices are 0-indexed</span>
+    <span class="k">if</span> <span class="n">fragments</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">fragments</span> <span class="o">=</span> <span class="p">[</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">xyz</span><span class="p">[</span><span class="s1">&#39;symbols&#39;</span><span class="p">])))]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">new_fragments</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">fragment</span> <span class="ow">in</span> <span class="n">fragments</span><span class="p">:</span>
+            <span class="n">new_fragments</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">f</span> <span class="o">-</span> <span class="n">index</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">fragment</span><span class="p">])</span>  <span class="c1"># make sure indices are 0-indexed</span>
+        <span class="n">fragments</span> <span class="o">=</span> <span class="n">new_fragments</span>
+
+    <span class="k">if</span> <span class="nb">any</span><span class="p">([</span><span class="n">i</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">indices</span><span class="p">]):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;indices cannot be negative, got </span><span class="si">{</span><span class="n">indices</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">fragment</span> <span class="ow">in</span> <span class="n">fragments</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">any</span><span class="p">([</span><span class="n">f</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">fragment</span><span class="p">]):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;fragment indices cannot be negative, got </span><span class="si">{</span><span class="n">fragments</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
 
     <span class="n">constraints_list</span> <span class="o">=</span> <span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">indices</span><span class="p">)]</span>
     <span class="k">if</span> <span class="n">modification_type</span> <span class="o">==</span> <span class="s1">&#39;D_groups&#39;</span><span class="p">:</span>
@@ -1052,7 +1090,7 @@
     <span class="n">increment</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="k">for</span> <span class="n">constraint</span> <span class="ow">in</span> <span class="n">constraints_list</span><span class="p">:</span>
         <span class="n">constraint_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">modification_type</span><span class="p">:</span> <span class="p">[</span><span class="n">constraint</span><span class="p">]}</span>
-        <span class="n">zmat</span> <span class="o">=</span> <span class="n">xyz_to_zmat</span><span class="p">(</span><span class="n">xyz</span><span class="o">=</span><span class="n">new_xyz</span><span class="p">,</span> <span class="n">mol</span><span class="o">=</span><span class="n">mol</span><span class="p">,</span> <span class="n">consolidate</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">constraints</span><span class="o">=</span><span class="n">constraint_dict</span><span class="p">)</span>
+        <span class="n">zmat</span> <span class="o">=</span> <span class="n">xyz_to_zmat</span><span class="p">(</span><span class="n">xyz</span><span class="o">=</span><span class="n">new_xyz</span><span class="p">,</span> <span class="n">mol</span><span class="o">=</span><span class="n">mol</span><span class="p">,</span> <span class="n">consolidate</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">constraints</span><span class="o">=</span><span class="n">constraint_dict</span><span class="p">,</span> <span class="n">fragments</span><span class="o">=</span><span class="n">fragments</span><span class="p">)</span>
         <span class="n">param</span> <span class="o">=</span> <span class="n">get_parameter_from_atom_indices</span><span class="p">(</span><span class="n">zmat</span><span class="p">,</span> <span class="n">constraint</span><span class="p">,</span> <span class="n">xyz_indexed</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">modification_type</span> <span class="o">==</span> <span class="s1">&#39;D_group&#39;</span> <span class="ow">and</span> <span class="n">increment</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -1235,7 +1273,6 @@
         <span class="k">except</span> <span class="n">SpeciesError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Cannot infer 2D graph connectivity, failed to set species multiplicity with the &#39;</span>
                            <span class="sa">f</span><span class="s1">&#39;following error:</span><span class="se">\n</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
-            <span class="k">return</span> <span class="n">mol_s1_updated</span><span class="p">,</span> <span class="n">mol_bo</span>
 
     <span class="k">return</span> <span class="n">mol_s1_updated</span><span class="p">,</span> <span class="n">mol_bo</span></div>
 

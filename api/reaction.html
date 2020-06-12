@@ -189,7 +189,7 @@
 <p>A module for representing a reaction.</p>
 <dl class="py class">
 <dt id="arc.reaction.ARCReaction">
-<em class="property">class </em><code class="sig-prename descclassname">arc.reaction.</code><code class="sig-name descname">ARCReaction</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">label</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">reactants</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">products</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">ts_label</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">rmg_reaction</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">ts_methods</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">ts_xyz_guess</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">multiplicity</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">charge</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">reaction_dict</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/reaction.html#ARCReaction"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.reaction.ARCReaction" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">arc.reaction.</code><code class="sig-name descname">ARCReaction</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">label</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">''</span></em>, <em class="sig-param"><span class="n">reactants</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>List<span class="p">[</span>str<span class="p">]</span><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">products</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>List<span class="p">[</span>str<span class="p">]</span><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">ts_label</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">rmg_reaction</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>rmgpy.reaction.Reaction<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">ts_methods</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>List<span class="p">[</span>str<span class="p">]</span><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">ts_xyz_guess</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>list<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">multiplicity</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>int<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">charge</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">0</span></em>, <em class="sig-param"><span class="n">reaction_dict</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>dict<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">preserve_param_in_scan</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>list<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/reaction.html#ARCReaction"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.reaction.ARCReaction" title="Permalink to this definition">¶</a></dt>
 <dd><p>A class for representing a chemical reaction.</p>
 <p>Either give reactants and products (just list of labels corresponding to <a class="reference internal" href="species.html#species"><span class="std std-ref">ARCSpecies</span></a>),
 a reaction label, or an RMG Reaction object.
@@ -211,6 +211,9 @@ is empty (passing an empty list), then xyz (user guess) must be given.</p></li>
 <li><p><strong>multiplicity</strong> (<em>int</em><em>, </em><em>optional</em>) – The reaction surface multiplicity. A trivial guess will be made unless provided.</p></li>
 <li><p><strong>charge</strong> (<em>int</em><em>, </em><em>optional</em>) – The reaction surface charge.</p></li>
 <li><p><strong>reaction_dict</strong> (<em>dict</em><em>, </em><em>optional</em>) – A dictionary to create this object from (used when restarting ARC).</p></li>
+<li><p><strong>preserve_param_in_scan</strong> (<em>list</em><em>, </em><em>optional</em>) – Entries are length two iterables of atom indices (1-indexed)
+between which distances and dihedrals of these pivots must be
+preserved. Used for identification of rotors which break a TS.</p></li>
 </ul>
 </dd>
 </dl>
@@ -437,6 +440,18 @@ corresponding TS <a class="reference internal" href="species.html#species"><span
 </dl>
 </dd></dl>
 
+<dl class="py attribute">
+<dt id="arc.reaction.ARCReaction.preserve_param_in_scan">
+<code class="sig-name descname">preserve_param_in_scan</code><a class="headerlink" href="#arc.reaction.ARCReaction.preserve_param_in_scan" title="Permalink to this definition">¶</a></dt>
+<dd><p>Entries are length two iterables of atom indices (1-indexed) between which
+distances and dihedrals of these pivots must be preserved.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py method">
 <dt id="arc.reaction.ARCReaction.arc_species_from_rmg_reaction">
 <code class="sig-name descname">arc_species_from_rmg_reaction</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/reaction.html#ARCReaction.arc_species_from_rmg_reaction"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.reaction.ARCReaction.arc_species_from_rmg_reaction" title="Permalink to this definition">¶</a></dt>
@@ -504,6 +519,12 @@ If unspecified, user guesses and the ts_species will be checked.</p></li>
 </dd></dl>
 
 <dl class="py method">
+<dt id="arc.reaction.ARCReaction.determine_preserve_distance_in_scan">
+<code class="sig-name descname">determine_preserve_distance_in_scan</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/reaction.html#ARCReaction.determine_preserve_distance_in_scan"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.reaction.ARCReaction.determine_preserve_distance_in_scan" title="Permalink to this definition">¶</a></dt>
+<dd><p>Todo: Determine which atom labels participate in the reaction coordinate from the RMG reaction family</p>
+</dd></dl>
+
+<dl class="py method">
 <dt id="arc.reaction.ARCReaction.determine_rxn_charge">
 <code class="sig-name descname">determine_rxn_charge</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/reaction.html#ARCReaction.determine_rxn_charge"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.reaction.ARCReaction.determine_rxn_charge" title="Permalink to this definition">¶</a></dt>
 <dd><p>A helper function for determining the surface charge</p>
@@ -518,7 +539,7 @@ If unspecified, user guesses and the ts_species will be checked.</p></li>
 <dl class="py method">
 <dt id="arc.reaction.ARCReaction.from_dict">
 <code class="sig-name descname">from_dict</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">reaction_dict</span><span class="p">:</span> <span class="n">dict</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/reaction.html#ARCReaction.from_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.reaction.ARCReaction.from_dict" title="Permalink to this definition">¶</a></dt>
-<dd><p>A helper function for loading this object from a dictionary in a YAML file for restarting ARC</p>
+<dd><p>A helper function for loading this object from a dictionary in a YAML file for restarting ARC.</p>
 </dd></dl>
 
 <dl class="py method">

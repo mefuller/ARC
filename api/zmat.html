@@ -204,7 +204,8 @@
  <span class="p">}</span>
 </pre></div>
 </div>
-<p>Isotope information is not saved in the zmat, it exists in the xyz dic, and can be attained using the zmat map if needed.</p>
+<p>Isotope information is not saved in the zmat, it exists in the xyz dict,
+and can be attained using the zmat map if needed.</p>
 <p>Note that a 180 (or 0) degree for an angle in a Z matrix is not allowed, since a GIC (Generalized Internal Coordinates)
 optimization has no defined derivative at 180 degrees. Instead, a dummy atom ‘X’ is used.
 Dihedral angles may have any value.</p>
@@ -388,7 +389,7 @@ for consolidating almost equal internal coordinates.</p></li>
 
 <dl class="py function">
 <dt id="arc.species.zmat.determine_a_atoms">
-<code class="sig-prename descclassname">arc.species.zmat.</code><code class="sig-name descname">determine_a_atoms</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">zmat</span></em>, <em class="sig-param"><span class="n">coords</span></em>, <em class="sig-param"><span class="n">connectivity</span></em>, <em class="sig-param"><span class="n">r_atoms</span></em>, <em class="sig-param"><span class="n">n</span></em>, <em class="sig-param"><span class="n">atom_index</span></em>, <em class="sig-param"><span class="n">a_constraint</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">a_constraint_type</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">trivial_assignment</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/species/zmat.html#determine_a_atoms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.zmat.determine_a_atoms" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">arc.species.zmat.</code><code class="sig-name descname">determine_a_atoms</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">zmat</span><span class="p">:</span> <span class="n">Dict<span class="p">[</span>str<span class="p">, </span>Union<span class="p">[</span>dict<span class="p">, </span>tuple<span class="p">]</span><span class="p">]</span></span></em>, <em class="sig-param"><span class="n">coords</span><span class="p">:</span> <span class="n">Union<span class="p">[</span>list<span class="p">, </span>tuple<span class="p">]</span></span></em>, <em class="sig-param"><span class="n">connectivity</span><span class="p">:</span> <span class="n">Dict<span class="p">[</span>int<span class="p">, </span>List<span class="p">[</span>int<span class="p">]</span><span class="p">]</span></span></em>, <em class="sig-param"><span class="n">r_atoms</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>List<span class="p">[</span>int<span class="p">]</span><span class="p">]</span></span></em>, <em class="sig-param"><span class="n">n</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">atom_index</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">a_constraint</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>Tuple<span class="p">[</span>int<span class="p">]</span><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">a_constraint_type</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">trivial_assignment</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">fragments</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>List<span class="p">[</span>List<span class="p">[</span>int<span class="p">]</span><span class="p">]</span><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span> &#x2192; Optional<span class="p">[</span>List<span class="p">[</span>int<span class="p">]</span><span class="p">]</span><a class="reference internal" href="../_modules/arc/species/zmat.html#determine_a_atoms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.zmat.determine_a_atoms" title="Permalink to this definition">¶</a></dt>
 <dd><p>Determine the atoms for defining the angle A.
 This should be in the form: [n, r_atoms[1], &lt;some other atom already in the zmat&gt;]</p>
 <dl class="field-list simple">
@@ -407,23 +408,26 @@ constrained. <code class="docutils literal notranslate"><span class="pre">None</
 <li><p><strong>a_constraint_type</strong> (<em>str</em><em>, </em><em>optional</em>) – The A constraint type (‘A_atom’, or ‘A_group’).</p></li>
 <li><p><strong>trivial_assignment</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to attempt assigning atoms without considering connectivity
 if the connectivity assignment fails.</p></li>
+<li><p><strong>fragments</strong> (<em>List</em><em>[</em><em>List</em><em>[</em><em>int</em><em>]</em><em>]</em><em>, </em><em>optional</em>) – Fragments represented by the species, i.e., as in a VdW well or a TS.
+Entries are atom index lists of all atoms in a fragment, each list represents a different fragment.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>The 0-indexed z-mat A atoms.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>list</p>
-</dd>
 <dt class="field-even">Raises</dt>
-<dd class="field-even"><p><strong>ZMatError</strong> – If the A atoms could not be determined.</p>
+<dd class="field-even"><p><strong>ZMatError</strong> – If the A atoms could not be determined.
+    indices are 0-indexed.</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The 0-indexed z-mat A atoms.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>list</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
 <dt id="arc.species.zmat.determine_d_atoms">
-<code class="sig-prename descclassname">arc.species.zmat.</code><code class="sig-name descname">determine_d_atoms</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">zmat</span></em>, <em class="sig-param"><span class="n">xyz</span></em>, <em class="sig-param"><span class="n">coords</span></em>, <em class="sig-param"><span class="n">connectivity</span></em>, <em class="sig-param"><span class="n">a_atoms</span></em>, <em class="sig-param"><span class="n">n</span></em>, <em class="sig-param"><span class="n">atom_index</span></em>, <em class="sig-param"><span class="n">d_constraint</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">d_constraint_type</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">specific_atom</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">dummy</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/species/zmat.html#determine_d_atoms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.zmat.determine_d_atoms" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">arc.species.zmat.</code><code class="sig-name descname">determine_d_atoms</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">zmat</span><span class="p">:</span> <span class="n">Dict<span class="p">[</span>str<span class="p">, </span>Union<span class="p">[</span>dict<span class="p">, </span>tuple<span class="p">]</span><span class="p">]</span></span></em>, <em class="sig-param"><span class="n">xyz</span><span class="p">:</span> <span class="n">Dict<span class="p">[</span>str<span class="p">, </span>tuple<span class="p">]</span></span></em>, <em class="sig-param"><span class="n">coords</span><span class="p">:</span> <span class="n">Union<span class="p">[</span>list<span class="p">, </span>tuple<span class="p">]</span></span></em>, <em class="sig-param"><span class="n">connectivity</span><span class="p">:</span> <span class="n">Dict<span class="p">[</span>int<span class="p">, </span>List<span class="p">[</span>int<span class="p">]</span><span class="p">]</span></span></em>, <em class="sig-param"><span class="n">a_atoms</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>List<span class="p">[</span>int<span class="p">]</span><span class="p">]</span></span></em>, <em class="sig-param"><span class="n">n</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">atom_index</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">d_constraint</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>Tuple<span class="p">[</span>int<span class="p">]</span><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">d_constraint_type</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">specific_atom</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>int<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">dummy</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">fragments</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>List<span class="p">[</span>List<span class="p">[</span>int<span class="p">]</span><span class="p">]</span><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span> &#x2192; Optional<span class="p">[</span>List<span class="p">[</span>int<span class="p">]</span><span class="p">]</span><a class="reference internal" href="../_modules/arc/species/zmat.html#determine_d_atoms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.zmat.determine_d_atoms" title="Permalink to this definition">¶</a></dt>
 <dd><p>Determine the atoms for defining the dihedral angle D.
 This should be in the form: [n, a_atoms[1], a_atoms[2], &lt;some other atom already in the zmat&gt;]</p>
 <dl class="field-list simple">
@@ -438,21 +442,24 @@ This should be in the form: [n, a_atoms[1], a_atoms[2], &lt;some other atom alre
 <li><p><strong>atom_index</strong> (<em>int</em>) – The 0-index of the atom in the molecule or cartesian coordinates to be added.
 (<code class="docutils literal notranslate"><span class="pre">n</span></code> and <code class="docutils literal notranslate"><span class="pre">atom_index</span></code> refer to the same atom, but it might have different indices
 in the zmat and the molecule/xyz)</p></li>
-<li><p><strong>d_constraint</strong> (<em>tuple</em><em>, </em><em>optional</em>) – A-type constraints. The atom indices to which the atom being checked is
+<li><p><strong>d_constraint</strong> (<em>tuple</em><em>, </em><em>optional</em>) – D-type constraints. The atom indices to which the atom being checked is
 constrained. <code class="docutils literal notranslate"><span class="pre">None</span></code> if it is not constrained.</p></li>
 <li><p><strong>d_constraint_type</strong> (<em>str</em><em>, </em><em>optional</em>) – The D constraint type (‘D_atom’, or ‘D_group’).</p></li>
 <li><p><strong>specific_atom</strong> (<em>int</em><em>, </em><em>optional</em>) – A 0-index of the zmat atom to be added to a_atoms to create d_atoms.</p></li>
 <li><p><strong>dummy</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether the atom being added (n) represents a dummy atom. <code class="docutils literal notranslate"><span class="pre">True</span></code> if it does.</p></li>
+<li><p><strong>fragments</strong> (<em>List</em><em>[</em><em>List</em><em>[</em><em>int</em><em>]</em><em>]</em><em>, </em><em>optional</em>) – Fragments represented by the species, i.e., as in a VdW well or a TS.
+Entries are atom index lists of all atoms in a fragment, each list represents a different fragment.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>The 0-indexed z-mat D atoms.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>list</p>
-</dd>
 <dt class="field-even">Raises</dt>
-<dd class="field-even"><p><strong>ZMatError</strong> – If the A atoms could not be determined.</p>
+<dd class="field-even"><p><strong>ZMatError</strong> – If the A atoms could not be determined.
+    indices are 0-indexed.</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The 0-indexed z-mat D atoms.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>list</p>
 </dd>
 </dl>
 </dd></dl>
@@ -510,7 +517,7 @@ in the zmat and the molecule/xyz)</p></li>
 
 <dl class="py function">
 <dt id="arc.species.zmat.determine_r_atoms">
-<code class="sig-prename descclassname">arc.species.zmat.</code><code class="sig-name descname">determine_r_atoms</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">zmat</span></em>, <em class="sig-param"><span class="n">xyz</span></em>, <em class="sig-param"><span class="n">connectivity</span></em>, <em class="sig-param"><span class="n">n</span></em>, <em class="sig-param"><span class="n">atom_index</span></em>, <em class="sig-param"><span class="n">r_constraint</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">trivial_assignment</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/species/zmat.html#determine_r_atoms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.zmat.determine_r_atoms" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">arc.species.zmat.</code><code class="sig-name descname">determine_r_atoms</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">zmat</span><span class="p">:</span> <span class="n">Dict<span class="p">[</span>str<span class="p">, </span>Union<span class="p">[</span>dict<span class="p">, </span>tuple<span class="p">]</span><span class="p">]</span></span></em>, <em class="sig-param"><span class="n">xyz</span><span class="p">:</span> <span class="n">Dict<span class="p">[</span>str<span class="p">, </span>tuple<span class="p">]</span></span></em>, <em class="sig-param"><span class="n">connectivity</span><span class="p">:</span> <span class="n">Dict<span class="p">[</span>int<span class="p">, </span>List<span class="p">[</span>int<span class="p">]</span><span class="p">]</span></span></em>, <em class="sig-param"><span class="n">n</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">atom_index</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">r_constraint</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>Tuple<span class="p">[</span>int<span class="p">]</span><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">trivial_assignment</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">fragments</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>List<span class="p">[</span>List<span class="p">[</span>int<span class="p">]</span><span class="p">]</span><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span> &#x2192; Optional<span class="p">[</span>List<span class="p">[</span>int<span class="p">]</span><span class="p">]</span><a class="reference internal" href="../_modules/arc/species/zmat.html#determine_r_atoms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.zmat.determine_r_atoms" title="Permalink to this definition">¶</a></dt>
 <dd><p>Determine the atoms for defining the distance R.
 This should be in the form: [n, &lt;some other atom already in the zmat&gt;]</p>
 <dl class="field-list simple">
@@ -527,16 +534,19 @@ in the zmat and the molecule/xyz)</p></li>
 constrained. <code class="docutils literal notranslate"><span class="pre">None</span></code> if it is not constrained.</p></li>
 <li><p><strong>trivial_assignment</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to attempt assigning atoms without considering connectivity
 if the connectivity assignment fails.</p></li>
+<li><p><strong>fragments</strong> (<em>List</em><em>[</em><em>List</em><em>[</em><em>int</em><em>]</em><em>]</em><em>, </em><em>optional</em>) – Fragments represented by the species, i.e., as in a VdW well or a TS.
+Entries are atom index lists of all atoms in a fragment, each list represents a different fragment.
+indices are 0-indexed.</p></li>
 </ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>The 0-indexed z-mat R atoms.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>list</p>
 </dd>
 <dt class="field-even">Raises</dt>
 <dd class="field-even"><p><strong>ZMatError</strong> – If the R atoms could not be determined.</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The 0-indexed z-mat R atoms.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>list</p>
 </dd>
 </dl>
 </dd></dl>
@@ -613,15 +623,17 @@ The number of tuple entries depends on the number of consolidated parameters.</p
 </dd></dl>
 
 <dl class="py function">
-<dt id="arc.species.zmat.get_atom_order_from_mol">
-<code class="sig-prename descclassname">arc.species.zmat.</code><code class="sig-name descname">get_atom_order_from_mol</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mol</span></em>, <em class="sig-param"><span class="n">constraints_dict</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/species/zmat.html#get_atom_order_from_mol"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.zmat.get_atom_order_from_mol" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get the order in which atoms should be added to the zmat from the 2D graph representation of the molecule.</p>
+<dt id="arc.species.zmat.get_atom_order">
+<code class="sig-prename descclassname">arc.species.zmat.</code><code class="sig-name descname">get_atom_order</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">xyz</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>Dict<span class="p">[</span>str<span class="p">, </span>tuple<span class="p">]</span><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">mol</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>rmgpy.molecule.molecule.Molecule<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">fragments</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>List<span class="p">[</span>List<span class="p">[</span>int<span class="p">]</span><span class="p">]</span><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">constraints_dict</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>Dict<span class="p">[</span>str<span class="p">, </span>List<span class="p">[</span>tuple<span class="p">]</span><span class="p">]</span><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span> &#x2192; List<span class="p">[</span>int<span class="p">]</span><a class="reference internal" href="../_modules/arc/species/zmat.html#get_atom_order"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.zmat.get_atom_order" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the order in which atoms should be added to the zmat from a 2D or a 3D representation.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>mol</strong> (<em>Molecule</em>) – The corresponding RMG Molecule.</p></li>
-<li><p><strong>constraints_dict</strong> (<em>dict</em><em>, </em><em>optional</em>) – A dictionary of atom constraints.
-The function will try to find an atom order in which all constrained atoms
+<li><p><strong>xyz</strong> (<em>dict</em><em>, </em><em>optional</em>) – The 3D coordinates.</p></li>
+<li><p><strong>mol</strong> (<em>Molecule</em><em>, </em><em>optional</em>) – The Molecule object.</p></li>
+<li><p><strong>fragments</strong> (<em>List</em><em>[</em><em>List</em><em>[</em><em>int</em><em>]</em><em>]</em><em>, </em><em>optional</em>) – Fragments represented by the species, i.e., as in a VdW well or a TS.
+Entries are atom index lists of all atoms in a fragment, each list represents a different fragment.</p></li>
+<li><p><strong>constraints_dict</strong> (<em>dict</em><em>, </em><em>optional</em>) – A dictionary of atom constraints. The function will try to find an atom order in which all constrained atoms
 are after the atoms they are constraint to.</p></li>
 </ul>
 </dd>
@@ -629,41 +641,80 @@ are after the atoms they are constraint to.</p></li>
 <dd class="field-even"><p>The atom order, 0-indexed.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>atom_order (list)</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><dl class="simple">
-<dt>Keys are atom indices, values are tuples of respective edges, ordered with heavy atoms</dt><dd><p>first. All indices are 0-indexed, corresponding to atom indices in <code class="docutils literal notranslate"><span class="pre">mol</span></code>
-(not in the zmat).</p>
+<dd class="field-odd"><p>List[int]</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="arc.species.zmat.get_atom_order_from_mol">
+<code class="sig-prename descclassname">arc.species.zmat.</code><code class="sig-name descname">get_atom_order_from_mol</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mol</span><span class="p">:</span> <span class="n">rmgpy.molecule.molecule.Molecule</span></em>, <em class="sig-param"><span class="n">fragment</span><span class="p">:</span> <span class="n">List<span class="p">[</span>int<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">constraints_dict</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>Dict<span class="p">[</span>str<span class="p">, </span>List<span class="p">[</span>tuple<span class="p">]</span><span class="p">]</span><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span> &#x2192; List<span class="p">[</span>int<span class="p">]</span><a class="reference internal" href="../_modules/arc/species/zmat.html#get_atom_order_from_mol"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.zmat.get_atom_order_from_mol" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the order in which atoms should be added to the zmat from the 2D graph representation of the molecule.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mol</strong> (<em>Molecule</em>) – The Molecule object.</p></li>
+<li><p><strong>fragment</strong> (<em>List</em><em>[</em><em>int</em><em>]</em><em>, </em><em>optional</em>) – Entries are 0-indexed atom indices to consider in the molecule.
+Only atoms within the fragment are considered.</p></li>
+<li><p><strong>constraints_dict</strong> (<em>dict</em><em>, </em><em>optional</em>) – A dictionary of atom constraints.
+The function will try to find an atom order in which all constrained atoms
+are after the atoms they are constraint to.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p>The atom order, 0-indexed.</p></li>
+<li><p>Keys are atom indices, values are tuples of respective edges, ordered with heavy atoms first.
+All indices are 0-indexed, corresponding to atom indices in <code class="docutils literal notranslate"><span class="pre">mol</span></code> (not in the zmat).</p></li>
+</ul>
 </p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>connectivity (dict)</p>
+<dd class="field-odd"><p>Tuple[List[int], dict]</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
 <dt id="arc.species.zmat.get_atom_order_from_xyz">
-<code class="sig-prename descclassname">arc.species.zmat.</code><code class="sig-name descname">get_atom_order_from_xyz</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">xyz</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/species/zmat.html#get_atom_order_from_xyz"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.zmat.get_atom_order_from_xyz" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">arc.species.zmat.</code><code class="sig-name descname">get_atom_order_from_xyz</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">xyz</span><span class="p">:</span> <span class="n">Dict<span class="p">[</span>str<span class="p">, </span>tuple<span class="p">]</span></span></em>, <em class="sig-param"><span class="n">fragment</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>List<span class="p">[</span>int<span class="p">]</span><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span> &#x2192; List<span class="p">[</span>int<span class="p">]</span><a class="reference internal" href="../_modules/arc/species/zmat.html#get_atom_order_from_xyz"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.zmat.get_atom_order_from_xyz" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the order in which atoms should be added to the zmat from the 3D geometry.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>xyz</strong> (<em>dict</em>) – The 3D coordinates.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>xyz</strong> (<em>dict</em>) – The 3D coordinates.</p></li>
+<li><p><strong>fragment</strong> (<em>List</em><em>[</em><em>int</em><em>]</em><em>, </em><em>optional</em>) – Entries are 0-indexed atom indices to consider in the molecule.
+Only atoms within the fragment are considered.</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>The atom order, 0-indexed.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>list</p>
+<dd class="field-odd"><p>List[int]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="arc.species.zmat.get_connectivity">
+<code class="sig-prename descclassname">arc.species.zmat.</code><code class="sig-name descname">get_connectivity</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mol</span><span class="p">:</span> <span class="n">rmgpy.molecule.molecule.Molecule</span></em><span class="sig-paren">)</span> &#x2192; Dict<span class="p">[</span>int<span class="p">, </span>List<span class="p">[</span>int<span class="p">]</span><span class="p">]</span><a class="reference internal" href="../_modules/arc/species/zmat.html#get_connectivity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.zmat.get_connectivity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the connectivity information from the molecule object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>mol</strong> (<em>Molecule</em>) – The Molecule object.</p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Not used, but important for returning the same number of parameters as <code class="docutils literal notranslate"><span class="pre">get_atom_order_from_mol</span></code>.</p>
+<dd class="field-even"><p><dl class="simple">
+<dt>The connectivity information.</dt><dd><p>Keys are atom indices, values are tuples of respective edges, ordered with heavy atoms first.
+All indices are 0-indexed, corresponding to atom indices in <code class="docutils literal notranslate"><span class="pre">mol</span></code> (not in the zmat).
+<code class="docutils literal notranslate"><span class="pre">None</span></code> if <code class="docutils literal notranslate"><span class="pre">xyz</span></code> is given.</p>
+</dd>
+</dl>
+</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>None</p>
+<dd class="field-odd"><p>Dict[int, List[int]]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -725,6 +776,33 @@ or they already relate to the zmat. Default is <code class="docutils literal not
 </dd></dl>
 
 <dl class="py function">
+<dt id="arc.species.zmat.is_atom_in_new_fragment">
+<code class="sig-prename descclassname">arc.species.zmat.</code><code class="sig-name descname">is_atom_in_new_fragment</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">atom_index</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">zmat</span><span class="p">:</span> <span class="n">Dict<span class="p">[</span>str<span class="p">, </span>Union<span class="p">[</span>dict<span class="p">, </span>tuple<span class="p">]</span><span class="p">]</span></span></em>, <em class="sig-param"><span class="n">fragments</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>List<span class="p">[</span>List<span class="p">[</span>int<span class="p">]</span><span class="p">]</span><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">skip_atoms</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>List<span class="p">[</span>int<span class="p">]</span><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span> &#x2192; bool<a class="reference internal" href="../_modules/arc/species/zmat.html#is_atom_in_new_fragment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.zmat.is_atom_in_new_fragment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Whether an atom is present in a new fragment that hasn’t been added to the zmat yet,
+and therefore atom assignment should not be done based on connectivity.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>atom_index</strong> (<em>int</em>) – The 0-index of the atom in the molecule or cartesian coordinates to be added.
+(<code class="docutils literal notranslate"><span class="pre">n</span></code> and <code class="docutils literal notranslate"><span class="pre">atom_index</span></code> refer to the same atom, but it might have different indices
+in the zmat/molecule/xyz/fragments)</p></li>
+<li><p><strong>zmat</strong> (<em>dict</em>) – The zmat.</p></li>
+<li><p><strong>skip_atoms</strong> (<em>list</em>) – Atoms in the zmat map to ignore when checking fragments.</p></li>
+<li><p><strong>fragments</strong> (<em>List</em><em>[</em><em>List</em><em>[</em><em>int</em><em>]</em><em>]</em><em>, </em><em>optional</em>) – Fragments represented by the species, i.e., as in a VdW well or a TS.
+Entries are atom index lists of all atoms in a fragment, each list represents a different fragment.
+indices are 0-indexed.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Whether to consider connectivity for assigning atoms in z-mat variables.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt id="arc.species.zmat.is_dummy">
 <code class="sig-prename descclassname">arc.species.zmat.</code><code class="sig-name descname">is_dummy</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">zmat</span></em>, <em class="sig-param"><span class="n">zmat_index</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/species/zmat.html#is_dummy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.zmat.is_dummy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Determine whether an atom in a zmat is a dummy atom by its zmat index.</p>
@@ -743,6 +821,28 @@ or they already relate to the zmat. Default is <code class="docutils literal not
 </dd>
 <dt class="field-even">Raises</dt>
 <dd class="field-even"><p><strong>ZMatError</strong> – If the index is invalid.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="arc.species.zmat.order_fragments_by_constraints">
+<code class="sig-prename descclassname">arc.species.zmat.</code><code class="sig-name descname">order_fragments_by_constraints</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fragments</span><span class="p">:</span> <span class="n">List<span class="p">[</span>List<span class="p">[</span>int<span class="p">]</span><span class="p">]</span></span></em>, <em class="sig-param"><span class="n">constraints_dict</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>Dict<span class="p">[</span>str<span class="p">, </span>List<span class="p">[</span>tuple<span class="p">]</span><span class="p">]</span><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span> &#x2192; List<span class="p">[</span>List<span class="p">[</span>int<span class="p">]</span><span class="p">]</span><a class="reference internal" href="../_modules/arc/species/zmat.html#order_fragments_by_constraints"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.zmat.order_fragments_by_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the order in which atoms should be added to the zmat from a 2D or a 3D representation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fragments</strong> (<em>List</em><em>[</em><em>List</em><em>[</em><em>int</em><em>]</em><em>]</em>) – Fragments represented by the species, i.e., as in a VdW well or a TS.
+Entries are atom index lists of all atoms in a fragment, each list represents a different fragment.</p></li>
+<li><p><strong>constraints_dict</strong> (<em>dict</em><em>, </em><em>optional</em>) – A dictionary of atom constraints. The function will try to find an atom order in which all constrained atoms
+are after the atoms they are constraint to.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The ordered fragments list.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>List[List[int]]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -778,7 +878,7 @@ in the zmat and the molecule/xyz)</p></li>
 
 <dl class="py function">
 <dt id="arc.species.zmat.xyz_to_zmat">
-<code class="sig-prename descclassname">arc.species.zmat.</code><code class="sig-name descname">xyz_to_zmat</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">xyz</span></em>, <em class="sig-param"><span class="n">mol</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">constraints</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">consolidate</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">consolidation_tols</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/species/zmat.html#xyz_to_zmat"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.zmat.xyz_to_zmat" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">arc.species.zmat.</code><code class="sig-name descname">xyz_to_zmat</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">xyz</span><span class="p">:</span> <span class="n">Dict<span class="p">[</span>str<span class="p">, </span>tuple<span class="p">]</span></span></em>, <em class="sig-param"><span class="n">mol</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>rmgpy.molecule.molecule.Molecule<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">constraints</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>Dict<span class="p">[</span>str<span class="p">, </span>List<span class="p">[</span>Tuple<span class="p">[</span>int<span class="p">]</span><span class="p">]</span><span class="p">]</span><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">consolidate</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">consolidation_tols</span><span class="p">:</span> <span class="n">Dict<span class="p">[</span>str<span class="p">, </span>float<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">fragments</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>List<span class="p">[</span>List<span class="p">[</span>int<span class="p">]</span><span class="p">]</span><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span> &#x2192; Dict<span class="p">[</span>str<span class="p">, </span>tuple<span class="p">]</span><a class="reference internal" href="../_modules/arc/species/zmat.html#xyz_to_zmat"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.zmat.xyz_to_zmat" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate a z-matrix from cartesian coordinates.
 The zmat is a dictionary with the following keys:
 - ‘symbols’: a tuple of strings representing atomic symbols; defined as a list and converted to a tuple
@@ -810,16 +910,19 @@ arc.species.converter.modify_coords() instead (it is a composite constraint).</p
 <li><p><strong>consolidate</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to consolidate the zmat after generation, <code class="docutils literal notranslate"><span class="pre">True</span></code> to consolidate.</p></li>
 <li><p><strong>consolidation_tols</strong> (<em>dict</em><em>, </em><em>optional</em>) – Keys are ‘R’, ‘A’, ‘D’, values are floats representing absolute tolerance
 for consolidating almost equal internal coordinates.</p></li>
+<li><p><strong>fragments</strong> (<em>List</em><em>[</em><em>List</em><em>[</em><em>int</em><em>]</em><em>]</em><em>, </em><em>optional</em>) – Fragments represented by the species, i.e., as in a VdW well or a TS.
+Entries are atom index lists of all atoms in a fragment, each list represents a different fragment.
+indices are 0-indexed.</p></li>
 </ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>The z-matrix.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>dict</p>
 </dd>
 <dt class="field-even">Raises</dt>
 <dd class="field-even"><p><strong>ZMatError</strong> – If the zmat could not be generated.</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The z-matrix.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>dict</p>
 </dd>
 </dl>
 </dd></dl>

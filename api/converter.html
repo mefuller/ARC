@@ -466,16 +466,17 @@ Note that xyz from ESS output is usually already centered at the center of mass 
 
 <dl class="py function">
 <dt id="arc.species.converter.get_zmat_param_value">
-<code class="sig-prename descclassname">arc.species.converter.</code><code class="sig-name descname">get_zmat_param_value</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">coords</span></em>, <em class="sig-param"><span class="n">indices</span></em>, <em class="sig-param"><span class="n">mol</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/species/converter.html#get_zmat_param_value"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.converter.get_zmat_param_value" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">arc.species.converter.</code><code class="sig-name descname">get_zmat_param_value</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">coords</span><span class="p">:</span> <span class="n">Dict<span class="p">[</span>str<span class="p">, </span>tuple<span class="p">]</span></span></em>, <em class="sig-param"><span class="n">indices</span><span class="p">:</span> <span class="n">List<span class="p">[</span>int<span class="p">]</span></span></em>, <em class="sig-param"><span class="n">mol</span><span class="p">:</span> <span class="n">rmgpy.molecule.molecule.Molecule</span></em>, <em class="sig-param"><span class="n">index</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">0</span></em><span class="sig-paren">)</span> &#x2192; float<a class="reference internal" href="../_modules/arc/species/converter.html#get_zmat_param_value"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.converter.get_zmat_param_value" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generates a zmat similarly to modify_coords(),
 but instead of modifying it, only reports on the value of a requested parameter.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>coords</strong> (<em>dict</em>) – Either cartesian (xyz) or internal (zmat) coordinates.</p></li>
-<li><p><strong>indices</strong> (<em>list</em>) – The indices to change (0-indexed). Specifying a list of length 2, 3, or 4
-will result in a length, angle, or a dihedral angle parameter, respectively.</p></li>
+<li><p><strong>indices</strong> (<em>list</em>) – The indices to change. Specifying a list of length 2, 3, or 4 will result in a
+bond length, angle, or a dihedral angle parameter, respectively.</p></li>
 <li><p><strong>mol</strong> (<em>Molecule</em><em>, </em><em>optional</em>) – The corresponding RMG molecule with the connectivity information.</p></li>
+<li><p><strong>index</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether the specified atoms are 0- or 1-indexed.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -530,10 +531,11 @@ into a str block which can be read as scan constraints by ESS.</p>
 
 <dl class="py function">
 <dt id="arc.species.converter.modify_coords">
-<code class="sig-prename descclassname">arc.species.converter.</code><code class="sig-name descname">modify_coords</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">coords</span></em>, <em class="sig-param"><span class="n">indices</span></em>, <em class="sig-param"><span class="n">new_value</span></em>, <em class="sig-param"><span class="n">modification_type</span></em>, <em class="sig-param"><span class="n">mol</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/species/converter.html#modify_coords"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.converter.modify_coords" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">arc.species.converter.</code><code class="sig-name descname">modify_coords</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">coords</span><span class="p">:</span> <span class="n">Dict<span class="p">[</span>str<span class="p">, </span>tuple<span class="p">]</span></span></em>, <em class="sig-param"><span class="n">indices</span><span class="p">:</span> <span class="n">List<span class="p">[</span>int<span class="p">]</span></span></em>, <em class="sig-param"><span class="n">new_value</span><span class="p">:</span> <span class="n">float</span></em>, <em class="sig-param"><span class="n">modification_type</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">mol</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>rmgpy.molecule.molecule.Molecule<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">index</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">0</span></em>, <em class="sig-param"><span class="n">fragments</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>List<span class="p">[</span>List<span class="p">[</span>int<span class="p">]</span><span class="p">]</span><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span> &#x2192; Dict<span class="p">[</span>str<span class="p">, </span>tuple<span class="p">]</span><a class="reference internal" href="../_modules/arc/species/converter.html#modify_coords"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.converter.modify_coords" title="Permalink to this definition">¶</a></dt>
 <dd><p>Modify either a bond length, angle, or dihedral angle in the given coordinates.
-The coordinates input could either be cartesian (preferred) or internal (will be first converter to cartesian,
-then to internal back again since a specific zmat must be created).
+The coordinates input could either be cartesian (preferred) or internal
+(will be first converter to cartesian, then to internal back again
+since a specific zmat must be created).
 Internal coordinates will be used for the modification (using folding and unfolding).</p>
 <p>Specifying an ‘atom’ modification type will only translate/rotate the atom represented by the first index
 if the corresponding zmat parameter is changed.
@@ -545,25 +547,29 @@ the first two atoms to translate/rotate if the corresponding zmat parameter is c
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>coords</strong> (<em>dict</em>) – Either cartesian (xyz) or internal (zmat) coordinates.</p></li>
-<li><p><strong>indices</strong> (<em>list</em>) – The indices to change (0-indexed). Specifying a list of length 2, 3, or 4
-will result in changing a bond length, angle, or a dihedral angle, respectively.</p></li>
+<li><p><strong>indices</strong> (<em>list</em>) – The indices to change. Specifying a list of length 2, 3, or 4 will result in changing
+a bond length, angle, or a dihedral angle, respectively.</p></li>
 <li><p><strong>new_value</strong> (<em>float</em>) – The new value to set (in Angstrom or degrees).</p></li>
 <li><p><strong>modification_type</strong> (<em>str</em>) – Either ‘atom’, ‘group’, or ‘groups’ (‘groups’ is only allowed for dihedral angles).
 Note that D ‘groups’ is a composite constraint, equivalent to calling D ‘group’
 for each 1st neighboring  atom in a torsion top.</p></li>
 <li><p><strong>mol</strong> (<em>Molecule</em><em>, </em><em>optional</em>) – The corresponding RMG molecule with the connectivity information.
 Mandatory if the modification type is ‘group’ or ‘groups’.</p></li>
+<li><p><strong>index</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether the specified atoms in <code class="docutils literal notranslate"><span class="pre">indices</span></code> and <code class="docutils literal notranslate"><span class="pre">fragments</span></code> are 0- or 1-indexed.</p></li>
+<li><p><strong>fragments</strong> (<em>List</em><em>[</em><em>List</em><em>[</em><em>int</em><em>]</em><em>]</em><em>, </em><em>optional</em>) – Fragments represented by the species, i.e., as in a VdW well or a TS.
+Entries are atom index lists of all atoms in a fragment, each list represents a different fragment.
+indices are 0-indexed.</p></li>
 </ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>The respective cartesian (xyz) coordinates reflecting the desired modification.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>dict</p>
 </dd>
 <dt class="field-even">Raises</dt>
 <dd class="field-even"><p><strong>InputError</strong> – If a group/s modification type is requested but <code class="docutils literal notranslate"><span class="pre">mol</span></code> is <code class="docutils literal notranslate"><span class="pre">None</span></code>,
     or if a ‘groups’ modification type was specified for R or A.</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The respective cartesian (xyz) coordinates reflecting the desired modification.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>dict</p>
 </dd>
 </dl>
 </dd></dl>

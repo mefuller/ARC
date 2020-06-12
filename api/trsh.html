@@ -229,17 +229,25 @@
 
 <dl class="py function">
 <dt id="arc.job.trsh.scan_quality_check">
-<code class="sig-prename descclassname">arc.job.trsh.</code><code class="sig-name descname">scan_quality_check</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">label</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">pivots</span><span class="p">:</span> <span class="n">list</span></em>, <em class="sig-param"><span class="n">energies</span><span class="p">:</span> <span class="n">list</span></em>, <em class="sig-param"><span class="n">scan_res</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">8.0</span></em>, <em class="sig-param"><span class="n">used_methods</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>list<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">log_file</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span> &#x2192; Tuple<span class="p">[</span>bool<span class="p">, </span>str<span class="p">, </span>str<span class="p">, </span>dict<span class="p">]</span><a class="reference internal" href="../_modules/arc/job/trsh.html#scan_quality_check"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.job.trsh.scan_quality_check" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">arc.job.trsh.</code><code class="sig-name descname">scan_quality_check</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">label</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">pivots</span><span class="p">:</span> <span class="n">list</span></em>, <em class="sig-param"><span class="n">energies</span><span class="p">:</span> <span class="n">list</span></em>, <em class="sig-param"><span class="n">scan_res</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">8.0</span></em>, <em class="sig-param"><span class="n">used_methods</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>list<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">log_file</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">species</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span><a class="reference internal" href="species.html#arc.species.species.ARCSpecies" title="arc.species.species.ARCSpecies">arc.species.species.ARCSpecies</a><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">preserve_params</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>list<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">trajectory</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>list<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">original_xyz</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>dict<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span> &#x2192; Tuple<span class="p">[</span>bool<span class="p">, </span>str<span class="p">, </span>str<span class="p">, </span>dict<span class="p">]</span><a class="reference internal" href="../_modules/arc/job/trsh.html#scan_quality_check"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.job.trsh.scan_quality_check" title="Permalink to this definition">¶</a></dt>
 <dd><p>Checks the scan’s quality:
-1. Based on intermediate conformers if available:
-- Whether the initial and final points are consistent
-- whether it is relatively “smooth”
-2. Based on the PES curve (if intermediate conformers are unavailable):
-- Whether the initial and final points are consistent
-- whether it is relatively “smooth”
-3. Common
-- whether the optimized geometry indeed represents the minimum energy conformer
-- whether the barrier height is reasonable</p>
+1. Based on intermediate conformers if available:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>whether the initial and final points are consistent</p></li>
+<li><p>whether it is relatively “smooth”</p></li>
+</ul>
+</div></blockquote>
+<ol class="arabic simple" start="2">
+<li><p>Based on the PES curve (if intermediate conformers are unavailable):
+- whether the initial and final points are consistent
+- whether it is relatively “smooth”</p></li>
+<li><p>Common
+- whether the optimized geometry indeed represents the minimum energy conformer (for a non-TS species)
+- whether the barrier height is reasonable</p></li>
+<li><p>Based on requested parameters to preserve
+- whether specified atom distances to preserve criteria aren’t violated</p></li>
+</ol>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -249,6 +257,12 @@
 <li><p><strong>scan_res</strong> (<em>float</em><em>, </em><em>optional</em>) – The scan resolution in degrees.</p></li>
 <li><p><strong>used_methods</strong> (<em>list</em><em>, </em><em>optional</em>) – Troubleshooting methods already tried out.</p></li>
 <li><p><strong>log_file</strong> (<em>str</em><em>, </em><em>optional</em>) – The path to the output file.</p></li>
+<li><p><strong>species</strong> (<a class="reference internal" href="species.html#arc.species.species.ARCSpecies" title="arc.species.species.ARCSpecies"><em>ARCSpecies</em></a><em>, </em><em>optional</em>) – The ARCSpecies this scan is related to.</p></li>
+<li><p><strong>preserve_params</strong> (<em>list</em><em>, </em><em>optional</em>) – Entries are length 2 lists of atom indices (1-indexed) between which the
+distance as well as a torsion dihedral angle with these atoms as its pivots
+must be preserved throughout the scan to a tolerance.</p></li>
+<li><p><strong>trajectory</strong> (<em>list</em><em>, </em><em>optional</em>) – Entries are Cartesian coordinates along the scan trajectory.</p></li>
+<li><p><strong>original_xyz</strong> (<em>dict</em><em>, </em><em>optional</em>) – The optimized coordinated for the species.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>

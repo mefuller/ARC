@@ -481,6 +481,30 @@ before fitting a force field. True to be minimalistic.</p></li>
 </dd></dl>
 
 <dl class="py function">
+<dt id="arc.species.conformers.determine_smallest_atom_index_in_scan">
+<code class="sig-prename descclassname">arc.species.conformers.</code><code class="sig-name descname">determine_smallest_atom_index_in_scan</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">atom1</span><span class="p">:</span> <span class="n">rmgpy.molecule.molecule.Atom</span></em>, <em class="sig-param"><span class="n">atom2</span><span class="p">:</span> <span class="n">rmgpy.molecule.molecule.Atom</span></em>, <em class="sig-param"><span class="n">mol</span><span class="p">:</span> <span class="n">rmgpy.molecule.molecule.Molecule</span></em><span class="sig-paren">)</span> &#x2192; int<a class="reference internal" href="../_modules/arc/species/conformers.html#determine_smallest_atom_index_in_scan"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.conformers.determine_smallest_atom_index_in_scan" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine the smallest atom index in mol connected to <code class="docutils literal notranslate"><span class="pre">atom1</span></code> which is not <code class="docutils literal notranslate"><span class="pre">atom2</span></code>.
+Returns a heavy atom if available, otherwise a hydrogen atom.
+Useful for deterministically determining the indices of four atom in a scan.
+This function assumes there ARE additional atoms connected to <code class="docutils literal notranslate"><span class="pre">atom1</span></code>, and that <code class="docutils literal notranslate"><span class="pre">atom2</span></code> is not a hydrogen atom.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>atom1</strong> (<em>Atom</em>) – The atom who’s neighbors will be searched.</p></li>
+<li><p><strong>atom2</strong> (<em>Atom</em>) – An atom connected to <code class="docutils literal notranslate"><span class="pre">atom1</span></code> to exclude (a pivotal atom).</p></li>
+<li><p><strong>mol</strong> (<em>Molecule</em>) – The molecule to process.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The smallest atom index (1-indexed) connected to <code class="docutils literal notranslate"><span class="pre">atom1</span></code> which is not <code class="docutils literal notranslate"><span class="pre">atom2</span></code>.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt id="arc.species.conformers.determine_torsion_sampling_points">
 <code class="sig-prename descclassname">arc.species.conformers.</code><code class="sig-name descname">determine_torsion_sampling_points</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">label</span></em>, <em class="sig-param"><span class="n">torsion_angles</span></em>, <em class="sig-param"><span class="n">smeared_scan_res</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">symmetry</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/species/conformers.html#determine_torsion_sampling_points"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.conformers.determine_torsion_sampling_points" title="Permalink to this definition">¶</a></dt>
 <dd><p>Determine how many points to consider in each well of a torsion for conformer combinations.</p>

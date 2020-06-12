@@ -162,7 +162,7 @@
 <span class="sd">A module for representing a reaction.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span>
 
 <span class="kn">from</span> <span class="nn">rmgpy.reaction</span> <span class="kn">import</span> <span class="n">Reaction</span>
 <span class="kn">from</span> <span class="nn">rmgpy.species</span> <span class="kn">import</span> <span class="n">Species</span>
@@ -202,6 +202,9 @@
 <span class="sd">        multiplicity (int, optional): The reaction surface multiplicity. A trivial guess will be made unless provided.</span>
 <span class="sd">        charge (int, optional): The reaction surface charge.</span>
 <span class="sd">        reaction_dict (dict, optional): A dictionary to create this object from (used when restarting ARC).</span>
+<span class="sd">        preserve_param_in_scan (list, optional): Entries are length two iterables of atom indices (1-indexed)</span>
+<span class="sd">                                                 between which distances and dihedrals of these pivots must be</span>
+<span class="sd">                                                 preserved. Used for identification of rotors which break a TS.</span>
 
 <span class="sd">    Attributes:</span>
 <span class="sd">        label (str): The reaction&#39;s label in the format `r1 + r2 &lt;=&gt; p1 + p2`</span>
@@ -227,9 +230,22 @@
 <span class="sd">        index (int): An auto-generated index associating the ARCReaction object with the</span>
 <span class="sd">                     corresponding TS :ref:`ARCSpecies &lt;species&gt;` object.</span>
 <span class="sd">        ts_label (str): The :ref:`ARCSpecies &lt;species&gt;` label of the respective TS.</span>
+<span class="sd">        preserve_param_in_scan (list): Entries are length two iterables of atom indices (1-indexed) between which</span>
+<span class="sd">                                       distances and dihedrals of these pivots must be preserved.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">reactants</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">products</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ts_label</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rmg_reaction</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                 <span class="n">ts_methods</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ts_xyz_guess</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">multiplicity</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">charge</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">reaction_dict</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">label</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                 <span class="n">reactants</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">products</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">ts_label</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">rmg_reaction</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Reaction</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">ts_methods</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">ts_xyz_guess</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">list</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">multiplicity</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">charge</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+                 <span class="n">reaction_dict</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">preserve_param_in_scan</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">list</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">arrow</span> <span class="o">=</span> <span class="s1">&#39; &lt;=&gt; &#39;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">plus</span> <span class="o">=</span> <span class="s1">&#39; + &#39;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">r_species</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
@@ -242,7 +258,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">ts_label</span> <span class="o">=</span> <span class="n">ts_label</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">dh_rxn298</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">rmg_reactions</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">ts_xyz_guess</span> <span class="o">=</span> <span class="n">ts_xyz_guess</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ts_xyz_guess</span> <span class="o">=</span> <span class="n">ts_xyz_guess</span> <span class="ow">or</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">preserve_param_in_scan</span> <span class="o">=</span> <span class="n">preserve_param_in_scan</span>
         <span class="k">if</span> <span class="n">reaction_dict</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="c1"># Reading from a dictionary</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">reaction_dict</span><span class="o">=</span><span class="n">reaction_dict</span><span class="p">)</span>
@@ -273,11 +290,13 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">ts_xyz_guess</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">ts_xyz_guess</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">check_atom_balance</span><span class="p">()</span>
 
-    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Return a string representation of the object&quot;&quot;&quot;</span>
         <span class="n">str_representation</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;ARCReaction(&#39;</span>
         <span class="n">str_representation</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;label=&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="si">}</span><span class="s1">&quot;, &#39;</span>
         <span class="n">str_representation</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;rmg_reaction=&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">rmg_reaction</span><span class="si">}</span><span class="s1">&quot;, &#39;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">preserve_param_in_scan</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">str_representation</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;preserve_param_in_scan=&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">preserve_param_in_scan</span><span class="si">}</span><span class="s1">&quot;, &#39;</span>
         <span class="n">str_representation</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;multiplicity=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">multiplicity</span><span class="si">}</span><span class="s1">, &#39;</span>
         <span class="n">str_representation</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;charge=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">charge</span><span class="si">}</span><span class="s1">)&#39;</span>
         <span class="k">return</span> <span class="n">str_representation</span>
@@ -295,6 +314,8 @@
         <span class="n">reaction_dict</span><span class="p">[</span><span class="s1">&#39;p_species&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">spc</span><span class="o">.</span><span class="n">as_dict</span><span class="p">()</span> <span class="k">for</span> <span class="n">spc</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">p_species</span><span class="p">]</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ts_species</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">reaction_dict</span><span class="p">[</span><span class="s1">&#39;ts_species&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ts_species</span><span class="o">.</span><span class="n">as_dict</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">preserve_param_in_scan</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">reaction_dict</span><span class="p">[</span><span class="s1">&#39;preserve_param_in_scan&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">preserve_param_in_scan</span>
         <span class="k">if</span> <span class="s1">&#39;rmg_reaction&#39;</span> <span class="ow">in</span> <span class="n">reaction_dict</span><span class="p">:</span>
             <span class="n">reaction_dict</span><span class="p">[</span><span class="s1">&#39;rmg_reaction&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rmg_reaction_to_str</span><span class="p">()</span>
         <span class="n">reaction_dict</span><span class="p">[</span><span class="s1">&#39;family&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">family</span>
@@ -308,7 +329,7 @@
 
 <div class="viewcode-block" id="ARCReaction.from_dict"><a class="viewcode-back" href="../../api/reaction.html#arc.reaction.ARCReaction.from_dict">[docs]</a>    <span class="k">def</span> <span class="nf">from_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reaction_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        A helper function for loading this object from a dictionary in a YAML file for restarting ARC</span>
+<span class="sd">        A helper function for loading this object from a dictionary in a YAML file for restarting ARC.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">reaction_dict</span><span class="p">[</span><span class="s1">&#39;index&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="s1">&#39;index&#39;</span> <span class="ow">in</span> <span class="n">reaction_dict</span> <span class="k">else</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">label</span> <span class="o">=</span> <span class="n">reaction_dict</span><span class="p">[</span><span class="s1">&#39;label&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="s1">&#39;label&#39;</span> <span class="ow">in</span> <span class="n">reaction_dict</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span>
@@ -344,7 +365,9 @@
             <span class="k">if</span> <span class="s1">&#39;long_kinetic_description&#39;</span> <span class="ow">in</span> <span class="n">reaction_dict</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ts_methods</span> <span class="o">=</span> <span class="n">reaction_dict</span><span class="p">[</span><span class="s1">&#39;ts_methods&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="s1">&#39;ts_methods&#39;</span> <span class="ow">in</span> <span class="n">reaction_dict</span> <span class="k">else</span> <span class="n">default_ts_methods</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ts_methods</span> <span class="o">=</span> <span class="p">[</span><span class="n">tsm</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">for</span> <span class="n">tsm</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ts_methods</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">ts_xyz_guess</span> <span class="o">=</span> <span class="n">reaction_dict</span><span class="p">[</span><span class="s1">&#39;ts_xyz_guess&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="s1">&#39;ts_xyz_guess&#39;</span> <span class="ow">in</span> <span class="n">reaction_dict</span> <span class="k">else</span> <span class="nb">list</span><span class="p">()</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ts_xyz_guess</span> <span class="o">=</span> <span class="n">reaction_dict</span><span class="p">[</span><span class="s1">&#39;ts_xyz_guess&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="s1">&#39;ts_xyz_guess&#39;</span> <span class="ow">in</span> <span class="n">reaction_dict</span> <span class="k">else</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">preserve_param_in_scan</span> <span class="o">=</span> <span class="n">reaction_dict</span><span class="p">[</span><span class="s1">&#39;preserve_param_in_scan&#39;</span><span class="p">]</span> \
+            <span class="k">if</span> <span class="s1">&#39;preserve_param_in_scan&#39;</span> <span class="ow">in</span> <span class="n">reaction_dict</span> <span class="k">else</span> <span class="kc">None</span></div>
 
 <div class="viewcode-block" id="ARCReaction.set_label_reactants_products"><a class="viewcode-back" href="../../api/reaction.html#arc.reaction.ARCReaction.set_label_reactants_products">[docs]</a>    <span class="k">def</span> <span class="nf">set_label_reactants_products</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;A helper function for settings the label, reactants, and products attributes for a Reaction&quot;&quot;&quot;</span>
@@ -542,6 +565,11 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">rmg_reaction</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">family</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">family_own_reverse</span> <span class="o">=</span> <span class="n">rmgdb</span><span class="o">.</span><span class="n">determine_reaction_family</span><span class="p">(</span><span class="n">rmgdb</span><span class="o">=</span><span class="n">rmg_database</span><span class="p">,</span>
                                                                                    <span class="n">reaction</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">rmg_reaction</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ARCReaction.determine_preserve_distance_in_scan"><a class="viewcode-back" href="../../api/reaction.html#arc.reaction.ARCReaction.determine_preserve_distance_in_scan">[docs]</a>    <span class="k">def</span> <span class="nf">determine_preserve_distance_in_scan</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Todo: Determine which atom labels participate in the reaction coordinate from the RMG reaction family&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">family</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">pass</span></div>
 
 <div class="viewcode-block" id="ARCReaction.check_ts"><a class="viewcode-back" href="../../api/reaction.html#arc.reaction.ARCReaction.check_ts">[docs]</a>    <span class="k">def</span> <span class="nf">check_ts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
