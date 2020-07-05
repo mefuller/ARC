@@ -1031,13 +1031,14 @@ Returns <code class="docutils literal notranslate"><span class="pre">True</span>
 
 <dl class="py method">
 <dt id="arc.scheduler.Scheduler.post_sp_actions">
-<code class="sig-name descname">post_sp_actions</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">label</span></em>, <em class="sig-param"><span class="n">sp_path</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/scheduler.html#Scheduler.post_sp_actions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.scheduler.Scheduler.post_sp_actions" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">post_sp_actions</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">label</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">sp_path</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">level</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span><a class="reference internal" href="level.html#arc.level.Level" title="arc.level.Level">arc.level.Level</a><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/scheduler.html#Scheduler.post_sp_actions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.scheduler.Scheduler.post_sp_actions" title="Permalink to this definition">¶</a></dt>
 <dd><p>Perform post-sp actions.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>label</strong> (<em>str</em>) – The species label.</p></li>
-<li><p><strong>sp_path</strong> (<em>str</em>) – The path to ‘output.out’ for the single point job</p></li>
+<li><p><strong>sp_path</strong> (<em>str</em>) – The path to ‘output.out’ for the single point job.</p></li>
+<li><p><strong>level</strong> (<a class="reference internal" href="level.html#arc.level.Level" title="arc.level.Level"><em>Level</em></a><em>, </em><em>optional</em>) – The level of theory used for the sp job.</p></li>
 </ul>
 </dd>
 </dl>
@@ -1265,12 +1266,15 @@ Currently supporting QChem for printing the orbitals, the output could be visual
 
 <dl class="py method">
 <dt id="arc.scheduler.Scheduler.run_sp_job">
-<code class="sig-name descname">run_sp_job</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">label</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/scheduler.html#Scheduler.run_sp_job"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.scheduler.Scheduler.run_sp_job" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">run_sp_job</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">label</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">level</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span><a class="reference internal" href="level.html#arc.level.Level" title="arc.level.Level">arc.level.Level</a><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/scheduler.html#Scheduler.run_sp_job"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.scheduler.Scheduler.run_sp_job" title="Permalink to this definition">¶</a></dt>
 <dd><p>Spawn a single point job using ‘final_xyz’ for species ot TS ‘label’.
 If the method is MRCI, first spawn a simple CCSD job, and use orbital determination to run the MRCI job.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>label</strong> (<em>str</em>) – The species label.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>label</strong> (<em>str</em>) – The species label.</p></li>
+<li><p><strong>level</strong> (<a class="reference internal" href="level.html#arc.level.Level" title="arc.level.Level"><em>Level</em></a>) – An alternative level of theory to run at. If <code class="docutils literal notranslate"><span class="pre">None</span></code>, self.sp_level will be used.</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
