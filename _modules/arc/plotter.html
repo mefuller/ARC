@@ -90,6 +90,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../output.html">Output</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../api/index.html">ARC’s API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../tools.html">Standalone tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../media.html">Media</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../release.html">Release notes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../credits.html">Credits</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../contribute.html">Contribute</a></li>
@@ -250,8 +251,8 @@
 <span class="sd">        species (ARCSpecies, optional): xyz coordinates will be taken from the species.</span>
 <span class="sd">        project_directory (str): ARC&#39;s project directory to save a draw_3d image in.</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        bool: Whether the show_sticks drawing was successful. ``True`` if it was.</span>
+<span class="sd">    Returns: bool</span>
+<span class="sd">        Whether the show_sticks drawing was successful. ``True`` if it was.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">xyz</span> <span class="o">=</span> <span class="n">check_xyz_species_for_drawing</span><span class="p">(</span><span class="n">xyz</span><span class="p">,</span> <span class="n">species</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">species</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -372,12 +373,12 @@
 <span class="sd">        xyz (dict, str, optional): The 3D coordinates in any form.</span>
 <span class="sd">        species (ARCSpecies, optional): A species to take the coordinates from.</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        xyz (dict): The coordinates to plot.</span>
-
 <span class="sd">    Raises:</span>
 <span class="sd">        InputError: If neither ``xyz`` nor ``species`` are given.</span>
 <span class="sd">        TypeError: If ``species`` is of wrong type.</span>
+
+<span class="sd">    Returns: dict</span>
+<span class="sd">        The coordinates to plot.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">xyz</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">species</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">InputError</span><span class="p">(</span><span class="s1">&#39;Either xyz or species must be given.&#39;</span><span class="p">)</span>
@@ -1226,18 +1227,19 @@
 <span class="sd">    Plot a 2D rotor scan.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        results (dict): The results dictionary, dihedrals are assumed to be in degrees (not radians).</span>
-<span class="sd">                        This dictionary has the following structure::</span>
+<span class="sd">        results (dict):</span>
+<span class="sd">            The results dictionary, dihedrals are assumed to be in degrees (not radians).</span>
+<span class="sd">            This dictionary has the following structure::</span>
 
-<span class="sd">                        results = {&#39;directed_scan_type&#39;: &lt;str, used for the fig name&gt;,</span>
-<span class="sd">                                   &#39;scans&#39;: &lt;list, entries are lists of torsion indices&gt;,</span>
-<span class="sd">                                   &#39;directed_scan&#39;: &lt;dict, keys are tuples of &#39;{0:.2f}&#39; formatted dihedrals,</span>
-<span class="sd">                                                     values are dictionaries with the following keys and values:</span>
-<span class="sd">                                                     {&#39;energy&#39;: &lt;float, energy in kJ/mol&gt;,  * only this is used here</span>
-<span class="sd">                                                      &#39;xyz&#39;: &lt;dict&gt;,</span>
-<span class="sd">                                                      &#39;is_isomorphic&#39;: &lt;bool&gt;,</span>
-<span class="sd">                                                      &#39;trsh&#39;: &lt;list, job.ess_trsh_methods&gt;}&gt;</span>
-<span class="sd">                                   }</span>
+<span class="sd">                {&#39;directed_scan_type&#39;: &lt;str, used for the fig name&gt;,</span>
+<span class="sd">                 &#39;scans&#39;: &lt;list, entries are lists of torsion indices&gt;,</span>
+<span class="sd">                 &#39;directed_scan&#39;: &lt;dict&gt;, keys are tuples of &#39;{0:.2f}&#39; formatted dihedrals,</span>
+<span class="sd">                                  values are dictionaries with the following keys and values:</span>
+<span class="sd">                                  {&#39;energy&#39;: &lt;float, energy in kJ/mol&gt;,  # only this is used here</span>
+<span class="sd">                                   &#39;xyz&#39;: &lt;dict&gt;,</span>
+<span class="sd">                                   &#39;is_isomorphic&#39;: &lt;bool&gt;,</span>
+<span class="sd">                                   &#39;trsh&#39;: &lt;list, job.ess_trsh_methods&gt;}&gt;,</span>
+<span class="sd">                }</span>
 
 <span class="sd">        path (str, optional): The folder path to save this 2D image.</span>
 <span class="sd">        label (str, optional): The species label.</span>

@@ -90,6 +90,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../output.html">Output</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api/index.html">ARC’s API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../tools.html">Standalone tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../media.html">Media</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../release.html">Release notes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../credits.html">Credits</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../contribute.html">Contribute</a></li>
@@ -649,8 +650,8 @@
 <span class="sd">        Args:</span>
 <span class="sd">            time_format (str): Either &#39;days&#39; (e.g., 5-0:00:00) or &#39;hours&#39; (e.g., 120:00:00)</span>
 
-<span class="sd">        Returns:</span>
-<span class="sd">            str: The formatted maximum job time string</span>
+<span class="sd">        Returns: str</span>
+<span class="sd">            The formatted maximum job time string</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">t_delta</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">max_job_time</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">time_format</span> <span class="o">==</span> <span class="s1">&#39;days&#39;</span><span class="p">:</span>
@@ -1774,8 +1775,8 @@
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Deduce the software to be used.</span>
 
-<span class="sd">        Returns:</span>
-<span class="sd">            str: The deduced software.</span>
+<span class="sd">        Returns: str</span>
+<span class="sd">            The deduced software.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">level</span><span class="o">.</span><span class="n">deduce_software</span><span class="p">(</span><span class="n">job_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">job_type</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">level</span><span class="o">.</span><span class="n">software</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -1818,7 +1819,8 @@
 <span class="sd">            val (str): The value to add.</span>
 <span class="sd">            key1 (str, optional): Key1.</span>
 <span class="sd">            key2 (str, optional): Key2.</span>
-<span class="sd">            separator (str, optional): A separator (e.g., &#39; &#39;  or &#39;\n&#39;) to apply between existing values and new values.</span>
+<span class="sd">            separator (str, optional): A separator (e.g., ``&#39; &#39;``  or ``&#39;\\n&#39;``)</span>
+<span class="sd">                                       to apply between existing values and new values.</span>
 <span class="sd">            check_val (bool, optional): Only append ``val`` if it doesn&#39;t exist in the dictionary.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">separator</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>

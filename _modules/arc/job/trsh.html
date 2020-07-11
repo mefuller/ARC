@@ -90,6 +90,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../output.html">Output</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api/index.html">ARC’s API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../tools.html">Standalone tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../media.html">Media</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../release.html">Release notes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../credits.html">Credits</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../contribute.html">Contribute</a></li>
@@ -222,14 +223,11 @@
 <span class="sd">        job_type (str): The job type (e.g., &#39;opt, &#39;freq&#39;, &#39;ts&#39;, &#39;sp&#39;).</span>
 <span class="sd">        software (str, optional): The ESS software.</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        status (str): The status. Either &#39;done&#39; or &#39;errored&#39;.</span>
-<span class="sd">    Returns:</span>
-<span class="sd">        keywords (list): The standardized error keywords.</span>
-<span class="sd">    Returns:</span>
-<span class="sd">        error (str): A description of the error.</span>
-<span class="sd">    Returns:</span>
-<span class="sd">        line (str): The parsed line from the ESS output file indicating the error.</span>
+<span class="sd">    Returns: Tuple[str, list, str, str]</span>
+<span class="sd">        - The status. Either &#39;done&#39; or &#39;errored&#39;.</span>
+<span class="sd">        - The standardized error keywords.</span>
+<span class="sd">        - A description of the error.</span>
+<span class="sd">        - The parsed line from the ESS output file indicating the error.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">software</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">software</span> <span class="o">=</span> <span class="n">determine_ess</span><span class="p">(</span><span class="n">log_file</span><span class="o">=</span><span class="n">output_path</span><span class="p">)</span>
@@ -598,14 +596,11 @@
 <span class="sd">          generate a 360 scan using 30 deg increments and append all 12 results as conformers</span>
 <span class="sd">          (consider rotor symmetry to append less conformers?)</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        current_neg_freqs_trshed (list): The current troubleshooted negative frequencies.</span>
-<span class="sd">    Returns:</span>
-<span class="sd">        conformers (list): The new conformers to try optimizing.</span>
-<span class="sd">    Returns:</span>
-<span class="sd">        output_errors (list): Errors to report.</span>
-<span class="sd">    Returns:</span>
-<span class="sd">        output_warnings (list): Warnings to report.</span>
+<span class="sd">    Returns: Tuple[list, list, list, list]</span>
+<span class="sd">        - The current troubleshooted negative frequencies.</span>
+<span class="sd">        - The new conformers to try optimizing.</span>
+<span class="sd">        - Errors to report.</span>
+<span class="sd">        - Warnings to report.</span>
 
 <span class="sd">    Raises:</span>
 <span class="sd">        TrshError: If a negative frequency could not be determined.</span>
@@ -689,6 +684,7 @@
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Troubleshooting rotor scans.</span>
 <span class="sd">    Using the following methods:</span>
+
 <span class="sd">    1. freeze specific internal coordinates identified by scan_quality_check()</span>
 <span class="sd">    2. freeze all torsions other than the rotor to be scanned</span>
 <span class="sd">    3. increasing the scan resolution</span>
@@ -698,26 +694,26 @@
 <span class="sd">        scan_res (int or float): The scan resolution in degrees.</span>
 <span class="sd">        scan (list): The four atom indices representing the torsion to be troubleshooted.</span>
 <span class="sd">        scan_list (list): Entries are the four-atom scan lists (1-indexed) of all torsions</span>
-<span class="sd">                           (without duplicate pivots) in this species.</span>
-<span class="sd">        methods (dict): The troubleshooting method/s to try.</span>
-<span class="sd">                        Example::</span>
+<span class="sd">                          (without duplicate pivots) in this species.</span>
+<span class="sd">        methods (dict): The troubleshooting method/s to try. Example::</span>
+
 <span class="sd">                            {&#39;inc_res&#39;: None,</span>
 <span class="sd">                             &#39;freeze&#39;: &#39;all&#39; or [[1, 2, 3, 4], ...]}</span>
+
 <span class="sd">        log_file (str, optional): The related output file path.</span>
 
 <span class="sd">    Raises:</span>
 <span class="sd">        TrshError:</span>
-<span class="sd">            - ``scan`` is not included in the ``scan_list``.</span>
-<span class="sd">            - Freeze method includes an invalid internal coordinates.</span>
-<span class="sd">            - Freeze method does not provide any solution.</span>
 
-<span class="sd">    Raises:</span>
+<span class="sd">            1. ``scan`` is not included in the ``scan_list``</span>
+<span class="sd">            2. Freeze method includes an invalid internal coordinates.</span>
+<span class="sd">            3. Freeze method does not provide any solution.</span>
+
 <span class="sd">        InputError: Invalid `methods` input.</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        Tuple[str, int]:</span>
-<span class="sd">            - The scan troubleshooting keywords to be appended to the Gaussian input file.</span>
-<span class="sd">            - The new scan resolution in degrees.</span>
+<span class="sd">    Returns: Tuple[str, int]</span>
+<span class="sd">        - The scan troubleshooting keywords to be appended to the Gaussian input file.</span>
+<span class="sd">        - The new scan resolution in degrees.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">scan</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">scan_list</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">TrshError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Could not find the scan to troubleshoot in the scan list of species </span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
@@ -835,8 +831,8 @@
 <span class="sd">                      the rotor to be scanned or `frozen` for the rotor were frozen</span>
 <span class="sd">                      in the previous job</span>
 <span class="sd">    </span>
-<span class="sd">    Returns:</span>
-<span class="sd">        list: A list of internal coordinates to be frozen</span>
+<span class="sd">    Returns: list</span>
+<span class="sd">        A list of internal coordinates to be frozen</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">pruning</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">same_pivots_torsions</span> <span class="o">=</span> <span class="p">[]</span>
@@ -919,20 +915,19 @@
 <span class="sd">        - Don&#39;t change the level of theory as a trsh method unless the user explicitly allows it</span>
 <span class="sd">        - Change server to one that has the same ESS if running out of disk space.</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        tuple:</span>
-<span class="sd">            - output_errors (list): Errors to report.</span>
-<span class="sd">            - ess_trsh_methods (list): The updated troubleshooting methods tried for this job.</span>
-<span class="sd">            - remove_checkfile (bool): Whether to remove the checkfile from the job, `True` to remove.</span>
-<span class="sd">            - level_of_theory (Level): The new level of theory dictionary to use.</span>
-<span class="sd">            - software (str, optional): The new ESS software to use.</span>
-<span class="sd">            - job_type (str): The new job type to use.</span>
-<span class="sd">            - fine (bool): whether the new job should use a fine grid, `True` if it should.</span>
-<span class="sd">            - trsh_keyword (str): The troubleshooting keyword to use.</span>
-<span class="sd">            - memory (float): The new memory in GB to use for the job.</span>
-<span class="sd">            - shift (str): The shift to use (only in Molpro).</span>
-<span class="sd">            - cpus (int): The total number of cpu cores requested for a job.</span>
-<span class="sd">            - couldnt_trsh (bool): Whether a troubleshooting solution was found. `True` if it was not found.</span>
+<span class="sd">    Returns: tuple</span>
+<span class="sd">        - output_errors (list): Errors to report.</span>
+<span class="sd">        - ess_trsh_methods (list): The updated troubleshooting methods tried for this job.</span>
+<span class="sd">        - remove_checkfile (bool): Whether to remove the checkfile from the job, `True` to remove.</span>
+<span class="sd">        - level_of_theory (Level): The new level of theory dictionary to use.</span>
+<span class="sd">        - software (str, optional): The new ESS software to use.</span>
+<span class="sd">        - job_type (str): The new job type to use.</span>
+<span class="sd">        - fine (bool): whether the new job should use a fine grid, `True` if it should.</span>
+<span class="sd">        - trsh_keyword (str): The troubleshooting keyword to use.</span>
+<span class="sd">        - memory (float): The new memory in GB to use for the job.</span>
+<span class="sd">        - shift (str): The shift to use (only in Molpro).</span>
+<span class="sd">        - cpus (int): The total number of cpu cores requested for a job.</span>
+<span class="sd">        - couldnt_trsh (bool): Whether a troubleshooting solution was found. `True` if it was not found.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">level_of_theory</span> <span class="o">=</span> <span class="n">Level</span><span class="p">(</span><span class="nb">repr</span><span class="o">=</span><span class="n">level_of_theory</span><span class="p">)</span>
     <span class="n">output_errors</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
@@ -1240,8 +1235,8 @@
 <span class="sd">    Raises:</span>
 <span class="sd">        TrshError: If the requested ``ess_trsh_methods`` is not supported.</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        level_of_theory (str): Tte level of theory to troubleshoot at.</span>
+<span class="sd">    Returns: str</span>
+<span class="sd">        The level of theory to troubleshoot at.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">ess_trsh_methods</span> <span class="o">=</span> <span class="n">ess_trsh_methods</span> <span class="k">if</span> <span class="n">ess_trsh_methods</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">list</span><span class="p">()</span>
     <span class="k">if</span> <span class="n">software</span> <span class="o">==</span> <span class="s1">&#39;gaussian&#39;</span><span class="p">:</span>
@@ -1282,10 +1277,9 @@
 <span class="sd">        remote_path (str): The remote path to the job folder.</span>
 <span class="sd">        server_nodes (list, optional): The nodes already tried on this server for this jobs.</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        str: The new node on the server (or None).</span>
-<span class="sd">    Returns:</span>
-<span class="sd">        bool: Whether to re-run the job, `True` to rerun.</span>
+<span class="sd">    Returns: Tuple[str, bool]</span>
+<span class="sd">        - The new node on the server (or None).</span>
+<span class="sd">        - Whether to re-run the job, `True` to rerun.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">server_nodes</span> <span class="o">=</span> <span class="n">server_nodes</span> <span class="k">if</span> <span class="n">server_nodes</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">list</span><span class="p">()</span>
     <span class="n">cluster_soft</span> <span class="o">=</span> <span class="n">servers</span><span class="p">[</span><span class="n">server</span><span class="p">][</span><span class="s1">&#39;cluster_soft&#39;</span><span class="p">]</span>
@@ -1358,16 +1352,24 @@
                        <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">]:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Checks the scan&#39;s quality:</span>
+
 <span class="sd">    1. Based on intermediate conformers if available:</span>
+
 <span class="sd">       - whether the initial and final points are consistent</span>
 <span class="sd">       - whether it is relatively &quot;smooth&quot;</span>
+
 <span class="sd">    2. Based on the PES curve (if intermediate conformers are unavailable):</span>
+
 <span class="sd">       - whether the initial and final points are consistent</span>
 <span class="sd">       - whether it is relatively &quot;smooth&quot;</span>
-<span class="sd">    3. Common</span>
+
+<span class="sd">    3. Common:</span>
+
 <span class="sd">       - whether the optimized geometry indeed represents the minimum energy conformer (for a non-TS species)</span>
 <span class="sd">       - whether the barrier height is reasonable</span>
-<span class="sd">    4. Based on requested parameters to preserve</span>
+
+<span class="sd">    4. Based on requested parameters to preserve:</span>
+
 <span class="sd">       - whether specified atom distances to preserve criteria aren&#39;t violated</span>
 
 <span class="sd">    Args:</span>
@@ -1384,12 +1386,11 @@
 <span class="sd">        trajectory (list, optional): Entries are Cartesian coordinates along the scan trajectory.</span>
 <span class="sd">        original_xyz (dict, optional): The optimized coordinated for the species.</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        Tuple[bool, str, str, dict]:</span>
-<span class="sd">            - Whether to invalidate this rotor, ``True`` to invalidate.</span>
-<span class="sd">            - Reason for invalidating this rotor.</span>
-<span class="sd">            - Error or warning message.</span>
-<span class="sd">            - Troubleshooting methods to apply, including conformational changes.</span>
+<span class="sd">    Returns: Tuple[bool, str, str, dict]</span>
+<span class="sd">        - Whether to invalidate this rotor, ``True`` to invalidate.</span>
+<span class="sd">        - Reason for invalidating this rotor.</span>
+<span class="sd">        - Error or warning message.</span>
+<span class="sd">        - Troubleshooting methods to apply, including conformational changes.</span>
 
 <span class="sd">    Todo:</span>
 <span class="sd">        - adjust to ND</span>

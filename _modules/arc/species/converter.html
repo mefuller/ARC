@@ -90,6 +90,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../output.html">Output</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api/index.html">ARC’s API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../tools.html">Standalone tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../media.html">Media</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../release.html">Release notes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../credits.html">Credits</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../contribute.html">Contribute</a></li>
@@ -553,7 +554,7 @@
 
 <div class="viewcode-block" id="standardize_xyz_string"><a class="viewcode-back" href="../../../api/converter.html#arc.species.converter.standardize_xyz_string">[docs]</a><span class="k">def</span> <span class="nf">standardize_xyz_string</span><span class="p">(</span><span class="n">xyz_str</span><span class="p">,</span> <span class="n">isotope_format</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    A helper function to correct xyz string format input (** string to string **).</span>
+<span class="sd">    A helper function to correct xyz string format input (string to string).</span>
 <span class="sd">    Usually empty lines are added by the user either in the beginning or the end,</span>
 <span class="sd">    here we remove them along with other common issues.</span>
 
@@ -1346,7 +1347,7 @@
 
 <div class="viewcode-block" id="add_lone_pairs_by_atom_valance"><a class="viewcode-back" href="../../../api/converter.html#arc.species.converter.add_lone_pairs_by_atom_valance">[docs]</a><span class="k">def</span> <span class="nf">add_lone_pairs_by_atom_valance</span><span class="p">(</span><span class="n">mol</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">     helper function for assigning lone pairs instead of carbenes/nitrenes if not identified automatically,</span>
+<span class="sd">    A helper function for assigning lone pairs instead of carbenes/nitrenes if not identified automatically,</span>
 <span class="sd">    and they are missing according to the given multiplicity.</span>
 
 <span class="sd">    Args:</span>
@@ -1891,18 +1892,18 @@
     <span class="n">rmsd</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">sqr_sum</span><span class="o">/</span><span class="n">n</span><span class="p">)</span>
     <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">rmsd</span><span class="p">)</span></div>
 
+
 <div class="viewcode-block" id="cluster_confs_by_rmsd"><a class="viewcode-back" href="../../../api/converter.html#arc.species.converter.cluster_confs_by_rmsd">[docs]</a><span class="k">def</span> <span class="nf">cluster_confs_by_rmsd</span><span class="p">(</span><span class="n">xyzs</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">]],</span>
                           <span class="n">rmsd_threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-2</span><span class="p">,</span>
                           <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">]]:</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Cluster conformers with the same atom orders using RMSD of distance matrices. Work for both TS and non-TS conformers.</span>
-
+<span class="sd">    Cluster conformers with the same atom orders using RMSD of distance matrices.</span>
+<span class="sd">    Works for both TS and non-TS conformers.</span>
 <span class="sd">    Intended for finding structurally distinct conformers from a pool of conformers.</span>
-<span class="sd">    Suitable scenarios:</span>
-<span class="sd">        1. filter a pool of conformers with their geometry optimized at some level.</span>
-<span class="sd">    Not suitable for:</span>
-<span class="sd">        1. cluster conformers (not optimized) that are sampling of a well or a saddle point (these conformers may have</span>
-<span class="sd">           large difference in RMSE, but they really should be representing the same well or saddle point).</span>
+<span class="sd">    Suitable scenario: Filter a pool of conformers with their geometry optimized at some level.</span>
+<span class="sd">    Not suitable for clustering conformers (not optimized) that are sampling of a well or a saddle point</span>
+<span class="sd">    (these conformers may have large difference in RMSE,</span>
+<span class="sd">    but they really should be representing the same well or saddle point).</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        xyzs (Iterable): Conformers with the same atom orders.</span>

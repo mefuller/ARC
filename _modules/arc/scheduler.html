@@ -90,6 +90,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../output.html">Output</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../api/index.html">ARC’s API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../tools.html">Standalone tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../media.html">Media</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../release.html">Release notes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../credits.html">Credits</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../contribute.html">Contribute</a></li>
@@ -276,10 +277,11 @@
 <span class="sd">        ts_guess_level (str or dict, optional): The level of theory to use for TS guess comparisons.</span>
 <span class="sd">        irc_level (str or dict, optional): The level of theory to use for IRC calculations.</span>
 <span class="sd">        orbitals_level (str or dict, optional): The level of theory to use for calculating MOs (for plotting).</span>
-<span class="sd">        adaptive_levels (dict, optional): A dictionary of levels of theory for ranges of the number of heavy atoms in</span>
-<span class="sd">                                          the molecule. Keys are tuples of (min_num_atoms, max_num_atoms), values are</span>
-<span class="sd">                                          dictionaries with &#39;optfreq&#39; and &#39;sp&#39; as keys and levels of theory as values.</span>
-<span class="sd">        rmg_database (RMGDatabase, optional): The RMG database object.</span>
+<span class="sd">        adaptive_levels (dict, optional): A dictionary of levels of theory for ranges of the number of heavy atoms</span>
+<span class="sd">                                          in the species. Keys are tuples of (min_num_atoms, max_num_atoms),</span>
+<span class="sd">                                          values are dictionaries with job type tuples as keys and levels of theory</span>
+<span class="sd">                                          as values. &#39;inf&#39; is accepted an max_num_atoms rmg_database</span>
+<span class="sd">                                          (RMGDatabase, optional): The RMG database object.</span>
 <span class="sd">        job_types (dict, optional): A dictionary of job types to execute. Keys are job types, values are boolean.</span>
 <span class="sd">        bath_gas (str, optional): A bath gas. Currently used in OneDMin to calc L-J parameters.</span>
 <span class="sd">                                  Allowed values are He, Ne, Ar, Kr, H2, N2, O2.</span>
@@ -303,9 +305,6 @@
 <span class="sd">        species_dict (dict): Keys are labels, values are :ref:`ARCSpecies &lt;species&gt;` objects.</span>
 <span class="sd">        rxn_list (list): Contains input :ref:`ARCReaction &lt;reaction&gt;` objects.</span>
 <span class="sd">        unique_species_labels (list): A list of species labels (checked for duplicates).</span>
-<span class="sd">        adaptive_levels (dict): A dictionary of levels of theory for ranges of the number of heavy atoms in the</span>
-<span class="sd">                                molecule. Keys are tuples of (min_num_atoms, max_num_atoms), values are</span>
-<span class="sd">                                dictionaries with &#39;optfreq&#39; and &#39;sp&#39; as keys and levels of theory as values.</span>
 <span class="sd">        job_dict (dict): A dictionary of all scheduled jobs. Keys are species / TS labels,</span>
 <span class="sd">                         values are dictionaries where keys are job names (corresponding to</span>
 <span class="sd">                         &#39;running_jobs&#39; if job is running) and values are the Job objects.</span>
@@ -342,9 +341,11 @@
 <span class="sd">        ts_guess_level (dict): The level of theory to use for TS guess comparisons.</span>
 <span class="sd">        irc_level (dict): The level of theory to use for IRC calculations.</span>
 <span class="sd">        orbitals_level (dict): The level of theory to use for calculating MOs (for plotting).</span>
-<span class="sd">        adaptive_levels (dict): A dictionary of levels of theory for ranges of the number of heavy atoms in</span>
-<span class="sd">                                  the molecule. Keys are tuples of (min_num_atoms, max_num_atoms), values are</span>
-<span class="sd">                                  dictionaries with &#39;optfreq&#39; and &#39;sp&#39; as keys and levels of theory as values.</span>
+<span class="sd">        adaptive_levels (dict): A dictionary of levels of theory for ranges of the number of heavy atoms</span>
+<span class="sd">                                in the species. Keys are tuples of (min_num_atoms, max_num_atoms),</span>
+<span class="sd">                                values are dictionaries with job type tuples as keys and levels of theory</span>
+<span class="sd">                                as values. &#39;inf&#39; is accepted an max_num_atoms rmg_database</span>
+<span class="sd">                                (RMGDatabase, optional): The RMG database object.</span>
 <span class="sd">        fine_only (bool): If ``True`` ARC will not run optimization jobs without fine=True</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
@@ -2899,22 +2900,22 @@
                               <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">dict</span><span class="p">]:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Troubleshooting rotor scans</span>
-<span class="sd">        Using the following methods: </span>
+<span class="sd">        Using the following methods:</span>
 <span class="sd">        1. freeze: freezing specific internal coordinates or all torsions other than the scan&#39;s pivots</span>
 <span class="sd">        2. inc_res: increasing the scan resolution.</span>
 <span class="sd">        3. change conformer: changing to a conformer with a lower energy</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            job (Job): The scan Job object.</span>
-<span class="sd">            methods (dict): The troubleshooting method/s to try:</span>
-<span class="sd">                            {&#39;freeze&#39;: &lt;a list of problematic internal coordinates&gt;,</span>
-<span class="sd">                             &#39;inc_res&#39;: ``None``,</span>
-<span class="sd">                             &#39;change conformer&#39;: &lt;a xyz dict&gt;}</span>
+<span class="sd">            methods (dict): The troubleshooting method/s to try::</span>
 
-<span class="sd">        Returns:</span>
-<span class="sd">            Tuple[bool, dict]:</span>
-<span class="sd">                - ``True`` if the troubleshooting is valid.</span>
-<span class="sd">                - The actions are actual applied in the troubleshooting.</span>
+<span class="sd">                {&#39;freeze&#39;: &lt;a list of problematic internal coordinates&gt;,</span>
+<span class="sd">                 &#39;inc_res&#39;: ``None``,</span>
+<span class="sd">                 &#39;change conformer&#39;: &lt;a xyz dict&gt;}</span>
+
+<span class="sd">        Returns: Tuple[bool, dict]:</span>
+<span class="sd">            - ``True`` if the troubleshooting is valid.</span>
+<span class="sd">            - The actions are actual applied in the troubleshooting.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">label</span> <span class="o">=</span> <span class="n">job</span><span class="o">.</span><span class="n">species_name</span>
         <span class="n">trsh_success</span> <span class="o">=</span> <span class="kc">False</span>

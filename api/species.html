@@ -113,6 +113,7 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../tools.html">Standalone tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../media.html">Media</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../release.html">Release notes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../credits.html">Credits</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../contribute.html">Contribute</a></li>
@@ -987,11 +988,9 @@ bond order information, only does not necessitates a molecule object, directly c
 <li><p><strong>verbose</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to log isomorphism findings and errors.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Whether the perception of self.final_xyz is isomorphic with self.mol, <code class="docutils literal notranslate"><span class="pre">True</span></code> if it is.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>bool</p>
+</dl>
+<dl class="simple">
+<dt>Returns: bool</dt><dd><p>Whether the perception of self.final_xyz is isomorphic with self.mol, <code class="docutils literal notranslate"><span class="pre">True</span></code> if it is.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1177,12 +1176,8 @@ converted into cartesian coordinates.</p>
 <em class="property">property </em><code class="sig-name descname">radius</code><a class="headerlink" href="#arc.species.species.ARCSpecies.radius" title="Permalink to this definition">¶</a></dt>
 <dd><p>Determine the largest distance from the coordinate system origin attributed to one of the molecule’s
 atoms in 3D space.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>The radius in Angstrom.</p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>float</p>
+<dl class="simple">
+<dt>Returns: float</dt><dd><p>The radius in Angstrom.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1195,12 +1190,8 @@ preserving the 3D geometry other than the splitted bond.
 If one of the scission-resulting species is a hydrogen atom, it will be returned last, labeled as ‘H’.
 Other species labels will be &lt;original species label&gt;_BDE_index1_index2_X, where “X” is either “A” or “B”,
 and the indices are 1-indexed.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>The scission-resulting species.</p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>list</p>
+<dl class="simple">
+<dt>Returns: list</dt><dd><p>The scission-resulting species.</p>
 </dd>
 </dl>
 </dd></dl>

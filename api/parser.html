@@ -113,6 +113,7 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../tools.html">Standalone tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../media.html">Media</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../release.html">Release notes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../credits.html">Credits</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../contribute.html">Contribute</a></li>
@@ -195,11 +196,9 @@
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>path</strong> (<em>str</em>) – The ESS log file to parse from.</p>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>The Cartesian coordinates.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>list</p>
+</dl>
+<dl class="simple">
+<dt>Returns: list</dt><dd><p>The Cartesian coordinates.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -215,11 +214,9 @@
 <dt class="field-even">Raises</dt>
 <dd class="field-even"><p><strong>InputError</strong> – If <code class="docutils literal notranslate"><span class="pre">path</span></code> is invalid.</p>
 </dd>
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>The electronic energy in kJ/mol and the dihedral scan angle in degrees.</p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>Tuple[Optional[List[float]], Optional[List[float]]]</p>
+</dl>
+<dl class="simple">
+<dt>Returns: Tuple[Optional[List[float]], Optional[List[float]]]</dt><dd><p>The electronic energy in kJ/mol and the dihedral scan angle in degrees.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -232,11 +229,9 @@
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>path</strong> – The ESS log file.</p>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>The dipole moment in Debye.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>Optional[float]</p>
+</dl>
+<dl class="simple">
+<dt>Returns: Optional[float]</dt><dd><p>The dipole moment in Debye.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -252,11 +247,9 @@
 <li><p><strong>zpe_scale_factor</strong> (<em>float</em>) – The ZPE scaling factor, used only for composite methods in Gaussian via Arkane.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>The electronic energy in kJ/mol.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>Optional[float]</p>
+</dl>
+<dl class="simple">
+<dt>Returns: Optional[float]</dt><dd><p>The electronic energy in kJ/mol.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -272,11 +265,9 @@
 <li><p><strong>software</strong> (<em>str</em>) – The ESS.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>The parsed frequencies (in cm^-1).</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>np.ndarray</p>
+</dl>
+<dl class="simple">
+<dt>Returns: np.ndarray</dt><dd><p>The parsed frequencies (in cm^-1).</p>
 </dd>
 </dl>
 </dd></dl>
@@ -289,11 +280,9 @@
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>path</strong> (<em>str</em>) – The ESS log file to parse from.</p>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>The cartesian geometry.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>Optional[Dict[str, tuple]]</p>
+</dl>
+<dl class="simple">
+<dt>Returns: Optional[Dict[str, tuple]]</dt><dd><p>The cartesian geometry.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -309,11 +298,9 @@
 <dt class="field-even">Raises</dt>
 <dd class="field-even"><p><strong>NotImplementedError</strong> – If files other than Gaussian log is input</p>
 </dd>
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>A DataFrame containing the information of the internal coordinates</p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>pd.DataFrame</p>
+</dl>
+<dl class="simple">
+<dt>Returns: pd.DataFrame</dt><dd><p>A DataFrame containing the information of the internal coordinates</p>
 </dd>
 </dl>
 </dd></dl>
@@ -358,8 +345,9 @@
 <dt class="field-even">Raises</dt>
 <dd class="field-even"><p><strong>InputError</strong> – If <code class="docutils literal notranslate"><span class="pre">path</span></code> is invalid.</p>
 </dd>
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p><p>The “results” dictionary, which has the following structure:</p>
+</dl>
+<dl>
+<dt>Returns: Tuple[dict, Optional[List[float]]]</dt><dd><p>The “results” dictionary, which has the following structure:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">results</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;directed_scan_type&#39;</span><span class="p">:</span> <span class="o">&lt;</span><span class="nb">str</span><span class="p">,</span> <span class="n">used</span> <span class="k">for</span> <span class="n">the</span> <span class="n">fig</span> <span class="n">name</span><span class="o">&gt;</span><span class="p">,</span>
            <span class="s1">&#39;scans&#39;</span><span class="p">:</span> <span class="o">&lt;</span><span class="nb">list</span><span class="p">,</span> <span class="n">entries</span> <span class="n">are</span> <span class="n">lists</span> <span class="n">of</span> <span class="n">torsion</span> <span class="n">indices</span><span class="o">&gt;</span><span class="p">,</span>
            <span class="s1">&#39;directed_scan&#39;</span><span class="p">:</span> <span class="o">&lt;</span><span class="nb">dict</span><span class="p">,</span> <span class="n">keys</span> <span class="n">are</span> <span class="n">tuples</span> <span class="n">of</span> <span class="s1">&#39;</span><span class="si">{0:.2f}</span><span class="s1">&#39;</span> <span class="n">formatted</span> <span class="n">dihedrals</span><span class="p">,</span>
@@ -372,10 +360,6 @@
 </pre></div>
 </div>
 <p>The dihedrals angles of the original conformer</p>
-</p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>Tuple[dict, Optional[List[float]]]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -394,11 +378,9 @@
 <dt class="field-even">Raises</dt>
 <dd class="field-even"><p><strong>NotImplementedError</strong> – If the parser is not implemented for the ESS this log file belongs to.</p>
 </dd>
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>The frequencies (in cm^-1) and The normal displacement modes.</p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>Tuple[np.ndarray, np.ndarray]</p>
+</dl>
+<dl class="simple">
+<dt>Returns: Tuple[np.ndarray, np.ndarray]</dt><dd><p>The frequencies (in cm^-1) and The normal displacement modes.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -411,11 +393,9 @@
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>path</strong> – The ESS log file.</p>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>The polarizability in Angstrom^3.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>Optional[float]</p>
+</dl>
+<dl class="simple">
+<dt>Returns: Optional[float]</dt><dd><p>The polarizability in Angstrom^3.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -432,23 +412,17 @@ what is the step size and the number of atoms, etc.</p>
 <dt class="field-even">Raises</dt>
 <dd class="field-even"><p><strong>NotImplementedError</strong> – If files other than Gaussian log is input</p>
 </dd>
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p><dl>
-<dt>A dict contains the scan arguments</dt><dd><p>as well as step number, step size, number of atom
-{‘scan’: &lt;list, atom indexes of the torsion to be scanned&gt;,</p>
-<blockquote>
-<div><p>’freeze’: &lt;list, list of internal coordinates identified by atom indexes&gt;,
-‘step’: &lt;int, number of steps to scan&gt;,
-‘step_size’: &lt;float, the size of each step&gt;
-‘n_atom’: &lt;int, the number of atoms of the molecule&gt;
-}</p>
-</div></blockquote>
-</dd>
 </dl>
-</p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>dict</p>
+<dl>
+<dt>Returns: dict</dt><dd><p>A dictionary that contains the scan arguments as well as step number, step size, number of atom:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s1">&#39;scan&#39;</span><span class="p">:</span> <span class="o">&lt;</span><span class="nb">list</span><span class="p">,</span> <span class="n">atom</span> <span class="n">indexes</span> <span class="n">of</span> <span class="n">the</span> <span class="n">torsion</span> <span class="n">to</span> <span class="n">be</span> <span class="n">scanned</span><span class="o">&gt;</span><span class="p">,</span>
+ <span class="s1">&#39;freeze&#39;</span><span class="p">:</span> <span class="o">&lt;</span><span class="nb">list</span><span class="p">,</span> <span class="nb">list</span> <span class="n">of</span> <span class="n">internal</span> <span class="n">coordinates</span> <span class="n">identified</span> <span class="n">by</span> <span class="n">atom</span> <span class="n">indexes</span><span class="o">&gt;</span><span class="p">,</span>
+ <span class="s1">&#39;step&#39;</span><span class="p">:</span> <span class="o">&lt;</span><span class="nb">int</span><span class="p">,</span> <span class="n">number</span> <span class="n">of</span> <span class="n">steps</span> <span class="n">to</span> <span class="n">scan</span><span class="o">&gt;</span><span class="p">,</span>
+ <span class="s1">&#39;step_size&#39;</span><span class="p">:</span> <span class="o">&lt;</span><span class="nb">float</span><span class="p">,</span> <span class="n">the</span> <span class="n">size</span> <span class="n">of</span> <span class="n">each</span> <span class="n">step</span><span class="o">&gt;</span><span class="p">,</span>
+ <span class="s1">&#39;n_atom&#39;</span><span class="p">:</span> <span class="o">&lt;</span><span class="nb">int</span><span class="p">,</span> <span class="n">the</span> <span class="n">number</span> <span class="n">of</span> <span class="n">atoms</span> <span class="n">of</span> <span class="n">the</span> <span class="n">molecule</span><span class="o">&gt;</span><span class="p">,</span>
+ <span class="p">}</span>
+</pre></div>
+</div>
 </dd>
 </dl>
 </dd></dl>
@@ -497,11 +471,9 @@ will be removed during the process.</p>
 <dt class="field-even">Raises</dt>
 <dd class="field-even"><p><strong>InputError</strong> – If the file could not be found.</p>
 </dd>
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>List of str blocks.</p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>List[str]</p>
+</dl>
+<dl class="simple">
+<dt>Returns: List[str]</dt><dd><p>List of str blocks.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -514,11 +486,9 @@ will be removed during the process.</p>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>path</strong> (<em>str</em>) – The ess log file path.</p>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>The T1 parameter.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>Optional[float]</p>
+</dl>
+<dl class="simple">
+<dt>Returns: Optional[float]</dt><dd><p>The T1 parameter.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -534,11 +504,9 @@ will be removed during the process.</p>
 <dt class="field-even">Raises</dt>
 <dd class="field-even"><p><strong>ParserError</strong> – If the trajectory could not be read.</p>
 </dd>
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>Entries are xyz’s on the trajectory.</p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>List[Dict[str, tuple]]</p>
+</dl>
+<dl class="simple">
+<dt>Returns: List[Dict[str, tuple]]</dt><dd><p>Entries are xyz’s on the trajectory.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -558,11 +526,9 @@ will be removed during the process.</p>
 <dt class="field-even">Raises</dt>
 <dd class="field-even"><p><strong>ParserError</strong> – If the coordinates could not be parsed.</p>
 </dd>
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>The parsed cartesian coordinates.</p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>Optional[Dict[str, tuple]]</p>
+</dl>
+<dl class="simple">
+<dt>Returns: Optional[Dict[str, tuple]]</dt><dd><p>The parsed cartesian coordinates.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -575,11 +541,9 @@ will be removed during the process.</p>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>path</strong> (<em>str</em>) – The path to a frequency calculation output file.</p>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>The calculated zero point energy in kJ/mol.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>Optional[float]</p>
+</dl>
+<dl class="simple">
+<dt>Returns: Optional[float]</dt><dd><p>The calculated zero point energy in kJ/mol.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -597,11 +561,9 @@ a “conformers_after_optimization” file).</p>
 <dt class="field-even">Raises</dt>
 <dd class="field-even"><p><strong>InputError</strong> – If the file could not be found.</p>
 </dd>
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>Conformer coordinates in a dict format, the respective energies in kJ/mol.</p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>Tuple[List[Dict[str, tuple]], List[float]]</p>
+</dl>
+<dl class="simple">
+<dt>Returns: Tuple[List[Dict[str, tuple]], List[float]]</dt><dd><p>Conformer coordinates in a dict format, the respective energies in kJ/mol.</p>
 </dd>
 </dl>
 </dd></dl>

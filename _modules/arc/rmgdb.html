@@ -90,6 +90,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../output.html">Output</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../api/index.html">ARC’s API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../tools.html">Standalone tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../media.html">Media</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../release.html">Release notes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../credits.html">Credits</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../contribute.html">Contribute</a></li>
@@ -183,8 +184,8 @@
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Make a clean RMGDatabase object.</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        RMGDatabase: A clean RMG database object.</span>
+<span class="sd">    Returns: RMGDatabase</span>
+<span class="sd">        A clean RMG database object.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">rmgdb</span> <span class="o">=</span> <span class="n">RMGDatabase</span><span class="p">()</span>
     <span class="k">return</span> <span class="n">rmgdb</span></div>
@@ -319,10 +320,9 @@
 <span class="sd">        rmgdb (RMGDatabase): The RMG database instance.</span>
 <span class="sd">        reaction (Reaction): The RMG Reaction object.</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        str: The corresponding RMG reaction&#39;s family. None if no family was found or more than one family were found.</span>
-<span class="sd">    Returns:</span>
-<span class="sd">         bool: Whether the family is its own reverse.</span>
+<span class="sd">    Returns: Tuple[str, bool]</span>
+<span class="sd">        - The corresponding RMG reaction&#39;s family. None if no family was found or more than one family were found.</span>
+<span class="sd">        - Whether the family is its own reverse.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">fam_list</span> <span class="o">=</span> <span class="n">loop_families</span><span class="p">(</span><span class="n">rmgdb</span><span class="o">=</span><span class="n">rmgdb</span><span class="p">,</span> <span class="n">reaction</span><span class="o">=</span><span class="n">reaction</span><span class="p">)</span>
     <span class="n">families</span> <span class="o">=</span> <span class="p">[</span><span class="n">fam_l</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">fam_l</span> <span class="ow">in</span> <span class="n">fam_list</span><span class="p">]</span>
@@ -342,8 +342,8 @@
 <span class="sd">        rmgdb (RMGDatabase): The RMG database instance.</span>
 <span class="sd">        reaction (Reaction): The RMG Reaction object.</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        list: Entries are corresponding RMG reaction families.</span>
+<span class="sd">    Returns: list</span>
+<span class="sd">        Entries are corresponding RMG reaction families.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">reaction</span> <span class="o">=</span> <span class="n">reaction</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>  <span class="c1"># use a copy to avoid changing atom order in the molecules by RMG</span>
     <span class="n">fam_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>

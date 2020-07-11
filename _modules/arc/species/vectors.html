@@ -90,6 +90,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../output.html">Output</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api/index.html">ARC’s API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../tools.html">Standalone tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../media.html">Media</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../release.html">Release notes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../credits.html">Credits</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../contribute.html">Contribute</a></li>
@@ -183,8 +184,8 @@
 <span class="sd">         v1 (list): Vector 1.</span>
 <span class="sd">         v2 (list): Vector 2.</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        list: A normal unit vector to v1 and v2.</span>
+<span class="sd">    Returns: list</span>
+<span class="sd">        A normal unit vector to v1 and v2.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">normal</span> <span class="o">=</span> <span class="p">[</span><span class="n">v1</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">v2</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">v2</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">v1</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="o">-</span> <span class="n">v1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">v2</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="n">v2</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">v1</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">v1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">v2</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">v2</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">v1</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
     <span class="k">return</span> <span class="n">unit_vector</span><span class="p">(</span><span class="n">normal</span><span class="p">)</span></div>
@@ -205,8 +206,8 @@
 <span class="sd">    Raises:</span>
 <span class="sd">        VectorsError: If ``v1`` and ``v2`` are of different lengths.</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        float: The angle between ``v1`` and ``v2`` in the desired units.</span>
+<span class="sd">    Returns: float</span>
+<span class="sd">        The angle between ``v1`` and ``v2`` in the desired units.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">v1</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">v2</span><span class="p">):</span>
         <span class="k">raise</span> <span class="n">VectorsError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;v1 and v2 must be the same length, got </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">v1</span><span class="p">)</span><span class="si">}</span><span class="s1"> and </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">v2</span><span class="p">)</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">)</span>
@@ -234,8 +235,8 @@
 <span class="sd">    Raises:</span>
 <span class="sd">        VectorsError: If either ``v1`` or ``v2`` have lengths different than three.</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        float: The dihedral angle between ``v1`` and ``v2`` in the desired units.</span>
+<span class="sd">    Returns: float</span>
+<span class="sd">        The dihedral angle between ``v1`` and ``v2`` in the desired units.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">v1</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">3</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">v2</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">3</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">v3</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">3</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">VectorsError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;v1, v2, and v3 must have a length of three, got </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">v1</span><span class="p">)</span><span class="si">}</span><span class="s1">, </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">v2</span><span class="p">)</span><span class="si">}</span><span class="s1">, and </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">v3</span><span class="p">)</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">)</span>
@@ -269,8 +270,8 @@
 <span class="sd">        VectorsError: If ``index`` is out of range, or ``atoms`` is of wrong length or has repeating indices.</span>
 <span class="sd">        TypeError: If ``coords`` is of wrong type.</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        float: The distance in the coords units.</span>
+<span class="sd">    Returns: float</span>
+<span class="sd">        The distance in the coords units.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="s1">&#39;coords&#39;</span> <span class="ow">in</span> <span class="n">coords</span><span class="p">:</span>
         <span class="n">coords</span> <span class="o">=</span> <span class="n">coords</span><span class="p">[</span><span class="s1">&#39;coords&#39;</span><span class="p">]</span>
@@ -314,8 +315,8 @@
 <span class="sd">        VectorsError: If ``index`` is out of range, or ``atoms`` is of wrong length or has repeating indices.</span>
 <span class="sd">        TypeError: If ``coords`` is of wrong type.</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        float: The angle.</span>
+<span class="sd">    Returns: float</span>
+<span class="sd">        The angle.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="s1">&#39;coords&#39;</span> <span class="ow">in</span> <span class="n">coords</span><span class="p">:</span>
         <span class="n">coords</span> <span class="o">=</span> <span class="n">coords</span><span class="p">[</span><span class="s1">&#39;coords&#39;</span><span class="p">]</span>
@@ -360,8 +361,8 @@
 <span class="sd">        VectorsError: If ``index`` is out of range, or ``torsion`` is of wrong length or has repeating indices.</span>
 <span class="sd">        TypeError: If ``coords`` is of wrong type.</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        float: The dihedral angle in a 0-360 degrees range.</span>
+<span class="sd">    Returns: float</span>
+<span class="sd">        The dihedral angle in a 0-360 degrees range.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="s1">&#39;coords&#39;</span> <span class="ow">in</span> <span class="n">coords</span><span class="p">:</span>
         <span class="n">coords</span> <span class="o">=</span> <span class="n">coords</span><span class="p">[</span><span class="s1">&#39;coords&#39;</span><span class="p">]</span>
@@ -397,8 +398,8 @@
 <span class="sd">    Args:</span>
 <span class="sd">        vector (list): The input vector.</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        list: The unit vector.</span>
+<span class="sd">    Returns: list</span>
+<span class="sd">        The unit vector.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">length</span> <span class="o">=</span> <span class="n">get_vector_length</span><span class="p">(</span><span class="n">vector</span><span class="p">)</span>
     <span class="k">return</span> <span class="p">[</span><span class="n">vi</span> <span class="o">/</span> <span class="n">length</span> <span class="k">for</span> <span class="n">vi</span> <span class="ow">in</span> <span class="n">vector</span><span class="p">]</span></div>
@@ -414,8 +415,8 @@
 <span class="sd">        vector (list): The vector to process.</span>
 <span class="sd">        length (float): The desired length to set.</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        list: A vector with the desired length.</span>
+<span class="sd">    Returns: list</span>
+<span class="sd">        A vector with the desired length.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">u</span> <span class="o">=</span> <span class="n">unit_vector</span><span class="p">(</span><span class="n">vector</span><span class="p">)</span>
     <span class="k">return</span> <span class="p">[</span><span class="n">u</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">length</span><span class="p">,</span> <span class="n">u</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">length</span><span class="p">,</span> <span class="n">u</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">length</span><span class="p">]</span></div>
@@ -437,8 +438,8 @@
 <span class="sd">        normal (list): The axis to be rotated around.</span>
 <span class="sd">        theta (float): The degree in radians by which to rotate.</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        list: The rotated vector (the new coordinates for point B).</span>
+<span class="sd">    Returns: list</span>
+<span class="sd">        The rotated vector (the new coordinates for point B).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">normal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">normal</span><span class="p">)</span>
     <span class="n">normal</span> <span class="o">=</span> <span class="n">normal</span> <span class="o">/</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">normal</span><span class="p">,</span> <span class="n">normal</span><span class="p">))</span>  <span class="c1"># should *not* be replaced by an augmented assignment</span>
@@ -467,8 +468,8 @@
 <span class="sd">        anchor (int): The 0-index of an additional atom in the molecule.</span>
 <span class="sd">        xyz (dict): The 3D coordinates of the molecule with the same atom order as in mol.</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">         list: A vector pointing from the pivotal atom towards the anchor atom.</span>
+<span class="sd">    Returns: list</span>
+<span class="sd">         A vector pointing from the pivotal atom towards the anchor atom.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="n">converter</span><span class="o">.</span><span class="n">xyz_to_x_y_z</span><span class="p">(</span><span class="n">xyz</span><span class="p">)</span>
     <span class="n">dx</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="n">anchor</span><span class="p">]</span> <span class="o">-</span> <span class="n">x</span><span class="p">[</span><span class="n">pivot</span><span class="p">]</span>
@@ -495,8 +496,8 @@
 <span class="sd">    Raises:</span>
 <span class="sd">        VectorsError: If the lp vector cannot be attained.</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        list: A unit vector pointing from the pivotal (nitrogen) atom towards its lone electron pairs orbital.</span>
+<span class="sd">    Returns: list</span>
+<span class="sd">        A unit vector pointing from the pivotal (nitrogen) atom towards its lone electron pairs orbital.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">neighbors</span><span class="p">,</span> <span class="n">vectors</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(),</span> <span class="nb">list</span><span class="p">()</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">mol</span><span class="o">.</span><span class="n">atoms</span><span class="p">[</span><span class="n">pivot</span><span class="p">]</span><span class="o">.</span><span class="n">is_nitrogen</span><span class="p">():</span>
@@ -524,8 +525,8 @@
 <span class="sd">    Args:</span>
 <span class="sd">        v (list): The vector.</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        float: The vector&#39;s length.</span>
+<span class="sd">    Returns: float</span>
+<span class="sd">        The vector&#39;s length.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="o">**</span> <span class="mf">0.5</span><span class="p">)</span></div>
 
@@ -545,8 +546,8 @@
 <span class="sd">        a1 (float): Angle 1 in degrees.</span>
 <span class="sd">        a2 (float): Angle 2 in degrees.</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        float: THe difference between the angles in degrees.</span>
+<span class="sd">    Returns: float</span>
+<span class="sd">        The difference between the angles in degrees.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">a1</span> <span class="o">%=</span> <span class="mi">360</span>
     <span class="n">a2</span> <span class="o">%=</span> <span class="mi">360</span>

@@ -90,6 +90,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../output.html">Output</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api/index.html">ARC’s API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../tools.html">Standalone tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../media.html">Media</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../release.html">Release notes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../credits.html">Credits</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../contribute.html">Contribute</a></li>
@@ -694,8 +695,8 @@
 <span class="sd">        Determine the largest distance from the coordinate system origin attributed to one of the molecule&#39;s</span>
 <span class="sd">        atoms in 3D space.</span>
 
-<span class="sd">        Returns:</span>
-<span class="sd">            float: The radius in Angstrom.</span>
+<span class="sd">        Returns: float</span>
+<span class="sd">            The radius in Angstrom.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_radius</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_radius</span> <span class="o">=</span> <span class="n">get_xyz_radius</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_xyz</span><span class="p">())</span>
@@ -1634,8 +1635,8 @@
 <span class="sd">            allow_nonisomorphic_2d (bool, optional): Whether to allow non-isomorphic representations to pass this test.</span>
 <span class="sd">            verbose (bool, optional): Whether to log isomorphism findings and errors.</span>
 
-<span class="sd">        Returns:</span>
-<span class="sd">            bool: Whether the perception of self.final_xyz is isomorphic with self.mol, ``True`` if it is.</span>
+<span class="sd">        Returns: bool</span>
+<span class="sd">            Whether the perception of self.final_xyz is isomorphic with self.mol, ``True`` if it is.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">mol</span> <span class="o">=</span> <span class="n">mol</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">mol</span>
         <span class="n">xyz</span> <span class="o">=</span> <span class="n">xyz</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">final_xyz</span>
@@ -1706,8 +1707,8 @@
 <span class="sd">        Other species labels will be &lt;original species label&gt;_BDE_index1_index2_X, where &quot;X&quot; is either &quot;A&quot; or &quot;B&quot;,</span>
 <span class="sd">        and the indices are 1-indexed.</span>
 
-<span class="sd">        Returns:</span>
-<span class="sd">            list: The scission-resulting species.</span>
+<span class="sd">        Returns: list</span>
+<span class="sd">            The scission-resulting species.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">all_h</span> <span class="o">=</span> <span class="kc">True</span> <span class="k">if</span> <span class="s1">&#39;all_h&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">bdes</span> <span class="k">else</span> <span class="kc">False</span>
         <span class="k">if</span> <span class="n">all_h</span><span class="p">:</span>
@@ -1744,8 +1745,8 @@
 <span class="sd">        Args:</span>
 <span class="sd">            indices (tuple): The atom indices between which to cut (1-indexed, atoms must be bonded).</span>
 
-<span class="sd">        Returns:</span>
-<span class="sd">            list: The scission-resulting species.</span>
+<span class="sd">        Returns: list</span>
+<span class="sd">            The scission-resulting species.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">any</span><span class="p">([</span><span class="n">i</span> <span class="o">&lt;</span> <span class="mi">1</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">indices</span><span class="p">]):</span>
             <span class="k">raise</span> <span class="n">SpeciesError</span><span class="p">(</span><span class="s1">&#39;Indices must be larger than 0&#39;</span><span class="p">)</span>

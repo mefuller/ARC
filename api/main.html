@@ -113,6 +113,7 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../tools.html">Standalone tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../media.html">Media</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../release.html">Release notes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../credits.html">Credits</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../contribute.html">Contribute</a></li>
@@ -221,15 +222,15 @@ instead (e.g., <code class="docutils literal notranslate"><span class="pre">opt_
 <li><p><strong>bac_type</strong> (<em>str</em><em>, </em><em>optional</em>) – The bond additivity correction type. ‘p’ for Petersson- or ‘m’ for Melius-type BAC.
 Default: ‘p’. <code class="docutils literal notranslate"><span class="pre">None</span></code> to not use BAC.</p></li>
 <li><p><strong>job_types</strong> (<em>dict</em><em>, </em><em>optional</em>) – A dictionary of job types to execute. Keys are job types, values are boolean.</p></li>
-<li><p><strong>arkane_level_of_theory</strong> (<em>Union</em><em>[</em><em>dict</em><em>, </em><a class="reference internal" href="level.html#arc.level.Level" title="arc.level.Level"><em>Level</em></a><em>, </em><em>str</em><em>]</em><em>, </em><em>optional</em>) – <p>The Arkane level of theory to use for AEC and BAC.
-.. note:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>This argument is a ``Level`` type, not a ``LevelOfTheory`` type.
-This argument will only affect AEC/BAC, not the frequency scaling factor.
-</pre></div>
+<li><p><strong>arkane_level_of_theory</strong> (<em>Union</em><em>[</em><em>dict</em><em>, </em><a class="reference internal" href="level.html#arc.level.Level" title="arc.level.Level"><em>Level</em></a><em>, </em><em>str</em><em>]</em><em>, </em><em>optional</em>) – <p>The Arkane level of theory to use for AEC and BAC.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This argument is a <code class="docutils literal notranslate"><span class="pre">Level</span></code> type, not a <code class="docutils literal notranslate"><span class="pre">LevelOfTheory</span></code> type.
+This argument will only affect AEC/BAC, not the frequency scaling factor.</p>
 </div>
 </p></li>
-<li><p><strong>T_min</strong> (<em>tuple</em><em>, </em><em>optional</em>) – The minimum temperature for kinetics computations, e.g., (500, ‘K’).</p></li>
-<li><p><strong>T_max</strong> (<em>tuple</em><em>, </em><em>optional</em>) – The maximum temperature for kinetics computations, e.g., (3000, ‘K’).</p></li>
+<li><p><strong>T_min</strong> (<em>tuple</em><em>, </em><em>optional</em>) – The minimum temperature for kinetics computations, e.g., <code class="docutils literal notranslate"><span class="pre">(500,</span> <span class="pre">'K')</span></code>.</p></li>
+<li><p><strong>T_max</strong> (<em>tuple</em><em>, </em><em>optional</em>) – The maximum temperature for kinetics computations, e.g., <code class="docutils literal notranslate"><span class="pre">(3000,</span> <span class="pre">'K')</span></code>.</p></li>
 <li><p><strong>T_count</strong> (<em>int</em><em>, </em><em>optional</em>) – The number of temperature points between <code class="docutils literal notranslate"><span class="pre">T_min</span></code> and <code class="docutils literal notranslate"><span class="pre">T_max</span></code>.</p></li>
 <li><p><strong>verbose</strong> (<em>int</em><em>, </em><em>optional</em>) – The logging level to use.</p></li>
 <li><p><strong>project_directory</strong> (<em>str</em><em>, </em><em>optional</em>) – The path to the project directory.</p></li>

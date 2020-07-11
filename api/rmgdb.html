@@ -113,6 +113,7 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../tools.html">Standalone tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../media.html">Media</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../release.html">Release notes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../credits.html">Credits</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../contribute.html">Contribute</a></li>
@@ -199,17 +200,12 @@ Returns None if no family found or more than one family found.</p>
 <li><p><strong>reaction</strong> (<em>Reaction</em>) – The RMG Reaction object.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>The corresponding RMG reaction’s family. None if no family was found or more than one family were found.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>str</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Whether the family is its own reverse.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>bool</p>
+</dl>
+<dl class="simple">
+<dt>Returns: Tuple[str, bool]</dt><dd><ul class="simple">
+<li><p>The corresponding RMG reaction’s family. None if no family was found or more than one family were found.</p></li>
+<li><p>Whether the family is its own reverse.</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
@@ -273,11 +269,9 @@ Returns a list of (family, degenerate_reactions) tuples.</p>
 <li><p><strong>reaction</strong> (<em>Reaction</em>) – The RMG Reaction object.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Entries are corresponding RMG reaction families.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>list</p>
+</dl>
+<dl class="simple">
+<dt>Returns: list</dt><dd><p>Entries are corresponding RMG reaction families.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -286,12 +280,8 @@ Returns a list of (family, degenerate_reactions) tuples.</p>
 <dt id="arc.rmgdb.make_rmg_database_object">
 <code class="sig-prename descclassname">arc.rmgdb.</code><code class="sig-name descname">make_rmg_database_object</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/rmgdb.html#make_rmg_database_object"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.rmgdb.make_rmg_database_object" title="Permalink to this definition">¶</a></dt>
 <dd><p>Make a clean RMGDatabase object.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>A clean RMG database object.</p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>RMGDatabase</p>
+<dl class="simple">
+<dt>Returns: RMGDatabase</dt><dd><p>A clean RMG database object.</p>
 </dd>
 </dl>
 </dd></dl>

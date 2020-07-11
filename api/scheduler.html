@@ -113,6 +113,7 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../tools.html">Standalone tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../media.html">Media</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../release.html">Release notes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../credits.html">Credits</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../contribute.html">Contribute</a></li>
@@ -255,10 +256,11 @@ Each species in <cite>species_list</cite> has to have a unique label.</p>
 <li><p><strong>ts_guess_level</strong> (<em>str</em><em> or </em><em>dict</em><em>, </em><em>optional</em>) – The level of theory to use for TS guess comparisons.</p></li>
 <li><p><strong>irc_level</strong> (<em>str</em><em> or </em><em>dict</em><em>, </em><em>optional</em>) – The level of theory to use for IRC calculations.</p></li>
 <li><p><strong>orbitals_level</strong> (<em>str</em><em> or </em><em>dict</em><em>, </em><em>optional</em>) – The level of theory to use for calculating MOs (for plotting).</p></li>
-<li><p><strong>adaptive_levels</strong> (<em>dict</em><em>, </em><em>optional</em>) – A dictionary of levels of theory for ranges of the number of heavy atoms in
-the molecule. Keys are tuples of (min_num_atoms, max_num_atoms), values are
-dictionaries with ‘optfreq’ and ‘sp’ as keys and levels of theory as values.</p></li>
-<li><p><strong>rmg_database</strong> (<em>RMGDatabase</em><em>, </em><em>optional</em>) – The RMG database object.</p></li>
+<li><p><strong>adaptive_levels</strong> (<em>dict</em><em>, </em><em>optional</em>) – A dictionary of levels of theory for ranges of the number of heavy atoms
+in the species. Keys are tuples of (min_num_atoms, max_num_atoms),
+values are dictionaries with job type tuples as keys and levels of theory
+as values. ‘inf’ is accepted an max_num_atoms rmg_database
+(RMGDatabase, optional): The RMG database object.</p></li>
 <li><p><strong>job_types</strong> (<em>dict</em><em>, </em><em>optional</em>) – A dictionary of job types to execute. Keys are job types, values are boolean.</p></li>
 <li><p><strong>bath_gas</strong> (<em>str</em><em>, </em><em>optional</em>) – A bath gas. Currently used in OneDMin to calc L-J parameters.
 Allowed values are He, Ne, Ar, Kr, H2, N2, O2.</p></li>
@@ -339,19 +341,6 @@ force field conformers are considered.</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>list</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt id="arc.scheduler.Scheduler.adaptive_levels">
-<code class="sig-name descname">adaptive_levels</code><a class="headerlink" href="#arc.scheduler.Scheduler.adaptive_levels" title="Permalink to this definition">¶</a></dt>
-<dd><p>A dictionary of levels of theory for ranges of the number of heavy atoms in the
-molecule. Keys are tuples of (min_num_atoms, max_num_atoms), values are
-dictionaries with ‘optfreq’ and ‘sp’ as keys and levels of theory as values.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>dict</p>
 </dd>
 </dl>
 </dd></dl>
@@ -673,11 +662,13 @@ Allowed values are He, Ne, Ar, Kr, H2, N2, O2.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="id0">
-<code class="sig-name descname">adaptive_levels</code><a class="headerlink" href="#id0" title="Permalink to this definition">¶</a></dt>
-<dd><p>A dictionary of levels of theory for ranges of the number of heavy atoms in
-the molecule. Keys are tuples of (min_num_atoms, max_num_atoms), values are
-dictionaries with ‘optfreq’ and ‘sp’ as keys and levels of theory as values.</p>
+<dt id="arc.scheduler.Scheduler.adaptive_levels">
+<code class="sig-name descname">adaptive_levels</code><a class="headerlink" href="#arc.scheduler.Scheduler.adaptive_levels" title="Permalink to this definition">¶</a></dt>
+<dd><p>A dictionary of levels of theory for ranges of the number of heavy atoms
+in the species. Keys are tuples of (min_num_atoms, max_num_atoms),
+values are dictionaries with job type tuples as keys and levels of theory
+as values. ‘inf’ is accepted an max_num_atoms rmg_database
+(RMGDatabase, optional): The RMG database object.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>dict</p>
@@ -1427,24 +1418,21 @@ Using the following methods:
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>job</strong> (<a class="reference internal" href="job.html#arc.job.job.Job" title="arc.job.job.Job"><em>Job</em></a>) – The scan Job object.</p></li>
-<li><p><strong>methods</strong> (<em>dict</em>) – <p>The troubleshooting method/s to try:
-{‘freeze’: &lt;a list of problematic internal coordinates&gt;,</p>
-<blockquote>
-<div><p>’inc_res’: <code class="docutils literal notranslate"><span class="pre">None</span></code>,
-‘change conformer’: &lt;a xyz dict&gt;}</p>
-</div></blockquote>
+<li><p><strong>methods</strong> (<em>dict</em>) – <p>The troubleshooting method/s to try:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>{&#39;freeze&#39;: &lt;a list of problematic internal coordinates&gt;,
+ &#39;inc_res&#39;: ``None``,
+ &#39;change conformer&#39;: &lt;a xyz dict&gt;}
+</pre></div>
+</div>
 </p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><ul class="simple">
+</dl>
+<dl class="simple">
+<dt>Returns: Tuple[bool, dict]:</dt><dd><ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">True</span></code> if the troubleshooting is valid.</p></li>
 <li><p>The actions are actual applied in the troubleshooting.</p></li>
 </ul>
-</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>Tuple[bool, dict]</p>
 </dd>
 </dl>
 </dd></dl>

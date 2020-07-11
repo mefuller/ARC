@@ -113,6 +113,7 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../tools.html">Standalone tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../media.html">Media</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../release.html">Release notes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../credits.html">Credits</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../contribute.html">Contribute</a></li>
@@ -206,11 +207,9 @@
 <li><p><strong>TypeError</strong> – If <code class="docutils literal notranslate"><span class="pre">coords</span></code> is of wrong type.</p></li>
 </ul>
 </dd>
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>The angle.</p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>float</p>
+</dl>
+<dl class="simple">
+<dt>Returns: float</dt><dd><p>The angle.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -234,11 +233,9 @@
 <li><p><strong>TypeError</strong> – If <code class="docutils literal notranslate"><span class="pre">coords</span></code> is of wrong type.</p></li>
 </ul>
 </dd>
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>The dihedral angle in a 0-360 degrees range.</p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>float</p>
+</dl>
+<dl class="simple">
+<dt>Returns: float</dt><dd><p>The dihedral angle in a 0-360 degrees range.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -261,11 +258,9 @@
 <li><p><strong>TypeError</strong> – If <code class="docutils literal notranslate"><span class="pre">coords</span></code> is of wrong type.</p></li>
 </ul>
 </dd>
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>The distance in the coords units.</p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>float</p>
+</dl>
+<dl class="simple">
+<dt>Returns: float</dt><dd><p>The distance in the coords units.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -285,11 +280,9 @@
 <dt class="field-even">Raises</dt>
 <dd class="field-even"><p><strong>VectorsError</strong> – If <code class="docutils literal notranslate"><span class="pre">v1</span></code> and <code class="docutils literal notranslate"><span class="pre">v2</span></code> are of different lengths.</p>
 </dd>
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>The angle between <code class="docutils literal notranslate"><span class="pre">v1</span></code> and <code class="docutils literal notranslate"><span class="pre">v2</span></code> in the desired units.</p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>float</p>
+</dl>
+<dl class="simple">
+<dt>Returns: float</dt><dd><p>The angle between <code class="docutils literal notranslate"><span class="pre">v1</span></code> and <code class="docutils literal notranslate"><span class="pre">v2</span></code> in the desired units.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -311,11 +304,9 @@
 <li><p><strong>a2</strong> (<em>float</em>) – Angle 2 in degrees.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>THe difference between the angles in degrees.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>float</p>
+</dl>
+<dl class="simple">
+<dt>Returns: float</dt><dd><p>The difference between the angles in degrees.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -338,11 +329,9 @@ Inspired by ASE Atoms.get_dihedral().</p>
 <dt class="field-even">Raises</dt>
 <dd class="field-even"><p><strong>VectorsError</strong> – If either <code class="docutils literal notranslate"><span class="pre">v1</span></code> or <code class="docutils literal notranslate"><span class="pre">v2</span></code> have lengths different than three.</p>
 </dd>
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>The dihedral angle between <code class="docutils literal notranslate"><span class="pre">v1</span></code> and <code class="docutils literal notranslate"><span class="pre">v2</span></code> in the desired units.</p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>float</p>
+</dl>
+<dl class="simple">
+<dt>Returns: float</dt><dd><p>The dihedral angle between <code class="docutils literal notranslate"><span class="pre">v1</span></code> and <code class="docutils literal notranslate"><span class="pre">v2</span></code> in the desired units.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -364,11 +353,9 @@ The approach is to reverse the average of the three unit vectors between the piv
 <dt class="field-even">Raises</dt>
 <dd class="field-even"><p><strong>VectorsError</strong> – If the lp vector cannot be attained.</p>
 </dd>
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>A unit vector pointing from the pivotal (nitrogen) atom towards its lone electron pairs orbital.</p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>list</p>
+</dl>
+<dl class="simple">
+<dt>Returns: list</dt><dd><p>A unit vector pointing from the pivotal (nitrogen) atom towards its lone electron pairs orbital.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -384,11 +371,9 @@ The approach is to reverse the average of the three unit vectors between the piv
 <li><p><strong>v2</strong> (<em>list</em>) – Vector 2.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>A normal unit vector to v1 and v2.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>list</p>
+</dl>
+<dl class="simple">
+<dt>Returns: list</dt><dd><p>A normal unit vector to v1 and v2.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -405,11 +390,9 @@ The approach is to reverse the average of the three unit vectors between the piv
 <li><p><strong>xyz</strong> (<em>dict</em>) – The 3D coordinates of the molecule with the same atom order as in mol.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>A vector pointing from the pivotal atom towards the anchor atom.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>list</p>
+</dl>
+<dl class="simple">
+<dt>Returns: list</dt><dd><p>A vector pointing from the pivotal atom towards the anchor atom.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -422,11 +405,9 @@ The approach is to reverse the average of the three unit vectors between the piv
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>v</strong> (<em>list</em>) – The vector.</p>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>The vector’s length.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>float</p>
+</dl>
+<dl class="simple">
+<dt>Returns: float</dt><dd><p>The vector’s length.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -445,11 +426,9 @@ The approach is to reverse the average of the three unit vectors between the piv
 <li><p><strong>theta</strong> (<em>float</em>) – The degree in radians by which to rotate.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>The rotated vector (the new coordinates for point B).</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>list</p>
+</dl>
+<dl class="simple">
+<dt>Returns: list</dt><dd><p>The rotated vector (the new coordinates for point B).</p>
 </dd>
 </dl>
 </dd></dl>
@@ -465,11 +444,9 @@ The approach is to reverse the average of the three unit vectors between the piv
 <li><p><strong>length</strong> (<em>float</em>) – The desired length to set.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>A vector with the desired length.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>list</p>
+</dl>
+<dl class="simple">
+<dt>Returns: list</dt><dd><p>A vector with the desired length.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -482,11 +459,9 @@ The approach is to reverse the average of the three unit vectors between the piv
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>vector</strong> (<em>list</em>) – The input vector.</p>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>The unit vector.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>list</p>
+</dl>
+<dl class="simple">
+<dt>Returns: list</dt><dd><p>The unit vector.</p>
 </dd>
 </dl>
 </dd></dl>

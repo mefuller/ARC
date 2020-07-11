@@ -113,6 +113,7 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../tools.html">Standalone tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../media.html">Media</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../release.html">Release notes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../credits.html">Credits</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../contribute.html">Contribute</a></li>
@@ -190,10 +191,8 @@
 <dl class="py function">
 <dt id="arc.species.converter.add_lone_pairs_by_atom_valance">
 <code class="sig-prename descclassname">arc.species.converter.</code><code class="sig-name descname">add_lone_pairs_by_atom_valance</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mol</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/species/converter.html#add_lone_pairs_by_atom_valance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.converter.add_lone_pairs_by_atom_valance" title="Permalink to this definition">¶</a></dt>
-<dd><blockquote>
-<div><p>helper function for assigning lone pairs instead of carbenes/nitrenes if not identified automatically,</p>
-</div></blockquote>
-<p>and they are missing according to the given multiplicity.</p>
+<dd><p>A helper function for assigning lone pairs instead of carbenes/nitrenes if not identified automatically,
+and they are missing according to the given multiplicity.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>mol</strong> (<em>Molecule</em>) – The Molecule object to process.</p>
@@ -303,21 +302,13 @@ If a map isn’t given, a trivial one will be added.</p>
 <dl class="py function">
 <dt id="arc.species.converter.cluster_confs_by_rmsd">
 <code class="sig-prename descclassname">arc.species.converter.</code><code class="sig-name descname">cluster_confs_by_rmsd</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">xyzs</span><span class="p">:</span> <span class="n">Iterable<span class="p">[</span>Dict<span class="p">[</span>str<span class="p">, </span>tuple<span class="p">]</span><span class="p">]</span></span></em>, <em class="sig-param"><span class="n">rmsd_threshold</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">0.01</span></em><span class="sig-paren">)</span> &#x2192; Tuple<span class="p">[</span>Dict<span class="p">[</span>str<span class="p">, </span>tuple<span class="p">]</span><span class="p">]</span><a class="reference internal" href="../_modules/arc/species/converter.html#cluster_confs_by_rmsd"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.converter.cluster_confs_by_rmsd" title="Permalink to this definition">¶</a></dt>
-<dd><p>Cluster conformers with the same atom orders using RMSD of distance matrices. Work for both TS and non-TS conformers.</p>
-<p>Intended for finding structurally distinct conformers from a pool of conformers.
-Suitable scenarios:</p>
-<blockquote>
-<div><ol class="arabic simple">
-<li><p>filter a pool of conformers with their geometry optimized at some level.</p></li>
-</ol>
-</div></blockquote>
-<dl class="simple">
-<dt>Not suitable for:</dt><dd><ol class="arabic simple">
-<li><p>cluster conformers (not optimized) that are sampling of a well or a saddle point (these conformers may have
-large difference in RMSE, but they really should be representing the same well or saddle point).</p></li>
-</ol>
-</dd>
-</dl>
+<dd><p>Cluster conformers with the same atom orders using RMSD of distance matrices.
+Works for both TS and non-TS conformers.
+Intended for finding structurally distinct conformers from a pool of conformers.
+Suitable scenario: Filter a pool of conformers with their geometry optimized at some level.
+Not suitable for clustering conformers (not optimized) that are sampling of a well or a saddle point
+(these conformers may have large difference in RMSE,
+but they really should be representing the same well or saddle point).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -870,7 +861,7 @@ Either <code class="docutils literal notranslate"><span class="pre">deg_incremen
 <dl class="py function">
 <dt id="arc.species.converter.standardize_xyz_string">
 <code class="sig-prename descclassname">arc.species.converter.</code><code class="sig-name descname">standardize_xyz_string</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">xyz_str</span></em>, <em class="sig-param"><span class="n">isotope_format</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/species/converter.html#standardize_xyz_string"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.converter.standardize_xyz_string" title="Permalink to this definition">¶</a></dt>
-<dd><p>A helper function to correct xyz string format input (** string to string <a href="#id1"><span class="problematic" id="id2">**</span></a>).
+<dd><p>A helper function to correct xyz string format input (string to string).
 Usually empty lines are added by the user either in the beginning or the end,
 here we remove them along with other common issues.</p>
 <dl class="field-list simple">

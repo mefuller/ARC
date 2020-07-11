@@ -90,6 +90,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../output.html">Output</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../api/index.html">ARC’s API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../tools.html">Standalone tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../media.html">Media</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../release.html">Release notes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../credits.html">Credits</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../contribute.html">Contribute</a></li>
@@ -239,11 +240,13 @@
 <span class="sd">        job_types (dict, optional): A dictionary of job types to execute. Keys are job types, values are boolean.</span>
 <span class="sd">        arkane_level_of_theory (Union[dict, Level, str], optional):</span>
 <span class="sd">            The Arkane level of theory to use for AEC and BAC.</span>
+
 <span class="sd">            Note:</span>
 <span class="sd">                This argument is a ``Level`` type, not a ``LevelOfTheory`` type.</span>
 <span class="sd">                This argument will only affect AEC/BAC, not the frequency scaling factor.</span>
-<span class="sd">        T_min (tuple, optional): The minimum temperature for kinetics computations, e.g., (500, &#39;K&#39;).</span>
-<span class="sd">        T_max (tuple, optional): The maximum temperature for kinetics computations, e.g., (3000, &#39;K&#39;).</span>
+
+<span class="sd">        T_min (tuple, optional): The minimum temperature for kinetics computations, e.g., ``(500, &#39;K&#39;)``.</span>
+<span class="sd">        T_max (tuple, optional): The maximum temperature for kinetics computations, e.g., ``(3000, &#39;K&#39;)``.</span>
 <span class="sd">        T_count (int, optional): The number of temperature points between ``T_min`` and ``T_max``.</span>
 <span class="sd">        verbose (int, optional): The logging level to use.</span>
 <span class="sd">        project_directory (str, optional): The path to the project directory.</span>
@@ -259,6 +262,7 @@
 <span class="sd">            sub-dictionaries are tuples of job types, values are levels of theory (str, dict or Level).</span>
 <span class="sd">            Job types not defined in adaptive levels will have non-adaptive (regular) levels.</span>
 <span class="sd">            Example::</span>
+
 <span class="sd">                adaptive_levels = {(1, 5):      {(&#39;opt&#39;, &#39;freq&#39;): &#39;wb97xd/6-311+g(2d,2p)&#39;,</span>
 <span class="sd">                                                 &#39;sp&#39;: &#39;ccsd(t)-f12/aug-cc-pvtz-f12&#39;},</span>
 <span class="sd">                                   (6, 15):     {(&#39;opt&#39;, &#39;freq&#39;): &#39;b3lyp/cbsb7&#39;,</span>
@@ -267,6 +271,7 @@
 <span class="sd">                                                 &#39;sp&#39;: &#39;wb97xd/6-311+g(2d,2p)&#39;},</span>
 <span class="sd">                                   (31, &#39;inf&#39;): {(&#39;opt&#39;, &#39;freq&#39;): &#39;b3lyp/6-31g(d,p)&#39;,</span>
 <span class="sd">                                                 &#39;sp&#39;: &#39;b3lyp/6-311+g(d,p)&#39;}}</span>
+
 <span class="sd">        freq_scale_factor (float, optional): The harmonic frequencies scaling factor. Could be automatically determined</span>
 <span class="sd">                                             if not available in Arkane and not provided by the user.</span>
 <span class="sd">        calc_freq_factor (bool, optional): Whether to calculate the frequencies scaling factor using Truhlar&#39;s method if</span>

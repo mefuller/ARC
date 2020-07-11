@@ -113,6 +113,7 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../tools.html">Standalone tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../media.html">Media</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../release.html">Release notes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../credits.html">Credits</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../contribute.html">Contribute</a></li>
@@ -187,10 +188,8 @@
   <div class="section" id="module-arc.common">
 <span id="arc-common"></span><span id="common"></span><h1>arc.common<a class="headerlink" href="#module-arc.common" title="Permalink to this headline">¶</a></h1>
 <p>This module contains functions which are shared across multiple ARC modules.
-As such, it should not import any other ARC module (specifically ones that use the logger defined here)</p>
-<blockquote>
-<div><p>to avoid circular imports.</p>
-</div></blockquote>
+As such, it should not import any other ARC module (specifically ones that use the logger defined here)
+to avoid circular imports.</p>
 <p>VERSION is the full ARC version, using <a class="reference external" href="https://semver.org/">semantic versioning</a>.</p>
 <dl class="py function">
 <dt id="arc.common.almost_equal_coords">
@@ -205,11 +204,9 @@ As such, it should not import any other ARC module (specifically ones that use t
 <li><p><strong>atol</strong> (<em>float</em><em>, </em><em>optional</em>) – The absolute tolerance parameter.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">True</span></code> if they are almost equal, <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>bool</p>
+</dl>
+<dl class="simple">
+<dt>Returns: bool</dt><dd><p><code class="docutils literal notranslate"><span class="pre">True</span></code> if they are almost equal, <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -228,11 +225,9 @@ Useful for comparing xyz’s in unit tests.</p>
 <li><p><strong>atol</strong> (<em>float</em><em>, </em><em>optional</em>) – The absolute tolerance parameter.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Whether at least one entry in each input xyz’s is almost equal to an entry in the other xyz.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>bool</p>
+</dl>
+<dl class="simple">
+<dt>Returns: bool</dt><dd><p>Whether at least one entry in each input xyz’s is almost equal to an entry in the other xyz.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -250,11 +245,9 @@ Useful for comparing xyz’s in unit tests.</p>
 <li><p><strong>atol</strong> (<em>float</em><em>, </em><em>optional</em>) – The absolute tolerance parameter.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">True</span></code> if they are almost equal, <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>bool</p>
+</dl>
+<dl class="simple">
+<dt>Returns: bool</dt><dd><p><code class="docutils literal notranslate"><span class="pre">True</span></code> if they are almost equal, <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -269,11 +262,9 @@ Also check ESS and servers.</p>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>ess_settings</strong> (<em>dict</em><em>, </em><em>optional</em>) – ARC’s ESS settings dictionary.</p>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>An updated ARC ESS dictionary.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>dict</p>
+</dl>
+<dl class="simple">
+<dt>Returns: dict</dt><dd><p>An updated ARC ESS dictionary.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -297,16 +288,10 @@ E.g.,for the torsions to be scanned, the
 differences are equal to the scan resolution.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><dl class="simple">
-<dt>a DataFrame consisting of <code class="docutils literal notranslate"><span class="pre">True</span></code>/<code class="docutils literal notranslate"><span class="pre">False</span></code>, indicating</dt><dd><p>which torsions changed significantly. <code class="docutils literal notranslate"><span class="pre">True</span></code> for significant
-change.</p>
-</dd>
 </dl>
-</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>pd.DataFrame</p>
+<dl class="simple">
+<dt>Returns: pd.DataFrame</dt><dd><p>a DataFrame consisting of <code class="docutils literal notranslate"><span class="pre">True</span></code>/<code class="docutils literal notranslate"><span class="pre">False</span></code>, indicating
+which torsions changed significantly. <code class="docutils literal notranslate"><span class="pre">True</span></code> for significant change.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -328,11 +313,9 @@ For example:
 <li><p><strong>threshold</strong> (<em>float</em><em>, </em><em>optional</em>) – The collision threshold to use.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">True</span></code> if they are colliding, <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>bool</p>
+</dl>
+<dl class="simple">
+<dt>Returns: bool</dt><dd><p><code class="docutils literal notranslate"><span class="pre">True</span></code> if they are colliding, <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -345,11 +328,9 @@ For example:
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>log_file</strong> (<em>str</em>) – The ESS log file path.</p>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>The ESS log class from Arkane.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>str</p>
+</dl>
+<dl class="simple">
+<dt>Returns: str</dt><dd><p>The ESS log class from Arkane.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -362,28 +343,19 @@ For example:
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>xyz</strong> (<em>dict</em>) – The 3D coordinates.</p>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>The external symmetry number.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>int</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><ul class="simple">
+</dl>
+<dl class="simple">
+<dt>Returns: Tuple[int, int]</dt><dd><ul class="simple">
 <li><p>The external symmetry number.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">1</span></code> if no chiral centers are present, <code class="docutils literal notranslate"><span class="pre">2</span></code> if chiral centers are present.</p></li>
 </ul>
-</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>Tuple[int, int]</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
 <dt id="arc.common.determine_top_group_indices">
-<code class="sig-prename descclassname">arc.common.</code><code class="sig-name descname">determine_top_group_indices</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mol</span></em>, <em class="sig-param"><span class="n">atom1</span></em>, <em class="sig-param"><span class="n">atom2</span></em>, <em class="sig-param"><span class="n">index</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/common.html#determine_top_group_indices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.common.determine_top_group_indices" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">arc.common.</code><code class="sig-name descname">determine_top_group_indices</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mol</span></em>, <em class="sig-param"><span class="n">atom1</span></em>, <em class="sig-param"><span class="n">atom2</span></em>, <em class="sig-param"><span class="n">index</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span> &#x2192; Tuple<span class="p">[</span>list<span class="p">, </span>bool<span class="p">]</span><a class="reference internal" href="../_modules/arc/common.html#determine_top_group_indices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.common.determine_top_group_indices" title="Permalink to this definition">¶</a></dt>
 <dd><p>Determine the indices of a “top group” in a molecule.
 The top is defined as all atoms connected to atom2, including atom2, excluding the direction of atom1.
 Two <code class="docutils literal notranslate"><span class="pre">atom_list_to_explore</span></code> are used so the list the loop iterates through isn’t changed within the loop.</p>
@@ -396,17 +368,12 @@ Two <code class="docutils literal notranslate"><span class="pre">atom_list_to_ex
 <li><p><strong>index</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to return 1-index or 0-index conventions. 1 for 1-index.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>The indices of the atoms in the top (either 0-index or 1-index, as requested).</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>list</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Whether the top has heavy atoms (is not just a hydrogen atom). True if it has heavy atoms.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>bool</p>
+</dl>
+<dl class="simple">
+<dt>Returns: Tuple[list, bool]</dt><dd><ul class="simple">
+<li><p>The indices of the atoms in the top (either 0-index or 1-index, as requested).</p></li>
+<li><p>Whether the top has heavy atoms (is not just a hydrogen atom). True if it has heavy atoms.</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
@@ -423,14 +390,12 @@ Two <code class="docutils literal notranslate"><span class="pre">atom_list_to_ex
 <li><p><strong>consider_server_limits</strong> (<em>bool</em>) – Try to give realistic estimations.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><ul class="simple">
-<li><p>the amount of total memory (MB) and cpu cores required for the Orca job of given species.</p></li>
+</dl>
+<dl class="simple">
+<dt>Returns: Tuple[int, float]:</dt><dd><ul class="simple">
+<li><p>The amount of total memory (MB)</p></li>
+<li><p>The number of cpu cores required for the Orca job for a given species.</p></li>
 </ul>
-</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>Tuple[int, float]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -447,11 +412,9 @@ Two <code class="docutils literal notranslate"><span class="pre">atom_list_to_ex
 <code class="docutils literal notranslate"><span class="pre">True</span></code> for minimum, <code class="docutils literal notranslate"><span class="pre">False</span></code> for maximum, <code class="docutils literal notranslate"><span class="pre">True</span></code> by default.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>The entry with the minimal value.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>int</p>
+</dl>
+<dl class="simple">
+<dt>Returns: int</dt><dd><p>The entry with the minimal value.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -467,11 +430,9 @@ Two <code class="docutils literal notranslate"><span class="pre">atom_list_to_ex
 <dt class="field-even">Raises</dt>
 <dd class="field-even"><p><strong>TypeError</strong> – If <code class="docutils literal notranslate"><span class="pre">symbol</span></code> is of wrong type.</p>
 </dd>
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>The atomic covalent radius (None if not found).</p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>float</p>
+</dl>
+<dl class="simple">
+<dt>Returns: float</dt><dd><p>The atomic covalent radius (None if not found).</p>
 </dd>
 </dl>
 </dd></dl>
@@ -484,11 +445,9 @@ Two <code class="docutils literal notranslate"><span class="pre">atom_list_to_ex
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>path</strong> (<em>str</em><em>, </em><em>optional</em>) – The path to check.</p>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>The git branch name.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>str</p>
+</dl>
+<dl class="simple">
+<dt>Returns: str</dt><dd><p>The git branch name.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -505,11 +464,9 @@ Two <code class="docutils literal notranslate"><span class="pre">atom_list_to_ex
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>path</strong> (<em>str</em><em>, </em><em>optional</em>) – The path to check.</p>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>The git HEAD commit hash and the git HEAD commit date, each as a string.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>tuple</p>
+</dl>
+<dl class="simple">
+<dt>Returns: tuple</dt><dd><p>The git HEAD commit hash and the git HEAD commit date, each as a string.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -544,11 +501,9 @@ Two <code class="docutils literal notranslate"><span class="pre">atom_list_to_ex
 <li><p><strong>return_unique</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to return only unique values in the intersection of two lists.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>An ordered list of the intersection of two input lists.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>list</p>
+</dl>
+<dl class="simple">
+<dt>Returns: list</dt><dd><p>An ordered list of the intersection of two input lists.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -561,11 +516,9 @@ Two <code class="docutils literal notranslate"><span class="pre">atom_list_to_ex
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>number</strong> (<em>int</em>) – An integer for which the ordinal indicator will be determined.</p>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>The integer’s ordinal indicator.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>str</p>
+</dl>
+<dl class="simple">
+<dt>Returns: str</dt><dd><p>The integer’s ordinal indicator.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -581,11 +534,9 @@ Two <code class="docutils literal notranslate"><span class="pre">atom_list_to_ex
 <li><p><strong>symbol2</strong> (<em>str</em>) – Symbol 2.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>The estimated single bond length in Angstrom.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>float</p>
+</dl>
+<dl class="simple">
+<dt>Returns: float</dt><dd><p>The estimated single bond length in Angstrom.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -602,11 +553,9 @@ Useful when restarting an ARC project in a different folder or on a different ma
 <li><p><strong>project_directory</strong> (<em>str</em>) – The current project directory to rebase upon.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>A string with the rebased path.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>str</p>
+</dl>
+<dl class="simple">
+<dt>Returns: str</dt><dd><p>A string with the rebased path.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -624,11 +573,9 @@ The contents of this file will be changed and saved as a different file.</p></li
 <li><p><strong>project_directory</strong> (<em>str</em>) – The current project directory to rebase upon.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>A path to the respective file with rebased absolute file paths.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>str</p>
+</dl>
+<dl class="simple">
+<dt>Returns: str</dt><dd><p>A path to the respective file with rebased absolute file paths.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -645,11 +592,9 @@ Returns the comprehensive (default values for missing job types) job types for A
 <li><p><strong>specific_job_type</strong> (<em>str</em>) – Specific job type to execute. Legal strings are job types (keys of job_types dict).</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>An updated (comprehensive) job type dictionary.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>job_types (dict)</p>
+</dl>
+<dl class="simple">
+<dt>Returns: dict</dt><dd><p>An updated (comprehensive) job type dictionary.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -674,12 +619,8 @@ Returns the comprehensive (default values for missing job types) job types for A
 <dt id="arc.common.is_notebook">
 <code class="sig-prename descclassname">arc.common.</code><code class="sig-name descname">is_notebook</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; bool<a class="reference internal" href="../_modules/arc/common.html#is_notebook"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.common.is_notebook" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check whether ARC was called from an IPython notebook.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">True</span></code> if ARC was called from a notebook, <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise.</p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>bool</p>
+<dl class="simple">
+<dt>Returns: bool</dt><dd><p><code class="docutils literal notranslate"><span class="pre">True</span></code> if ARC was called from a notebook, <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -695,11 +636,9 @@ Returns the comprehensive (default values for missing job types) job types for A
 <li><p><strong>(</strong><strong>Union</strong> (<em>torsion2</em>) – [list, str]): The four atom indices representing the second torsion.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">True</span></code> if two torsions share the same pivots.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>Optional[bool]</p>
+</dl>
+<dl class="simple">
+<dt>Returns: Optional[bool]</dt><dd><p><code class="docutils literal notranslate"><span class="pre">True</span></code> if two torsions share the same pivots.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -720,11 +659,9 @@ Returns the comprehensive (default values for missing job types) job types for A
 <li><p><strong>parent_list</strong> (<em>list</em>) – The parent list.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">True</span></code> if the sublist is in the parent list.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>bool</p>
+</dl>
+<dl class="simple">
+<dt>Returns: bool</dt><dd><p><code class="docutils literal notranslate"><span class="pre">True</span></code> if the sublist is in the parent list.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -737,11 +674,9 @@ Returns the comprehensive (default values for missing job types) job types for A
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>value</strong> (<em>str</em>) – The string to check.</p>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">True</span></code> if it can, <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>bool</p>
+</dl>
+<dl class="simple">
+<dt>Returns: bool</dt><dd><p><code class="docutils literal notranslate"><span class="pre">True</span></code> if it can, <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -754,11 +689,9 @@ Returns the comprehensive (default values for missing job types) job types for A
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>value</strong> (<em>str</em>) – The string to check.</p>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">True</span></code> if it can, <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>bool</p>
+</dl>
+<dl class="simple">
+<dt>Returns: bool</dt><dd><p><code class="docutils literal notranslate"><span class="pre">True</span></code> if it can, <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -778,8 +711,9 @@ Does not check for value unicity.</p>
 <dt class="field-even">Raises</dt>
 <dd class="field-even"><p><strong>ValueError</strong> – If the value could not be found in the dictionary.</p>
 </dd>
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>The key.</p>
+</dl>
+<dl class="simple">
+<dt>Returns: Any</dt><dd><p>The key.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -814,7 +748,7 @@ Does not check for value unicity.</p>
 
 <dl class="py function">
 <dt id="arc.common.read_yaml_file">
-<code class="sig-prename descclassname">arc.common.</code><code class="sig-name descname">read_yaml_file</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">project_directory</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span> &#x2192; dict<a class="reference internal" href="../_modules/arc/common.html#read_yaml_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.common.read_yaml_file" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">arc.common.</code><code class="sig-name descname">read_yaml_file</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">project_directory</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span> &#x2192; Union<span class="p">[</span>dict<span class="p">, </span>list<span class="p">]</span><a class="reference internal" href="../_modules/arc/common.html#read_yaml_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.common.read_yaml_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read a YAML file (usually an input / restart file, but also conformers file)
 and return the parameters as python variables.</p>
 <dl class="field-list simple">
@@ -824,11 +758,9 @@ and return the parameters as python variables.</p>
 <li><p><strong>project_directory</strong> (<em>str</em><em>, </em><em>optional</em>) – The current project directory to rebase upon.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>The content read from the file.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>dict or list</p>
+</dl>
+<dl class="simple">
+<dt>Returns: Union[dict, list]</dt><dd><p>The content read from the file.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -865,17 +797,12 @@ to accommodate for dictionaries as entries of list2, otherwise a
 <dt class="field-even">Raises</dt>
 <dd class="field-even"><p><strong>InputError</strong> – If types are wrong, or lists are not the same length.</p>
 </dd>
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>Sorted values from list1, ignoring None entries.</p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>list</p>
-</dd>
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>Respective entries from list2.</p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>list</p>
+</dl>
+<dl class="simple">
+<dt>Returns: Tuple[list, list]</dt><dd><ul class="simple">
+<li><p>Sorted values from list1, ignoring None entries.</p></li>
+<li><p>Respective entries from list2.</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
@@ -888,17 +815,15 @@ to accommodate for dictionaries as entries of list2, otherwise a
 
 <dl class="py function">
 <dt id="arc.common.time_lapse">
-<code class="sig-prename descclassname">arc.common.</code><code class="sig-name descname">time_lapse</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">t0</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/common.html#time_lapse"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.common.time_lapse" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">arc.common.</code><code class="sig-name descname">time_lapse</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">t0</span></em><span class="sig-paren">)</span> &#x2192; str<a class="reference internal" href="../_modules/arc/common.html#time_lapse"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.common.time_lapse" title="Permalink to this definition">¶</a></dt>
 <dd><p>A helper function returning the elapsed time since t0.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>t0</strong> (<em>time.pyi</em>) – The initial time the count starts from.</p>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>A “D HH:MM:SS” formatted time difference between now and t0.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>str</p>
+</dl>
+<dl class="simple">
+<dt>Returns: str</dt><dd><p>A “D HH:MM:SS” formatted time difference between now and t0.</p>
 </dd>
 </dl>
 </dd></dl>

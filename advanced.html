@@ -117,6 +117,7 @@
 <li class="toctree-l1"><a class="reference internal" href="output.html">Output</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api/index.html">ARC’s API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tools.html">Standalone tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="media.html">Media</a></li>
 <li class="toctree-l1"><a class="reference internal" href="release.html">Release notes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="credits.html">Credits</a></li>
 <li class="toctree-l1"><a class="reference internal" href="contribute.html">Contribute</a></li>
@@ -561,7 +562,7 @@ To change this behaviour and keep the check files, set the <code class="docutils
 <h2>Frequency scaling factors<a class="headerlink" href="#frequency-scaling-factors" title="Permalink to this headline">¶</a></h2>
 <p>ARC will look for appropriate available frequency scaling factors in <a class="reference external" href="http://reactionmechanismgenerator.github.io/RMG-Py/users/arkane/input.html">Arkane</a>
 for the respective <code class="docutils literal notranslate"><span class="pre">freq_level</span></code>. If a frequency scaling factor isn’t available, ARC will attempt
-to determine it using <a href="#id10"><span class="problematic" id="id11">`Truhlar's method`__</span></a>. This involves spawning fine optimizations and frequency
+to determine it using <a class="reference external" href="https://dx.doi.org/10.1021/ct100326h">Truhlar’s method</a>. This involves spawning fine optimizations and frequency
 calculations for a dataset of 15 small molecules. To avoid this, either pass a known frequency scaling
 factor using the <code class="docutils literal notranslate"><span class="pre">freq_scale_factor</span></code> attribute (see <a class="reference internal" href="examples.html#examples"><span class="std std-ref">examples</span></a>), or set the
 <code class="docutils literal notranslate"><span class="pre">calc_freq_factor</span></code> attribute to <code class="docutils literal notranslate"><span class="pre">False</span></code> (it is <code class="docutils literal notranslate"><span class="pre">True</span></code> by default).</p>

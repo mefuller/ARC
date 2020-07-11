@@ -96,6 +96,7 @@
 <li class="toctree-l1"><a class="reference internal" href="output.html">Output</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api/index.html">ARC’s API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tools.html">Standalone tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="media.html">Media</a></li>
 <li class="toctree-l1"><a class="reference internal" href="release.html">Release notes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="credits.html">Credits</a></li>
 <li class="toctree-l1"><a class="reference internal" href="contribute.html">Contribute</a></li>
@@ -192,7 +193,7 @@ If ARC crashes (e.g., due to a bug which was later fixed, or due to connectivity
 will cause ARC to execute, considering all previously spawned jobs specified in the restart file.
 In restart mode, ARC is aware of all past submitted jobs and collects their
 output files or waits for them to terminate if they are still running.</p>
-<p>ARC’s adopts the <a href="#id5"><span class="problematic" id="id6">`YAML`__</span></a> format for its input/restart files.
+<p>ARC’s adopts the <a class="reference external" href="https://yaml.org/">YAML</a> format for its input/restart files.
 In fact, a restart file is nothing but a very detailed
 input file, and internally ARC treats them the same.
 Other than the file name, the difference is that the restart file
@@ -205,10 +206,11 @@ was automatically generated.</p>
     <span class="n">smiles</span><span class="p">:</span> <span class="n">CCO</span>
 </pre></div>
 </div>
-<p>All the parameters of <a href="#id5"><span class="problematic" id="id7">`arc.main.ARC`__</span></a> class are legal input file keywords.
+<p>All the parameters of <a class="reference internal" href="api/main.html#main"><span class="std std-ref">arc.main.ARC</span></a> class are legal input file keywords.
 Specifying species and reactions lists define <a class="reference internal" href="api/species.html#species"><span class="std std-ref">ARCSpecies</span></a> and <a class="reference internal" href="api/reaction.html#reaction"><span class="std std-ref">ARCReaction</span></a>
 object. See ARC’s API for a complete and updated list of keywords along with their allowed types.</p>
-<p>Additional input file examples are available in ARC’s examples folder (<a href="#id5"><span class="problematic" id="id8">`ARC/examples`__</span></a>).
+<p>Additional input file examples are available in ARC’s examples folder
+(<a class="reference external" href="https://github.com/ReactionMechanismGenerator/ARC/tree/master/examples">ARC/examples</a>).
 Another convenient way to see a valid and detailed input file is to run an ARC job
 and peak at the automatically generated <code class="docutils literal notranslate"><span class="pre">restart.yml</span></code> file.</p>
 <p>A sample reaction input file with a user-supplied TS geometry guess is:</p>
@@ -248,7 +250,7 @@ and peak at the automatically generated <code class="docutils literal notranslat
 (see the <a class="reference internal" href="installation.html#arce"><span class="std std-ref">installation instructions</span></a>).</p>
 <p>ARC’s API can be reached from any python platform, if ARC was added to the PYTHONPATH
 (see the <a class="reference internal" href="installation.html#path"><span class="std std-ref">installation instructions</span></a>).</p>
-<p>Running ARC using <a href="#id5"><span class="problematic" id="id9">`Jupyter notebooks`__</span></a> (comes pre-installed with Anaconda)
+<p>Running ARC using <a class="reference external" href="https://jupyter.org/">Jupyter notebooks</a> (comes pre-installed with Anaconda)
 has the benefit of displaying “live” and interactive
 3D geometries for the species of interest.</p>
 <p>Example iPython notebooks are available in the

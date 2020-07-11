@@ -90,6 +90,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../output.html">Output</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../api/index.html">ARC’s API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../tools.html">Standalone tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../media.html">Media</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../release.html">Release notes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../credits.html">Credits</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../contribute.html">Contribute</a></li>
@@ -191,8 +192,8 @@
 <span class="sd">        path (str): The log file path.</span>
 <span class="sd">        software (str): The ESS.</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        np.ndarray: The parsed frequencies (in cm^-1).</span>
+<span class="sd">    Returns: np.ndarray</span>
+<span class="sd">        The parsed frequencies (in cm^-1).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">lines</span> <span class="o">=</span> <span class="n">_get_lines_from_file</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
     <span class="n">freqs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([],</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
@@ -284,8 +285,8 @@
 <span class="sd">    Raises:</span>
 <span class="sd">        NotImplementedError: If the parser is not implemented for the ESS this log file belongs to.</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        Tuple[np.ndarray, np.ndarray]: The frequencies (in cm^-1) and The normal displacement modes.</span>
+<span class="sd">    Returns: Tuple[np.ndarray, np.ndarray]</span>
+<span class="sd">        The frequencies (in cm^-1) and The normal displacement modes.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">software</span> <span class="o">=</span> <span class="n">software</span> <span class="ow">or</span> <span class="n">determine_ess</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
     <span class="n">freqs</span><span class="p">,</span> <span class="n">normal_disp_modes</span><span class="p">,</span> <span class="n">normal_disp_modes_entries</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(),</span> <span class="nb">list</span><span class="p">(),</span> <span class="nb">list</span><span class="p">()</span>
@@ -336,8 +337,8 @@
 <span class="sd">    Args:</span>
 <span class="sd">        path (str): The ESS log file to parse from.</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        Optional[Dict[str, tuple]]: The cartesian geometry.</span>
+<span class="sd">    Returns: Optional[Dict[str, tuple]]</span>
+<span class="sd">        The cartesian geometry.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">log</span> <span class="o">=</span> <span class="n">ess_factory</span><span class="p">(</span><span class="n">fullpath</span><span class="o">=</span><span class="n">path</span><span class="p">)</span>
     <span class="k">try</span><span class="p">:</span>
@@ -375,8 +376,8 @@
 <span class="sd">    Args:</span>
 <span class="sd">        path (str): The ess log file path.</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        Optional[float]: The T1 parameter.</span>
+<span class="sd">    Returns: Optional[float]</span>
+<span class="sd">        The T1 parameter.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
         <span class="k">raise</span> <span class="n">InputError</span><span class="p">(</span><span class="s1">&#39;Could not find file </span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">path</span><span class="p">))</span>
@@ -399,8 +400,8 @@
 <span class="sd">        path (str): The ESS log file to parse from.</span>
 <span class="sd">        zpe_scale_factor (float): The ZPE scaling factor, used only for composite methods in Gaussian via Arkane.</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        Optional[float]: The electronic energy in kJ/mol.</span>
+<span class="sd">    Returns: Optional[float]</span>
+<span class="sd">        The electronic energy in kJ/mol.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
         <span class="k">raise</span> <span class="n">InputError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Could not find file </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
@@ -420,8 +421,8 @@
 <span class="sd">    Args:</span>
 <span class="sd">        path (str): The path to a frequency calculation output file.</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        Optional[float]: The calculated zero point energy in kJ/mol.</span>
+<span class="sd">    Returns: Optional[float]</span>
+<span class="sd">        The calculated zero point energy in kJ/mol.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
         <span class="k">raise</span> <span class="n">InputError</span><span class="p">(</span><span class="s1">&#39;Could not find file </span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">path</span><span class="p">))</span>
@@ -444,9 +445,8 @@
 <span class="sd">    Raises:</span>
 <span class="sd">        InputError: If ``path`` is invalid.</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        Tuple[Optional[List[float]], Optional[List[float]]]:</span>
-<span class="sd">            The electronic energy in kJ/mol and the dihedral scan angle in degrees.</span>
+<span class="sd">    Returns: Tuple[Optional[List[float]], Optional[List[float]]]</span>
+<span class="sd">        The electronic energy in kJ/mol and the dihedral scan angle in degrees.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
         <span class="k">raise</span> <span class="n">InputError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Could not find file </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
@@ -468,8 +468,8 @@
 <span class="sd">    Args:</span>
 <span class="sd">        path (str): The ESS log file to parse from.</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        list: The Cartesian coordinates.</span>
+<span class="sd">    Returns: list</span>
+<span class="sd">        The Cartesian coordinates.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">lines</span> <span class="o">=</span> <span class="n">_get_lines_from_file</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
     <span class="n">log</span> <span class="o">=</span> <span class="n">ess_factory</span><span class="p">(</span><span class="n">fullpath</span><span class="o">=</span><span class="n">path</span><span class="p">)</span>
@@ -511,20 +511,20 @@
 <span class="sd">    Raises:</span>
 <span class="sd">        InputError: If ``path`` is invalid.</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        Tuple[dict, Optional[List[float]]]:</span>
-<span class="sd">            The &quot;results&quot; dictionary, which has the following structure::</span>
+<span class="sd">    Returns: Tuple[dict, Optional[List[float]]]</span>
+<span class="sd">        The &quot;results&quot; dictionary, which has the following structure::</span>
 
-<span class="sd">                  results = {&#39;directed_scan_type&#39;: &lt;str, used for the fig name&gt;,</span>
-<span class="sd">                             &#39;scans&#39;: &lt;list, entries are lists of torsion indices&gt;,</span>
-<span class="sd">                             &#39;directed_scan&#39;: &lt;dict, keys are tuples of &#39;{0:.2f}&#39; formatted dihedrals,</span>
-<span class="sd">                                               values are dictionaries with the following keys and values:</span>
-<span class="sd">                                               {&#39;energy&#39;: &lt;float, energy in kJ/mol&gt;,  * only this is used here</span>
-<span class="sd">                                                &#39;xyz&#39;: &lt;dict&gt;,</span>
-<span class="sd">                                                &#39;is_isomorphic&#39;: &lt;bool&gt;,</span>
-<span class="sd">                                                &#39;trsh&#39;: &lt;list, job.ess_trsh_methods&gt;}&gt;</span>
-<span class="sd">                             },</span>
-<span class="sd">            The dihedrals angles of the original conformer</span>
+<span class="sd">              results = {&#39;directed_scan_type&#39;: &lt;str, used for the fig name&gt;,</span>
+<span class="sd">                         &#39;scans&#39;: &lt;list, entries are lists of torsion indices&gt;,</span>
+<span class="sd">                         &#39;directed_scan&#39;: &lt;dict, keys are tuples of &#39;{0:.2f}&#39; formatted dihedrals,</span>
+<span class="sd">                                           values are dictionaries with the following keys and values:</span>
+<span class="sd">                                           {&#39;energy&#39;: &lt;float, energy in kJ/mol&gt;,  * only this is used here</span>
+<span class="sd">                                            &#39;xyz&#39;: &lt;dict&gt;,</span>
+<span class="sd">                                            &#39;is_isomorphic&#39;: &lt;bool&gt;,</span>
+<span class="sd">                                            &#39;trsh&#39;: &lt;list, job.ess_trsh_methods&gt;}&gt;</span>
+<span class="sd">                         },</span>
+
+<span class="sd">        The dihedrals angles of the original conformer</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">software</span> <span class="o">=</span> <span class="n">software</span> <span class="ow">or</span> <span class="n">determine_ess</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
     <span class="n">results</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;directed_scan_type&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;ess_</span><span class="si">{</span><span class="n">software</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
@@ -689,8 +689,8 @@
 <span class="sd">    Raises:</span>
 <span class="sd">        ParserError: If the coordinates could not be parsed.</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        Optional[Dict[str, tuple]]: The parsed cartesian coordinates.</span>
+<span class="sd">    Returns: Optional[Dict[str, tuple]]</span>
+<span class="sd">        The parsed cartesian coordinates.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">lines</span> <span class="o">=</span> <span class="n">_get_lines_from_file</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
     <span class="n">file_extension</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">path</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
@@ -750,8 +750,8 @@
 <span class="sd">    Raises:</span>
 <span class="sd">        ParserError: If the trajectory could not be read.</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        List[Dict[str, tuple]]: Entries are xyz&#39;s on the trajectory.</span>
+<span class="sd">    Returns: List[Dict[str, tuple]]</span>
+<span class="sd">        Entries are xyz&#39;s on the trajectory.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">lines</span> <span class="o">=</span> <span class="n">_get_lines_from_file</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
 
@@ -824,8 +824,8 @@
 <span class="sd">    Args:</span>
 <span class="sd">        path: The ESS log file.</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        Optional[float]: The dipole moment in Debye.</span>
+<span class="sd">    Returns: Optional[float]</span>
+<span class="sd">        The dipole moment in Debye.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">lines</span> <span class="o">=</span> <span class="n">_get_lines_from_file</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
     <span class="n">log</span> <span class="o">=</span> <span class="n">ess_factory</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
@@ -891,8 +891,8 @@
 <span class="sd">    Args:</span>
 <span class="sd">        path: The ESS log file.</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        Optional[float]: The polarizability in Angstrom^3.</span>
+<span class="sd">    Returns: Optional[float]</span>
+<span class="sd">        The polarizability in Angstrom^3.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">lines</span> <span class="o">=</span> <span class="n">_get_lines_from_file</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
     <span class="n">polarizability</span> <span class="o">=</span> <span class="kc">None</span>
@@ -914,8 +914,8 @@
 <span class="sd">    Raises:</span>
 <span class="sd">        InputError: If the file could not be read.</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        List[str]: Entries are lines from the file.</span>
+<span class="sd">    Returns: List[str]</span>
+<span class="sd">        Entries are lines from the file.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
@@ -937,9 +937,8 @@
 <span class="sd">    Raises:</span>
 <span class="sd">        InputError: If the file could not be found.</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        Tuple[List[Dict[str, tuple]], List[float]]:</span>
-<span class="sd">            Conformer coordinates in a dict format, the respective energies in kJ/mol.</span>
+<span class="sd">    Returns: Tuple[List[Dict[str, tuple]], List[float]]</span>
+<span class="sd">        Conformer coordinates in a dict format, the respective energies in kJ/mol.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">conformers_path</span><span class="p">):</span>
         <span class="k">raise</span> <span class="n">InputError</span><span class="p">(</span><span class="s1">&#39;Conformers file </span><span class="si">{0}</span><span class="s1"> could not be found&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">conformers_path</span><span class="p">))</span>
@@ -987,8 +986,8 @@
 <span class="sd">    Raises:</span>
 <span class="sd">        InputError: If the file could not be found.</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        List[str]: List of str blocks.</span>
+<span class="sd">    Returns: List[str]</span>
+<span class="sd">        List of str blocks.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">file_path</span><span class="p">):</span>
         <span class="k">raise</span> <span class="n">InputError</span><span class="p">(</span><span class="s1">&#39;Could not find file </span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">file_path</span><span class="p">))</span>
@@ -1044,15 +1043,15 @@
 <span class="sd">    Raises:</span>
 <span class="sd">        NotImplementedError: If files other than Gaussian log is input</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        dict: A dict contains the scan arguments</span>
-<span class="sd">                          as well as step number, step size, number of atom</span>
-<span class="sd">                          {&#39;scan&#39;: &lt;list, atom indexes of the torsion to be scanned&gt;,</span>
-<span class="sd">                           &#39;freeze&#39;: &lt;list, list of internal coordinates identified by atom indexes&gt;,</span>
-<span class="sd">                           &#39;step&#39;: &lt;int, number of steps to scan&gt;,</span>
-<span class="sd">                           &#39;step_size&#39;: &lt;float, the size of each step&gt;</span>
-<span class="sd">                           &#39;n_atom&#39;: &lt;int, the number of atoms of the molecule&gt;</span>
-<span class="sd">                           }</span>
+<span class="sd">    Returns: dict</span>
+<span class="sd">        A dictionary that contains the scan arguments as well as step number, step size, number of atom::</span>
+
+<span class="sd">              {&#39;scan&#39;: &lt;list, atom indexes of the torsion to be scanned&gt;,</span>
+<span class="sd">               &#39;freeze&#39;: &lt;list, list of internal coordinates identified by atom indexes&gt;,</span>
+<span class="sd">               &#39;step&#39;: &lt;int, number of steps to scan&gt;,</span>
+<span class="sd">               &#39;step_size&#39;: &lt;float, the size of each step&gt;,</span>
+<span class="sd">               &#39;n_atom&#39;: &lt;int, the number of atoms of the molecule&gt;,</span>
+<span class="sd">               }</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">log</span> <span class="o">=</span> <span class="n">ess_factory</span><span class="p">(</span><span class="n">fullpath</span><span class="o">=</span><span class="n">file_path</span><span class="p">)</span>
     <span class="n">scan_args</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;scan&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;freeze&#39;</span><span class="p">:</span> <span class="p">[],</span>
@@ -1100,8 +1099,8 @@
 <span class="sd">    Raises:</span>
 <span class="sd">        NotImplementedError: If files other than Gaussian log is input</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        pd.DataFrame: A DataFrame containing the information of the internal coordinates</span>
+<span class="sd">    Returns: pd.DataFrame</span>
+<span class="sd">        A DataFrame containing the information of the internal coordinates</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">log</span> <span class="o">=</span> <span class="n">ess_factory</span><span class="p">(</span><span class="n">fullpath</span><span class="o">=</span><span class="n">file_path</span><span class="p">)</span>
     <span class="n">ic_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">item</span><span class="p">:</span> <span class="p">[]</span>

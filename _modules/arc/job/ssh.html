@@ -90,6 +90,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../output.html">Output</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api/index.html">ARC’s API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../tools.html">Standalone tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../media.html">Media</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../release.html">Release notes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../credits.html">Credits</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../contribute.html">Contribute</a></li>
@@ -260,10 +261,9 @@
 <span class="sd">            command (Union[str, list]): A string or an array of string commands to send.</span>
 <span class="sd">            remote_path (Optional[str]): The directory path at which the command will be executed.</span>
 
-<span class="sd">        Returns:</span>
-<span class="sd">            Tuple[list, list]:</span>
-<span class="sd">                - A list of lines of standard output stream.</span>
-<span class="sd">                - A list of lines of the standard error stream.</span>
+<span class="sd">        Returns: Tuple[list, list]:</span>
+<span class="sd">            - A list of lines of standard output stream.</span>
+<span class="sd">            - A list of lines of the standard error stream.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
             <span class="n">command</span> <span class="o">=</span> <span class="s1">&#39;; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">command</span><span class="p">)</span>
@@ -368,8 +368,8 @@
 <span class="sd">        Args:</span>
 <span class="sd">            remote_file_path (str): The remote path to be read.</span>
 <span class="sd">        </span>
-<span class="sd">        Returns:</span>
-<span class="sd">            list: A list of lines read from the file.</span>
+<span class="sd">        Returns: list</span>
+<span class="sd">            A list of lines read from the file.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sftp</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">remote_file_path</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f_remote</span><span class="p">:</span>
             <span class="n">content</span> <span class="o">=</span> <span class="n">f_remote</span><span class="o">.</span><span class="n">readlines</span><span class="p">()</span>
@@ -382,9 +382,9 @@
 <span class="sd">        Args:</span>
 <span class="sd">            job_id (int): The job&#39;s ID.</span>
 
-<span class="sd">        Returns:</span>
-<span class="sd">            str: Possible statuses: `before_submission`, `running`, `errored on node xx`,</span>
-<span class="sd">                 `done`, and `errored: ...`</span>
+<span class="sd">        Returns: str</span>
+<span class="sd">            Possible statuses: `before_submission`, `running`, `errored on node xx`,</span>
+<span class="sd">            `done`, and `errored: ...`</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">cmd</span> <span class="o">=</span> <span class="n">check_status_command</span><span class="p">[</span><span class="n">servers</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">server</span><span class="p">][</span><span class="s1">&#39;cluster_soft&#39;</span><span class="p">]]</span> <span class="o">+</span> <span class="s1">&#39; -u $USER&#39;</span>
         <span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_send_command_to_server</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
@@ -429,8 +429,8 @@
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Check all jobs submitted by the user on a server.</span>
 
-<span class="sd">        Returns:</span>
-<span class="sd">            list: A list of job IDs</span>
+<span class="sd">        Returns: list</span>
+<span class="sd">            A list of job IDs.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">running_jobs_ids</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
         <span class="n">cmd</span> <span class="o">=</span> <span class="n">check_status_command</span><span class="p">[</span><span class="n">servers</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">server</span><span class="p">][</span><span class="s1">&#39;cluster_soft&#39;</span><span class="p">]]</span> <span class="o">+</span> <span class="s1">&#39; -u $USER&#39;</span>
@@ -449,11 +449,10 @@
 <span class="sd">            remote_path (str): The remote path contains the input file</span>
 <span class="sd">                               and the submission script.</span>
 
-<span class="sd">        Returns:</span>
-<span class="sd">            Tuple[str, int]:</span>
-<span class="sd">                - A string indicate the status of job submission.</span>
-<span class="sd">                  Either `errored` or `submitted`.</span>
-<span class="sd">                - The job ID of the submitted job.</span>
+<span class="sd">        Returns: Tuple[str, int]</span>
+<span class="sd">            - A string indicate the status of job submission.</span>
+<span class="sd">              Either `errored` or `submitted`.</span>
+<span class="sd">            - The job ID of the submitted job.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">job_status</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
         <span class="n">job_id</span> <span class="o">=</span> <span class="mi">0</span>
@@ -508,10 +507,9 @@
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Connect via paramiko, and open a SSH session as well as a SFTP session.</span>
 
-<span class="sd">        Returns:</span>
-<span class="sd">            Tuple[paramiko.sftp_client.SFTPClient, paramiko.SSHClient]:</span>
-<span class="sd">                - An SFTP client used to perform remote file operations. </span>
-<span class="sd">                - A high-level representation of a session with an SSH server.</span>
+<span class="sd">        Returns: Tuple[paramiko.sftp_client.SFTPClient, paramiko.SSHClient]</span>
+<span class="sd">            - An SFTP client used to perform remote file operations.</span>
+<span class="sd">            - A high-level representation of a session with an SSH server.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">ssh</span> <span class="o">=</span> <span class="n">paramiko</span><span class="o">.</span><span class="n">SSHClient</span><span class="p">()</span>
         <span class="n">ssh</span><span class="o">.</span><span class="n">set_missing_host_key_policy</span><span class="p">(</span><span class="n">paramiko</span><span class="o">.</span><span class="n">AutoAddPolicy</span><span class="p">())</span>
@@ -547,8 +545,8 @@
 <span class="sd">        Args:</span>
 <span class="sd">            remote_file_path (str): The remote file path to check.</span>
 
-<span class="sd">        Returns:</span>
-<span class="sd">            datetime.datetime: the last modified time of the file</span>
+<span class="sd">        Returns: datetime.datetime</span>
+<span class="sd">            The last modified time of the file.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">timestamp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sftp</span><span class="o">.</span><span class="n">stat</span><span class="p">(</span><span class="n">remote_file_path</span><span class="p">)</span><span class="o">.</span><span class="n">st_mtime</span>

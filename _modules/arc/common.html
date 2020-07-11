@@ -90,6 +90,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../output.html">Output</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../api/index.html">ARC’s API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../tools.html">Standalone tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../media.html">Media</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../release.html">Release notes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../credits.html">Credits</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../contribute.html">Contribute</a></li>
@@ -161,7 +162,7 @@
 <span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">This module contains functions which are shared across multiple ARC modules.</span>
 <span class="sd">As such, it should not import any other ARC module (specifically ones that use the logger defined here)</span>
-<span class="sd">  to avoid circular imports.</span>
+<span class="sd">to avoid circular imports.</span>
 
 <span class="sd">VERSION is the full ARC version, using `semantic versioning &lt;https://semver.org/&gt;`_.</span>
 <span class="sd">&quot;&quot;&quot;</span>
@@ -208,8 +209,8 @@
 <span class="sd">        job_types (dict): Keys are job types, values are booleans of whether or not to consider this job type.</span>
 <span class="sd">        specific_job_type (str): Specific job type to execute. Legal strings are job types (keys of job_types dict).</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        job_types (dict): An updated (comprehensive) job type dictionary.</span>
+<span class="sd">    Returns: dict</span>
+<span class="sd">        An updated (comprehensive) job type dictionary.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">specific_job_type</span><span class="p">:</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Specific_job_type </span><span class="si">{</span><span class="n">specific_job_type</span><span class="si">}</span><span class="s1"> was requested by the user.&#39;</span><span class="p">)</span>
@@ -266,8 +267,8 @@
 <span class="sd">    Args:</span>
 <span class="sd">        log_file (str): The ESS log file path.</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        str: The ESS log class from Arkane.</span>
+<span class="sd">    Returns: str</span>
+<span class="sd">        The ESS log class from Arkane.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">log</span> <span class="o">=</span> <span class="n">ess_factory</span><span class="p">(</span><span class="n">log_file</span><span class="p">)</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">log</span><span class="p">,</span> <span class="n">GaussianLog</span><span class="p">):</span>
@@ -293,8 +294,8 @@
 <span class="sd">    Args:</span>
 <span class="sd">        ess_settings (dict, optional): ARC&#39;s ESS settings dictionary.</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        dict: An updated ARC ESS dictionary.</span>
+<span class="sd">    Returns: dict</span>
+<span class="sd">        An updated ARC ESS dictionary.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">ess_settings</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">ess_settings</span><span class="p">:</span>
         <span class="k">return</span> <span class="nb">dict</span><span class="p">()</span>
@@ -451,8 +452,8 @@
 <span class="sd">    Args:</span>
 <span class="sd">        path (str, optional): The path to check.</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        tuple: The git HEAD commit hash and the git HEAD commit date, each as a string.</span>
+<span class="sd">    Returns: tuple</span>
+<span class="sd">        The git HEAD commit hash and the git HEAD commit date, each as a string.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">path</span> <span class="o">=</span> <span class="n">path</span> <span class="ow">or</span> <span class="n">arc_path</span>
     <span class="n">head</span><span class="p">,</span> <span class="n">date</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span>
@@ -472,8 +473,8 @@
 <span class="sd">    Args:</span>
 <span class="sd">        path (str, optional): The path to check.</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        str: The git branch name.</span>
+<span class="sd">    Returns: str</span>
+<span class="sd">        The git branch name.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">path</span> <span class="o">=</span> <span class="n">path</span> <span class="ow">or</span> <span class="n">arc_path</span>
     <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;.git&#39;</span><span class="p">)):</span>
@@ -490,7 +491,7 @@
 
 <div class="viewcode-block" id="read_yaml_file"><a class="viewcode-back" href="../../api/common.html#arc.common.read_yaml_file">[docs]</a><span class="k">def</span> <span class="nf">read_yaml_file</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
                    <span class="n">project_directory</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                   <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span> <span class="ow">or</span> <span class="nb">list</span><span class="p">:</span>
+                   <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="nb">list</span><span class="p">]:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Read a YAML file (usually an input / restart file, but also conformers file)</span>
 <span class="sd">    and return the parameters as python variables.</span>
@@ -499,8 +500,8 @@
 <span class="sd">        path (str): The YAML file path to read.</span>
 <span class="sd">        project_directory (str, optional): The current project directory to rebase upon.</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        dict or list: The content read from the file.</span>
+<span class="sd">    Returns: Union[dict, list]</span>
+<span class="sd">        The content read from the file.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">project_directory</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">path</span> <span class="o">=</span> <span class="n">globalize_paths</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">project_directory</span><span class="p">)</span>
@@ -546,8 +547,8 @@
 <span class="sd">                         The contents of this file will be changed and saved as a different file.</span>
 <span class="sd">        project_directory (str): The current project directory to rebase upon.</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        str: A path to the respective file with rebased absolute file paths.</span>
+<span class="sd">    Returns: str</span>
+<span class="sd">        A path to the respective file with rebased absolute file paths.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">modified</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="n">new_lines</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
@@ -582,8 +583,8 @@
 <span class="sd">        string (str): A string containing a path to rebase.</span>
 <span class="sd">        project_directory (str): The current project directory to rebase upon.</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        str: A string with the rebased path.</span>
+<span class="sd">    Returns: str</span>
+<span class="sd">        A string with the rebased path.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="s1">&#39;/calcs/Species/&#39;</span> <span class="ow">in</span> <span class="n">string</span> <span class="ow">or</span> <span class="s1">&#39;/calcs/TSs/&#39;</span> <span class="ow">in</span> <span class="n">string</span> <span class="ow">and</span> <span class="n">project_directory</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">string</span><span class="p">:</span>
         <span class="n">splits</span> <span class="o">=</span> <span class="n">string</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/calcs/&#39;</span><span class="p">)</span>
@@ -611,8 +612,8 @@
 <span class="sd">    Args:</span>
 <span class="sd">        number (int): An integer for which the ordinal indicator will be determined.</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        str: The integer&#39;s ordinal indicator.</span>
+<span class="sd">    Returns: str</span>
+<span class="sd">        The integer&#39;s ordinal indicator.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">ordinal_dict</span> <span class="o">=</span> <span class="p">{</span><span class="mi">1</span><span class="p">:</span> <span class="s1">&#39;st&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span> <span class="s1">&#39;nd&#39;</span><span class="p">,</span> <span class="mi">3</span><span class="p">:</span> <span class="s1">&#39;rd&#39;</span><span class="p">}</span>
     <span class="k">if</span> <span class="n">number</span> <span class="o">&gt;</span> <span class="mi">13</span><span class="p">:</span>
@@ -632,8 +633,8 @@
 <span class="sd">    Raises:</span>
 <span class="sd">        TypeError: If ``symbol`` is of wrong type.</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        float: The atomic covalent radius (None if not found).</span>
+<span class="sd">    Returns: float</span>
+<span class="sd">        The atomic covalent radius (None if not found).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;The symbol argument must be string, got </span><span class="si">{</span><span class="n">symbol</span><span class="si">}</span><span class="s1"> which is a </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">symbol</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
@@ -660,8 +661,8 @@
 <span class="sd">        xyz (dict): The Cartesian coordinates.</span>
 <span class="sd">        threshold (float, optional): The collision threshold to use.</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">         bool: ``True`` if they are colliding, ``False`` otherwise.</span>
+<span class="sd">    Returns: bool</span>
+<span class="sd">        ``True`` if they are colliding, ``False`` otherwise.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">xyz</span><span class="p">[</span><span class="s1">&#39;symbols&#39;</span><span class="p">])</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
         <span class="c1"># monoatomic</span>
@@ -705,8 +706,8 @@
 <span class="sd">        symbol1 (str): Symbol 1.</span>
 <span class="sd">        symbol2 (str): Symbol 2.</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        float: The estimated single bond length in Angstrom.</span>
+<span class="sd">    Returns: float</span>
+<span class="sd">        The estimated single bond length in Angstrom.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">bond1</span><span class="p">,</span> <span class="n">bond2</span> <span class="o">=</span> <span class="s1">&#39;-&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">symbol1</span><span class="p">,</span> <span class="n">symbol2</span><span class="p">]),</span> <span class="s1">&#39;-&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">symbol2</span><span class="p">,</span> <span class="n">symbol1</span><span class="p">])</span>
     <span class="k">if</span> <span class="n">bond1</span> <span class="ow">in</span> <span class="n">SINGLE_BOND_LENGTH</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
@@ -723,12 +724,9 @@
 <span class="sd">    Args:</span>
 <span class="sd">        xyz (dict): The 3D coordinates.</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        int: The external symmetry number.</span>
-<span class="sd">    Returns:</span>
-<span class="sd">        Tuple[int, int]:</span>
-<span class="sd">            - The external symmetry number.</span>
-<span class="sd">            - ``1`` if no chiral centers are present, ``2`` if chiral centers are present.</span>
+<span class="sd">    Returns: Tuple[int, int]</span>
+<span class="sd">        - The external symmetry number.</span>
+<span class="sd">        - ``1`` if no chiral centers are present, ``2`` if chiral centers are present.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">atom_numbers</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>  <span class="c1"># List of atomic numbers</span>
     <span class="k">for</span> <span class="n">symbol</span> <span class="ow">in</span> <span class="n">xyz</span><span class="p">[</span><span class="s1">&#39;symbols&#39;</span><span class="p">]:</span>
@@ -756,7 +754,7 @@
     <span class="k">return</span> <span class="n">symmetry</span><span class="p">,</span> <span class="n">optical_isomers</span></div>
 
 
-<div class="viewcode-block" id="determine_top_group_indices"><a class="viewcode-back" href="../../api/common.html#arc.common.determine_top_group_indices">[docs]</a><span class="k">def</span> <span class="nf">determine_top_group_indices</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">atom1</span><span class="p">,</span> <span class="n">atom2</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<div class="viewcode-block" id="determine_top_group_indices"><a class="viewcode-back" href="../../api/common.html#arc.common.determine_top_group_indices">[docs]</a><span class="k">def</span> <span class="nf">determine_top_group_indices</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">atom1</span><span class="p">,</span> <span class="n">atom2</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">list</span><span class="p">,</span> <span class="nb">bool</span><span class="p">]:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Determine the indices of a &quot;top group&quot; in a molecule.</span>
 <span class="sd">    The top is defined as all atoms connected to atom2, including atom2, excluding the direction of atom1.</span>
@@ -768,10 +766,9 @@
 <span class="sd">        atom2 (Atom): The beginning of the top relative to atom1 in mol.</span>
 <span class="sd">        index (bool, optional): Whether to return 1-index or 0-index conventions. 1 for 1-index.</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        list: The indices of the atoms in the top (either 0-index or 1-index, as requested).</span>
-<span class="sd">    Returns:</span>
-<span class="sd">        bool: Whether the top has heavy atoms (is not just a hydrogen atom). True if it has heavy atoms.</span>
+<span class="sd">    Returns: Tuple[list, bool]</span>
+<span class="sd">        - The indices of the atoms in the top (either 0-index or 1-index, as requested).</span>
+<span class="sd">        - Whether the top has heavy atoms (is not just a hydrogen atom). True if it has heavy atoms.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">top</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
     <span class="n">explored_atom_list</span><span class="p">,</span> <span class="n">atom_list_to_explore1</span><span class="p">,</span> <span class="n">atom_list_to_explore2</span> <span class="o">=</span> <span class="p">[</span><span class="n">atom1</span><span class="p">],</span> <span class="p">[</span><span class="n">atom2</span><span class="p">],</span> <span class="p">[]</span>
@@ -801,8 +798,8 @@
 <span class="sd">        return_min (bool, optional): Whether to return the minimum or the maximum.</span>
 <span class="sd">                                    ``True`` for minimum, ``False`` for maximum, ``True`` by default.</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        int: The entry with the minimal value.</span>
+<span class="sd">    Returns: int</span>
+<span class="sd">        The entry with the minimal value.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">lst</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">None</span>
@@ -833,10 +830,9 @@
 <span class="sd">    Raises:</span>
 <span class="sd">        InputError: If types are wrong, or lists are not the same length.</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        list: Sorted values from list1, ignoring None entries.</span>
-<span class="sd">    Returns:</span>
-<span class="sd">        list: Respective entries from list2.</span>
+<span class="sd">    Returns: Tuple[list, list]</span>
+<span class="sd">        - Sorted values from list1, ignoring None entries.</span>
+<span class="sd">        - Respective entries from list2.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">list1</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">))</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">list2</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
         <span class="k">raise</span> <span class="n">InputError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Arguments must be lists, got: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">list1</span><span class="p">)</span><span class="si">}</span><span class="s1"> and </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">list2</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
@@ -878,7 +874,7 @@
 <span class="sd">    Raises:</span>
 <span class="sd">        ValueError: If the value could not be found in the dictionary.</span>
 
-<span class="sd">    Returns:</span>
+<span class="sd">    Returns: Any</span>
 <span class="sd">        The key.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">dictionary</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
@@ -901,8 +897,8 @@
 <span class="sd">        rtol (float, optional): The relative tolerance parameter.</span>
 <span class="sd">        atol (float, optional): The absolute tolerance parameter.</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        bool: ``True`` if they are almost equal, ``False`` otherwise.</span>
+<span class="sd">    Returns: bool</span>
+<span class="sd">        ``True`` if they are almost equal, ``False`` otherwise.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">iter1</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">iter2</span><span class="p">):</span>
         <span class="k">return</span> <span class="kc">False</span>
@@ -933,8 +929,8 @@
 <span class="sd">        rtol (float, optional): The relative tolerance parameter.</span>
 <span class="sd">        atol (float, optional): The absolute tolerance parameter.</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        bool: ``True`` if they are almost equal, ``False`` otherwise.</span>
+<span class="sd">    Returns: bool</span>
+<span class="sd">        ``True`` if they are almost equal, ``False`` otherwise.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">for</span> <span class="n">xyz_coord1</span><span class="p">,</span> <span class="n">xyz_coord2</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">xyz1</span><span class="p">[</span><span class="s1">&#39;coords&#39;</span><span class="p">],</span> <span class="n">xyz2</span><span class="p">[</span><span class="s1">&#39;coords&#39;</span><span class="p">]):</span>
         <span class="k">for</span> <span class="n">xyz1_c</span><span class="p">,</span> <span class="n">xyz2_c</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">xyz_coord1</span><span class="p">,</span> <span class="n">xyz_coord2</span><span class="p">):</span>
@@ -958,8 +954,8 @@
 <span class="sd">        rtol (float, optional): The relative tolerance parameter.</span>
 <span class="sd">        atol (float, optional): The absolute tolerance parameter.</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        bool: Whether at least one entry in each input xyz&#39;s is almost equal to an entry in the other xyz.</span>
+<span class="sd">    Returns: bool</span>
+<span class="sd">        Whether at least one entry in each input xyz&#39;s is almost equal to an entry in the other xyz.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">xyz1</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
         <span class="n">xyz1</span> <span class="o">=</span> <span class="p">[</span><span class="n">xyz1</span><span class="p">]</span>
@@ -978,8 +974,8 @@
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Check whether ARC was called from an IPython notebook.</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        bool: ``True`` if ARC was called from a notebook, ``False`` otherwise.</span>
+<span class="sd">    Returns: bool</span>
+<span class="sd">        ``True`` if ARC was called from a notebook, ``False`` otherwise.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">shell</span> <span class="o">=</span> <span class="n">get_ipython</span><span class="p">()</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span>
@@ -1000,8 +996,8 @@
 <span class="sd">    Args:</span>
 <span class="sd">        value (str): The string to check.</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        bool: ``True`` if it can, ``False`` otherwise.</span>
+<span class="sd">    Returns: bool</span>
+<span class="sd">        ``True`` if it can, ``False`` otherwise.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
@@ -1017,8 +1013,8 @@
 <span class="sd">    Args:</span>
 <span class="sd">        value (str): The string to check.</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        bool: ``True`` if it can, ``False`` otherwise.</span>
+<span class="sd">    Returns: bool</span>
+<span class="sd">        ``True`` if it can, ``False`` otherwise.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="nb">int</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
@@ -1027,15 +1023,15 @@
         <span class="k">return</span> <span class="kc">False</span></div>
 
 
-<div class="viewcode-block" id="time_lapse"><a class="viewcode-back" href="../../api/common.html#arc.common.time_lapse">[docs]</a><span class="k">def</span> <span class="nf">time_lapse</span><span class="p">(</span><span class="n">t0</span><span class="p">):</span>
+<div class="viewcode-block" id="time_lapse"><a class="viewcode-back" href="../../api/common.html#arc.common.time_lapse">[docs]</a><span class="k">def</span> <span class="nf">time_lapse</span><span class="p">(</span><span class="n">t0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A helper function returning the elapsed time since t0.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        t0 (time.pyi): The initial time the count starts from.</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        str: A &quot;D HH:MM:SS&quot; formatted time difference between now and t0.</span>
+<span class="sd">    Returns: str</span>
+<span class="sd">        A &quot;D HH:MM:SS&quot; formatted time difference between now and t0.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">t</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span>
     <span class="n">m</span><span class="p">,</span> <span class="n">s</span> <span class="o">=</span> <span class="nb">divmod</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="mi">60</span><span class="p">)</span>
@@ -1060,9 +1056,9 @@
 <span class="sd">        server (str): The name of the server where Orca runs.</span>
 <span class="sd">        consider_server_limits (bool):  Try to give realistic estimations.</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        Tuple[int, float]:</span>
-<span class="sd">            - the amount of total memory (MB) and cpu cores required for the Orca job of given species.</span>
+<span class="sd">    Returns: Tuple[int, float]:</span>
+<span class="sd">        - The amount of total memory (MB)</span>
+<span class="sd">        - The number of cpu cores required for the Orca job for a given species.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">max_server_mem_gb</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">max_server_cpus</span> <span class="o">=</span> <span class="kc">None</span>
@@ -1110,10 +1106,9 @@
 <span class="sd">                                   E.g.,for the torsions to be scanned, the</span>
 <span class="sd">                                   differences are equal to the scan resolution.</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        pd.DataFrame: a DataFrame consisting of ``True``/``False``, indicating</span>
-<span class="sd">                      which torsions changed significantly. ``True`` for significant</span>
-<span class="sd">                      change.</span>
+<span class="sd">    Returns: pd.DataFrame</span>
+<span class="sd">        a DataFrame consisting of ``True``/``False``, indicating</span>
+<span class="sd">        which torsions changed significantly. ``True`` for significant change.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># First iteration without 180/-180 adjustment</span>
     <span class="n">change</span> <span class="o">=</span> <span class="p">(</span><span class="n">torsions</span><span class="p">[</span><span class="n">index_1</span><span class="p">]</span> <span class="o">-</span> <span class="n">torsions</span><span class="p">[</span><span class="n">index_2</span><span class="p">]</span> <span class="o">-</span> <span class="n">delta</span><span class="p">)</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span> <span class="o">&gt;</span> <span class="n">threshold</span>
@@ -1140,8 +1135,8 @@
 <span class="sd">        torsion1 (Union[list, str]): The four atom indices representing the first torsion.</span>
 <span class="sd">        torsion2 (Union: [list, str]): The four atom indices representing the second torsion.</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        Optional[bool]: ``True`` if two torsions share the same pivots.</span>
+<span class="sd">    Returns: Optional[bool]</span>
+<span class="sd">        ``True`` if two torsions share the same pivots.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">torsion1</span> <span class="o">=</span> <span class="n">ast</span><span class="o">.</span><span class="n">literal_eval</span><span class="p">(</span><span class="n">torsion1</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">torsion1</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="n">torsion1</span>
     <span class="n">torsion2</span> <span class="o">=</span> <span class="n">ast</span><span class="o">.</span><span class="n">literal_eval</span><span class="p">(</span><span class="n">torsion2</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">torsion2</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="n">torsion2</span>
@@ -1162,8 +1157,8 @@
 <span class="sd">        child_list (list): The child list (the pattern to search in the parent list).</span>
 <span class="sd">        parent_list (list): The parent list.</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        bool: ``True`` if the sublist is in the parent list.</span>
+<span class="sd">    Returns: bool</span>
+<span class="sd">        ``True`` if the sublist is in the parent list.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">parent_list</span><span class="p">)</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">child_list</span><span class="p">):</span>
         <span class="k">return</span> <span class="kc">False</span>
@@ -1202,8 +1197,8 @@
 <span class="sd">        order_by_first_list (bool, optional: Whether to order the output list using the order of the values in the first list.</span>
 <span class="sd">        return_unique (bool, optional): Whether to return only unique values in the intersection of two lists.</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        list: An ordered list of the intersection of two input lists.</span>
+<span class="sd">    Returns: list</span>
+<span class="sd">        An ordered list of the intersection of two input lists.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">order_by_first_list</span><span class="p">:</span>
         <span class="n">l3</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">l1</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">l2</span><span class="p">]</span>
