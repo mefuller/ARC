@@ -165,6 +165,9 @@
 
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span>
 
+<span class="kn">from</span> <span class="nn">qcelemental.exceptions</span> <span class="kn">import</span> <span class="n">ValidationError</span>
+<span class="kn">from</span> <span class="nn">qcelemental.models.molecule</span> <span class="kn">import</span> <span class="n">Molecule</span> <span class="k">as</span> <span class="n">QCMolecule</span>
+
 <span class="kn">from</span> <span class="nn">rmgpy.reaction</span> <span class="kn">import</span> <span class="n">Reaction</span>
 <span class="kn">from</span> <span class="nn">rmgpy.species</span> <span class="kn">import</span> <span class="n">Species</span>
 
@@ -233,6 +236,9 @@
 <span class="sd">        ts_label (str): The :ref:`ARCSpecies &lt;species&gt;` label of the respective TS.</span>
 <span class="sd">        preserve_param_in_scan (list): Entries are length two iterables of atom indices (1-indexed) between which</span>
 <span class="sd">                                       distances and dihedrals of these pivots must be preserved.</span>
+<span class="sd">        _atom_map (List[int]): An atom map, mapping the reactant atoms to the product atoms.</span>
+<span class="sd">        I.e., an atom map of [0, 2, 1] means that reactant atom 0 matches product atom 0,</span>
+<span class="sd">        reactant atom 1 matches product atom 2, and reactant atom 2 matches product atom 1.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                  <span class="n">label</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
@@ -284,12 +290,26 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">ts_methods</span> <span class="o">=</span> <span class="n">ts_methods</span> <span class="k">if</span> <span class="n">ts_methods</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">default_ts_methods</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">ts_methods</span> <span class="o">=</span> <span class="p">[</span><span class="n">tsm</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">for</span> <span class="n">tsm</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ts_methods</span><span class="p">]</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">ts_xyz_guess</span> <span class="o">=</span> <span class="n">ts_xyz_guess</span> <span class="k">if</span> <span class="n">ts_xyz_guess</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">list</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_atom_map</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reactants</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">3</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">products</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">ReactionError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;An ARC Reaction can have up to three reactants / products. got </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reactants</span><span class="p">)</span><span class="si">}</span><span class="s1"> &#39;</span>
                                 <span class="sa">f</span><span class="s1">&#39;reactants and </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">products</span><span class="p">)</span><span class="si">}</span><span class="s1"> products for reaction </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ts_xyz_guess</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ts_xyz_guess</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">ts_xyz_guess</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">ts_xyz_guess</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">check_atom_balance</span><span class="p">()</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">atom_map</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;The reactants to products atom map&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_atom_map</span> <span class="ow">is</span> <span class="kc">None</span> \
+                <span class="ow">and</span> <span class="nb">all</span><span class="p">(</span><span class="n">species</span><span class="o">.</span><span class="n">get_xyz</span><span class="p">(</span><span class="n">generate</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">species</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">r_species</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">p_species</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_atom_map</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_atom_map</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_atom_map</span>
+
+    <span class="nd">@atom_map</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">atom_map</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Allow setting the atom map&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_atom_map</span> <span class="o">=</span> <span class="n">value</span>
 
     <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Return a string representation of the object&quot;&quot;&quot;</span>
@@ -315,6 +335,8 @@
         <span class="n">reaction_dict</span><span class="p">[</span><span class="s1">&#39;p_species&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">spc</span><span class="o">.</span><span class="n">as_dict</span><span class="p">()</span> <span class="k">for</span> <span class="n">spc</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">p_species</span><span class="p">]</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ts_species</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">reaction_dict</span><span class="p">[</span><span class="s1">&#39;ts_species&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ts_species</span><span class="o">.</span><span class="n">as_dict</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_atom_map</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">reaction_dict</span><span class="p">[</span><span class="s1">&#39;atom_map&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_atom_map</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">preserve_param_in_scan</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">reaction_dict</span><span class="p">[</span><span class="s1">&#39;preserve_param_in_scan&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">preserve_param_in_scan</span>
         <span class="k">if</span> <span class="s1">&#39;rmg_reaction&#39;</span> <span class="ow">in</span> <span class="n">reaction_dict</span><span class="p">:</span>
@@ -368,7 +390,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">ts_methods</span> <span class="o">=</span> <span class="p">[</span><span class="n">tsm</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">for</span> <span class="n">tsm</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ts_methods</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ts_xyz_guess</span> <span class="o">=</span> <span class="n">reaction_dict</span><span class="p">[</span><span class="s1">&#39;ts_xyz_guess&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="s1">&#39;ts_xyz_guess&#39;</span> <span class="ow">in</span> <span class="n">reaction_dict</span> <span class="k">else</span> <span class="nb">list</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">preserve_param_in_scan</span> <span class="o">=</span> <span class="n">reaction_dict</span><span class="p">[</span><span class="s1">&#39;preserve_param_in_scan&#39;</span><span class="p">]</span> \
-            <span class="k">if</span> <span class="s1">&#39;preserve_param_in_scan&#39;</span> <span class="ow">in</span> <span class="n">reaction_dict</span> <span class="k">else</span> <span class="kc">None</span></div>
+            <span class="k">if</span> <span class="s1">&#39;preserve_param_in_scan&#39;</span> <span class="ow">in</span> <span class="n">reaction_dict</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_atom_map</span> <span class="o">=</span> <span class="n">reaction_dict</span><span class="p">[</span><span class="s1">&#39;atom_map&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="s1">&#39;atom_map&#39;</span> <span class="ow">in</span> <span class="n">reaction_dict</span> <span class="k">else</span> <span class="kc">None</span></div>
 
 <div class="viewcode-block" id="ARCReaction.set_label_reactants_products"><a class="viewcode-back" href="../../api/reaction.html#arc.reaction.ARCReaction.set_label_reactants_products">[docs]</a>    <span class="k">def</span> <span class="nf">set_label_reactants_products</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;A helper function for settings the label, reactants, and products attributes for a Reaction&quot;&quot;&quot;</span>
@@ -764,7 +787,47 @@
         <span class="n">count</span> <span class="o">=</span> <span class="n">well_str</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">species</span><span class="o">.</span><span class="n">label</span><span class="si">}</span><span class="s1"> &#39;</span><span class="p">)</span> <span class="o">+</span> \
                 <span class="n">well_str</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39; </span><span class="si">{</span><span class="n">species</span><span class="o">.</span><span class="n">label</span><span class="si">}</span><span class="s1"> &#39;</span><span class="p">)</span> <span class="o">+</span> \
                 <span class="n">well_str</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39; </span><span class="si">{</span><span class="n">species</span><span class="o">.</span><span class="n">label</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">count</span></div></div>
+        <span class="k">return</span> <span class="n">count</span></div>
+
+<div class="viewcode-block" id="ARCReaction.get_atom_map"><a class="viewcode-back" href="../../api/reaction.html#arc.reaction.ARCReaction.get_atom_map">[docs]</a>    <span class="k">def</span> <span class="nf">get_atom_map</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">verbose</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the atom mapping of the reactant atoms to the product atoms.</span>
+<span class="sd">        I.e., an atom map of [0, 2, 1] means that reactant atom 0 matches product atom 0,</span>
+<span class="sd">        reactant atom 1 matches product atom 2, and reactant atom 2 matches product atom 1.</span>
+
+<span class="sd">        Employs the Kabsch, Hungarian, and Uno algorithms to exhaustively locate</span>
+<span class="sd">        the best alignment for non-oriented, non-ordered 3D structures.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            verbose (int): The verbosity level (0-4).</span>
+
+<span class="sd">        Returns: Optional[List[int]]</span>
+<span class="sd">            The atom map.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">atom_map</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">reactants</span> <span class="o">=</span> <span class="n">QCMolecule</span><span class="o">.</span><span class="n">from_data</span><span class="p">(</span>
+                <span class="n">data</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">--</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">xyz_to_str</span><span class="p">(</span><span class="n">reactant</span><span class="o">.</span><span class="n">get_xyz</span><span class="p">())</span> <span class="k">for</span> <span class="n">reactant</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">r_species</span><span class="p">),</span>
+                <span class="n">molecular_charge</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">charge</span><span class="p">,</span>
+                <span class="n">molecular_multiplicity</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">multiplicity</span><span class="p">,</span>
+                <span class="n">fragment_charges</span><span class="o">=</span><span class="p">[</span><span class="n">reactant</span><span class="o">.</span><span class="n">charge</span> <span class="k">for</span> <span class="n">reactant</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">r_species</span><span class="p">],</span>
+                <span class="n">fragment_multiplicities</span><span class="o">=</span><span class="p">[</span><span class="n">reactant</span><span class="o">.</span><span class="n">multiplicity</span> <span class="k">for</span> <span class="n">reactant</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">r_species</span><span class="p">],</span>
+                <span class="n">orient</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">products</span> <span class="o">=</span> <span class="n">QCMolecule</span><span class="o">.</span><span class="n">from_data</span><span class="p">(</span>
+                <span class="n">data</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">--</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">xyz_to_str</span><span class="p">(</span><span class="n">product</span><span class="o">.</span><span class="n">get_xyz</span><span class="p">())</span> <span class="k">for</span> <span class="n">product</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">p_species</span><span class="p">),</span>
+                <span class="n">molecular_charge</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">charge</span><span class="p">,</span>
+                <span class="n">molecular_multiplicity</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">multiplicity</span><span class="p">,</span>
+                <span class="n">fragment_charges</span><span class="o">=</span><span class="p">[</span><span class="n">product</span><span class="o">.</span><span class="n">charge</span> <span class="k">for</span> <span class="n">product</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">p_species</span><span class="p">],</span>
+                <span class="n">fragment_multiplicities</span><span class="o">=</span><span class="p">[</span><span class="n">product</span><span class="o">.</span><span class="n">multiplicity</span> <span class="k">for</span> <span class="n">product</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">p_species</span><span class="p">],</span>
+                <span class="n">orient</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">except</span> <span class="n">ValidationError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Could not get atom map for </span><span class="si">{</span><span class="bp">self</span><span class="si">}</span><span class="s1">, got:</span><span class="se">\n</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">products</span><span class="o">.</span><span class="n">align</span><span class="p">(</span><span class="n">ref_mol</span><span class="o">=</span><span class="n">reactants</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">atom_map</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;mill&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">atommap</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">atom_map</span></div></div>
 </pre></div>
 
            </div>

@@ -171,6 +171,7 @@
 <span class="kn">import</span> <span class="nn">qcelemental</span> <span class="k">as</span> <span class="nn">qcel</span>
 <span class="kn">from</span> <span class="nn">rdkit</span> <span class="kn">import</span> <span class="n">Chem</span>
 <span class="kn">from</span> <span class="nn">rdkit.Chem</span> <span class="kn">import</span> <span class="n">rdMolTransforms</span> <span class="k">as</span> <span class="n">rdMT</span>
+<span class="kn">from</span> <span class="nn">rdkit.Chem.rdchem</span> <span class="kn">import</span> <span class="n">AtomValenceException</span>
 
 <span class="kn">from</span> <span class="nn">arkane.common</span> <span class="kn">import</span> <span class="n">get_element_mass</span><span class="p">,</span> <span class="n">mass_by_symbol</span><span class="p">,</span> <span class="n">symbol_by_number</span>
 <span class="kn">from</span> <span class="nn">rmgpy.exceptions</span> <span class="kn">import</span> <span class="n">AtomTypeError</span>
@@ -1604,7 +1605,11 @@
     <span class="c1"># Make editable mol and rectify the molecule</span>
     <span class="n">rd_mol</span> <span class="o">=</span> <span class="n">rd_mol</span><span class="o">.</span><span class="n">GetMol</span><span class="p">()</span>
     <span class="k">if</span> <span class="n">sanitize</span><span class="p">:</span>
-        <span class="n">Chem</span><span class="o">.</span><span class="n">SanitizeMol</span><span class="p">(</span><span class="n">rd_mol</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">Chem</span><span class="o">.</span><span class="n">SanitizeMol</span><span class="p">(</span><span class="n">rd_mol</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">AtomValenceException</span><span class="p">:</span>
+            <span class="c1"># [C-]#[O+] raises this</span>
+            <span class="k">pass</span>
     <span class="k">if</span> <span class="n">remove_h</span><span class="p">:</span>
         <span class="n">rd_mol</span> <span class="o">=</span> <span class="n">Chem</span><span class="o">.</span><span class="n">RemoveHs</span><span class="p">(</span><span class="n">rd_mol</span><span class="p">,</span> <span class="n">sanitize</span><span class="o">=</span><span class="n">sanitize</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">rd_mol</span></div>
