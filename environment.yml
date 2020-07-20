@@ -24,6 +24,7 @@ dependencies:
   - jinja2
   - jupyter
   - lpsolve55
+  - mako
   - markupsafe
   - matplotlib >=2.2.2
   - mock
@@ -42,6 +43,7 @@ dependencies:
   - pymongo
   - pyparsing
   - pyrdl
+  - pytables
   - python >=3.7
   - pyyaml
   - quantities
