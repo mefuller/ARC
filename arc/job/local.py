@@ -14,7 +14,13 @@ import time
 from arc.common import get_logger
 from arc.exceptions import SettingsError
 from arc.job.ssh import check_job_status_in_stdout
-from arc.settings import servers, check_status_command, submit_command, submit_filename, delete_command, output_filename
+from arc.settings import (servers,
+                          check_status_command,
+                          submit_command,
+                          submit_filenames,
+                          delete_command,
+                          output_filenames,
+                          )
 
 
 logger = get_logger()
@@ -162,7 +168,7 @@ def submit_job(path):
     job_status = ''
     job_id = 0
     cmd = 'cd ' + path + '; ' + submit_command[servers['local']['cluster_soft']] + ' '\
-        + submit_filename[servers['local']['cluster_soft']]
+        + submit_filenames[servers['local']['cluster_soft']]
     stdout = execute_command(cmd)[0]
     if 'submitted' in stdout[0].lower():
         job_status = 'running'
@@ -199,8 +205,8 @@ def rename_output(local_file_path, software):
     `software` is the software used for the job by which the original output file name is determined
     """
     software = software.lower()
-    if os.path.isfile(os.path.join(os.path.dirname(local_file_path), output_filename[software])):
-        shutil.move(src=os.path.join(os.path.dirname(local_file_path), output_filename[software]), dst=local_file_path)
+    if os.path.isfile(os.path.join(os.path.dirname(local_file_path), output_filenames[software])):
+        shutil.move(src=os.path.join(os.path.dirname(local_file_path), output_filenames[software]), dst=local_file_path)
 
 
 def delete_all_local_arc_jobs(jobs=None):

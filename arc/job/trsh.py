@@ -28,7 +28,7 @@ from arc.settings import (delete_command,
                           preserve_params_in_scan,
                           rotor_scan_resolution,
                           servers,
-                          submit_filename,
+                          submit_filenames,
                           )
 from arc.species import ARCSpecies
 from arc.species.conformers import determine_smallest_atom_index_in_scan
@@ -1149,7 +1149,7 @@ def trsh_job_on_server(server: str,
         return None, False
 
     # modify the submit file
-    remote_submit_file = os.path.join(remote_path, submit_filename[cluster_soft])
+    remote_submit_file = os.path.join(remote_path, submit_filenames[cluster_soft])
     with SSHClient(server) as ssh:
         content = ssh.read_remote_file(remote_file_path=remote_submit_file)
     if cluster_soft.lower() == 'oge':
@@ -1174,7 +1174,7 @@ def trsh_job_on_server(server: str,
     # resubmit
     with SSHClient(server) as ssh:
         ssh.upload_file(remote_file_path=os.path.join(remote_path,
-                        submit_filename[cluster_soft]), file_string=content)
+                        submit_filenames[cluster_soft]), file_string=content)
     return node, True
 
 
