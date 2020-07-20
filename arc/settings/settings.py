@@ -107,9 +107,9 @@ list_available_nodes_command = {'OGE': 'export SGE_ROOT=/opt/sge; /opt/sge/bin/l
                                 'PBS': 'pbsnodes',
                                 }
 
-submit_filename = {'OGE': 'submit.sh',
-                   'Slurm': 'submit.sl',
-                   'PBS': 'submit.sh',
+submit_filenames = {'OGE': 'submit.sh',
+                    'Slurm': 'submit.sl',
+                    'PBS': 'submit.sh',
                    }
 
 t_max_format = {'OGE': 'hours',
@@ -117,22 +117,22 @@ t_max_format = {'OGE': 'hours',
                 'PBS': 'hours',
                 }
 
-input_filename = {'gaussian': 'input.gjf',
-                  'molpro': 'input.in',
-                  'onedmin': 'input.in',
-                  'orca': 'input.in',
-                  'qchem': 'input.in',
-                  'terachem': 'input.in',
+input_filenames = {'gaussian': 'input.gjf',
+                   'molpro': 'input.in',
+                   'onedmin': 'input.in',
+                   'orca': 'input.in',
+                   'qchem': 'input.in',
+                   'terachem': 'input.in',
                   }
 
-output_filename = {'gaussian': 'input.log',
-                   'gromacs': 'output.yml',
-                   'molpro': 'input.out',
-                   'onedmin': 'output.out',
-                   'orca': 'input.log',
-                   'qchem': 'output.out',
-                   'terachem': 'output.out',
-                   }
+output_filenames = {'gaussian': 'input.log',
+                    'gromacs': 'output.yml',
+                    'molpro': 'input.out',
+                    'onedmin': 'output.out',
+                    'orca': 'input.log',
+                    'qchem': 'output.out',
+                    'terachem': 'output.out',
+                    }
 
 default_levels_of_theory = {'conformer': 'wb97xd/def2svp',  # it's recommended to choose a method with dispersion
                             'ts_guesses': 'wb97xd/def2svp',
