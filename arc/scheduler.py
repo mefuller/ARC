@@ -23,27 +23,31 @@ from arc.exceptions import (InputError,
                             SanitizationError,
                             SchedulerError,
                             SpeciesError,
-                            TrshError)
-from arc.job.job import Job
+                            TrshError,
+                            )
+from arc.job.archive.job import Job
 from arc.job.local import check_running_jobs_ids
 from arc.job.ssh import SSHClient
 from arc.job.trsh import (scan_quality_check,
                           trsh_conformer_isomorphism,
                           trsh_ess_job,
                           trsh_negative_freq,
-                          trsh_scan_job)
+                          trsh_scan_job,
+                          )
 from arc.level import Level
 from arc.species.species import (ARCSpecies,
                                  are_coords_compliant_with_graph,
                                  determine_rotor_symmetry,
-                                 TSGuess)
+                                 TSGuess,
+                                 )
 from arc.species.converter import (check_isomorphism,
                                    compare_confs,
                                    molecules_from_xyz,
                                    standardize_xyz_string,
                                    str_to_xyz,
                                    xyz_to_coords_list,
-                                   xyz_to_str)
+                                   xyz_to_str,
+                                   )
 from arc.settings import default_job_settings, default_job_types, rotor_scan_resolution
 import arc.rmgdb as rmgdb
 import arc.species.conformers as conformers  # import after importing plotter to avoid circular import
@@ -753,7 +757,7 @@ class Scheduler(object):
                                                             heavy_atoms=self.species_dict[label].number_of_heavy_atoms)
         job = Job(project=self.project,
                   project_directory=self.project_directory,
-                  species_name=label,
+                  species_label=label,
                   multiplicity=species.multiplicity,
                   job_type=job_type,
                   level=Level(repr=level_of_theory),
@@ -1132,7 +1136,7 @@ class Scheduler(object):
         """
         if self.job_types['rotors'] and isinstance(self.species_dict[label].rotors_dict, dict):
             for i, rotor in self.species_dict[label].rotors_dict.items():
-                # Since this function applied in multiple cases, all cases are listed for debugging
+                # Since this function is relevant for in multiple cases, all cases are listed for debugging
                 # [have not started] success = None, and scan_path = ''
                 # [first time calculating] success = None, and scan_path = ''
                 # [converged, good] success = True, and scan_path is file
@@ -1148,7 +1152,7 @@ class Scheduler(object):
                         continue
                 scan = rotor['scan']
                 if not isinstance(scan[0], list):
-                    # check that a 1D rotors is not linear
+                    # check that a 1D rotor is not linear
                     coords = xyz_to_coords_list(self.species_dict[label].get_xyz())
                     v1 = [c1 - c2 for c1, c2 in zip(coords[scan[0] - 1], coords[scan[1] - 1])]
                     v2 = [c2 - c1 for c1, c2 in zip(coords[scan[1] - 1], coords[scan[2] - 1])]
@@ -1537,73 +1541,6 @@ class Scheduler(object):
                     elif (self.species_dict[label].rotors_dict[rotor_index]['cont_indices'][index] == max_num - 1
                             and index < len(scans) - 1):
                         self.species_dict[label].rotors_dict[rotor_index]['cont_indices'][index] = 0
-
-    def spawn_md_jobs(self, label, prev_conf_list=None, num_confs=None):
-        """
-        Embed conformers and run a molecular dynamics optimization using a fitted force field.
-        Then generate conformers using combinations of the detected torsion wells, and re-run until converging.
-
-        Args:
-            label (str): The species label.
-            prev_conf_list (list, optional): The previous conformers (entries are two length lists, not dicts).
-                                             If not given, a first Gromacs job will be spawned.
-            num_confs (int, optional): The number of conformers to generate.
-        """
-        if not self.species_dict[label].rotors_dict and self.species_dict[label].rotors_dict is not None:
-            self.species_dict[label].determine_rotors()
-        torsions, tops = list(), list()
-        for rotor_dict in self.species_dict[label].rotors_dict.values():
-            torsions.append(rotor_dict['scan'])
-            tops.append(rotor_dict['top'])
-
-        if prev_conf_list is None:
-            # first time spawning MD jobs for this species
-            if self.species_dict[label].mol_list is not None:
-                self.species_dict[label].mol_list = [conformers.update_mol(mol)
-                                                     for mol in self.species_dict[label].mol_list]
-                number_of_heavy_atoms = len([atom for atom in self.species_dict[label].mol_list[0].atoms
-                                             if atom.is_non_hydrogen()])
-            else:
-                xyz = self.species_dict[label].get_xyz()
-                number_of_heavy_atoms = sum([1 for symbol in xyz['symbols'] if symbol != 'H'])
-            num_confs = num_confs or conformers.determine_number_of_conformers_to_generate(
-                heavy_atoms=number_of_heavy_atoms,
-                torsion_num=len(torsions),
-                label=label)[0]
-            coords = list()
-            for mol in self.species_dict[label].mol_list:
-                # embed conformers (but don't optimize)
-                rd_mol = conformers.embed_rdkit(label=label, mol=mol, num_confs=num_confs, xyz=None)
-                for i in range(rd_mol.GetNumConformers()):
-                    conf, coord = rd_mol.GetConformer(i), list()
-                    for j in range(conf.GetNumAtoms()):
-                        pt = conf.GetAtomPosition(j)
-                        coord.append([pt.x, pt.y, pt.z])
-                    coords.append(coord)
-            embedded_confs_path = os.path.join(self.project_directory, 'calcs', 'Species', label,
-                                               'ff_param_fit', 'embedded_conformers.yml')  # list of lists
-            save_yaml_file(path=embedded_confs_path, content=coords)
-            self.run_gromacs_job(label, confs=embedded_confs_path)
-        else:
-            # a previous Gromacs job was submitted, generate specific conformers via deduce_new_conformers()
-            confs = list()
-            confs_path = os.path.join(self.project_directory, 'calcs', 'Species', label,
-                                      'ff_param_fit', 'conformers.yml')  # list of dicts
-            if os.path.isfile(confs_path):
-                confs = read_yaml_file(confs_path)
-            for prev_conf in prev_conf_list:
-                confs.append({'xyz': prev_conf[0], 'FF energy': prev_conf[1], 'source': 'Gromacs', 'index': len(confs)})
-            save_yaml_file(path=confs_path, content=confs)  # save for the next iteration and for archiving
-
-            confs = conformers.determine_dihedrals(confs, torsions)
-            new_conformers = conformers.deduce_new_conformers(label=label, conformers=confs, torsions=torsions,
-                                                              tops=tops, mol_list=self.species_dict[label].mol_list,
-                                                              plot_path=False)[0]
-            new_confs_path = os.path.join(self.project_directory, 'calcs', 'Species', label,
-                                          'ff_param_fit', 'new_conformers.yml')  # list of lists
-            coords = [new_conf['xyz'] for new_conf in new_conformers]
-            save_yaml_file(path=new_confs_path, content=coords)
-            self.run_gromacs_job(label, confs=new_confs_path)
 
     def process_directed_scans(self, label, pivots):
         """
@@ -2445,7 +2382,7 @@ class Scheduler(object):
         # If energies were obtained, draw the scan curve
         if energies is not None and len(energies):
             folder_name = 'rxns' if job.is_ts else 'Species'
-            rotor_path = os.path.join(self.project_directory, 'output', folder_name, job.species_name, 'rotors')
+            rotor_path = os.path.join(self.project_directory, 'output', folder_name, job.species_label, 'rotors')
             plotter.plot_1d_rotor_scan(angles=angles,
                                        energies=energies,
                                        path=rotor_path,
@@ -2756,7 +2693,7 @@ class Scheduler(object):
             - ``True`` if the troubleshooting is valid.
             - The actions are actual applied in the troubleshooting.
         """
-        label = job.species_name
+        label = job.species_label
         trsh_success = False
         actual_actions = dict()  # If troubleshooting fails, there will be no action
         # Read used troubleshooting methods

@@ -1,5 +1,5 @@
 """
-An adapter for executing Gaussian jobs
+An adapter for executing molpro jobs
 """
 
 import datetime
@@ -35,33 +35,26 @@ if TYPE_CHECKING:
 
 logger = get_logger()
 
-
-# job_type_1: '' for sp, irc, or composite methods, 'opt=calcfc', 'opt=(calcfc,ts,noeigen)',
-# job_type_2: '' or 'freq iop(7/33=1)' (cannot be combined with CBS-QB3)
-#             'scf=(tight,direct) int=finegrid irc=(rcfc,forward,maxpoints=100,stepsize=10) geom=check' for irc f
-#             'scf=(tight,direct) int=finegrid irc=(rcfc,reverse,maxpoints=100,stepsize=10) geom=check' for irc r
-# scan: '\nD 3 1 5 8 S 36 10.000000' (with the line break)
-# restricted: '' or 'u' for restricted / unrestricted
-# `iop(2/9=2000)` makes Gaussian print the geometry in the input orientation even for molecules with more
-#   than 50 atoms (important so it matches the hessian, and so that Arkane can parse the geometry)
-input_template = """${checkfile}
-%%mem=${memory}mb
-%%NProcShared=${cpus}
-
-#P ${job_type_1} ${restricted}${method}${slash_1}${basis}${slash_2}${auxiliary_basis} ${job_type_2} ${fine} IOp(2/9=2000) ${keywords} ${dispersion}
-
-${label}
-
-${charge} ${multiplicity}
-${xyz}${scan}${scan_trsh}${block}
-
+input_template = """***,${label}
+memory,{memory},m;
+geometry={{angstrom;
+{xyz}}}
+basis={basis}
+int;
+{{hf;{shift}
+maxit,1000;
+wf,spin={spin},charge={charge};}}
+{restricted}{method};
+{job_type_1}
+{job_type_2}
+---;
 
 """
 
 
-class GaussianAdapter(JobAdapter):
+class MolproAdapter(JobAdapter):
     """
-    A class for executing Gaussian jobs.
+    A class for executing Molpro jobs.
 
     Args:
         execution_type (str): The execution type, validated against ``JobExecutionTypeEnum``.
@@ -131,7 +124,7 @@ class GaussianAdapter(JobAdapter):
                  max_job_time: Optional[float] = None,
                  reactions: Optional[List['ARCReaction']] = None,
                  rotor_index: Optional[int] = None,
-                 scan: Optional[List[List[List[int]]]] = None,
+                 scan: Optional[List[List[int]]] = None,
                  scan_type: Optional[str] = 'ess',
                  server_nodes: Optional[list] = None,
                  species: Optional[List['ARCSpecies']] = None,
@@ -139,7 +132,7 @@ class GaussianAdapter(JobAdapter):
                  testing: bool = False,
                  ):
 
-        self.job_adapter = 'gaussian'
+        self.job_adapter = 'molpro'
 
         self.execution_type = execution_type
         self.job_types = job_type if isinstance(job_type, list) else [job_type]  # always a list
@@ -342,7 +335,7 @@ class GaussianAdapter(JobAdapter):
 
         elif self.job_type == 'scan' and self.scan_type == 'ess':
             scans = list()
-            for scan_list in self.scan[0]:
+            for scan_list in self.scan:
                 scans.append(' '.join([str(atom_index) for atom_index in scan_list]))
             ts = 'ts, ' if self.is_ts else ''
             input_dict['job_type_1'] = f'opt=({ts}modredundant, calcfc, noeigentest, maxStep=5) scf=(tight, direct) ' \
@@ -468,4 +461,4 @@ class GaussianAdapter(JobAdapter):
         return None
 
 
-register_job_adapter('gaussian', GaussianAdapter)
+register_job_adapter('molpro', MolproAdapter)

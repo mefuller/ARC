@@ -178,31 +178,40 @@ class JobAdapter(ABC):
         Determine the number of tasks to use in a job array
         and whether to iterate by conformers, species, reactions, or scan constraints.
         """
-        self.iterate_by, number_of_processes = None, None
-        if self.job_type == 'conformers':
-            self.iterate_by = 'conformers'
-            number_of_processes = len(self.species[0].conformers) * len(self.species)
-        elif self.job_type == 'scan' and self.scan_type in ['brute_force_sp',
-                                                            'brute_force_opt',
-                                                            'cont_opt',
-                                                            'brute_force_sp_diagonal',
-                                                            'brute_force_opt_diagonal',
-                                                            'cont_opt_diagonal']:
-            self.iterate_by = 'scan'
-            if 'cont' in self.scan_type:
-                number_of_processes = len(self.species)
-            elif 'diagonal' in self.scan_type:
-                number_of_processes = self.scan_res * len(self.species)
-            else:
-                number_of_processes = self.scan_res * len(self.scan) * len(self.species)
-        elif self.species is not None and len(self.species) > 1:
-            self.iterate_by = 'species'
-            number_of_processes = len(self.species)
-        elif self.reactions is not None and len(self.reactions) > 1:
-            self.iterate_by = 'reactions'
-            number_of_processes = len(self.reactions)
+        self.iterate_by, number_of_processes = '', 1
 
-        if number_of_processes is not None:
+        if self.job_types is not None:
+            self.iterate_by += 'job_types '
+            number_of_processes *= len(self.job_types)
+
+        for job_type in self.job_types:
+            if job_type == 'conformers':
+                self.iterate_by += 'conformers '
+                number_of_processes *= len(self.species[0].conformers)
+            elif job_type == 'scan' and self.scan_type in ['brute_force_sp',
+                                                                'brute_force_opt',
+                                                                'cont_opt',
+                                                                'brute_force_sp_diagonal',
+                                                                'brute_force_opt_diagonal',
+                                                                'cont_opt_diagonal']:
+                self.iterate_by += 'scan '
+                scan_points_per_dimension = 360.0 / self.scan_res
+                if 'cont' in self.scan_type:
+                    # A single calculation per species
+                    number_of_processes *= 1
+                elif 'diagonal' in self.scan_type:
+                    # A diagonal scan is always 1D, consider scan_points_per_dimension ** 1 * number of diagonals
+                    number_of_processes *= len(self.scan) * scan_points_per_dimension
+                elif 'brute_force' in self.scan_type:
+                    number_of_processes *= sum([scan_points_per_dimension ** len(self.scan)])
+            if self.species is not None:
+                self.iterate_by += 'species '
+                number_of_processes *= len(self.species)
+            elif self.reactions is not None and len(self.reactions) > 1:
+                self.iterate_by += 'reactions '
+                number_of_processes = len(self.reactions)
+
+        if number_of_processes > 1:
             if self.tasks is None:
                 # A trend line for the desired number of nodes vs. number of processes: y = 1.7 x ^ 0.35
                 # gives the following output: 10 -> 4, 100 -> 9, 1000 -> 20, 1e4 -> 43, 1e5 -> 96.
@@ -220,7 +229,7 @@ class JobAdapter(ABC):
         Note: each data point always runs "incore". A job array is created once the pipe is submitted to the queue
         (rather than running the pipe incore, taking no advantage of the server's potential for parallelization).
         """
-        if self.iterate_by is not None:
+        if self.iterate_by:
             data = dict()
             if self.iterate_by == 'reactions':
                 for reaction in self.reactions:
