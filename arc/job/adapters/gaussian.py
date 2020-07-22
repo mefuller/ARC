@@ -35,6 +35,15 @@ if TYPE_CHECKING:
 
 logger = get_logger()
 
+
+# job_type_1: '' for sp, irc, or composite methods, 'opt=calcfc', 'opt=(calcfc,ts,noeigen)',
+# job_type_2: '' or 'freq iop(7/33=1)' (cannot be combined with CBS-QB3)
+#             'scf=(tight,direct) int=finegrid irc=(rcfc,forward,maxpoints=100,stepsize=10) geom=check' for irc f
+#             'scf=(tight,direct) int=finegrid irc=(rcfc,reverse,maxpoints=100,stepsize=10) geom=check' for irc r
+# scan: '\nD 3 1 5 8 S 36 10.000000' (with the line break)
+# restricted: '' or 'u' for restricted / unrestricted
+# `iop(2/9=2000)` makes Gaussian print the geometry in the input orientation even for molecules with more
+#   than 50 atoms (important so it matches the hessian, and so that Arkane can parse the geometry)
 input_template = """${checkfile}
 %%mem=${memory}mb
 %%NProcShared=${cpus}
@@ -57,6 +66,7 @@ class GaussianAdapter(JobAdapter):
     Args:
         execution_type (str): The execution type, validated against ``JobExecutionTypeEnum``.
         job_type (str): The job's type, validated against ``JobTypeEnum``.
+                        If it's a list, pipe.py will be called.
         level (Level): The level of theory to use.
         project (str): The project's name. Used for setting the remote path.
         project_directory (str): The path to the local project directory.
@@ -83,11 +93,6 @@ class GaussianAdapter(JobAdapter):
         max_job_time (float, optional): The maximal allowed job time on the server in hours (can be fractional).
         reactions (List[ARCReaction], optional): Entries are ARCReaction instances, used for TS search methods.
         rotor_index (int, optional): The 0-indexed rotor number (key) in the species.rotors_dict dictionary.
-        scan (List[List[int]], optional): Entries are lists representing 1-indexed atom labels for dihedral scans.
-                                          The number of entries represent the scan dimension.
-        scan_type (str, optional): The scan type. Either of: ``'ess'``, ``'brute_force_sp'``, ``'brute_force_opt'``,
-                                   ``'cont_opt'``, ``'brute_force_sp_diagonal'``, ``'brute_force_opt_diagonal'``,
-                                   ``'cont_opt_diagonal'``.
         server_nodes (list, optional): The nodes this job was previously submitted to.
         species (List[ARCSpecies], optional): Entries are ARCSpecies instances.
                                               Either ``reactions`` or ``species`` must be given.
@@ -97,7 +102,7 @@ class GaussianAdapter(JobAdapter):
 
     def __init__(self,
                  execution_type: str,
-                 job_type: str,
+                 job_type: Union[List[str], str],
                  level: 'Level',
                  project: str,
                  project_directory: str,
@@ -119,8 +124,6 @@ class GaussianAdapter(JobAdapter):
                  max_job_time: Optional[float] = None,
                  reactions: Optional[List['ARCReaction']] = None,
                  rotor_index: Optional[int] = None,
-                 scan: Optional[List[List[int]]] = None,
-                 scan_type: Optional[str] = 'ess',
                  server_nodes: Optional[list] = None,
                  species: Optional[List['ARCSpecies']] = None,
                  tasks: Optional[int] = None,
@@ -130,7 +133,8 @@ class GaussianAdapter(JobAdapter):
         self.job_adapter = 'gaussian'
 
         self.execution_type = execution_type
-        self.job_type = job_type
+        self.job_types = job_type if isinstance(job_type, list) else [job_type]  # always a list
+        self.job_type = job_type if isinstance(job_type, str) else job_type[0]  # always a string
         self.level = level
         self.project = project
         self.project_directory = project_directory
@@ -154,8 +158,6 @@ class GaussianAdapter(JobAdapter):
         self.max_job_time = max_job_time or default_job_settings.get('job_time_limit_hrs', 120)
         self.reactions = reactions
         self.rotor_index = rotor_index
-        self.scan = scan
-        self.scan_type = scan_type
         self.server_nodes = server_nodes or list()
         self.species = species
         self.tasks = tasks
@@ -178,12 +180,6 @@ class GaussianAdapter(JobAdapter):
         if self.job_num is None:
             self._set_job_number()
             self.job_name = f'{self.job_type}_a{self.job_num}'
-
-        if self.scan is not None and not isinstance(self.scan[1], list):
-            self.scan = [self.scan]
-
-        if self.job_type == 'scan' and self.scan is None:
-            raise ValueError(f'Missing the scan argument for job type scan.')
 
         if self.job_type == 'irc' and (self.irc_direction is None or self.irc_direction not in ['forward', 'reverse']):
             raise ValueError(f'Missing the irc_direction argument for job type irc. '
@@ -212,7 +208,9 @@ class GaussianAdapter(JobAdapter):
         self.inputs = dict()  # input files, keys are 'root' a subdirectory names, values are lists of input files
         self.submit = ''
         self.files_to_upload, self.files_to_download = list(), list()
-        self.tasks, self.iterate_by = None, None
+        self.tasks = None
+        self.iterate_by = list()
+        self.number_of_processes = 1
         self.determine_job_array_parameters()  # writes the local HDF5 file if needed
         self.set_up_files()
 
@@ -324,9 +322,9 @@ class GaussianAdapter(JobAdapter):
         elif self.job_type == 'sp':
             input_dict['job_type_1'] = 'scf=(tight, direct) integral=(grid=ultrafine, Acc2E=12)'
 
-        elif self.job_type == 'scan' and self.scan_type == 'ess':
+        elif self.job_type == 'scan' and self.species[0].rotors_dict[self.rotor_index]['directed_scan_type'] == 'ess':
             scans = list()
-            for scan_list in self.scan:
+            for scan_list in self.species[0].rotors_dict[self.rotor_index]['scan']:
                 scans.append(' '.join([str(atom_index) for atom_index in scan_list]))
             ts = 'ts, ' if self.is_ts else ''
             input_dict['job_type_1'] = f'opt=({ts}modredundant, calcfc, noeigentest, maxStep=5) scf=(tight, direct) ' \
@@ -380,23 +378,23 @@ class GaussianAdapter(JobAdapter):
                 file_name=submit_filenames[servers[self.server]['cluster_soft']]))
 
         # 1.2. input file
-        if self.iterate_by is None:
+        if self.iterate_by:
             # if this is a job array, the submit file will call pipe.py instead
             self.write_input_file()
             self.files_to_upload.append(self.get_file_property_dictionary(file_name=input_filenames[self.job_adapter]))
 
         # 1.3. checkfile
-        if self.checkfile is not None and os.path.isfile(self.checkfile) and self.iterate_by is None:
+        if self.checkfile is not None and os.path.isfile(self.checkfile) and self.iterate_by:
             self.files_to_upload.append(self.get_file_property_dictionary(file_name='check.chk',
                                                                           local=self.checkfile))
 
         # 1.4. HDF5 file
-        if self.iterate_by is not None and os.path.isfile(os.path.join(self.local_path, 'data.hdf5')):
+        if self.iterate_by and os.path.isfile(os.path.join(self.local_path, 'data.hdf5')):
             self.files_to_upload.append(self.get_file_property_dictionary(file_name='data.hdf5'))
 
         # 2. ** Download **
         # 2.1. HDF5 file
-        if self.iterate_by is not None and os.path.isfile(os.path.join(self.local_path, 'data.hdf5')):
+        if self.iterate_by and os.path.isfile(os.path.join(self.local_path, 'data.hdf5')):
             self.files_to_download.append(self.get_file_property_dictionary(file_name='data.hdf5'))
         else:
             # 2.2. log file
