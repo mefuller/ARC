@@ -36,7 +36,7 @@ def register_job_adapter(job_adapter_label: str,
 
 def statmech_factory(job_adapter: str,
                      execution_type: str,
-                     job_type: str,
+                     job_type: Union[List[str], str],
                      level: 'Level',
                      project: str,
                      project_directory: str,
@@ -58,8 +58,6 @@ def statmech_factory(job_adapter: str,
                      max_job_time: Optional[float] = None,
                      reactions: Optional[List['ARCReaction']] = None,
                      rotor_index: Optional[int] = None,
-                     scan: Optional[List[List[int]]] = None,
-                     scan_type: Optional[str] = 'ess',
                      server_nodes: Optional[list] = None,
                      species: Optional[List['ARCSpecies']] = None,
                      tasks: Optional[int] = None,
@@ -71,7 +69,8 @@ def statmech_factory(job_adapter: str,
     Args:
         job_adapter (str): The string representation of the job adapter, validated against ``JobEnum``.
         execution_type (str): The execution type, validated against ``JobExecutionTypeEnum``.
-        job_type (str): The job's type, validated against ``JobTypeEnum``.
+        job_type (list, str): The job's type, validated against ``JobTypeEnum``.
+                              If it's a list, pipe.py will be called.
         level (Level): The level of theory to use.
         project (str): The project's name. Used for setting the remote path.
         project_directory (str): The path to the local project directory.
@@ -110,11 +109,6 @@ def statmech_factory(job_adapter: str,
         max_job_time (float, optional): The maximal allowed job time on the server in hours (can be fractional).
         reactions (List[ARCReaction], optional): Entries are ARCReaction instances, used for TS search methods.
         rotor_index (int, optional): The 0-indexed rotor number (key) in the species.rotors_dict dictionary.
-        scan (List[List[int]], optional): Entries are lists representing 1-indexed atom labels for dihedral scans.
-                                          The number of entries represent the scan dimension.
-        scan_type (str, optional): The scan type. Either of: ``'ess'``, ``'brute_force_sp'``, ``'brute_force_opt'``,
-                                   ``'cont_opt'``, ``'brute_force_sp_diagonal'``, ``'brute_force_opt_diagonal'``,
-                                   ``'cont_opt_diagonal'``.
         server_nodes (list, optional): The nodes this job was previously submitted to.
         species (List[ARCSpecies], optional): Entries are ARCSpecies instances.
                                               Either ``reactions`` or ``species`` must be given.
@@ -142,6 +136,13 @@ def statmech_factory(job_adapter: str,
         # directed_scans (list): Entries are lists of four-atom dihedral scan indices to constrain during a directed scan.
         # directed_dihedrals (list): The dihedral angles of a directed scan job corresponding to ``directed_scans``.  # pass in constraints
         # directed_scan_type (str): The type of the directed scan.
+        # scan (List[List[List[int]]], optional): The inner-most entries are lists representing 1-indexed atom labels for
+        #                                         dihedral scans. The intermediate list level represent a mode
+        #                                         (a 1D scan mode will have just one entry here, 2D will have two, etc.)
+        #                                         The top level list represents all scan modes that require calculations.
+        # scan_type (str, optional): The scan type. Either of: ``'ess'``, ``'brute_force_sp'``, ``'brute_force_opt'``,
+        #                            ``'cont_opt'``, ``'brute_force_sp_diagonal'``, ``'brute_force_opt_diagonal'``,
+        #                            ``'cont_opt_diagonal'``.
 
     Returns:
         JobAdapter: The requested JobAdapter subclass, initialized with the respective arguments.
@@ -182,8 +183,6 @@ def statmech_factory(job_adapter: str,
                                                                max_job_time=max_job_time,
                                                                reactions=reactions,
                                                                rotor_index=rotor_index,
-                                                               scan=scan,
-                                                               scan_type=scan_type,
                                                                server_nodes=server_nodes,
                                                                species=species,
                                                                tasks=tasks,
