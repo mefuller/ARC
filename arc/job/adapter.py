@@ -178,39 +178,52 @@ class JobAdapter(ABC):
         Determine the number of tasks to use in a job array
         and whether to iterate by conformers, species, reactions, or scan constraints.
         """
-        self.iterate_by, number_of_processes = None, None
-        if self.job_type == 'conformers':
-            self.iterate_by = 'conformers'
-            number_of_processes = len(self.species[0].conformers) * len(self.species)
-        elif self.job_type == 'scan' and self.scan_type in ['brute_force_sp',
-                                                            'brute_force_opt',
-                                                            'cont_opt',
-                                                            'brute_force_sp_diagonal',
-                                                            'brute_force_opt_diagonal',
-                                                            'cont_opt_diagonal']:
-            self.iterate_by = 'scan'
-            if 'cont' in self.scan_type:
-                number_of_processes = len(self.species)
-            elif 'diagonal' in self.scan_type:
-                number_of_processes = self.scan_res * len(self.species)
-            else:
-                number_of_processes = self.scan_res * len(self.scan) * len(self.species)
-        elif self.species is not None and len(self.species) > 1:
-            self.iterate_by = 'species'
-            number_of_processes = len(self.species)
-        elif self.reactions is not None and len(self.reactions) > 1:
-            self.iterate_by = 'reactions'
-            number_of_processes = len(self.reactions)
+        if len(self.job_types) > 1:
+            self.iterate_by.append('job_types')
 
-        if number_of_processes is not None:
+        for job_type in self.job_types:
+
+            if self.species is not None:
+                if len(self.species) > 1:
+                    self.iterate_by.append('species')
+                for species in self.species:
+                    if job_type == 'conformers':
+                        self.iterate_by.append('conformers')
+                        self.number_of_processes += len(species.conformers)
+                    elif job_type == 'scan' and self.scan_type in ['brute_force_sp',
+                                                                   'brute_force_opt',
+                                                                   'cont_opt',
+                                                                   'brute_force_sp_diagonal',
+                                                                   'brute_force_opt_diagonal',
+                                                                   'cont_opt_diagonal']:
+                        self.iterate_by.append('scan')
+                        scan_points_per_dimension = 360.0 / self.scan_res
+                        for rotor_dict in species.rotors_dict.values():
+                            if rotor_dict['directed_scan_type'] == 'ess':
+                                self.number_of_processes += 1
+                            elif 'cont_opt' in rotor_dict['directed_scan_type']:
+                                # A single calculation per species for a continuous scan, either diagonal or not.
+                                self.number_of_processes += 1
+                            elif 'brute_force' in rotor_dict['directed_scan_type']:
+                                if 'diagonal' in rotor_dict['directed_scan_type']:
+                                    self.number_of_processes += scan_points_per_dimension
+                                else:
+                                    self.number_of_processes += \
+                                        sum([scan_points_per_dimension ** len(rotor_dict['scan'])])
+
+            elif self.reactions is not None and len(self.reactions) > 1:
+                self.iterate_by.append('reactions')
+                self.number_of_processes += len(self.reactions)
+
+        if self.number_of_processes > 1:
             if self.tasks is None:
                 # A trend line for the desired number of nodes vs. number of processes: y = 1.7 x ^ 0.35
                 # gives the following output: 10 -> 4, 100 -> 9, 1000 -> 20, 1e4 -> 43, 1e5 -> 96.
                 # Cap the number of tasks at 100.
                 # Use just 1 or 2 tasks if there are less than 10 processes.
-                self.tasks = 1 if number_of_processes <= 2 \
-                    else 2 if number_of_processes < 10 \
-                    else min(math.ceil(1.7 * number_of_processes ** 0.35), 100)
+                self.tasks = 1 if self.number_of_processes <= 2 \
+                    else 2 if self.number_of_processes < 10 \
+                    else min(math.ceil(1.7 * self.number_of_processes ** 0.35), 100)
             self.write_hdf5()
 
     def write_hdf5(self):
@@ -220,9 +233,9 @@ class JobAdapter(ABC):
         Note: each data point always runs "incore". A job array is created once the pipe is submitted to the queue
         (rather than running the pipe incore, taking no advantage of the server's potential for parallelization).
         """
-        if self.iterate_by is not None:
+        if self.iterate_by:
             data = dict()
-            if self.iterate_by == 'reactions':
+            if 'reactions' in self.iterate_by:
                 for reaction in self.reactions:
                     data[reaction.index].append(DataPoint(charge=reaction.charge,
                                                           job_types=[self.job_type],
@@ -236,7 +249,7 @@ class JobAdapter(ABC):
             else:
                 for species in self.species:
                     data[species.label] = list()
-                    if self.iterate_by == 'conformers':
+                    if 'conformers' in self.iterate_by:
                         for conformer in species.conformers:
                             data[species.label].append(DataPoint(charge=species.charge,
                                                                  job_types=['opt'],
@@ -245,9 +258,9 @@ class JobAdapter(ABC):
                                                                  multiplicity=species.multiplicity,
                                                                  xyz_1=conformer,
                                                                  ).as_dict())
-                    elif self.iterate_by == 'scan':
+                    elif 'scan' in self.iterate_by:
                         data[species.label] = generate_scan_points(species=species, scan_res=self.scan_res)
-                    elif self.iterate_by == 'species':
+                    elif 'species' in self.iterate_by:
                         data[species.label].append(DataPoint(charge=species.charge,
                                                              job_types=[self.job_type],
                                                              label=species.label,
