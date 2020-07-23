@@ -27,10 +27,10 @@ from arc.plotter import save_geo
 from arc.settings import (arc_path,
                           default_job_settings,
                           servers,
-                          submit_filename,
+                          submit_filenames,
                           t_max_format,
-                          input_filename,
-                          output_filename,
+                          input_filenames,
+                          output_filenames,
                           rotor_scan_resolution,
                           orca_default_options_dict)
 from arc.species.converter import check_xyz_dict, xyz_to_str
@@ -48,7 +48,7 @@ class Job(object):
         project (str): The project's name. Used for naming the directory.
         project_directory (str): The path to the project directory.
         ess_settings (dict): A dictionary of available ESS and a corresponding server list.
-        species_name (str): The species/TS name. Used for naming the directory.
+        species_label (str): The species/TS label. Used for naming the directory.
         xyz (dict): The xyz geometry. Used for the calculation.
         job_type (str): The job's type.
         level (Level, dict, str): The level of theory to use.
@@ -101,7 +101,7 @@ class Job(object):
     Attributes:
         project (str): The project's name. Used for naming the directory.
         ess_settings (dict): A dictionary of available ESS and a corresponding server list.
-        species_name (str): The species/TS name. Used for naming the directory.
+        species_label (str): The species/TS label. Used for naming the directory.
         charge (int): The species net charge. Default is 0.
         multiplicity (int): The species multiplicity.
         number_of_radicals (int): The number of radicals (inputted by the user, ARC won't attempt to determine it).
@@ -181,7 +181,7 @@ class Job(object):
     def __init__(self,
                  project: str,
                  project_directory: str,
-                 species_name: str,
+                 species_label: str,
                  multiplicity: int,
                  job_type: str,
                  level: Union[Level, dict, str],
@@ -227,7 +227,7 @@ class Job(object):
                  ):
         self.project = project
         self.project_directory = project_directory
-        self.species_name = species_name
+        self.species_label = species_label
         self.multiplicity = multiplicity
         self.job_type = job_type
         self.level = Level(repr=level)
@@ -283,13 +283,11 @@ class Job(object):
 
         # allowed job types:
         job_types = ['conformer', 'opt', 'freq', 'optfreq', 'sp', 'composite', 'bde', 'scan', 'directed_scan',
-                     'gsm', 'irc', 'ts_guess', 'orbitals', 'onedmin', 'ff_param_fit', 'gromacs']
+                     'gsm', 'irc', 'ts_guess', 'orbitals', 'onedmin', 'ff_param_fit']
         if self.job_type not in job_types:
             raise ValueError(f'Job type {self.job_type} not understood. Must be one of the following:\n{job_types}')
-        if self.xyz is None and not self.job_type == 'gromacs':
-            raise InputError(f'{self.job_type} Job of species {self.species_name} got None for xyz')
-        if self.job_type == 'gromacs' and self.conformers is None:
-            raise InputError(f'{self.job_type} Job of species {self.species_name} got None for conformers')
+        if self.xyz is None:
+            raise InputError(f'{self.job_type} Job of species {self.species_label} got None for xyz')
         if self.job_type == 'directed_scan' and (self.directed_dihedrals is None or self.directed_scans is None
                                                  or self.directed_scan_type is None):
             raise InputError(f'Must have the directed_dihedrals, directed_scans, and directed_scan_type attributes '
@@ -313,7 +311,7 @@ class Job(object):
             self.server = server or self.ess_settings[self.software][0]
 
         if self.job_type == 'onedmin' and self.bath_gas is None:
-            logger.info(f'Setting bath gas for Lennard-Jones calculation to N2 for species {self.species_name}')
+            logger.info(f'Setting bath gas for Lennard-Jones calculation to N2 for species {self.species_label}')
             self.bath_gas = 'N2'
         elif self.bath_gas is not None and self.bath_gas not in ['He', 'Ne', 'Ar', 'Kr', 'H2', 'N2', 'O2']:
             raise InputError(f'Bath gas for OneDMin should be one of the following:\n'
@@ -334,178 +332,6 @@ class Job(object):
             # this checks job_num and not self.job_num on purpose
             # if job_num was given, then don't save as initiated jobs, this is a restarted job
             self._write_initiated_job_to_csv_file()
-
-    def as_dict(self) -> dict:
-        """
-        A helper function for dumping this object as a dictionary in a YAML file for restarting ARC.
-        """
-        job_dict = dict()
-        job_dict['project'] = self.project
-        job_dict['project_directory'] = self.project_directory
-        job_dict['species_name'] = self.species_name
-        job_dict['multiplicity'] = self.multiplicity
-        job_dict['job_type'] = self.job_type
-        job_dict['level'] = self.level.as_dict()
-        job_dict['ess_settings'] = self.ess_settings
-        job_dict['xyz'] = xyz_to_str(self.xyz)
-        job_dict['fine'] = self.fine
-        job_dict['total_job_memory_gb'] = int(self.total_job_memory_gb)
-        job_dict['job_num'] = self.job_num
-        job_dict['job_server_name'] = self.job_server_name
-        job_dict['max_job_time'] = self.max_job_time
-        job_dict['server'] = self.server
-        job_dict['job_name'] = self.job_name
-        job_dict['job_status'] = self.job_status
-        job_dict['cpu_cores'] = self.cpu_cores
-        job_dict['job_id'] = self.job_id
-        if self.scan_res is not None:
-            job_dict['scan_res'] = self.scan_res
-        if not self.is_ts:
-            job_dict['is_ts'] = self.is_ts
-        if self.charge:
-            job_dict['charge'] = self.charge
-        if self.conformer >= 0:
-            job_dict['conformer'] = self.conformer
-        if self.shift:
-            job_dict['shift'] = self.shift
-        if self.software is not None:
-            job_dict['software'] = self.software
-        if self.scan is not None:
-            job_dict['scan'] = self.scan
-        if self.pivots:
-            job_dict['pivots'] = self.pivots
-        if self.comments:
-            job_dict['comments'] = self.comments
-        if self.args:
-            job_dict['args'] = self.args
-        if self.scan_trsh:
-            job_dict['scan_trsh'] = self.scan_trsh
-        if self.ess_trsh_methods:
-            job_dict['ess_trsh_methods'] = self.ess_trsh_methods
-        if self.bath_gas is not None:
-            job_dict['bath_gas'] = self.bath_gas
-        if self.initial_time is not None:
-            job_dict['initial_time'] = self.initial_time.strftime('%Y-%m-%d %H:%M:%S')
-        if self.final_time is not None:
-            job_dict['final_time'] = self.final_time.strftime('%Y-%m-%d %H:%M:%S')
-        if self.server_nodes:
-            job_dict['server_nodes'] = self.server_nodes
-        if self.number_of_radicals is not None:
-            job_dict['number_of_radicals'] = self.number_of_radicals
-        if self.occ is not None:
-            job_dict['occ'] = self.occ
-        if self.directed_dihedrals is not None:
-            job_dict['directed_dihedrals'] = ['{0:.2f}'.format(dihedral) for dihedral in self.directed_dihedrals]
-        if self.directed_scans is not None:
-            job_dict['directed_scans'] = self.directed_scans
-        if self.directed_scan_type is not None:
-            job_dict['directed_scan_type'] = self.directed_scan_type
-        if self.rotor_index is not None:
-            job_dict['rotor_index'] = self.rotor_index
-        if self.checkfile is not None:
-            job_dict['checkfile'] = self.checkfile
-        if self.conformers is not None:
-            job_dict['conformers'] = self.conformers
-        if self.radius is not None:
-            job_dict['radius'] = self.radius
-        if self.irc_direction is not None:
-            job_dict['irc_direction'] = self.irc_direction
-        return job_dict
-
-    def _set_job_number(self):
-        """
-        Used as the entry number in the database, as well as the job name on the server.
-        """
-        csv_path = os.path.join(arc_path, 'initiated_jobs.csv')
-        if not os.path.isfile(csv_path):
-            # check file, make index file and write headers if file doesn't exists
-            with open(csv_path, 'w') as f:
-                writer = csv.writer(f, dialect='excel')
-                row = ['job_num', 'project', 'species_name', 'conformer', 'is_ts', 'charge', 'multiplicity', 'job_type',
-                       'job_name', 'job_id', 'server', 'software', 'memory', 'method', 'basis_set', 'comments']
-                writer.writerow(row)
-        with open(csv_path, 'r') as f:
-            reader = csv.reader(f, dialect='excel')
-            job_num = 0
-            for _ in reader:
-                job_num += 1
-                if job_num == 100000:
-                    job_num = 0
-            self.job_num = job_num
-
-    def _write_initiated_job_to_csv_file(self):
-        """
-        Write an initiated ARCJob into the initiated_jobs.csv file.
-        """
-        csv_path = os.path.join(arc_path, 'initiated_jobs.csv')
-        if self.conformer < 0:  # this is not a conformer search job
-            conformer = '-'
-        else:
-            conformer = str(self.conformer)
-        with open(csv_path, 'a') as f:
-            writer = csv.writer(f, dialect='excel')
-            row = [self.job_num, self.project, self.species_name, conformer, self.is_ts, self.charge,
-                   self.multiplicity, self.job_type, self.job_name, self.job_id, self.server, self.software,
-                   self.total_job_memory_gb, self.level.method, self.level.basis, self.comments]
-            writer.writerow(row)
-
-    def write_completed_job_to_csv_file(self):
-        """
-        Write a completed ARCJob into the completed_jobs.csv file.
-        """
-        if self.job_status[0] != 'done' or self.job_status[1]['status'] != 'done':
-            self.determine_job_status()
-        csv_path = os.path.join(arc_path, 'completed_jobs.csv')
-        if not os.path.isfile(csv_path):
-            # check file, make index file and write headers if file doesn't exists
-            with open(csv_path, 'w') as f:
-                writer = csv.writer(f, dialect='excel')
-                row = ['job_num', 'project', 'species_name', 'conformer', 'is_ts', 'charge', 'multiplicity', 'job_type',
-                       'job_name', 'job_id', 'server', 'software', 'memory', 'method', 'basis_set', 'initial_time',
-                       'final_time', 'run_time', 'job_status_(server)', 'job_status_(ESS)',
-                       'ESS troubleshooting methods used', 'comments']
-                writer.writerow(row)
-        csv_path = os.path.join(arc_path, 'completed_jobs.csv')
-        if self.conformer < 0:  # this is not a conformer search job
-            conformer = '-'
-        else:
-            conformer = str(self.conformer)
-        with open(csv_path, 'a') as f:
-            writer = csv.writer(f, dialect='excel')
-            job_type = self.job_type
-            if self.fine:
-                job_type += ' (fine)'
-            row = [self.job_num, self.project, self.species_name, conformer, self.is_ts, self.charge,
-                   self.multiplicity, job_type, self.job_name, self.job_id, self.server, self.software,
-                   self.total_job_memory_gb, self.level.method, self.level.basis, self.initial_time, self.final_time,
-                   self.run_time, self.job_status[0], self.job_status[1]['status'], self.ess_trsh_methods,
-                   self.comments]
-            writer.writerow(row)
-
-    def format_max_job_time(self, time_format):
-        """
-        Convert the max_job_time attribute into the format supported by the server submission script
-
-        Args:
-            time_format (str): Either 'days' (e.g., 5-0:00:00) or 'hours' (e.g., 120:00:00)
-
-        Returns: str
-            The formatted maximum job time string
-        """
-        t_delta = datetime.timedelta(hours=self.max_job_time)
-        if time_format == 'days':
-            # e.g., 5-0:00:00
-            t_max = '{0}-{1}'.format(t_delta.days, str(datetime.timedelta(seconds=t_delta.seconds)))
-        elif time_format == 'hours':
-            # e.g., 120:00:00
-            h, s = divmod(t_delta.seconds, 3600)
-            h += t_delta.days * 24
-            t_max = '{0}:{1}'.format(h, ':'.join(str(datetime.timedelta(seconds=s)).split(':')[1:]))
-        else:
-            raise JobError('Could not determine format for maximal job time.\n Format is determined by {0}, but '
-                           'got {1} for {2}'.format(t_max_format, servers[self.server]['cluster_soft'], self.server))
-
-        return t_max
 
     def write_submit_script(self):
         """
@@ -544,7 +370,7 @@ class Job(object):
             raise
         if not os.path.isdir(self.local_path):
             os.makedirs(self.local_path)
-        with open(os.path.join(self.local_path, submit_filename[servers[self.server]['cluster_soft']]), 'w') as f:
+        with open(os.path.join(self.local_path, submit_filenames[servers[self.server]['cluster_soft']]), 'w') as f:
             f.write(self.submit)
         if self.server != 'local' and not self.testing:
             self._upload_submit_file()
@@ -557,24 +383,9 @@ class Job(object):
         # Initialize variables
         orca_options_keywords_dict, orca_options_blocks_dict, restricted, method_class = (None for _ in range(4))
 
-        # Ignore user specified additional job arguments when troubleshoot
-        if self.args and all([val for val in self.args.values()]) and self.level.args:
-            logger.warning(f'When troubleshooting {self.job_name}, ARC ignores the following user-specified options:\n'
-                           f'{pformat(self.level.args)}')
-        else:
-            self.args = self.level.args
-
         self.input = input_files.get(self.software, None)
 
         slash, slash_2, scan_string, constraint = '', '', '', ''
-        if self.software == 'gaussian' and self.level.basis:
-            # assume method without basis set is composite method or force field
-            slash = '/'
-            if self.level.auxiliary_basis:
-                slash_2 = '/'
-
-        if self.software == 'gaussian' and self.level.method_type in ['semiempirical', 'force_field']:
-            self.checkfile = None
 
         # Determine HF/DFT restriction type
         if (self.multiplicity > 1 and self.level.basis) \
@@ -584,7 +395,7 @@ class Job(object):
             # don't run unrestricted for composite methods such as CBS-QB3, it'll be done automatically if the
             # multiplicity is greater than one, but do specify uCBS-QB3 for example for bi-rad singlets.
             if self.number_of_radicals is not None and self.number_of_radicals > 1:
-                logger.info(f'Using an unrestricted method for species {self.species_name} which has '
+                logger.info(f'Using an unrestricted method for species {self.species_label} which has '
                             f'{self.number_of_radicals} radicals and multiplicity {self.multiplicity}')
             if self.software == 'qchem':
                 restricted = 'True'  # In QChem this attribute is "unrestricted"
@@ -696,12 +507,6 @@ wf,spin={spin},charge={charge};}}
                     orca_options_keywords_dict['dlpno_threshold'] = dlpno_threshold
             else:
                 logger.debug(f'Running {self.level.method} method in Orca.')
-        elif self.software == 'gaussian':
-            if self.level.method[:2] == 'ro':
-                self.add_to_args(val='use=L506')
-            else:
-                # xqc will do qc (quadratic convergence) if the job fails w/o it, so use by default
-                self.add_to_args(val='scf=xqc')
 
         # Job type specific options
         if self.job_type in ['conformer', 'opt']:
@@ -991,7 +796,7 @@ end
                     scans.append(' '.join([str(num) for num in directed_scan]))
             else:
                 raise JobError(f'A scan job must either get a `scan` or a `directed_scans` argument.\n'
-                               f'Got neither for job {self.job_name} of {self.species_name}.')
+                               f'Got neither for job {self.job_name} of {self.species_label}.')
             if self.software == 'gaussian':
                 ts = 'ts, ' if self.is_ts else ''
                 job_type_1 = f'opt=({ts}modredundant, calcfc, noeigentest, maxStep=5) scf=(tight, direct) ' \
@@ -1038,12 +843,9 @@ end
                 if 'sp' in self.directed_scan_type:
                     job_type_1 = 'scf=(tight, direct) integral=(grid=ultrafine, Acc2E=12)'
                 else:
-                    if self.is_ts:
-                        job_type_1 = 'opt=(ts, modredundant, calcfc, noeigentest, maxStep=5) scf=(tight, direct)' \
-                                     ' integral=(grid=ultrafine, Acc2E=12)'
-                    else:
-                        job_type_1 = 'opt=(modredundant, calcfc, noeigentest, maxStep=5) scf=(tight, direct)' \
-                                     ' integral=(grid=ultrafine, Acc2E=12)'
+                    ts = 'ts, ' if self.is_ts else ''
+                    job_type_1 = f'opt=({ts}modredundant, calcfc, noeigentest, maxStep=5) scf=(tight, direct) ' \
+                                 f'integral=(grid=ultrafine, Acc2E=12)'
                     for directed_scan, directed_dihedral in zip(self.directed_scans, self.directed_dihedrals):
                         scan_atoms = ' '.join([str(num) for num in directed_scan])
                         scan_string += 'D {scan} ={dihedral} B\nD {scan} F\n'.format(
@@ -1155,13 +957,13 @@ end
             if not os.path.exists(self.local_path):
                 os.makedirs(self.local_path)
             if self.input is not None:
-                with open(os.path.join(self.local_path, input_filename[self.software]), 'w') as f:
+                with open(os.path.join(self.local_path, input_filenames[self.software]), 'w') as f:
                     f.write(self.input)
             if self.server != 'local':
                 self._upload_input_file()
             else:
                 self.initial_time = get_last_modified_time(
-                    file_path=os.path.join(self.local_path, submit_filename[servers[self.server]['cluster_soft']]))
+                    file_path=os.path.join(self.local_path, submit_filenames[servers[self.server]['cluster_soft']]))
                 # copy additional input files to local running directory
                 for up_file in self.additional_files_to_upload:
                     if up_file['source'] == 'path':
@@ -1175,44 +977,6 @@ end
             if self.checkfile is not None and os.path.isfile(self.checkfile):
                 self._upload_check_file(local_check_file_path=self.checkfile)
 
-    def _upload_submit_file(self):
-        remote_file_path = os.path.join(self.remote_path, submit_filename[servers[self.server]['cluster_soft']])
-        with SSHClient(self.server) as ssh:
-            ssh.upload_file(remote_file_path=remote_file_path, file_string=self.submit)
-
-    def _upload_input_file(self):
-        with SSHClient(self.server) as ssh:
-            if self.input is not None:
-                remote_file_path = os.path.join(self.remote_path, input_filename[self.software])
-                ssh.upload_file(remote_file_path=remote_file_path, file_string=self.input)
-            for up_file in self.additional_files_to_upload:
-                if up_file['source'] == 'path':
-                    local_file_path = up_file['local']
-                elif up_file['source'] == 'input_files':
-                    local_file_path = input_files[up_file['local']]
-                else:
-                    raise JobError(f'Unclear file source for {up_file["name"]}. Should either be "path" or '
-                                   f'"input_files", got: {up_file["source"]}')
-                ssh.upload_file(remote_file_path=up_file['remote'], local_file_path=local_file_path)
-                if up_file['make_x']:
-                    ssh.change_mode(mode='+x', path=up_file['name'], remote_path=self.remote_path)
-            self.initial_time = ssh.get_last_modified_time(
-                remote_file_path=os.path.join(self.remote_path, submit_filename[servers[self.server]['cluster_soft']]))
-
-    def _upload_check_file(self, local_check_file_path=None):
-        if self.server != 'local':
-            remote_check_file_path = os.path.join(self.remote_path, 'check.chk')
-            local_check_file_path = os.path.join(self.local_path, 'check.chk') if local_check_file_path is None\
-                else local_check_file_path
-            if os.path.isfile(local_check_file_path) and self.software.lower() == 'gaussian':
-                with SSHClient(self.server) as ssh:
-                    ssh.upload_file(remote_file_path=remote_check_file_path, local_file_path=local_check_file_path)
-                logger.debug(f'uploading checkpoint file for {self.job_name}')
-        else:
-            # running locally, just copy the check file to the job folder
-            new_check_file_path = os.path.join(self.local_path, 'check.chk')
-            shutil.copyfile(local_check_file_path, new_check_file_path)
-
     def _download_output_file(self):
         """
         Download ESS output, orbitals check file, and the Gaussian check file, if relevant.
@@ -1220,7 +984,7 @@ end
         with SSHClient(self.server) as ssh:
 
             # download output file
-            remote_file_path = os.path.join(self.remote_path, output_filename[self.software])
+            remote_file_path = os.path.join(self.remote_path, output_filenames[self.software])
             ssh.download_file(remote_file_path=remote_file_path, local_file_path=self.local_path_to_output_file)
             if not os.path.isfile(self.local_path_to_output_file):
                 raise JobError(f'output file for {self.job_name} was not downloaded properly')
@@ -1258,7 +1022,7 @@ end
 
             # download molpro log file (in addition to the output file)
             if self.software.lower() == 'molpro':
-                remote_log_file_path = os.path.join(self.remote_path, output_filename[self.software])
+                remote_log_file_path = os.path.join(self.remote_path, output_filenames[self.software])
                 ssh.download_file(remote_file_path=remote_log_file_path, local_file_path=self.local_path_to_output_file)
                 if not os.path.isfile(self.local_path_to_output_file):
                     logger.warning(f'Could not download Molpro log file for {self.job_name} '
@@ -1283,15 +1047,15 @@ end
         Execute the Job.
         """
         if self.fine:
-            logger.info(f'Running job {self.job_name} for {self.species_name} (fine opt)')
+            logger.info(f'Running job {self.job_name} for {self.species_label} (fine opt)')
         elif self.directed_dihedrals is not None and self.directed_scans is not None:
             dihedrals = ['{0:.2f}'.format(dihedral) for dihedral in self.directed_dihedrals]
-            logger.info(f'Running job {self.job_name} for {self.species_name} (pivots: {self.directed_scans}, '
+            logger.info(f'Running job {self.job_name} for {self.species_label} (pivots: {self.directed_scans}, '
                         f'dihedrals: {dihedrals})')
         elif self.pivots:
-            logger.info(f'Running job {self.job_name} for {self.species_name} (pivots: {self.pivots})')
+            logger.info(f'Running job {self.job_name} for {self.species_label} (pivots: {self.pivots})')
         else:
-            logger.info(f'Running job {self.job_name} for {self.species_name}')
+            logger.info(f'Running job {self.job_name} for {self.species_label}')
         logger.debug('writing submit script...')
         self.write_submit_script()
         logger.debug('writing input file...')
@@ -1304,160 +1068,6 @@ end
         else:
             # running locally
             self.job_status[0], self.job_id = submit_job(path=self.local_path)
-
-    def delete(self):
-        """
-        Delete a running Job.
-        """
-        logger.debug('Deleting job {name} for {label}'.format(name=self.job_name, label=self.species_name))
-        if self.server != 'local':
-            logger.debug(f'deleting job on {self.server}...')
-            with SSHClient(self.server) as ssh:
-                ssh.delete_job(self.job_id)
-        else:
-            logger.debug('deleting job locally...')
-            delete_job(job_id=self.job_id)
-
-    def determine_job_status(self):
-        """
-        Determine the Job's status. Updates self.job_status.
-
-        Raises:
-            IOError: If the output file and any additional server information cannot be found.
-        """
-        if self.job_status[0] == 'errored':
-            return
-        self.job_status[0] = self._check_job_server_status()
-        if self.job_status[0] == 'done':
-            try:
-                self._check_job_ess_status()  # populates self.job_status[1], and downloads the output file
-            except IOError:
-                logger.error('Got an IOError when trying to download output file for job {0}.'.format(self.job_name))
-                content = self._get_additional_job_info()
-                if content:
-                    logger.info('Got the following information from the server:')
-                    logger.info(content)
-                    for line in content.splitlines():
-                        # example:
-                        # slurmstepd: *** JOB 7752164 CANCELLED AT 2019-03-27T00:30:50 DUE TO TIME LIMIT on node096 ***
-                        if 'cancelled' in line.lower() and 'due to time limit' in line.lower():
-                            logger.warning('Looks like the job was cancelled on {0} due to time limit. '
-                                           'Got: {1}'.format(self.server, line))
-                            new_max_job_time = self.max_job_time - 24 if self.max_job_time > 25 else 1
-                            logger.warning('Setting max job time to {0} (was {1})'.format(new_max_job_time,
-                                                                                          self.max_job_time))
-                            self.max_job_time = new_max_job_time
-                            self.job_status[1]['status'] = 'errored'
-                            self.job_status[1]['keywords'] = ['ServerTimeLimit']
-                            self.job_status[1]['error'] = 'Job cancelled by the server since it reached the maximal ' \
-                                                          'time limit.'
-                            self.job_status[1]['line'] = ''
-                raise
-        elif self.job_status[0] == 'running':
-            self.job_status[1]['status'] = 'running'
-
-    def _get_additional_job_info(self):
-        """
-        Download the additional information of stdout and stderr from the server.
-        """
-        lines1, lines2 = list(), list()
-        content = ''
-        cluster_soft = servers[self.server]['cluster_soft'].lower()
-        if cluster_soft in ['oge', 'sge']:
-            local_file_path1 = os.path.join(self.local_path, 'out.txt')
-            local_file_path2 = os.path.join(self.local_path, 'err.txt')
-            if self.server != 'local':
-                remote_file_path = os.path.join(self.remote_path, 'out.txt')
-                with SSHClient(self.server) as ssh:
-                    try:
-                        ssh.download_file(remote_file_path=remote_file_path, 
-                                          local_file_path=local_file_path1)
-                    except (TypeError, IOError) as e:
-                        logger.warning(f'Got the following error when trying to download out.txt for {self.job_name}:')
-                        logger.warning(e)
-                    remote_file_path = os.path.join(self.remote_path, 'err.txt')
-                    try:
-                        ssh.download_file(remote_file_path=remote_file_path, local_file_path=local_file_path2)
-                    except (TypeError, IOError) as e:
-                        logger.warning(f'Got the following error when trying to download err.txt for {self.job_name}:')
-                        logger.warning(e)
-            if os.path.isfile(local_file_path1):
-                with open(local_file_path1, 'r') as f:
-                    lines1 = f.readlines()
-            if os.path.isfile(local_file_path2):
-                with open(local_file_path2, 'r') as f:
-                    lines2 = f.readlines()
-            content += ''.join([line for line in lines1])
-            content += '\n'
-            content += ''.join([line for line in lines2])
-        elif cluster_soft == 'slurm':
-            if self.server != 'local':
-                with SSHClient(self.server) as ssh:
-                    response = ssh.list_dir(remote_path=self.remote_path)
-            else:
-                response = execute_command('ls -alF {0}'.format(self.local_path))
-            files = list()
-            for line in response[0]:
-                files.append(line.split()[-1])
-            for file_name in files:
-                if 'slurm' in file_name and '.out' in file_name:
-                    local_file_path = os.path.join(self.local_path, file_name)
-                    if self.server != 'local':
-                        remote_file_path = os.path.join(self.remote_path, file_name)
-                        try:
-                            with SSHClient(self.server) as ssh:
-                                ssh.download_file(remote_file_path=remote_file_path, 
-                                                  local_file_path=local_file_path)
-                        except (TypeError, IOError) as e:
-                            logger.warning(f'Got the following error when trying to download {file_name} '
-                                           f'for {self.job_name}: {e}')
-                    if os.path.isfile(local_file_path):
-                        with open(local_file_path, 'r') as f:
-                            lines1 = f.readlines()
-                    content += ''.join([line for line in lines1])
-                    content += '\n'
-        return content
-
-    def _check_job_server_status(self):
-        """
-        Possible statuses: `initializing`, `running`, `errored on node xx`, `done`.
-        """
-        if self.server != 'local':
-            with SSHClient(self.server) as ssh:
-                return ssh.check_job_status(self.job_id)
-        else:
-            return check_job_status(self.job_id)
-
-    def _check_job_ess_status(self):
-        """
-        Check the status of the job ran by the electronic structure software (ESS).
-        Possible statuses: `initializing`, `running`, `errored: {error type / message}`, `unconverged`, `done`.
-        """
-        if self.server != 'local':
-            if os.path.exists(self.local_path_to_output_file):
-                os.remove(self.local_path_to_output_file)
-            if os.path.exists(self.local_path_to_orbitals_file):
-                os.remove(self.local_path_to_orbitals_file)
-            if os.path.exists(self.local_path_to_check_file):
-                os.remove(self.local_path_to_check_file)
-            self._download_output_file()  # also downloads the check file and orbital file if exist
-        else:
-            # If running locally, just rename the output file to "output.out" for consistency between software
-            if self.final_time is None:
-                self.final_time = get_last_modified_time(
-                    file_path=os.path.join(self.local_path, output_filename[self.software]))
-            rename_output(local_file_path=self.local_path_to_output_file, software=self.software)
-            xyz_path = os.path.join(self.local_path, 'scr', 'optim.xyz')
-            if os.path.isfile(xyz_path):
-                self.local_path_to_xyz = xyz_path
-        self.determine_run_time()
-        status, keywords, error, line = determine_ess_status(output_path=self.local_path_to_output_file,
-                                                             species_label=self.species_name, job_type=self.job_type,
-                                                             software=self.software)
-        self.job_status[1]['status'] = status
-        self.job_status[1]['keywords'] = keywords
-        self.job_status[1]['error'] = error
-        self.job_status[1]['line'] = line.rstrip()
 
     def troubleshoot_server(self):
         """
@@ -1472,145 +1082,7 @@ end
             # resubmit job
             self.run()
 
-    def determine_run_time(self):
-        """
-        Determine the run time. Update self.run_time and round to seconds.
-        """
-        if self.initial_time is not None and self.final_time is not None:
-            time_delta = self.final_time - self.initial_time
-            remainder = time_delta.microseconds > 5e5
-            self.run_time = datetime.timedelta(seconds=time_delta.seconds + remainder)
-        else:
-            self.run_time = None
-
-    def set_cpu_and_mem(self):
-        """
-        Set the amount of cpus and memory based on ESS and cluster software.
-        """
-        max_cpu = servers[self.server].get('cpus', None)  # max cpus per node on server
-        # set to 8 if user did not specify cpu in settings and in ARC input file
-        job_cpu_cores = default_job_settings.get('job_cpu_cores', 8)
-        if max_cpu is not None and job_cpu_cores > max_cpu:
-            job_cpu_cores = max_cpu
-        if self.cpu_cores is None:
-            self.cpu_cores = job_cpu_cores
-
-        max_mem = servers[self.server].get('memory', None)  # max memory per node in GB
-        job_max_server_node_memory_allocation = default_job_settings.get('job_max_server_node_memory_allocation', 0.8)
-        if max_mem is not None and self.total_job_memory_gb > max_mem * job_max_server_node_memory_allocation:
-            logger.warning(f'The memory for job {self.job_name} using {self.software} ({self.total_job_memory_gb} GB) '
-                           f'exceeds {100 * job_max_server_node_memory_allocation}% of the the maximum node memory on '
-                           f'{self.server}. Setting it to {job_max_server_node_memory_allocation * max_mem:.2f} GB.')
-            self.total_job_memory_gb = job_max_server_node_memory_allocation * max_mem
-            total_submit_script_memory = self.total_job_memory_gb * 1024 * 1.05  # MB
-            self.job_status[1]['keywords'].append('max_total_job_memory')  # useful info when trouble shoot
-        else:
-            total_submit_script_memory = self.total_job_memory_gb * 1024 * 1.1  # MB
-
-        # determine amount of memory in submit script based on cluster job scheduling system
-        cluster_software = servers[self.server].get('cluster_soft').lower()
-        if cluster_software in ['oge', 'sge']:
-            # In SGE, `-l h_vmem=5000M` specify the amount of maximum memory required per cpu (all cores) to be 5000 MB.
-            self.submit_script_memory = math.ceil(total_submit_script_memory)  # MB
-        elif cluster_software in ['slurm']:
-            # In Slurm, `#SBATCH --mem-per-cpu={2000}` specify the amount of memory required per cpu core to be 2000 MB.
-            self.submit_script_memory = math.ceil(total_submit_script_memory / self.cpu_cores)  # MB
-
-        # determine amount of memory in job input file based on ESS
-        if self.software.lower() in ['molpro', 'terachem']:
-            # Molpro's and TeraChem's memory is per cpu core and in MW (mega word; 1 MW ~= 8 MB; 1 GB = 128 MW)
-            self.input_file_memory = math.ceil(self.total_job_memory_gb * 128 / self.cpu_cores)
-        elif self.software.lower() in ['gaussian']:
-            # Gaussian's memory is in MB, total for all cpu cores
-            self.input_file_memory = math.ceil(self.total_job_memory_gb * 1024)
-        elif self.software.lower() in ['orca']:
-            # Orca's memory is per cpu core and in MB
-            self.input_file_memory = math.ceil(self.total_job_memory_gb * 1024 / self.cpu_cores)
-        elif self.software.lower() in ['qchem', 'gromacs']:
-            # QChem manages its memory automatically, for now ARC will not intervene
-            # see http://www.q-chem.com/qchem-website/manual/qchem44_manual/CCparallel.html
-            # Also not managing memory for Gromacs
-            self.input_file_memory = math.ceil(self.total_job_memory_gb)
-
-    def set_file_paths(self):
-        """
-        Set local and remote job file paths.
-        """
-        folder_name = 'TSs' if self.is_ts else 'Species'
-        if self.conformer < 0:
-            self.local_path = os.path.join(self.project_directory, 'calcs', folder_name,
-                                           self.species_name, self.job_name)
-        else:
-            self.local_path = os.path.join(self.project_directory, 'calcs', folder_name,
-                                           self.species_name, 'conformers', self.job_name)
-        self.local_path_to_output_file = os.path.join(self.local_path, 'output.out')
-        self.local_path_to_orbitals_file = os.path.join(self.local_path, 'orbitals.fchk')
-        self.local_path_to_lj_file = os.path.join(self.local_path, 'lj.dat')
-        self.local_path_to_check_file = os.path.join(self.local_path, 'check.chk')
-        self.local_path_to_hess_file = os.path.join(self.local_path, 'input.hess')
-        self.local_path_to_xyz = None
-
-        # parentheses don't play well in folder names:
-        species_name_for_remote_path = self.species_name.replace('(', '_').replace(')', '_')
-        if self.conformer < 0:
-            self.remote_path = os.path.join('runs', 'ARC_Projects', self.project,
-                                            species_name_for_remote_path, self.job_name)
-        else:
-            self.remote_path = os.path.join('runs', 'ARC_Projects', self.project,
-                                            species_name_for_remote_path, 'conformers', self.job_name)
-
-        self.additional_files_to_upload = list()
-        # self.additional_files_to_upload is a list of dictionaries, each with the following keys:
-        # 'name', 'source', 'local', and 'remote'.
-        # If 'source' = 'path', then the value in 'local' is treated as a file path.
-        # If 'source' = 'input_files', then the value in 'local' will be taken from the respective entry in inputs.py
-        # If 'make_x' is True, the file will be made executable.
-        if self.job_type == 'onedmin':
-            if self.testing and not os.path.isdir(self.local_path):
-                os.makedirs(self.local_path)
-            with open(os.path.join(self.local_path, 'geo.xyz'), 'w') as f:
-                f.write(xyz_to_str(self.xyz))
-            self.additional_files_to_upload.append({'name': 'geo', 'source': 'path', 'make_x': False,
-                                                    'local': os.path.join(self.local_path, 'geo.xyz'),
-                                                    'remote': os.path.join(self.remote_path, 'geo.xyz')})
-            # make the m.x file executable
-            self.additional_files_to_upload.append({'name': 'm.x', 'source': 'input_files', 'make_x': True,
-                                                    'local': 'onedmin.molpro.x',
-                                                    'remote': os.path.join(self.remote_path, 'm.x')})
-            self.additional_files_to_upload.append({'name': 'qc.mol', 'source': 'input_files', 'make_x': False,
-                                                    'local': 'onedmin.qc.mol',
-                                                    'remote': os.path.join(self.remote_path, 'qc.mol')})
-        if self.job_type == 'gromacs':
-            self.additional_files_to_upload.append({'name': 'gaussian.out', 'source': 'path', 'make_x': False,
-                                                    'local': os.path.join(self.project_directory, 'calcs', 'Species',
-                                                                          self.species_name, 'ff_param_fit',
-                                                                          'gaussian.out'),
-                                                    'remote': os.path.join(self.remote_path, 'gaussian.out')})
-            self.additional_files_to_upload.append({'name': 'coords.yml', 'source': 'path', 'make_x': False,
-                                                    'local': self.conformers,
-                                                    'remote': os.path.join(self.remote_path, 'coords.yml')})
-            self.additional_files_to_upload.append({'name': 'acpype.py', 'source': 'path', 'make_x': False,
-                                                    'local': os.path.join(arc_path, 'arc', 'scripts', 'conformers',
-                                                                          'acpype.py'),
-                                                    'remote': os.path.join(self.remote_path, 'acpype.py')})
-            self.additional_files_to_upload.append({'name': 'mdconf.py', 'source': 'path', 'make_x': False,
-                                                    'local': os.path.join(arc_path, 'arc', 'scripts', 'conformers',
-                                                                          'mdconf.py'),
-                                                    'remote': os.path.join(self.remote_path, 'mdconf.py')})
-            self.additional_files_to_upload.append({'name': 'M00.tleap', 'source': 'path', 'make_x': False,
-                                                    'local': os.path.join(arc_path, 'arc', 'scripts', 'conformers',
-                                                                          'M00.tleap'),
-                                                    'remote': os.path.join(self.remote_path, 'M00.tleap')})
-            self.additional_files_to_upload.append({'name': 'mdp.mdp', 'source': 'path', 'make_x': False,
-                                                    'local': os.path.join(arc_path, 'arc', 'scripts', 'conformers',
-                                                                          'mdp.mdp'),
-                                                    'remote': os.path.join(self.remote_path, 'mdp.mdp')})
-            if self.software == 'terachem':
-                self.additional_files_to_upload.append({'name': 'geo', 'source': 'path', 'make_x': False,
-                                                        'local': os.path.join(self.local_path, 'coord.xyz'),
-                                                        'remote': os.path.join(self.remote_path, 'coord.xyz')})
-
-    def deduce_software(self):
+    def deduce_software(self):  ## Todo: relocate to where the JobAdapter needs to be determined
         """
         Deduce the software to be used.
 
@@ -1643,29 +1115,3 @@ end
             elif 'terachem' in available_ess:
                 logger.error('Setting it to TeraChem')
                 self.level.software = 'terachem'
-
-    def add_to_args(self,
-                    val: str,
-                    key1: str = 'keyword',
-                    key2: str = 'general',
-                    separator: Optional[str] = None,
-                    check_val: bool = True,
-                    ):
-        """
-        Add arguments to self.args in a nested dictionary under self.args[key1][key2].
-
-        Args:
-            val (str): The value to add.
-            key1 (str, optional): Key1.
-            key2 (str, optional): Key2.
-            separator (str, optional): A separator (e.g., ``' '``  or ``'\\n'``)
-                                       to apply between existing values and new values.
-            check_val (bool, optional): Only append ``val`` if it doesn't exist in the dictionary.
-        """
-        if separator is None:
-            separator = '\n\n' if key1 == 'block' else ' '
-        if key1 not in list(self.args.keys()):
-            self.args[key1] = dict()
-        if not check_val or not (key2 in self.args[key1] and val in self.args[key1][key2]):
-            separator = separator if key2 in list(self.args[key1].keys()) else ''
-            self.args[key1][key2] = separator + val

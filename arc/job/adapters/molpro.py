@@ -1,5 +1,5 @@
 """
-An adapter for executing Gaussian jobs
+An adapter for executing molpro jobs
 """
 
 import datetime
@@ -35,33 +35,35 @@ if TYPE_CHECKING:
 
 logger = get_logger()
 
+input_template = """***,${label}
+memory,${memory},m;
+geometry={angstrom;
+${xyz}}
 
-# job_type_1: '' for sp, irc, or composite methods, 'opt=calcfc', 'opt=(calcfc,ts,noeigen)',
-# job_type_2: '' or 'freq iop(7/33=1)' (cannot be combined with CBS-QB3)
-#             'scf=(tight,direct) int=finegrid irc=(rcfc,forward,maxpoints=100,stepsize=10) geom=check' for irc f
-#             'scf=(tight,direct) int=finegrid irc=(rcfc,reverse,maxpoints=100,stepsize=10) geom=check' for irc r
-# scan: '\nD 3 1 5 8 S 36 10.000000' (with the line break)
-# restricted: '' or 'u' for restricted / unrestricted
-# `iop(2/9=2000)` makes Gaussian print the geometry in the input orientation even for molecules with more
-#   than 50 atoms (important so it matches the hessian, and so that Arkane can parse the geometry)
-input_template = """${checkfile}
-%%mem=${memory}mb
-%%NProcShared=${cpus}
+${orbitals}
 
-#P ${job_type_1} ${restricted}${method}${slash_1}${basis}${slash_2}${auxiliary_basis} ${job_type_2} ${fine} IOp(2/9=2000) ${keywords} ${dispersion}
+basis=${basis}
 
-${label}
+${keywords}
+${auxiliary_basis}
+${cabs}
+int;
+{hf;${shift}
+maxit,1000;
+wf,spin={spin},charge=${charge};}
 
-${charge} ${multiplicity}
-${xyz}${scan}${scan_trsh}${block}
+${restricted}${method};
 
+${job_type_1}
+${job_type_2}${block}
+---;
 
 """
 
 
-class GaussianAdapter(JobAdapter):
+class MolproAdapter(JobAdapter):
     """
-    A class for executing Gaussian jobs.
+    A class for executing Molpro jobs.
 
     Args:
         execution_type (str): The execution type, validated against ``JobExecutionTypeEnum``.
@@ -130,7 +132,7 @@ class GaussianAdapter(JobAdapter):
                  testing: bool = False,
                  ):
 
-        self.job_adapter = 'gaussian'
+        self.job_adapter = 'molpro'
 
         self.execution_type = execution_type
         self.job_types = job_type if isinstance(job_type, list) else [job_type]  # always a list
@@ -164,7 +166,7 @@ class GaussianAdapter(JobAdapter):
         self.testing = testing
 
         if self.species is None:
-            raise ValueError('Cannot execute Gaussian without an ARCSpecies object.')
+            raise ValueError('Cannot execute Molpro without an ARCSpecies object.')
 
         # Ignore user-specified additional job arguments when troubleshoot.
         if self.args and any(val for val in self.args.values()) and self.level.args:
@@ -181,9 +183,8 @@ class GaussianAdapter(JobAdapter):
             self._set_job_number()
             self.job_name = f'{self.job_type}_a{self.job_num}'
 
-        if self.job_type == 'irc' and (self.irc_direction is None or self.irc_direction not in ['forward', 'reverse']):
-            raise ValueError(f'Missing the irc_direction argument for job type irc. '
-                             f'It must be either "forward" or "reverse".\nGot: {self.irc_direction}')
+        if self.job_type == 'irc':
+            raise NotImplementedError(f'IRC is not implemented in the Molpro job adapter')
 
         self.final_time = None
         self.charge = self.species[0].charge
@@ -191,12 +192,12 @@ class GaussianAdapter(JobAdapter):
         self.is_ts = self.species[0].is_ts
         self.run_time = None
         self.scan_res = self.args['trsh']['scan_res'] if 'scan_res' in self.args['trsh'] else rotor_scan_resolution
-        if self.job_type == 'scan' and divmod(360, self.scan_res)[1]:
-            raise JobError(f'Scan job got an illegal rotor scan resolution of {self.scan_res}.')
+        if self.job_type == 'scan' \
+                and any(species.rotors_dict['directed_scan_type'] == 'ess' for species in self.species):
+            raise NotImplementedError(f'The Molpro job adapter does not support ESS scans.')
         self.server = self.args['trsh']['server'] if 'server' in self.args['trsh'] \
             else self.ess_settings[self.job_adapter][0] if isinstance(self.ess_settings[self.job_adapter], list) \
             else self.ess_settings[self.job_adapter]
-        # self.species_label = self.species.label if self.species is not None else self.reaction.ts_label
         self.species_label = self.species[0].label
 
         self.cpu_cores, self.input_file_memory, self.submit_script_memory = None, None, None
@@ -210,9 +211,6 @@ class GaussianAdapter(JobAdapter):
         self.set_file_paths()  # Set file paths.
         self.set_files()  # Set the actual files (and write them if relevant).
 
-        if self.checkfile is None and os.path.isfile(os.path.join(self.local_path, 'check.chk')):
-            self.checkfile = os.path.join(self.local_path, 'check.chk')
-
         if job_num is None:
             # This checks job_num and not self.job_num on purpose.
             # If job_num was given, then don't save as initiated jobs, this is a restarted job.
@@ -224,27 +222,24 @@ class GaussianAdapter(JobAdapter):
         """
         input_dict = dict()
         for key in ['block',
-                    'dispersion',
-                    'fine',
                     'job_type_1',
                     'job_type_2',
                     'keywords',
+                    'memory',
+                    'method',
+                    'orbitals',
                     'restricted',
-                    'scan',
-                    'slash_1',
-                    'slash_2',
                     ]:
             input_dict[key] = ''
         input_dict['auxiliary_basis'] = self.level.auxiliary_basis or ''
-        input_dict['basis'] = self.level.basis or ''
+        input_dict['basis'] = 'cc-pVDZ' if 'vdz' in self.args['trsh'] else self.level.basis or ''  # includes vdz trsh
+        input_dict['cabs'] = self.level.cabs or ''
         input_dict['charge'] = self.charge
-        input_dict['checkfile'] = '%chk=check.chk'
-        input_dict['cpus'] = self.cpu_cores
         input_dict['label'] = self.species_label
         input_dict['memory'] = self.input_file_memory
         input_dict['method'] = self.level.method
-        input_dict['multiplicity'] = self.multiplicity
-        input_dict['scan_trsh'] = self.args['trsh']['scan_trsh'] if 'scan_trsh' in self.args['trsh'] else ''
+        input_dict['shift'] = self.args['trsh']['shift'] if 'shift' in self.args['trsh'] else ''
+        input_dict['spin'] = self.multiplicity - 1
         input_dict['xyz'] = xyz_to_str(self.species[0].get_xyz())
 
         for arg_type, arg_dict in self.args.items():
@@ -256,16 +251,8 @@ class GaussianAdapter(JobAdapter):
                 for key, keyword in arg_dict.items():
                     input_dict['keywords'] += f'{keyword} '
 
-        if self.level.basis is not None:
-            input_dict['slash_1'] = '/'
-            if self.level.auxiliary_basis is not None:
-                input_dict['slash_2'] = '/'
-
-        if self.level.method_type in ['semiempirical', 'force_field']:
-            self.checkfile = None
-
         # Determine HF/DFT restriction type
-        if (self.multiplicity > 1 and self.level.method_type != 'composite') \
+        if self.multiplicity > 1 \
                 or (self.species[0].number_of_radicals is not None and self.species[0].number_of_radicals > 1):
             # run an unrestricted electronic structure calculation if the spin multiplicity is greater than one,
             # or if it is one but the number of radicals is greater than one (e.g., bi-rad singlet)
@@ -276,75 +263,45 @@ class GaussianAdapter(JobAdapter):
                             f'{self.species[0].number_of_radicals} radicals and multiplicity {self.multiplicity}.')
             input_dict['restricted'] = 'u'
 
-        if self.level.dispersion is not None:
-            input_dict['dispersion'] = self.level.dispersion
-
-        if self.level.method[:2] == 'ro':
-            self.add_to_args(val='use=L506')
-        else:
-            # xqc will do qc (quadratic convergence) if the job fails w/o it, so use by default
-            self.add_to_args(val='scf=xqc')
-
-        if self.level.method == 'cbs-qb3-paraskevas':
-            # convert cbs-qb3-paraskevas to cbs-qb3
-            self.level.method = 'cbs-qb3'
-
         # Job type specific options
-        if self.job_type in ['opt', 'conformers', 'optfreq', 'composite']:
-            keywords = ['ts', 'calcfc', 'noeigentest', 'maxcycles=100'] if self.is_ts else ['calcfc']
-            if self.level.method in ['rocbs-qb3']:
-                # There're no analytical 2nd derivatives (FC) for this method.
-                keywords = ['ts', 'noeigentest', 'maxcycles=100'] if self.is_ts else []
-            if self.fine:
-                if self.level.method_type in ['dft', 'composite']:
-                    # Note that the Acc2E argument is not available in Gaussian03
-                    input_dict['fine'] = 'scf=(tight, direct) integral=(grid=ultrafine, Acc2E=12)'
-                if self.is_ts:
-                    keywords.extend(['tight', 'maxstep=5'])
-                else:
-                    keywords.extend(['tight', 'maxstep=5'])
-            input_dict['job_type_1'] = f"opt=({', '.join(key for key in keywords)})"
+        if self.job_type in ['opt', 'optfreq', 'conformers']:
+            keywords = ['optg,', 'root=2,', 'method=qsd,', 'readhess,' "savexyz='geometry.xyz'"] if self.is_ts \
+                else ['optg,', "savexyz='geometry.xyz'"]
+            input_dict['job_type_1'] = ', '.join(key for key in keywords)
 
-        elif self.job_type == 'freq':
-            input_dict['job_type_2'] = 'freq IOp(7/33=1) scf=(tight, direct) integral=(grid=ultrafine, Acc2E=12)'
-
-        elif self.job_type == 'optfreq':
-            input_dict['job_type_2'] = 'freq IOp(7/33=1)'
+        elif self.job_type in ['freq', 'optfreq']:
+            input_dict['job_type_2'] = '{frequencies;\nthermo;\nprint,HESSIAN,thermo;}'
 
         elif self.job_type == 'sp':
-            input_dict['job_type_1'] = 'scf=(tight, direct) integral=(grid=ultrafine, Acc2E=12)'
+            pass
 
-        elif self.job_type == 'scan' and self.species[0].rotors_dict[self.rotor_index]['directed_scan_type'] == 'ess':
-            scans = list()
-            for scan_indices in self.species[0].rotors_dict[self.rotor_index]['scan']:
-                scans.append(' '.join([str(atom_index) for atom_index in scan_indices]))
-            ts = 'ts, ' if self.is_ts else ''
-            input_dict['job_type_1'] = f'opt=({ts}modredundant, calcfc, noeigentest, maxStep=5) scf=(tight, direct) ' \
-                                       f'integral=(grid=ultrafine, Acc2E=12)'
-            input_dict['scan'] = '\n\n' if not input_dict['scan'] else input_dict['scan']
-            for scan in scans:
-                input_dict['scan'] += f'D {scan} S {int(360 / self.scan_res)} {self.scan_res:.1f}\n'
-
-        elif self.job_type == 'irc':
-            if self.fine:
-                # Note that the Acc2E argument is not available in Gaussian03
-                input_dict['fine'] = 'scf=(direct) integral=(grid=ultrafine, Acc2E=12)'
-            input_dict['job_type_1'] = f'irc=(CalcAll, {self.irc_direction}, maxpoints=50, stepsize=7)'
-
-        for constraint_tuple in self.constraints:
-            constraint_type = constraint_type_dict[len(constraint_tuple[0])]
-            constraint_atom_indices = ' '.join([str(atom_index) for atom_index in constraint_tuple[0]])
-            input_dict['scan'] = '\n\n' if not input_dict['scan'] else input_dict['scan']
-            input_dict['scan'] += f"{constraint_type} {constraint_atom_indices} ={constraint_tuple[1]:.2f} B\n" \
-                                  f"{constraint_type} {constraint_atom_indices} F"
-
-        if self.level.solvation_method is not None:
-            input_dict['job_type_1'] += f' SCRF=({self.level.solvation_method}, Solvent={self.level.solvent})'
-
-        input_dict['job_type_1'] += ' guess=read' if self.checkfile is not None else ' guess=mix'
+        if 'mrci' is self.level.method:
+            if self.species[0].occ > 16:
+                raise JobError(f'Will not execute an MRCI calculation with more than 16 occupied orbitals '
+                               f'(got {self.species[0].occ}).\n'
+                               f'Selective occ, closed, core, frozen keyword still not implemented.')
+            input_dict['orbitals'] = 'gprint,orbitals;'
+            input_dict['block'] += '\n\nE_mrci=energy;\nE_mrci_Davidson=energd;\n\ntable,E_mrci,E_mrci_Davidson;'
+            input_dict['method'] = input_dict['rerstricted'] = ''
+            input_dict['shift'] = 'shift,-1.0,-0.5;'
+            input_dict['job_type_1'] = f"""{{multi;
+{self.species[0].occ}noextra,failsafe,config,csf;
+wf,spin={input_dict['spin']},charge={input_dict['charge']};
+natorb,print,ci;}}"""
+            input_dict['job_type_2'] = f"""{{mrci;
+${self.species[0].occ}wf,spin=${input_dict['spin']},charge=${input_dict['charge']};}}"""
 
         with open(os.path.join(self.local_path, input_filenames[self.job_adapter]), 'w') as f:
             f.write(Template(input_template).render(**input_dict))
+
+
+
+
+
+
+
+
+
 
     def set_files(self) -> None:
         """
@@ -443,4 +400,4 @@ class GaussianAdapter(JobAdapter):
         return None
 
 
-register_job_adapter('gaussian', GaussianAdapter)
+register_job_adapter('molpro', MolproAdapter)

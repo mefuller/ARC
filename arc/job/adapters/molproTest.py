@@ -2,7 +2,7 @@
 # encoding: utf-8
 
 """
-This module contains unit tests of the arc.job.adapters.gaussian module
+This module contains unit tests of the arc.job.adapters.molpro module
 """
 
 import math

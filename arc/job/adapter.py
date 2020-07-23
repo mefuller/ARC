@@ -121,7 +121,7 @@ class JobAdapter(ABC):
         """
 
     @abstractmethod
-    def set_up_files(self) -> None:
+    def set_files(self) -> None:
         """
         Set files to be uploaded and downloaded. Writes the files if needed.
         Modifies the self.files_to_upload and self.files_to_download attributes.
