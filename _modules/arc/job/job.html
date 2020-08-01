@@ -1328,7 +1328,10 @@
                     <span class="k">if</span> <span class="n">up_file</span><span class="p">[</span><span class="s1">&#39;source&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;path&#39;</span><span class="p">:</span>
                         <span class="n">source_path</span> <span class="o">=</span> <span class="n">up_file</span><span class="p">[</span><span class="s1">&#39;local&#39;</span><span class="p">]</span>
                         <span class="n">destination_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">local_path</span><span class="p">,</span> <span class="n">up_file</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">])</span>
-                        <span class="n">shutil</span><span class="o">.</span><span class="n">copyfile</span><span class="p">(</span><span class="n">source_path</span><span class="p">,</span> <span class="n">destination_path</span><span class="p">)</span>
+                        <span class="k">try</span><span class="p">:</span>
+                            <span class="n">shutil</span><span class="o">.</span><span class="n">copyfile</span><span class="p">(</span><span class="n">source_path</span><span class="p">,</span> <span class="n">destination_path</span><span class="p">)</span>
+                        <span class="k">except</span> <span class="n">shutil</span><span class="o">.</span><span class="n">SameFileError</span><span class="p">:</span>
+                            <span class="k">pass</span>
                     <span class="k">elif</span> <span class="n">up_file</span><span class="p">[</span><span class="s1">&#39;source&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;input_files&#39;</span><span class="p">:</span>
                         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">local_path</span><span class="p">,</span> <span class="n">up_file</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]),</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
                             <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">input_files</span><span class="p">[</span><span class="n">up_file</span><span class="p">[</span><span class="s1">&#39;local&#39;</span><span class="p">]])</span>
@@ -1372,7 +1375,10 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># running locally, just copy the check file to the job folder</span>
             <span class="n">new_check_file_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">local_path</span><span class="p">,</span> <span class="s1">&#39;check.chk&#39;</span><span class="p">)</span>
-            <span class="n">shutil</span><span class="o">.</span><span class="n">copyfile</span><span class="p">(</span><span class="n">local_check_file_path</span><span class="p">,</span> <span class="n">new_check_file_path</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">shutil</span><span class="o">.</span><span class="n">copyfile</span><span class="p">(</span><span class="n">local_check_file_path</span><span class="p">,</span> <span class="n">new_check_file_path</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">shutil</span><span class="o">.</span><span class="n">SameFileError</span><span class="p">:</span>
+                <span class="k">pass</span>
 
     <span class="k">def</span> <span class="nf">_download_output_file</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>

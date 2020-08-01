@@ -621,7 +621,7 @@
                          <span class="s1">&#39;cannot troubleshoot geometry using dihedral modifications.&#39;</span><span class="p">)</span>
             <span class="n">output_warnings</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;rotors = False; &#39;</span><span class="p">)</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;Invalidating species.&#39;</span><span class="p">)</span>
-        <span class="n">output_errors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;Error: Encountered negative frequencies too many times; &#39;</span><span class="p">)</span>
+        <span class="n">output_errors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;Error: Encountered negative frequencies too many times; Invalidating species; &#39;</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">neg_freqs_idx</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>  <span class="c1"># store indices w.r.t. vibfreqs</span>
         <span class="n">largest_neg_freq_idx</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># index in vibfreqs</span>

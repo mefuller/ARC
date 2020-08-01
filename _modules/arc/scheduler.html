@@ -250,7 +250,7 @@
 <span class="sd">                                     },</span>
 <span class="sd">                            &#39;conformers&#39;: &lt;comments&gt;,</span>
 <span class="sd">                            &#39;isomorphism&#39;: &lt;comments&gt;,</span>
-<span class="sd">                            &#39;convergence&#39;: &lt;status&gt;,  # boolean</span>
+<span class="sd">                            &#39;convergence&#39;: &lt;status&gt;,  # Optional[bool]</span>
 <span class="sd">                            &#39;restart&#39;: &lt;comments&gt;,</span>
 <span class="sd">                            &#39;info&#39;: &lt;comments&gt;,</span>
 <span class="sd">                            &#39;warnings&#39;: &lt;comments&gt;,</span>
@@ -630,6 +630,9 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">timer</span> <span class="o">=</span> <span class="kc">True</span>
             <span class="n">job_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
             <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">unique_species_labels</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">output</span><span class="p">[</span><span class="n">label</span><span class="p">][</span><span class="s1">&#39;convergence&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+                    <span class="c1"># skip unconverged species</span>
+                    <span class="k">continue</span>
                 <span class="c1"># look for completed jobs and decide what jobs to run next</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">get_servers_jobs_ids</span><span class="p">()</span>  <span class="c1"># updates `self.servers_jobs_ids`</span>
                 <span class="k">try</span><span class="p">:</span>
@@ -2881,6 +2884,10 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">species_dict</span><span class="p">[</span><span class="n">label</span><span class="p">]</span><span class="o">.</span><span class="n">neg_freqs_trshed</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">current_neg_freqs_trshed</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">output_error</span> <span class="ow">in</span> <span class="n">output_errors</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">output</span><span class="p">[</span><span class="n">label</span><span class="p">][</span><span class="s1">&#39;errors&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">output_error</span>
+            <span class="k">if</span> <span class="s1">&#39;Invalidating species&#39;</span> <span class="ow">in</span> <span class="n">output_error</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Deleting all currently running jobs for species </span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s1">...&#39;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">delete_all_species_jobs</span><span class="p">(</span><span class="n">label</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">output</span><span class="p">[</span><span class="n">label</span><span class="p">][</span><span class="s1">&#39;convergence&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="k">for</span> <span class="n">output_warning</span> <span class="ow">in</span> <span class="n">output_warnings</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">output</span><span class="p">[</span><span class="n">label</span><span class="p">][</span><span class="s1">&#39;warnings&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">output_warning</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">confs</span><span class="p">):</span>
@@ -3357,7 +3364,7 @@
                     <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
                         <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">output</span><span class="p">[</span><span class="n">species</span><span class="o">.</span><span class="n">label</span><span class="p">]:</span>
                             <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="s1">&#39;convergence&#39;</span><span class="p">:</span>
-                                <span class="bp">self</span><span class="o">.</span><span class="n">output</span><span class="p">[</span><span class="n">species</span><span class="o">.</span><span class="n">label</span><span class="p">][</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">output</span><span class="p">[</span><span class="n">species</span><span class="o">.</span><span class="n">label</span><span class="p">][</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
                             <span class="k">else</span><span class="p">:</span>
                                 <span class="bp">self</span><span class="o">.</span><span class="n">output</span><span class="p">[</span><span class="n">species</span><span class="o">.</span><span class="n">label</span><span class="p">][</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span></div>
 
