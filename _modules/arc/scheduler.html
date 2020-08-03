@@ -632,6 +632,8 @@
             <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">unique_species_labels</span><span class="p">:</span>
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">output</span><span class="p">[</span><span class="n">label</span><span class="p">][</span><span class="s1">&#39;convergence&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
                     <span class="c1"># skip unconverged species</span>
+                    <span class="k">if</span> <span class="n">label</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">running_jobs</span><span class="p">:</span>
+                        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">running_jobs</span><span class="p">[</span><span class="n">label</span><span class="p">]</span>
                     <span class="k">continue</span>
                 <span class="c1"># look for completed jobs and decide what jobs to run next</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">get_servers_jobs_ids</span><span class="p">()</span>  <span class="c1"># updates `self.servers_jobs_ids`</span>
@@ -1779,7 +1781,7 @@
 <span class="sd">                              &#39;top&#39;: ``list``,</span>
 <span class="sd">                              &#39;scan&#39;: ``list``,</span>
 <span class="sd">                              &#39;number_of_running_jobs&#39;: ``int``,</span>
-<span class="sd">                              &#39;success&#39;: ``bool``,</span>
+<span class="sd">                              &#39;success&#39;: ``Optional[bool]``,</span>
 <span class="sd">                              &#39;invalidation_reason&#39;: ``str``,</span>
 <span class="sd">                              &#39;times_dihedral_set&#39;: ``int``,</span>
 <span class="sd">                              &#39;scan_path&#39;: &lt;path to scan output file&gt;,</span>
@@ -2506,7 +2508,7 @@
 <span class="sd">                              &#39;top&#39;: ``list``,</span>
 <span class="sd">                              &#39;scan&#39;: ``list``,</span>
 <span class="sd">                              &#39;number_of_running_jobs&#39;: ``int``,</span>
-<span class="sd">                              &#39;success&#39;: ``bool``,</span>
+<span class="sd">                              &#39;success&#39;: ``Optional[bool]``,</span>
 <span class="sd">                              &#39;invalidation_reason&#39;: ``str``,</span>
 <span class="sd">                              &#39;times_dihedral_set&#39;: ``int``,</span>
 <span class="sd">                              &#39;scan_path&#39;: &lt;path to scan output file&gt;,</span>
@@ -2597,14 +2599,14 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">SchedulerError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Could not match rotor with pivots </span><span class="si">{</span><span class="n">job</span><span class="o">.</span><span class="n">pivots</span><span class="si">}</span><span class="s1"> in species </span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
 
-        <span class="c1"># This is a bad rotor scan, and we can do nothing about it at this moment.</span>
-        <span class="k">if</span> <span class="n">invalidate</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">actions</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">species_dict</span><span class="p">[</span><span class="n">label</span><span class="p">]</span><span class="o">.</span><span class="n">rotors_dict</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;success&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="c1"># This is a bad rotor scan</span>
+        <span class="k">if</span> <span class="n">invalidate</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">species_dict</span><span class="p">[</span><span class="n">label</span><span class="p">]</span><span class="o">.</span><span class="n">rotors_dict</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;success&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">actions</span><span class="p">)</span> <span class="k">else</span> <span class="kc">False</span>
 
-        <span class="c1"># Better to save the path and invalidation reason for debugging and tracing the file</span>
-        <span class="c1"># if ``success`` is null, it means that the job is being troubleshot</span>
+        <span class="c1"># Better to save the path and invalidation reason for debugging and tracking the file</span>
+        <span class="c1"># if ``success`` is None, it means that the job is being troubleshooted</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">species_dict</span><span class="p">[</span><span class="n">label</span><span class="p">]</span><span class="o">.</span><span class="n">rotors_dict</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;scan_path&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">job</span><span class="o">.</span><span class="n">local_path_to_output_file</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">species_dict</span><span class="p">[</span><span class="n">label</span><span class="p">]</span><span class="o">.</span><span class="n">rotors_dict</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;invalidation_reason&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">invalidation_reason</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">species_dict</span><span class="p">[</span><span class="n">label</span><span class="p">]</span><span class="o">.</span><span class="n">rotors_dict</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;invalidation_reason&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">invalidation_reason</span>
 
         <span class="c1"># If energies were obtained, draw the scan curve</span>
         <span class="k">if</span> <span class="n">energies</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">energies</span><span class="p">):</span>
@@ -2640,7 +2642,8 @@
 <span class="sd">            - adjust to ND, merge with check_directed_scan_job (this one isn&#39;t being called)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># If the job has not converged, troubleshoot</span>
-        <span class="n">invalidate</span><span class="p">,</span> <span class="n">invalidation_reason</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">actions</span> <span class="o">=</span> <span class="n">scan_quality_check</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">,</span> <span class="n">pivots</span><span class="o">=</span><span class="n">pivots</span><span class="p">,</span>
+        <span class="n">invalidate</span><span class="p">,</span> <span class="n">invalidation_reason</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">actions</span> <span class="o">=</span> <span class="n">scan_quality_check</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">,</span>
+                                                                               <span class="n">pivots</span><span class="o">=</span><span class="n">pivots</span><span class="p">,</span>
                                                                                <span class="n">energies</span><span class="o">=</span><span class="n">energies</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">actions</span><span class="p">:</span>
             <span class="c1"># the rotor scan is problematic, troubleshooting is required</span>
