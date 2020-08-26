@@ -173,18 +173,21 @@
 <span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">display</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
 
+<span class="kn">from</span> <span class="nn">arc</span> <span class="kn">import</span> <span class="n">parser</span><span class="p">,</span> <span class="n">plotter</span>
 <span class="kn">from</span> <span class="nn">arc.common</span> <span class="kn">import</span> <span class="p">(</span><span class="n">extermum_list</span><span class="p">,</span>
                         <span class="n">get_logger</span><span class="p">,</span>
                         <span class="n">get_ordinal_indicator</span><span class="p">,</span>
                         <span class="n">read_yaml_file</span><span class="p">,</span>
                         <span class="n">save_yaml_file</span><span class="p">,</span>
-                        <span class="n">sort_two_lists_by_the_first</span><span class="p">)</span>
-<span class="kn">from</span> <span class="nn">arc</span> <span class="kn">import</span> <span class="n">parser</span><span class="p">,</span> <span class="n">plotter</span>
+                        <span class="n">sort_two_lists_by_the_first</span><span class="p">,</span>
+                        <span class="p">)</span>
 <span class="kn">from</span> <span class="nn">arc.exceptions</span> <span class="kn">import</span> <span class="p">(</span><span class="n">InputError</span><span class="p">,</span>
                             <span class="n">SanitizationError</span><span class="p">,</span>
                             <span class="n">SchedulerError</span><span class="p">,</span>
                             <span class="n">SpeciesError</span><span class="p">,</span>
-                            <span class="n">TrshError</span><span class="p">)</span>
+                            <span class="n">TrshError</span><span class="p">,</span>
+                            <span class="p">)</span>
+<span class="kn">from</span> <span class="nn">arc.imports</span> <span class="kn">import</span> <span class="n">settings</span>
 <span class="kn">from</span> <span class="nn">arc.job.job</span> <span class="kn">import</span> <span class="n">Job</span>
 <span class="kn">from</span> <span class="nn">arc.job.local</span> <span class="kn">import</span> <span class="n">check_running_jobs_ids</span>
 <span class="kn">from</span> <span class="nn">arc.job.ssh</span> <span class="kn">import</span> <span class="n">SSHClient</span>
@@ -192,7 +195,8 @@
                           <span class="n">trsh_conformer_isomorphism</span><span class="p">,</span>
                           <span class="n">trsh_ess_job</span><span class="p">,</span>
                           <span class="n">trsh_negative_freq</span><span class="p">,</span>
-                          <span class="n">trsh_scan_job</span><span class="p">)</span>
+                          <span class="n">trsh_scan_job</span><span class="p">,</span>
+                          <span class="p">)</span>
 <span class="kn">from</span> <span class="nn">arc.level</span> <span class="kn">import</span> <span class="n">Level</span>
 <span class="kn">from</span> <span class="nn">arc.species.species</span> <span class="kn">import</span> <span class="p">(</span><span class="n">ARCSpecies</span><span class="p">,</span>
                                  <span class="n">are_coords_compliant_with_graph</span><span class="p">,</span>
@@ -204,13 +208,18 @@
                                    <span class="n">standardize_xyz_string</span><span class="p">,</span>
                                    <span class="n">str_to_xyz</span><span class="p">,</span>
                                    <span class="n">xyz_to_coords_list</span><span class="p">,</span>
-                                   <span class="n">xyz_to_str</span><span class="p">)</span>
-<span class="kn">from</span> <span class="nn">arc.settings</span> <span class="kn">import</span> <span class="n">default_job_settings</span><span class="p">,</span> <span class="n">default_job_types</span><span class="p">,</span> <span class="n">rotor_scan_resolution</span>
+                                   <span class="n">xyz_to_str</span><span class="p">,</span>
+                                   <span class="p">)</span>
 <span class="kn">import</span> <span class="nn">arc.rmgdb</span> <span class="k">as</span> <span class="nn">rmgdb</span>
 <span class="kn">import</span> <span class="nn">arc.species.conformers</span> <span class="k">as</span> <span class="nn">conformers</span>  <span class="c1"># import after importing plotter to avoid circular import</span>
 <span class="kn">from</span> <span class="nn">arc.species.vectors</span> <span class="kn">import</span> <span class="n">get_angle</span><span class="p">,</span> <span class="n">calculate_dihedral_angle</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">get_logger</span><span class="p">()</span>
+
+
+<span class="n">default_job_settings</span><span class="p">,</span> <span class="n">default_job_types</span><span class="p">,</span> <span class="n">rotor_scan_resolution</span> <span class="o">=</span> <span class="n">settings</span><span class="p">[</span><span class="s1">&#39;default_job_settings&#39;</span><span class="p">],</span> \
+                                                                 <span class="n">settings</span><span class="p">[</span><span class="s1">&#39;default_job_types&#39;</span><span class="p">],</span> \
+                                                                 <span class="n">settings</span><span class="p">[</span><span class="s1">&#39;rotor_scan_resolution&#39;</span><span class="p">]</span>
 
 
 <div class="viewcode-block" id="Scheduler"><a class="viewcode-back" href="../../api/scheduler.html#arc.scheduler.Scheduler">[docs]</a><span class="k">class</span> <span class="nc">Scheduler</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>

@@ -184,7 +184,7 @@
 
 <span class="kn">import</span> <span class="nn">arc.rmgdb</span> <span class="k">as</span> <span class="nn">rmgdb</span>
 <span class="kn">from</span> <span class="nn">arc.common</span> <span class="kn">import</span> <span class="p">(</span><span class="n">VERSION</span><span class="p">,</span>
-                        <span class="n">time_lapse</span><span class="p">,</span>
+                        <span class="n">arc_path</span><span class="p">,</span>
                         <span class="n">check_ess_settings</span><span class="p">,</span>
                         <span class="n">get_logger</span><span class="p">,</span>
                         <span class="n">globalize_path</span><span class="p">,</span>
@@ -192,14 +192,15 @@
                         <span class="n">initialize_log</span><span class="p">,</span>
                         <span class="n">log_footer</span><span class="p">,</span>
                         <span class="n">save_yaml_file</span><span class="p">,</span>
+                        <span class="n">time_lapse</span><span class="p">,</span>
                         <span class="p">)</span>
 <span class="kn">from</span> <span class="nn">arc.exceptions</span> <span class="kn">import</span> <span class="n">InputError</span><span class="p">,</span> <span class="n">SettingsError</span><span class="p">,</span> <span class="n">SpeciesError</span>
+<span class="kn">from</span> <span class="nn">arc.imports</span> <span class="kn">import</span> <span class="n">settings</span>
 <span class="kn">from</span> <span class="nn">arc.level</span> <span class="kn">import</span> <span class="n">Level</span>
 <span class="kn">from</span> <span class="nn">arc.job.ssh</span> <span class="kn">import</span> <span class="n">SSHClient</span>
 <span class="kn">from</span> <span class="nn">arc.processor</span> <span class="kn">import</span> <span class="n">process_arc_project</span>
 <span class="kn">from</span> <span class="nn">arc.reaction</span> <span class="kn">import</span> <span class="n">ARCReaction</span>
 <span class="kn">from</span> <span class="nn">arc.scheduler</span> <span class="kn">import</span> <span class="n">Scheduler</span>
-<span class="kn">from</span> <span class="nn">arc.settings</span> <span class="kn">import</span> <span class="n">arc_path</span><span class="p">,</span> <span class="n">default_levels_of_theory</span><span class="p">,</span> <span class="n">servers</span><span class="p">,</span> <span class="n">valid_chars</span><span class="p">,</span> <span class="n">default_job_types</span>
 <span class="kn">from</span> <span class="nn">arc.species.species</span> <span class="kn">import</span> <span class="n">ARCSpecies</span>
 <span class="kn">from</span> <span class="nn">arc.utils.scale</span> <span class="kn">import</span> <span class="n">determine_scaling_factors</span>
 
@@ -210,6 +211,11 @@
 
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">get_logger</span><span class="p">()</span>
+
+
+<span class="n">default_levels_of_theory</span><span class="p">,</span> <span class="n">servers</span><span class="p">,</span> <span class="n">valid_chars</span><span class="p">,</span> <span class="n">default_job_types</span><span class="p">,</span> <span class="n">default_job_settings</span><span class="p">,</span> <span class="n">global_ess_settings</span> <span class="o">=</span> \
+    <span class="n">settings</span><span class="p">[</span><span class="s1">&#39;default_levels_of_theory&#39;</span><span class="p">],</span> <span class="n">settings</span><span class="p">[</span><span class="s1">&#39;servers&#39;</span><span class="p">],</span> <span class="n">settings</span><span class="p">[</span><span class="s1">&#39;valid_chars&#39;</span><span class="p">],</span> <span class="n">settings</span><span class="p">[</span><span class="s1">&#39;default_job_types&#39;</span><span class="p">],</span> \
+    <span class="n">settings</span><span class="p">[</span><span class="s1">&#39;default_job_settings&#39;</span><span class="p">],</span> <span class="n">settings</span><span class="p">[</span><span class="s1">&#39;global_ess_settings&#39;</span><span class="p">]</span>
 
 
 <div class="viewcode-block" id="ARC"><a class="viewcode-back" href="../../api/main.html#arc.main.ARC">[docs]</a><span class="k">class</span> <span class="nc">ARC</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>

@@ -186,13 +186,13 @@
                         <span class="n">get_logger</span><span class="p">,</span>
                         <span class="n">get_single_bond_length</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">arc.exceptions</span> <span class="kn">import</span> <span class="n">SpeciesError</span><span class="p">,</span> <span class="n">RotorError</span><span class="p">,</span> <span class="n">InputError</span><span class="p">,</span> <span class="n">TSError</span>
+<span class="kn">from</span> <span class="nn">arc.imports</span> <span class="kn">import</span> <span class="n">settings</span>
 <span class="kn">from</span> <span class="nn">arc.level</span> <span class="kn">import</span> <span class="n">Level</span>
 <span class="kn">from</span> <span class="nn">arc.parser</span> <span class="kn">import</span> <span class="p">(</span><span class="n">parse_1d_scan_energies</span><span class="p">,</span>
                         <span class="n">parse_dipole_moment</span><span class="p">,</span>
                         <span class="n">parse_polarizability</span><span class="p">,</span>
                         <span class="n">parse_xyz_from_file</span><span class="p">,</span>
                         <span class="n">process_conformers_file</span><span class="p">)</span>
-<span class="kn">from</span> <span class="nn">arc.settings</span> <span class="kn">import</span> <span class="n">default_ts_methods</span><span class="p">,</span> <span class="n">valid_chars</span><span class="p">,</span> <span class="n">minimum_barrier</span>
 <span class="kn">from</span> <span class="nn">arc.species</span> <span class="kn">import</span> <span class="n">conformers</span>
 <span class="kn">from</span> <span class="nn">arc.species.converter</span> <span class="kn">import</span> <span class="p">(</span><span class="n">check_isomorphism</span><span class="p">,</span>
                                    <span class="n">check_xyz_dict</span><span class="p">,</span>
@@ -213,6 +213,11 @@
 
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">get_logger</span><span class="p">()</span>
+
+
+<span class="n">default_ts_methods</span><span class="p">,</span> <span class="n">valid_chars</span><span class="p">,</span> <span class="n">minimum_barrier</span> <span class="o">=</span> <span class="n">settings</span><span class="p">[</span><span class="s1">&#39;default_ts_methods&#39;</span><span class="p">],</span> \
+                                                   <span class="n">settings</span><span class="p">[</span><span class="s1">&#39;valid_chars&#39;</span><span class="p">],</span> \
+                                                   <span class="n">settings</span><span class="p">[</span><span class="s1">&#39;minimum_barrier&#39;</span><span class="p">]</span>
 
 
 <div class="viewcode-block" id="ARCSpecies"><a class="viewcode-back" href="../../../api/species.html#arc.species.species.ARCSpecies">[docs]</a><span class="k">class</span> <span class="nc">ARCSpecies</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>

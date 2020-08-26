@@ -165,7 +165,7 @@
 
 <span class="kn">import</span> <span class="nn">os</span>
 
-<span class="kn">from</span> <span class="nn">rmgpy</span> <span class="kn">import</span> <span class="n">settings</span>
+<span class="kn">from</span> <span class="nn">rmgpy</span> <span class="kn">import</span> <span class="n">settings</span> <span class="k">as</span> <span class="n">rmg_settings</span>
 <span class="kn">from</span> <span class="nn">rmgpy.data.kinetics.common</span> <span class="kn">import</span> <span class="n">find_degenerate_reactions</span>
 <span class="kn">from</span> <span class="nn">rmgpy.data.rmg</span> <span class="kn">import</span> <span class="n">RMGDatabase</span>
 <span class="kn">from</span> <span class="nn">rmgpy.exceptions</span> <span class="kn">import</span> <span class="n">KineticsError</span>
@@ -177,7 +177,7 @@
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">get_logger</span><span class="p">()</span>
 
-<span class="n">db_path</span> <span class="o">=</span> <span class="n">settings</span><span class="p">[</span><span class="s1">&#39;database.directory&#39;</span><span class="p">]</span>
+<span class="n">db_path</span> <span class="o">=</span> <span class="n">rmg_settings</span><span class="p">[</span><span class="s1">&#39;database.directory&#39;</span><span class="p">]</span>
 
 
 <div class="viewcode-block" id="make_rmg_database_object"><a class="viewcode-back" href="../../api/rmgdb.html#arc.rmgdb.make_rmg_database_object">[docs]</a><span class="k">def</span> <span class="nf">make_rmg_database_object</span><span class="p">():</span>

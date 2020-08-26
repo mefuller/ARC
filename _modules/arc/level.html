@@ -173,11 +173,14 @@
 <span class="kn">from</span> <span class="nn">arkane.encorr.corr</span> <span class="kn">import</span> <span class="n">assign_frequency_scale_factor</span>
 <span class="kn">from</span> <span class="nn">arkane.modelchem</span> <span class="kn">import</span> <span class="n">METHODS_THAT_REQUIRE_SOFTWARE</span><span class="p">,</span> <span class="n">LevelOfTheory</span><span class="p">,</span> <span class="n">standardize_name</span>
 
-<span class="kn">from</span> <span class="nn">arc.common</span> <span class="kn">import</span> <span class="n">get_logger</span><span class="p">,</span> <span class="n">get_ordered_intersection_of_two_lists</span><span class="p">,</span> <span class="n">read_yaml_file</span>
-<span class="kn">from</span> <span class="nn">arc.settings</span> <span class="kn">import</span> <span class="n">arc_path</span><span class="p">,</span> <span class="n">levels_ess</span><span class="p">,</span> <span class="n">supported_ess</span>
+<span class="kn">from</span> <span class="nn">arc.common</span> <span class="kn">import</span> <span class="n">arc_path</span><span class="p">,</span> <span class="n">get_logger</span><span class="p">,</span> <span class="n">get_ordered_intersection_of_two_lists</span><span class="p">,</span> <span class="n">read_yaml_file</span>
+<span class="kn">from</span> <span class="nn">arc.imports</span> <span class="kn">import</span> <span class="n">settings</span>
 
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">get_logger</span><span class="p">()</span>
+
+
+<span class="n">levels_ess</span><span class="p">,</span> <span class="n">supported_ess</span> <span class="o">=</span> <span class="n">settings</span><span class="p">[</span><span class="s1">&#39;levels_ess&#39;</span><span class="p">],</span> <span class="n">settings</span><span class="p">[</span><span class="s1">&#39;supported_ess&#39;</span><span class="p">]</span>
 
 
 <div class="viewcode-block" id="Level"><a class="viewcode-back" href="../../api/level.html#arc.level.Level">[docs]</a><span class="k">class</span> <span class="nc">Level</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>

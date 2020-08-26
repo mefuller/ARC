@@ -88,7 +88,8 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Installation instructions</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#clone-and-setup-path">Clone and setup path</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#install-dependencies">Install dependencies</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#generate-rsa-ssh-keys-and-define-servers">Generate RSA SSH keys and define servers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#create-a-arc-folder">Create a <code class="docutils literal notranslate"><span class="pre">.arc</span></code> folder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#generating-rsa-ssh-keys-and-defining-servers">Generating RSA SSH keys and defining servers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#associating-software-with-servers">Associating software with servers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#cluster-software-definitions">Cluster software definitions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#tests">Tests</a></li>
@@ -218,16 +219,37 @@ installation folder by, e.g., <code class="docutils literal notranslate"><span c
 </li>
 </ul>
 </div>
-<div class="section" id="generate-rsa-ssh-keys-and-define-servers">
-<h2>Generate RSA SSH keys and define servers<a class="headerlink" href="#generate-rsa-ssh-keys-and-define-servers" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="create-a-arc-folder">
+<h2>Create a <code class="docutils literal notranslate"><span class="pre">.arc</span></code> folder<a class="headerlink" href="#create-a-arc-folder" title="Permalink to this headline">¶</a></h2>
+<p>Users are encouraged to create a <code class="docutils literal notranslate"><span class="pre">.arc</span></code> folder under their <code class="docutils literal notranslate"><span class="pre">HOME</span></code> folder on the machine running ARC.
+Copy (and modify as appropriate, see below) the following python files
+from the ARC repository into the newly created folder:
+<code class="docutils literal notranslate"><span class="pre">&lt;base_folder&gt;/ARC/arc/settings/settings.py</span></code> –&gt; <code class="docutils literal notranslate"><span class="pre">HOME/.arc/settings.py</span></code>
+<code class="docutils literal notranslate"><span class="pre">&lt;base_folder&gt;/ARC/arc/settings/input.py</span></code> –&gt; <code class="docutils literal notranslate"><span class="pre">HOME/.arc/input.py</span></code>
+<code class="docutils literal notranslate"><span class="pre">&lt;base_folder&gt;/ARC/arc/settings/submit.py</span></code> –&gt; <code class="docutils literal notranslate"><span class="pre">HOME/.arc/submit.py</span></code></p>
+<p>By doing this, ARC will use the respective settings and definitions from these copied files
+to override its defaults. Users many (carefully) modify the definitions in the local files
+as appropriate. Note that you may choose to copy only some of these files, in which case the
+definitions from any non-copied files will be taken from ARC’s defaults (e.g., most users will
+not need to modify <code class="docutils literal notranslate"><span class="pre">input.py</span></code>).  Note also that definitions within these files may be partial
+(i.e., you may keep only those parameters you may wish to change within each file), and that any
+missing parameter will be assigned its default value from ARC’s defaults.</p>
+<p>Principally ARC would also work fine if users directly change the respective files within ARC’s repository
+instead of making copies. However, modifying the files in ARC directly may cause merging conflicts when
+updating ARC. The down side is that users are responsible to keep their copies up to date with ARC’s format
+if major changes are made. Such changes will be listed under the Release Notes and will result in an increase
+of the MINOR version number (i.e., ,major.MINOR.patch, e.g., <cite>1.1.5</cite> –&gt; <cite>1.2.0</cite>).</p>
+</div>
+<div class="section" id="generating-rsa-ssh-keys-and-defining-servers">
+<h2>Generating RSA SSH keys and defining servers<a class="headerlink" href="#generating-rsa-ssh-keys-and-defining-servers" title="Permalink to this headline">¶</a></h2>
 <p>The first two directives are only required if you’d like ARC to access remote servers
 (ARC could also run “locally” on a server).</p>
 <ul class="simple">
 <li><p>Generate RSA SSH keys for your favorite server/s on which relevant electronic structure software
 (ESS, e.g., Gaussian etc.) are installed. <a class="reference external" href="https://www.digitalocean.com/community/tutorials/how-to-set-up-ssh-keys--2">Instructions for generating RSA keys could be found here</a>.</p></li>
-<li><p>Copy the RSA SSH key path/s on your local machine to ARC/arc/settings.py in the servers
+<li><p>Copy the RSA SSH key path/s on your local machine to <code class="docutils literal notranslate"><span class="pre">settings.py</span></code> in the servers
 dictionary under keys.</p></li>
-<li><p>Update the <code class="docutils literal notranslate"><span class="pre">servers</span></code> dictionary in <a class="reference external" href="https://github.com/ReactionMechanismGenerator/ARC/blob/master/arc/settings.py">ARC/arc/settings.py</a>.</p>
+<li><p>Update the <code class="docutils literal notranslate"><span class="pre">servers</span></code> dictionary in your copy of ARC’s <a class="reference external" href="https://github.com/ReactionMechanismGenerator/ARC/blob/master/arc/settings/settings.py">settings.py</a>.</p>
 <ul>
 <li><p>A local server must be named with the reserved keyword <code class="docutils literal notranslate"><span class="pre">local</span></code>. <code class="docutils literal notranslate"><span class="pre">cluster_soft</span></code> and username (<code class="docutils literal notranslate"><span class="pre">un</span></code>) are
 mandatory.</p></li>
@@ -243,7 +265,7 @@ manually control memory specifications for each project. See <a class="reference
 for this reason, ARC will attempt to re-run the job with fewer CPU cores.</p></li>
 </ul>
 </li>
-<li><p>Update the <code class="docutils literal notranslate"><span class="pre">default_job_settings</span></code> dictionary in <a class="reference external" href="https://github.com/ReactionMechanismGenerator/ARC/blob/master/arc/settings.py">ARC/arc/settings.py</a>.</p>
+<li><p>Update the <code class="docutils literal notranslate"><span class="pre">default_job_settings</span></code> dictionary in your copy of ARC’s <a class="reference external" href="https://github.com/ReactionMechanismGenerator/ARC/blob/master/arc/settings/settings.py">settings.py</a>.</p>
 <ul>
 <li><p>This dictionary contains default job memory, cpu, and time settings.</p></li>
 <li><p>A default ESS job in ARC has 14 GB of memory, 8 cpu cores, and 120 hours of maximum execution time. The default
@@ -254,7 +276,7 @@ The <code class="docutils literal notranslate"><span class="pre">job_max_server_
 use when troubleshoot a job. The default value is 80%.</p></li>
 </ul>
 </li>
-<li><p>Update the submit scripts in <a class="reference external" href="https://github.com/ReactionMechanismGenerator/ARC/blob/master/arc/job/submit.py">ARC/arc/job/submit.py</a>
+<li><p>Update the submit scripts in your copy of ARC’s <a class="reference external" href="https://github.com/ReactionMechanismGenerator/ARC/blob/master/arc/settings/submit.py">submit.py</a>
 according to your servers’ definitions.
 * See the given template examples, and follow the structure of nested dictionaries (by server name, then by ESS name).
 * Preserve the variables in curly braces (e.g., <code class="docutils literal notranslate"><span class="pre">{memory}</span></code>), so that ARC is able to auto-complete them.</p></li>
@@ -265,8 +287,9 @@ according to your servers’ definitions.
 <p>ARC keeps track of software location on servers using a Python dictionary associating the different software (keys)
 with the servers they are installed on (values). The server name must be consistent with the respective definition
 in the <code class="docutils literal notranslate"><span class="pre">servers</span></code> dictionary mentioned above. Typically, you would update the <code class="docutils literal notranslate"><span class="pre">global_ess_settings</span></code> dictionary in
-<a class="reference external" href="https://github.com/ReactionMechanismGenerator/ARC/blob/master/arc/settings.py">ARC/arc/settings.py</a> to reflect
-your software and servers, for example:</p>
+your copy of ARC’s
+<a class="reference external" href="https://github.com/ReactionMechanismGenerator/ARC/blob/master/arc/settings/settings.py">settings.py</a>
+to reflect your software and servers, for example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">global_ess_settings</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s1">&#39;gaussian&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;server1&#39;</span><span class="p">,</span> <span class="s1">&#39;server2&#39;</span><span class="p">],</span>
     <span class="s1">&#39;molpro&#39;</span><span class="p">:</span> <span class="s1">&#39;server2&#39;</span><span class="p">,</span>
@@ -294,8 +317,8 @@ the “radar” to do its thing blindly. The “radar” feature, however, is ve
 <div class="section" id="cluster-software-definitions">
 <h2>Cluster software definitions<a class="headerlink" href="#cluster-software-definitions" title="Permalink to this headline">¶</a></h2>
 <p>ARC supports Slurm and Oracle/Sun Grid Engine (OGE / SGE). If you’re using other <a class="reference external" href="https://en.wikipedia.org/wiki/Comparison_of_cluster_software">cluster software</a>, or if your
-server’s definitions are different that ARC’s, you should also modify the following variables in
-<a class="reference external" href="https://github.com/ReactionMechanismGenerator/ARC/blob/master/arc/settings.py">ARC/arc/settings.py</a>:</p>
+server’s definitions are different that ARC’s, you should also modify the following variables in your copy of ARC’s
+<a class="reference external" href="https://github.com/ReactionMechanismGenerator/ARC/blob/master/arc/settings/settings.py">settings.py</a>:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">check_status_command</span></code></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">submit_command</span></code></p></li>
@@ -350,8 +373,9 @@ alias j=&#39;cd $arc_path/ipython/ &amp;&amp; jupyter notebook&#39;
 <h2>Updating ARC<a class="headerlink" href="#updating-arc" title="Permalink to this headline">¶</a></h2>
 <p>ARC is being updated frequently. Make sure to update ARC and enjoy new features and bug fixes.</p>
 <dl class="simple">
-<dt>Note:</dt><dd><p>It is highly recommended to backup files you manually changed in ARC before updating the version,
-these are usually <cite>ARC/arc/settings.py</cite> and <cite>ARC/arc/job/submit.py</cite>.</p>
+<dt>Note:</dt><dd><p>If you change ARC’s parameters within the repository rather than copies thereof as explained above,
+it is highly recommended to backup the files you manually changed before updating ARC.
+These are usually <cite>ARC/arc/settings/settings.py</cite> and <cite>ARC/arc/settings/submit.py</cite>.</p>
 </dd>
 </dl>
 <p>You can update ARC to a specific version, or to the most recent developer version.
