@@ -420,6 +420,27 @@ Two <code class="docutils literal notranslate"><span class="pre">atom_list_to_ex
 </dd></dl>
 
 <dl class="py function">
+<dt id="arc.common.get_angle_in_180_range">
+<code class="sig-prename descclassname">arc.common.</code><code class="sig-name descname">get_angle_in_180_range</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">angle</span><span class="p">:</span> <span class="n">float</span></em>, <em class="sig-param"><span class="n">round_to</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>int<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">2</span></em><span class="sig-paren">)</span> &#x2192; float<a class="reference internal" href="../_modules/arc/common.html#get_angle_in_180_range"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.common.get_angle_in_180_range" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the corresponding angle in the -180 to +180 degree range.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>angle</strong> (<em>float</em>) – An angle in degrees.</p></li>
+<li><p><strong>round_to</strong> (<em>int</em><em>, </em><em>optional</em>) – The number of decimal figures to round the result to.
+<code class="docutils literal notranslate"><span class="pre">None</span></code> to not round. Default: 2.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The corresponding angle in the -180 to +180 degree range.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt id="arc.common.get_atom_radius">
 <code class="sig-prename descclassname">arc.common.</code><code class="sig-name descname">get_atom_radius</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">symbol</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span> &#x2192; float<a class="reference internal" href="../_modules/arc/common.html#get_atom_radius"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.common.get_atom_radius" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the atom covalent radius of an atom in Angstroms.</p>
