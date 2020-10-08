@@ -1232,12 +1232,58 @@
 <span class="sd">        float: The corresponding angle in the -180 to +180 degree range.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">angle</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">angle</span><span class="p">)</span>
-    <span class="k">while</span> <span class="ow">not</span> <span class="p">(</span><span class="o">-</span><span class="mi">180</span> <span class="o">&lt;=</span> <span class="n">angle</span> <span class="o">&lt;=</span> <span class="mi">180</span><span class="p">):</span>
+    <span class="k">while</span> <span class="ow">not</span> <span class="p">(</span><span class="o">-</span><span class="mi">180</span> <span class="o">&lt;=</span> <span class="n">angle</span> <span class="o">&lt;</span> <span class="mi">180</span><span class="p">):</span>
         <span class="n">factor</span> <span class="o">=</span> <span class="mi">360</span> <span class="k">if</span> <span class="n">angle</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mi">180</span> <span class="k">else</span> <span class="o">-</span><span class="mi">360</span>
         <span class="n">angle</span> <span class="o">+=</span> <span class="n">factor</span>
     <span class="k">if</span> <span class="n">round_to</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="nb">round</span><span class="p">(</span><span class="n">angle</span><span class="p">,</span> <span class="n">round_to</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">angle</span></div>
+
+
+<div class="viewcode-block" id="get_close_tuple"><a class="viewcode-back" href="../../api/common.html#arc.common.get_close_tuple">[docs]</a><span class="k">def</span> <span class="nf">get_close_tuple</span><span class="p">(</span><span class="n">key_1</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="o">...</span><span class="p">],</span>
+                    <span class="n">keys</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="o">...</span><span class="p">]],</span>
+                    <span class="n">tolerance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span><span class="p">,</span>
+                    <span class="n">raise_error</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]]:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get a key from a list of keys close in value to the given key.</span>
+<span class="sd">    Even if just one of the items in the key has a close match, use the close value.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        key_1 (Tuple[Union[float, str], Union[float, str]]): The key used for the search.</span>
+<span class="sd">        keys (List[Tuple[Union[float, str], Union[float, str]]]): The list of keys to search within.</span>
+<span class="sd">        tolerance (float, optional): The tolerance within which keys are determined to be close.</span>
+<span class="sd">        raise_error (bool, optional): Whether to raise a ValueError if a close key wasn&#39;t found.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError: If a key in ``keys`` has a different length than ``key_1``.</span>
+<span class="sd">        ValueError: If a close key was not found and ``raise_error`` is ``True``.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Optional[Tuple[Union[float, str], ...]]: A key from the keys list close in value to the given key.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">key_1_floats</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">item</span><span class="p">)</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">key_1</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">key_2</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">key_1</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">key_2</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Length of key_1, </span><span class="si">{</span><span class="n">key_1</span><span class="si">}</span><span class="s1">, (</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">key_1</span><span class="p">)</span><span class="si">}</span><span class="s1">) must be equal to the lengths of all keys &#39;</span>
+                             <span class="sa">f</span><span class="s1">&#39;(got a second key, </span><span class="si">{</span><span class="n">key_2</span><span class="si">}</span><span class="s1">, with length </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">key_2</span><span class="p">)</span><span class="si">}</span><span class="s1">).&#39;</span><span class="p">)</span>
+        <span class="n">key_2_floats</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">item</span><span class="p">)</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">key_2</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">item_1</span> <span class="o">-</span> <span class="n">item_2</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">tolerance</span> <span class="k">for</span> <span class="n">item_1</span><span class="p">,</span> <span class="n">item_2</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">key_1_floats</span><span class="p">,</span> <span class="n">key_2_floats</span><span class="p">)):</span>
+            <span class="k">return</span> <span class="n">key_2</span>
+
+    <span class="n">updated_key_1</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">key_1</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">key_2</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
+        <span class="n">key_2_floats</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">item</span><span class="p">)</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">key_2</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">item</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">key_2_floats</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">item</span> <span class="o">-</span> <span class="n">key_1_floats</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">&lt;=</span> <span class="n">tolerance</span><span class="p">:</span>
+                <span class="n">updated_key_1</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">key_2</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">key</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">updated_key_1</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">updated_key_1</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="ow">or</span> <span class="n">key_1</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">key_1</span><span class="p">)))</span>
+    <span class="k">elif</span> <span class="ow">not</span> <span class="n">raise_error</span><span class="p">:</span>
+        <span class="c1"># couldn&#39;t find a close key</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Could not locate a key close to </span><span class="si">{</span><span class="n">key_1</span><span class="si">}</span><span class="s1"> within the tolerance </span><span class="si">{</span><span class="n">tolerance</span><span class="si">}</span><span class="s1"> in the given keys list.&#39;</span><span class="p">)</span></div>
 </pre></div>
 
            </div>
