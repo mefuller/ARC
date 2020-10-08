@@ -468,7 +468,7 @@ an ND scan. Values are nested lists. Each value is a list where the entries are 
 or lists of pivot lists (e.g., <code class="docutils literal notranslate"><span class="pre">[[1,</span> <span class="pre">5],</span> <span class="pre">[6,</span> <span class="pre">8]]</span></code>), or a mix (e.g., <code class="docutils literal notranslate"><span class="pre">[[4,</span> <span class="pre">8],</span> <span class="pre">[[6,</span> <span class="pre">9],</span> <span class="pre">[3,</span> <span class="pre">4]]</span></code>). The requested
 directed scan type will be executed separately for each list entry. A list entry that contains only two pivots
 will result in a 1D scan, while a list entry with N pivots will consider all of them, and will result in an ND scan
-(if <code class="docutils literal notranslate"><span class="pre">_diagonal</span></code> is not specified).</p>
+(if <code class="docutils literal notranslate"><span class="pre">_diagonal</span></code> is not specified). Note that indices are 1-indexed.</p>
 <p>ARC will generate geometries using the <code class="docutils literal notranslate"><span class="pre">rotor_scan_resolution</span></code> argument in <code class="docutils literal notranslate"><span class="pre">settings.py</span></code>.</p>
 <p>Note: An <code class="docutils literal notranslate"><span class="pre">'all'</span></code> string entry is also allowed in the value list, triggering a directed internal rotation scan for all
 torsions in the molecule. If <code class="docutils literal notranslate"><span class="pre">'all'</span></code> is specified within a second level list, then all the dihedrals will be considered
