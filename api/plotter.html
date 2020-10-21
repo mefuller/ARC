@@ -215,6 +215,25 @@ If <code class="docutils literal notranslate"><span class="pre">species</span></
 </dd></dl>
 
 <dl class="py function">
+<dt id="arc.plotter.clean_scan_results">
+<code class="sig-prename descclassname">arc.plotter.</code><code class="sig-name descname">clean_scan_results</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">results</span><span class="p">:</span> <span class="n">dict</span></em><span class="sig-paren">)</span> &#x2192; dict<a class="reference internal" href="../_modules/arc/plotter.html#clean_scan_results"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.plotter.clean_scan_results" title="Permalink to this definition">¶</a></dt>
+<dd><p>Filter noise of high energy points if the value distribution is such that removing the top 10% points
+results in values which are significantly lower. Useful for scanning methods which occasionally give
+extremely high energies by mistake.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>results</strong> (<em>dict</em>) – The directed snan results dictionary. Keys are dihedral tuples, values are energies.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A filtered results dictionary.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt id="arc.plotter.draw_3d">
 <code class="sig-prename descclassname">arc.plotter.</code><code class="sig-name descname">draw_3d</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">xyz</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">species</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">project_directory</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">save_only</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/plotter.html#draw_3d"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.plotter.draw_3d" title="Permalink to this definition">¶</a></dt>
 <dd><p>Draws the molecule in a “3D-balls” style.
