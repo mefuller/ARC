@@ -198,6 +198,13 @@
 
 <span class="n">VERSION</span> <span class="o">=</span> <span class="s1">&#39;1.1.0&#39;</span>
 
+<span class="c1"># define default values for using the optional GCN to predict TS guesses</span>
+<span class="c1"># default assumption is that TS-GCN is installed in the same parent folder as the ARC repository</span>
+<span class="n">TS_GCN_PATH</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">arc_path</span><span class="p">),</span> <span class="s1">&#39;TS-GCN&#39;</span><span class="p">)</span>
+<span class="c1"># default environment name for this repo is `ts_gcn`</span>
+<span class="n">TS_GCN_PYTHON</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">executable</span><span class="p">))),</span>
+                             <span class="s1">&#39;ts_gcn&#39;</span><span class="p">,</span> <span class="s1">&#39;bin&#39;</span><span class="p">,</span> <span class="s1">&#39;python&#39;</span><span class="p">)</span>
+
 
 <span class="n">default_job_types</span><span class="p">,</span> <span class="n">servers</span> <span class="o">=</span> <span class="n">settings</span><span class="p">[</span><span class="s1">&#39;default_job_types&#39;</span><span class="p">],</span> <span class="n">settings</span><span class="p">[</span><span class="s1">&#39;servers&#39;</span><span class="p">]</span>
 
@@ -1295,7 +1302,7 @@
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2018-2020, Alon Grinberg Dana
+        &copy; Copyright 2018-2021, Alon Grinberg Dana
 
     </p>
   </div>

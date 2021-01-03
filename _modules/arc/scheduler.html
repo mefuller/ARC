@@ -512,6 +512,17 @@
                             <span class="n">rmg_reaction</span><span class="o">=</span><span class="n">rxn</span><span class="o">.</span><span class="n">rmg_reaction</span><span class="p">,</span>
                         <span class="p">)</span>
                     <span class="p">)</span>
+                <span class="c1"># now generate TSGuess objects for the other methods</span>
+                <span class="k">for</span> <span class="n">method</span> <span class="ow">in</span> <span class="n">rxn</span><span class="o">.</span><span class="n">ts_methods</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="s1">&#39;user guess&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">method</span><span class="p">:</span>
+                        <span class="n">ts_guess</span> <span class="o">=</span> <span class="n">TSGuess</span><span class="p">(</span>
+                            <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">,</span>
+                            <span class="n">rmg_reaction</span><span class="o">=</span><span class="n">rxn</span><span class="o">.</span><span class="n">rmg_reaction</span><span class="p">,</span>
+                            <span class="n">arc_reaction</span><span class="o">=</span><span class="n">rxn</span><span class="p">,</span>
+                            <span class="n">project_dir</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">project_directory</span>
+                        <span class="p">)</span>
+                        <span class="n">ts_guess</span><span class="o">.</span><span class="n">execute_ts_guess_method</span><span class="p">()</span>
+                        <span class="n">ts_species</span><span class="o">.</span><span class="n">ts_guesses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ts_guess</span><span class="p">)</span>
                 <span class="n">rxn</span><span class="o">.</span><span class="n">check_atom_balance</span><span class="p">()</span>
 
         <span class="k">for</span> <span class="n">species</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">species_list</span><span class="p">:</span>
@@ -3435,7 +3446,7 @@
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2018-2020, Alon Grinberg Dana
+        &copy; Copyright 2018-2021, Alon Grinberg Dana
 
     </p>
   </div>

@@ -166,6 +166,8 @@
 <span class="kn">import</span> <span class="nn">datetime</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">rdkit</span> <span class="kn">import</span> <span class="n">Chem</span>
+<span class="kn">import</span> <span class="nn">time</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
 
 <span class="kn">import</span> <span class="nn">rmgpy.molecule.element</span> <span class="k">as</span> <span class="nn">elements</span>
@@ -208,7 +210,7 @@
                                    <span class="n">xyz_from_data</span><span class="p">,</span>
                                    <span class="n">xyz_to_str</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">arc.species.vectors</span> <span class="kn">import</span> <span class="n">calculate_distance</span>
-<span class="kn">from</span> <span class="nn">arc.ts</span> <span class="kn">import</span> <span class="n">atst</span>
+<span class="kn">from</span> <span class="nn">arc.ts</span> <span class="kn">import</span> <span class="n">atst</span><span class="p">,</span> <span class="n">gcn</span>
 
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">get_logger</span><span class="p">()</span>
@@ -1892,6 +1894,7 @@
 <span class="sd">    - NEB (not implemented)</span>
 <span class="sd">    - Kinbot: requires the RMG family, only works for H,C,O,S (not implemented)</span>
 <span class="sd">    - AutoTST</span>
+<span class="sd">    - GCN</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        method (str, optional): The method/source used for the xyz guess.</span>
@@ -1902,8 +1905,10 @@
 <span class="sd">        family (str, optional): The RMG family that corresponds to the reaction, if applicable.</span>
 <span class="sd">        xyz (dict, str, optional): The 3D coordinates guess.</span>
 <span class="sd">        rmg_reaction (Reaction, optional): An RMG Reaction object.</span>
+<span class="sd">        arc_reaction (ARCReaction, optional): An ARC Reaction object.</span>
 <span class="sd">        ts_dict (dict, optional): A dictionary to create this object from (used when restarting ARC).</span>
-<span class="sd">        energy (float): Relative energy of all TS conformers in kJ/mol.</span>
+<span class="sd">        energy (float, optional): Relative energy of all TS conformers in kJ/mol.</span>
+<span class="sd">        project_dir (str, optional): Folder path for the project: the input file path or ARC/Projects/project-name.</span>
 
 <span class="sd">    Attributes:</span>
 <span class="sd">        initial_xyz (dict): The 3D coordinates guess.</span>
@@ -1915,12 +1920,14 @@
 <span class="sd">                             (product label, product xyz).</span>
 <span class="sd">        family (str): The RMG family that corresponds to the reaction, if applicable.</span>
 <span class="sd">        rmg_reaction (Reaction): An RMG Reaction object.</span>
+<span class="sd">        arc_reaction (ARCReaction, optional): An ARC Reaction object.</span>
 <span class="sd">        t0 (float): Initial time of spawning the guess job.</span>
 <span class="sd">        execution_time (str): Overall execution time for the TS guess method.</span>
 <span class="sd">        success (bool): Whether the TS guess method succeeded in generating an XYZ guess or not.</span>
 <span class="sd">        energy (float): Relative energy of all TS conformers in kJ/mol.</span>
 <span class="sd">        index (int): An index corresponding to the conformer jobs spawned for each TSGuess object.</span>
 <span class="sd">                     Assigned only if self.success is ``True``.</span>
+<span class="sd">        project_dir (str): Folder path for the project: the input file path or ARC/Projects/project-name.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
@@ -1930,8 +1937,11 @@
                  <span class="n">family</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">xyz</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">rmg_reaction</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Reaction</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">arc_reaction</span><span class="p">:</span> <span class="n">Optional</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">ts_dict</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                 <span class="n">energy</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+                 <span class="n">energy</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">project_dir</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="p">):</span>
 
         <span class="k">if</span> <span class="n">ts_dict</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="c1"># Reading from a dictionary</span>
@@ -1946,6 +1956,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">process_xyz</span><span class="p">(</span><span class="n">xyz</span><span class="p">)</span>  <span class="c1"># populates self.initial_xyz</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">success</span> <span class="o">=</span> <span class="kc">None</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">energy</span> <span class="o">=</span> <span class="n">energy</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">project_dir</span> <span class="o">=</span> <span class="n">project_dir</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">=</span> <span class="n">method</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">if</span> <span class="n">method</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s1">&#39;user guess&#39;</span>
             <span class="k">if</span> <span class="s1">&#39;user guess&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span><span class="p">:</span>
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial_xyz</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -1955,10 +1966,11 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">reactants_xyz</span> <span class="o">=</span> <span class="n">reactants_xyz</span> <span class="k">if</span> <span class="n">reactants_xyz</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">list</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">products_xyz</span> <span class="o">=</span> <span class="n">products_xyz</span> <span class="k">if</span> <span class="n">products_xyz</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">list</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">rmg_reaction</span> <span class="o">=</span> <span class="n">rmg_reaction</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">arc_reaction</span> <span class="o">=</span> <span class="n">arc_reaction</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">family</span> <span class="o">=</span> <span class="n">family</span>
             <span class="c1"># if self.family is None and self.method.lower() in [&#39;kinbot&#39;, &#39;autotst&#39;]:</span>
             <span class="c1">#     raise TSError(&#39;No family specified for method {0}&#39;.format(self.method))</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="s1">&#39;user guess&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="ow">or</span> <span class="s1">&#39;autotst&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="s1">&#39;user guess&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="ow">or</span> <span class="s1">&#39;autotst&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="ow">or</span> <span class="s1">&#39;gcn&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span>
                 <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;user guess&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">tsm</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">for</span> <span class="n">tsm</span> <span class="ow">in</span> <span class="n">default_ts_methods</span><span class="p">]):</span>
             <span class="k">raise</span> <span class="n">TSError</span><span class="p">(</span><span class="s1">&#39;Unrecognized method. Should be either </span><span class="si">{0}</span><span class="s1">. Got: </span><span class="si">{1}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
                           <span class="p">[</span><span class="s1">&#39;User guess&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">default_ts_methods</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span><span class="p">))</span>
@@ -2060,6 +2072,8 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">kinbot</span><span class="p">()</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;autotst&#39;</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">autotst</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;gcn&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">gcn</span><span class="p">()</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">TSError</span><span class="p">(</span><span class="s1">&#39;Unrecognized method. Should be either </span><span class="si">{0}</span><span class="s1">. Got: </span><span class="si">{1}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
                           <span class="p">[</span><span class="s1">&#39;User guess&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">default_ts_methods</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span><span class="p">))</span></div>
@@ -2081,6 +2095,52 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">initial_xyz</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">initial_xyz</span> <span class="o">=</span> <span class="n">atst</span><span class="o">.</span><span class="n">autotst</span><span class="p">(</span><span class="n">rmg_reaction</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">rmg_reaction</span><span class="p">,</span> <span class="n">reaction_family</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">family</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TSGuess.gcn"><a class="viewcode-back" href="../../../api/species.html#arc.species.species.TSGuess.gcn">[docs]</a>    <span class="k">def</span> <span class="nf">gcn</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Determine a TS guess using a graph convolutional network.</span>
+
+<span class="sd">        Reactant and product must each be a single fragment.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># check that this is an isomerization reaction i.e. only one reactant and one product</span>
+        <span class="n">num_reactants</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">arc_reaction</span><span class="o">.</span><span class="n">r_species</span><span class="p">)</span>
+        <span class="n">num_products</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">arc_reaction</span><span class="o">.</span><span class="n">p_species</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">num_reactants</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Error while using GCN with reactants: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">arc_reaction</span><span class="o">.</span><span class="n">r_species</span><span class="si">}</span><span class="s1">.</span><span class="se">\n</span><span class="s1">&#39;</span>
+                         <span class="sa">f</span><span class="s1">&#39;Isomerization reactions must have only 1 reactant.&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">num_products</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Error while using GCN with products: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">arc_reaction</span><span class="o">.</span><span class="n">p_species</span><span class="si">}</span><span class="s1">.</span><span class="se">\n</span><span class="s1">&#39;</span>
+                         <span class="sa">f</span><span class="s1">&#39;Isomerization reactions must have only 1 product.&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># run GCN</span>
+            <span class="n">reactant</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">arc_reaction</span><span class="o">.</span><span class="n">r_species</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">_</span><span class="p">,</span> <span class="n">r_mol</span> <span class="o">=</span> <span class="n">rdkit_conf_from_mol</span><span class="p">(</span><span class="n">reactant</span><span class="o">.</span><span class="n">mol</span><span class="p">,</span> <span class="n">reactant</span><span class="o">.</span><span class="n">get_xyz</span><span class="p">())</span>
+
+            <span class="c1"># GCN requires an atom-mapped reaction so map the product atoms onto the reactant atoms</span>
+            <span class="n">_</span><span class="p">,</span> <span class="n">mapped_product</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">arc_reaction</span><span class="o">.</span><span class="n">get_mapped_product_xyz</span><span class="p">()</span>
+            <span class="n">_</span><span class="p">,</span> <span class="n">p_mol</span> <span class="o">=</span> <span class="n">rdkit_conf_from_mol</span><span class="p">(</span><span class="n">mapped_product</span><span class="o">.</span><span class="n">mol</span><span class="p">,</span> <span class="n">mapped_product</span><span class="o">.</span><span class="n">get_xyz</span><span class="p">())</span>
+
+            <span class="c1"># write input files for GCN to the TS project folder</span>
+            <span class="n">ts_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">project_dir</span><span class="p">,</span> <span class="s1">&#39;calcs&#39;</span><span class="p">,</span> <span class="s1">&#39;TSs&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">arc_reaction</span><span class="o">.</span><span class="n">ts_label</span><span class="p">,</span> <span class="s1">&#39;GCN&#39;</span><span class="p">)</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">ts_path</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+            <span class="n">r_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ts_path</span><span class="p">,</span> <span class="s1">&#39;reactant.sdf&#39;</span><span class="p">)</span>
+            <span class="n">w</span> <span class="o">=</span> <span class="n">Chem</span><span class="o">.</span><span class="n">SDWriter</span><span class="p">(</span><span class="n">r_path</span><span class="p">)</span>
+            <span class="n">w</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">r_mol</span><span class="p">)</span>
+            <span class="n">w</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+            <span class="n">p_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ts_path</span><span class="p">,</span> <span class="s1">&#39;product.sdf&#39;</span><span class="p">)</span>
+            <span class="n">w</span> <span class="o">=</span> <span class="n">Chem</span><span class="o">.</span><span class="n">SDWriter</span><span class="p">(</span><span class="n">p_path</span><span class="p">)</span>
+            <span class="n">w</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">p_mol</span><span class="p">)</span>
+            <span class="n">w</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+            <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+            <span class="n">ts_xyz_dict</span> <span class="o">=</span> <span class="n">gcn</span><span class="o">.</span><span class="n">gcn</span><span class="p">(</span><span class="n">ts_path</span><span class="p">)</span>
+            <span class="n">end</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">execution_time</span> <span class="o">=</span> <span class="n">end</span> <span class="o">-</span> <span class="n">start</span>  <span class="c1"># seconds</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">success</span> <span class="o">=</span> <span class="kc">False</span> <span class="k">if</span> <span class="n">ts_xyz_dict</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">True</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">initial_xyz</span> <span class="o">=</span> <span class="n">ts_xyz_dict</span></div>
 
 <div class="viewcode-block" id="TSGuess.qst2"><a class="viewcode-back" href="../../../api/species.html#arc.species.species.TSGuess.qst2">[docs]</a>    <span class="k">def</span> <span class="nf">qst2</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -2464,7 +2524,7 @@
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2018-2020, Alon Grinberg Dana
+        &copy; Copyright 2018-2021, Alon Grinberg Dana
 
     </p>
   </div>

@@ -1252,7 +1252,7 @@ The mol_list attribute is used for identifying rotors and generating conformers,
 
 <dl class="py class">
 <dt id="arc.species.species.TSGuess">
-<em class="property">class </em><code class="sig-prename descclassname">arc.species.species.</code><code class="sig-name descname">TSGuess</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">method</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">reactants_xyz</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>list<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">products_xyz</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>list<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">family</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">xyz</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>Union<span class="p">[</span>dict<span class="p">, </span>str<span class="p">]</span><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">rmg_reaction</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>rmgpy.reaction.Reaction<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">ts_dict</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>dict<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">energy</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>float<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/species/species.html#TSGuess"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.species.TSGuess" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">arc.species.species.</code><code class="sig-name descname">TSGuess</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">method</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">reactants_xyz</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>list<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">products_xyz</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>list<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">family</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">xyz</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>Union<span class="p">[</span>dict<span class="p">, </span>str<span class="p">]</span><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">rmg_reaction</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>rmgpy.reaction.Reaction<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">arc_reaction</span><span class="p">:</span> <span class="n">Optional</span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">ts_dict</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>dict<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">energy</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>float<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">project_dir</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/species/species.html#TSGuess"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.species.TSGuess" title="Permalink to this definition">¶</a></dt>
 <dd><p>TSGuess class</p>
 <p>The user can define xyz directly, and the default <cite>method</cite> will be ‘User guess’.
 Alternatively, either ARC or the user can provide reactant/s and product/s geometries with a specified <cite>method</cite>.
@@ -1261,7 +1261,8 @@ Alternatively, either ARC or the user can provide reactant/s and product/s geome
 - DEGSM (not implemented)
 - NEB (not implemented)
 - Kinbot: requires the RMG family, only works for H,C,O,S (not implemented)
-- AutoTST</p>
+- AutoTST
+- GCN</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -1273,8 +1274,10 @@ Alternatively, either ARC or the user can provide reactant/s and product/s geome
 <li><p><strong>family</strong> (<em>str</em><em>, </em><em>optional</em>) – The RMG family that corresponds to the reaction, if applicable.</p></li>
 <li><p><strong>xyz</strong> (<em>dict</em><em>, </em><em>str</em><em>, </em><em>optional</em>) – The 3D coordinates guess.</p></li>
 <li><p><strong>rmg_reaction</strong> (<em>Reaction</em><em>, </em><em>optional</em>) – An RMG Reaction object.</p></li>
+<li><p><strong>arc_reaction</strong> (<a class="reference internal" href="reaction.html#arc.reaction.ARCReaction" title="arc.reaction.ARCReaction"><em>ARCReaction</em></a><em>, </em><em>optional</em>) – An ARC Reaction object.</p></li>
 <li><p><strong>ts_dict</strong> (<em>dict</em><em>, </em><em>optional</em>) – A dictionary to create this object from (used when restarting ARC).</p></li>
-<li><p><strong>energy</strong> (<em>float</em>) – Relative energy of all TS conformers in kJ/mol.</p></li>
+<li><p><strong>energy</strong> (<em>float</em><em>, </em><em>optional</em>) – Relative energy of all TS conformers in kJ/mol.</p></li>
+<li><p><strong>project_dir</strong> (<em>str</em><em>, </em><em>optional</em>) – Folder path for the project: the input file path or ARC/Projects/project-name.</p></li>
 </ul>
 </dd>
 </dl>
@@ -1358,6 +1361,17 @@ Alternatively, either ARC or the user can provide reactant/s and product/s geome
 </dd></dl>
 
 <dl class="py attribute">
+<dt id="arc.species.species.TSGuess.arc_reaction">
+<code class="sig-name descname">arc_reaction</code><a class="headerlink" href="#arc.species.species.TSGuess.arc_reaction" title="Permalink to this definition">¶</a></dt>
+<dd><p>An ARC Reaction object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="reaction.html#arc.reaction.ARCReaction" title="arc.reaction.ARCReaction">ARCReaction</a>, optional</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
 <dt id="arc.species.species.TSGuess.t0">
 <code class="sig-name descname">t0</code><a class="headerlink" href="#arc.species.species.TSGuess.t0" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initial time of spawning the guess job.</p>
@@ -1413,6 +1427,17 @@ Assigned only if self.success is <code class="docutils literal notranslate"><spa
 </dl>
 </dd></dl>
 
+<dl class="py attribute">
+<dt id="arc.species.species.TSGuess.project_dir">
+<code class="sig-name descname">project_dir</code><a class="headerlink" href="#arc.species.species.TSGuess.project_dir" title="Permalink to this definition">¶</a></dt>
+<dd><p>Folder path for the project: the input file path or ARC/Projects/project-name.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py method">
 <dt id="arc.species.species.TSGuess.as_dict">
 <code class="sig-name descname">as_dict</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; dict<a class="reference internal" href="../_modules/arc/species/species.html#TSGuess.as_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.species.TSGuess.as_dict" title="Permalink to this definition">¶</a></dt>
@@ -1447,6 +1472,13 @@ Near-future supported families might be:
 <dt id="arc.species.species.TSGuess.from_dict">
 <code class="sig-name descname">from_dict</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ts_dict</span><span class="p">:</span> <span class="n">dict</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/species/species.html#TSGuess.from_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.species.TSGuess.from_dict" title="Permalink to this definition">¶</a></dt>
 <dd><p>A helper function for loading this object from a dictionary in a YAML file for restarting ARC</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="arc.species.species.TSGuess.gcn">
+<code class="sig-name descname">gcn</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/species/species.html#TSGuess.gcn"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.species.TSGuess.gcn" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine a TS guess using a graph convolutional network.</p>
+<p>Reactant and product must each be a single fragment.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1679,7 +1711,7 @@ Can be replaced by math.isclose in Py3</p>
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2018-2020, Alon Grinberg Dana
+        &copy; Copyright 2018-2021, Alon Grinberg Dana
 
     </p>
   </div>

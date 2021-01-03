@@ -583,6 +583,22 @@ the best alignment for non-oriented, non-ordered 3D structures.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt id="arc.reaction.ARCReaction.get_mapped_product_xyz">
+<code class="sig-name descname">get_mapped_product_xyz</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/reaction.html#ARCReaction.get_mapped_product_xyz"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.reaction.ARCReaction.get_mapped_product_xyz" title="Permalink to this definition">¶</a></dt>
+<dd><p>Uses the mapping from product onto reactant to create a new ARC Species for the mapped product.
+For now, only functional for A &lt;=&gt; B reactions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>dict: Mapped product atoms in ARC dictionary format.
+ARCSpecies: ARCSpecies object created from mapped coordinates.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>Tuple[dict, <a class="reference internal" href="species.html#arc.species.species.ARCSpecies" title="arc.species.species.ARCSpecies">ARCSpecies</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt id="arc.reaction.ARCReaction.get_species_count">
 <code class="sig-name descname">get_species_count</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">species</span><span class="p">:</span> <span class="n"><a class="reference internal" href="species.html#arc.species.species.ARCSpecies" title="arc.species.species.ARCSpecies">arc.species.species.ARCSpecies</a></span></em>, <em class="sig-param"><span class="n">well</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">0</span></em><span class="sig-paren">)</span> &#x2192; int<a class="reference internal" href="../_modules/arc/reaction.html#ARCReaction.get_species_count"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.reaction.ARCReaction.get_species_count" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the number of times a species participates in the reactants or products well.</p>
@@ -651,7 +667,7 @@ Used for determining the family</p>
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2018-2020, Alon Grinberg Dana
+        &copy; Copyright 2018-2021, Alon Grinberg Dana
 
     </p>
   </div>
