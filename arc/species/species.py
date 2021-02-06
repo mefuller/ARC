@@ -978,7 +978,7 @@ class ARCSpecies(object):
                         xyz = ts_guess.opt_xyz or ts_guess.initial_xyz
                         return xyz
                 return None
-            elif generate:
+            elif generate and (self.mol is not None or self.mol_list is not None):
                 self.get_cheap_conformer()
                 xyz = self.cheap_conformer
         return xyz
