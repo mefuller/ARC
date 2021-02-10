@@ -230,8 +230,8 @@ def xyz_to_np_array(xyz_dict: dict) -> np.ndarray:
     return np.array(xyz_to_coords_list(xyz_dict), dtype=np.float64)
 
 
-def xyz_to_xyz_file_format(xyz_dict:dict,
-                           comment:str='',
+def xyz_to_xyz_file_format(xyz_dict: dict,
+                           comment: str = '',
                            ) -> str:
     """
     Get the `XYZ file format <https://en.wikipedia.org/wiki/XYZ_file_format>`_ representation
@@ -252,6 +252,23 @@ def xyz_to_xyz_file_format(xyz_dict:dict,
     if len(comment.splitlines()) > 1:
         raise ConverterError('The comment attribute cannot be a multiline string, got:\n{0}'.format(list(comment)))
     return str(len(xyz_dict['symbols'])) + '\n' + comment.strip() + '\n' + xyz_to_str(xyz_dict) + '\n'
+
+
+def xyz_to_kinbot_list(xyz_dict: dict) -> List[Union[str, float]]:
+    """
+    Get the KinBot xyz format of a single running list of:
+    [symbol0, x0, y0, z0, symbol1, x1, y1, z1,...]
+
+    Args:
+        xyz_dict (dict): The ARC xyz format.
+
+    Returns: List[Union[str, float]]
+        The respective KinBot xyz format.
+    """
+    kinbot_xyz = list()
+    for symbol, coords in zip(xyz_dict['symbols'], xyz_dict['coords']):
+        kinbot_xyz.extend([symbol, coords[0], coords[1], coords[2]])
+    return kinbot_xyz
 
 
 def xyz_to_dmat(xyz_dict: dict) -> np.array:
