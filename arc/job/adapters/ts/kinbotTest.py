@@ -38,8 +38,6 @@ class TestKinBotAdapter(unittest.TestCase):
         rxn1.rmg_reaction = Reaction(reactants=[Species().from_smiles('CC[O]')],
                                      products=[Species().from_smiles('[CH2]CO')])
         rxn1.determine_family(rmg_database=self.rmgdb)
-        rxn1.determine_rxn_charge()
-        rxn1.determine_rxn_multiplicity()
         rxn1.arc_species_from_rmg_reaction()
         self.assertEqual(rxn1.family.label, 'intra_H_migration')
         kinbot1 = KinBotAdapter(reactions=[rxn1],
