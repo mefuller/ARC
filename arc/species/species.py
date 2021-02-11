@@ -6,7 +6,7 @@ If the species is a transition state (TS), its ``ts_guesses`` attribute will hav
 import datetime
 import numpy as np
 import os
-from typing import List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Tuple, Union
 
 import rmgpy.molecule.element as elements
 from arkane.common import ArkaneSpecies, symbol_by_number
@@ -23,7 +23,9 @@ from arc.common import (colliding_atoms,
                         determine_symmetry,
                         determine_top_group_indices,
                         get_logger,
-                        get_single_bond_length)
+                        get_single_bond_length,
+                        timedelta_from_str,
+                        )
 from arc.exceptions import SpeciesError, RotorError, InputError, TSError
 from arc.imports import settings
 from arc.level import Level
@@ -1735,49 +1737,52 @@ class TSGuess(object):
 
     Args:
         method (str, optional): The method/source used for the xyz guess.
-        reactants_xyz (list, optional): A list of tuples, each containing:
-                                        (reactant label, reactant geometry in string format).
-        products_xyz (list, optional): A list of tuples, each containing:
-                                       (product label, product geometry in string format).
+        method_index (int, optional): A sub-index, used for cases where a single method generates several guesses.
+                                      Counts separately for each direction, 'F' and 'R'.
+        method_direction (str, optional): The reaction direction used for generating the guess ('F' or 'R').
+        constraints (dict, optional): Any constraints to be used when first optimizing this guess
+                                      (i.e., keeping bond lengths of the reactive site constant).
         family (str, optional): The RMG family that corresponds to the reaction, if applicable.
+        success (bool, optional): Whether the TS guess method succeeded in generating an XYZ guess or not.
         xyz (dict, str, optional): The 3D coordinates guess.
         rmg_reaction (Reaction, optional): An RMG Reaction object.
         arc_reaction (ARCReaction, optional): An ARC Reaction object.
         ts_dict (dict, optional): A dictionary to create this object from (used when restarting ARC).
         energy (float, optional): Relative energy of all TS conformers in kJ/mol.
-        project_dir (str, optional): Folder path for the project: the input file path or ARC/Projects/project-name.
+        t0 (datetime.datetime, optional): Initial time of spawning the guess job.
+        execution_time (datetime.timedelta, optional): Overall execution time for the TS guess method.
 
     Attributes:
         initial_xyz (dict): The 3D coordinates guess.
         opt_xyz (dict): The 3D coordinates after optimization at the ts_guesses level.
         method (str): The method/source used for the xyz guess.
-        reactants_xyz (list): A list of tuples, each containing:
-                              (reactant label, reactant xyz).
-        products_xyz (list): A list of tuples, each containing:
-                             (product label, product xyz).
         family (str): The RMG family that corresponds to the reaction, if applicable.
         rmg_reaction (Reaction): An RMG Reaction object.
-        arc_reaction (ARCReaction, optional): An ARC Reaction object.
+        arc_reaction (ARCReaction): An ARC Reaction object.
         t0 (float): Initial time of spawning the guess job.
-        execution_time (str): Overall execution time for the TS guess method.  # todo: change to timedelta, move to args, initialize from AutoTST, GCN, Kinbot
-        success (bool): Whether the TS guess method succeeded in generating an XYZ guess or not.  # todo: move to initi to define insuccerssfull objects
+        execution_time (str): Overall execution time for the TS guess method.
+        success (bool): Whether the TS guess method succeeded in generating an XYZ guess or not.
         energy (float): Relative energy of all TS conformers in kJ/mol.
         index (int): An index corresponding to the conformer jobs spawned for each TSGuess object.
                      Assigned only if self.success is ``True``.
-        project_dir (str): Folder path for the project: the input file path or ARC/Projects/project-name.
 
     """
+
     def __init__(self,
+                 index: Optional[int] = None,
                  method: Optional[str] = None,
-                 reactants_xyz: Optional[list] = None,
-                 products_xyz: Optional[list] = None,
+                 method_index: Optional[int] = None,
+                 method_direction: Optional[str] = None,
+                 constraints: Optional[Dict[List[int], int]] = None,
+                 t0: Optional[datetime.datetime] = None,
+                 execution_time: Optional[Union[str, datetime.timedelta]] = None,
+                 success: Optional[bool] = None,
                  family: Optional[str] = None,
                  xyz: Optional[Union[dict, str]] = None,
                  rmg_reaction: Optional[Reaction] = None,
                  arc_reaction: Optional = None,
                  ts_dict: Optional[dict] = None,
                  energy: Optional[float] = None,
-                 project_dir: Optional[str] = None,
                  ):
 
         if ts_dict is not None:
@@ -1785,57 +1790,57 @@ class TSGuess(object):
             self.from_dict(ts_dict=ts_dict)
         else:
             # Not reading from a dictionary
-            self.t0 = None
-            self.index = None
-            self.execution_time = None
+            self.index = index
+            self.method = method.lower() if method is not None else 'user guess'
+            self.method_index = method_index
+            self.method_direction = method_direction
+            self.constraints = constraints
+            self.t0 = t0
+            self.execution_time = execution_time if execution_time is not None else execution_time
             self.opt_xyz = None
             self.initial_xyz = None
             self.process_xyz(xyz)  # populates self.initial_xyz
-            self.success = None
+            self.success = success
             self.energy = energy
-            self.project_dir = project_dir
-            self.method = method.lower() if method is not None else 'user guess'
             if 'user guess' in self.method:
                 if self.initial_xyz is None:
                     raise TSError('If no method is specified, an xyz guess must be given')
                 self.success = True
-                self.execution_time = 0
-            self.reactants_xyz = reactants_xyz if reactants_xyz is not None else list()
-            self.products_xyz = products_xyz if products_xyz is not None else list()
+                self.execution_time = datetime.timedelta(seconds=0)
             self.rmg_reaction = rmg_reaction
             self.arc_reaction = arc_reaction
             self.family = family
             # if self.family is None and self.method.lower() in ['kinbot', 'autotst']:
             #     raise TSError('No family specified for method {0}'.format(self.method))
-        if not ('user guess' in self.method or 'autotst' in self.method or 'gcn' in self.method
-                or self.method in ['user guess'] + [tsm.lower() for tsm in default_ts_methods]):
-            raise TSError('Unrecognized method. Should be either {0}. Got: {1}'.format(
-                          ['User guess'] + default_ts_methods, self.method))
+        if not (
+                'user guess' in self.method or 'autotst' in self.method or 'gcn' in self.method or 'kinbot' in self.method
+                or self.method in ['user guess'] + [tsm.lower() for tsm in
+                                                    default_ts_methods]):  # Todo: this is not well written
+            raise TSError(f"Unrecognized method. Should be either {['User guess'] + default_ts_methods}. "
+                          f"Got: {self.method}")
 
     def as_dict(self) -> dict:
         """A helper function for dumping this object as a dictionary in a YAML file for restarting ARC"""
         ts_dict = dict()
-        ts_dict['t0'] = self.t0
+        ts_dict['t0'] = self.t0.isoformat()
         ts_dict['method'] = self.method
+        ts_dict['method_index'] = self.method_index
+        ts_dict['method_direction'] = self.method_direction
         ts_dict['success'] = self.success
         ts_dict['energy'] = self.energy
         ts_dict['index'] = self.index
-        ts_dict['execution_time'] = self.execution_time
+        ts_dict['execution_time'] = str(self.execution_time)
         if self.initial_xyz:
             ts_dict['initial_xyz'] = self.initial_xyz
         if self.opt_xyz:
             ts_dict['opt_xyz'] = self.opt_xyz
-        if self.reactants_xyz:
-            ts_dict['reactants_xyz'] = self.reactants_xyz
-        if self.products_xyz:
-            ts_dict['products_xyz'] = self.products_xyz
         if self.family is not None:
             ts_dict['family'] = self.family
         if self.rmg_reaction is not None:
             rxn_string = ' <=> '.join([' + '.join([spc.molecule[0].copy(deep=True).to_smiles()
                                                    for spc in self.rmg_reaction.reactants]),
-                                      ' + '.join([spc.molecule[0].copy(deep=True).to_smiles()
-                                                  for spc in self.rmg_reaction.products])])
+                                       ' + '.join([spc.molecule[0].copy(deep=True).to_smiles()
+                                                   for spc in self.rmg_reaction.products])])
             ts_dict['rmg_reaction'] = rxn_string
         return ts_dict
 
@@ -1843,22 +1848,22 @@ class TSGuess(object):
         """
         A helper function for loading this object from a dictionary in a YAML file for restarting ARC
         """
-        self.t0 = ts_dict['t0'] if 't0' in ts_dict else None
+        self.t0 = datetime.datetime.fromisoformat(ts_dict['t0']) if 't0' in ts_dict else None
         self.index = ts_dict['index'] if 'index' in ts_dict else None
         self.initial_xyz = ts_dict['initial_xyz'] if 'initial_xyz' in ts_dict else None
         self.process_xyz(self.initial_xyz)  # re-populates self.initial_xyz
         self.opt_xyz = ts_dict['opt_xyz'] if 'opt_xyz' in ts_dict else None
         self.success = ts_dict['success'] if 'success' in ts_dict else None
         self.energy = ts_dict['energy'] if 'energy' in ts_dict else None
-        self.execution_time = ts_dict['execution_time'] if 'execution_time' in ts_dict else None
+        self.execution_time = timedelta_from_str(ts_dict['execution_time']) if 'execution_time' in ts_dict else None
         self.method = ts_dict['method'].lower() if 'method' in ts_dict else 'user guess'
+        self.method_index = ts_dict['method_index'] if 'method_index' in ts_dict else None
+        self.method_direction = ts_dict['method_direction'] if 'method_index' in ts_dict else None
         if 'user guess' in self.method:
             if self.initial_xyz is None:
                 raise TSError('If no method is specified, an xyz guess must be given (initial_xyz).')
             self.success = self.success if self.success is not None else True
-            self.execution_time = '0'
-        self.reactants_xyz = ts_dict['reactants_xyz'] if 'reactants_xyz' in ts_dict else list()
-        self.products_xyz = ts_dict['products_xyz'] if 'products_xyz' in ts_dict else list()
+            self.execution_time = datetime.timedelta(seconds=0)
         self.family = ts_dict['family'] if 'family' in ts_dict else None
         if self.family is None and self.method.lower() in ['kinbot', 'autotst']:
             # raise TSError('No family specified for method {0}'.format(self.method))
@@ -1869,8 +1874,8 @@ class TSGuess(object):
             plus = ' + '
             arrow = ' <=> '
             if arrow not in rxn_string:
-                raise TSError('Could not read the reaction string. Expected to find " <=> ". '
-                              'Got: {0}'.format(rxn_string))
+                raise TSError(f'Could not read the reaction string. Expected to find " <=> ".\n'
+                              f'Got: {rxn_string}')
             sides = rxn_string.split(arrow)
             reac = sides[0]
             prod = sides[1]
@@ -1905,11 +1910,24 @@ class TSGuess(object):
         """
         if xyz is not None:
             if not isinstance(xyz, (dict, str)):
-                raise InputError('xyz must be either a dictionary or string, '
-                                 'got:\n{0}\nwhich is a {1}'.format(xyz, type(xyz)))
+                raise InputError(f'xyz must be either a dictionary or string, '
+                                 f'got:\n{xyz}\nwhich is a {type(xyz)}')
             if isinstance(xyz, str):
                 xyz = parse_xyz_from_file(xyz) if os.path.isfile(xyz) else str_to_xyz(xyz)
             self.initial_xyz = check_xyz_dict(xyz)
+
+    def tic(self):
+        """
+        Initialize self.t0.
+        """
+        self.t0 = datetime.datetime.now()
+
+    def tok(self):
+        """
+        Assign the time difference between now and self.t0 into self.execution_time.
+        """
+        if self.t0 is not None:
+            self.execution_time = datetime.datetime.now() - self.t0
 
 
 def determine_occ(xyz, charge):
