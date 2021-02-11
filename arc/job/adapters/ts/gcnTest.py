@@ -77,6 +77,8 @@ class TestGCNAdapter(unittest.TestCase):
         self.assertEqual(rxn1.ts_species.ts_guesses[1].initial_xyz['symbols'],
                          ('C', 'C', 'N', 'O', 'N', 'N', 'H', 'H', 'H'))
         self.assertEqual(len(rxn1.ts_species.ts_guesses[1].initial_xyz['coords']), 9)
+        self.assertTrue(rxn1.ts_species.ts_guesses[0].success)
+        self.assertTrue(rxn1.ts_species.ts_guesses[0].execution_time.seconds < 59)  # 0:00:01.985336
 
     @classmethod
     def tearDownClass(cls):
