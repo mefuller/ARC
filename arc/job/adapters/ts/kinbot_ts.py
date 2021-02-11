@@ -263,15 +263,15 @@ class KinBotAdapter(JobAdapter):
         self.reactions = [self.reactions] if not isinstance(self.reactions, list) else self.reactions
         for rxn in self.reactions:
             if rxn.family.label in self.supported_families:
-                if self.reactions[0].ts_species is None:
+                if rxn.ts_species is None:
                     # mainly used for testing, in an ARC run the TS species should exist
-                    self.reactions[0].determine_rxn_charge()
-                    self.reactions[0].determine_rxn_multiplicity()
-                    self.reactions[0].ts_species = ARCSpecies(label='TS',
-                                                              is_ts=True,
-                                                              charge=rxn.charge,
-                                                              multiplicity=rxn.multiplicity,
-                                                              )
+                    rxn.determine_rxn_charge()
+                    rxn.determine_rxn_multiplicity()
+                    rxn.ts_species = ARCSpecies(label='TS',
+                                                is_ts=True,
+                                                charge=rxn.charge,
+                                                multiplicity=rxn.multiplicity,
+                                                )
                 species_to_explore = dict()
                 if len(rxn.r_species) == 1:
                     species_to_explore['F'] = rxn.r_species[0]
@@ -293,7 +293,8 @@ class KinBotAdapter(JobAdapter):
                                                           charge=rxn.charge,
                                                           )
                         for r, kinbot_rxn in enumerate(reaction_generator.species.reac_obj):
-                            step, fix, change, release = kinbot_rxn.get_constraints(step=20, geom=kinbot_rxn.species.geom)
+                            step, fix, change, release = kinbot_rxn.get_constraints(step=20,
+                                                                                    geom=kinbot_rxn.species.geom)
 
                             change_starting_zero = list()
                             for c in change:

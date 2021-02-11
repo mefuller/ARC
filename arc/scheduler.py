@@ -1,5 +1,5 @@
 """
-A module for scheduling jobs
+A module for scheduling ARC jobs
 Includes spawning, terminating, checking, and troubleshooting various jobs
 """
 
@@ -17,8 +17,6 @@ from arc import parser, plotter
 from arc.common import (extermum_list,
                         get_angle_in_180_range,
                         get_logger,
-                        get_ordinal_indicator,
-                        read_yaml_file,
                         save_yaml_file,
                         sort_two_lists_by_the_first,
                         )
@@ -46,13 +44,11 @@ from arc.species.species import (ARCSpecies,
 from arc.species.converter import (check_isomorphism,
                                    compare_confs,
                                    molecules_from_xyz,
-                                   standardize_xyz_string,
                                    str_to_xyz,
                                    xyz_to_coords_list,
                                    xyz_to_str,
                                    )
 import arc.rmgdb as rmgdb
-import arc.species.conformers as conformers  # import after importing plotter to avoid circular import
 from arc.species.vectors import get_angle, calculate_dihedral_angle
 
 logger = get_logger()
@@ -72,6 +68,8 @@ class Scheduler(object):
 
         job_dict = {label_1: {'conformers': {0: Job1,
                                              1: Job2, ...},  # TS guesses are considered `conformers` as well
+                              'pre-opt':    {job_name1: Job1,  # opt a TS geometry constraining the reactive site
+                                             job_name2: Job2, ...},
                               'opt':        {job_name1: Job1,
                                              job_name2: Job2, ...},
                               'sp':         {job_name1: Job1,
