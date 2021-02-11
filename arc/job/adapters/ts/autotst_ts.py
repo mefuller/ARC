@@ -236,8 +236,6 @@ class AutoTSTAdapter(JobAdapter):
             if rxn.family.label in self.supported_families:
                 if rxn.ts_species is None:
                     # mainly used for testing, in an ARC run the TS species should exist
-                    rxn.determine_rxn_charge()
-                    rxn.determine_rxn_multiplicity()
                     rxn.ts_species = ARCSpecies(label='TS',
                                                 is_ts=True,
                                                 charge=rxn.charge,
