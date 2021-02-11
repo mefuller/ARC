@@ -115,37 +115,40 @@ class KinBotAdapter(JobAdapter):
         self.execution_type = execution_type or 'incore'
         self.command = None  # KinBot does not have an executable file, just an API.
         self.url = 'https://github.com/zadorlab/KinBot'
-        self.supported_families = ['intra_H_migration',                   # todo: check, make a map for actual kinbot families  !!!!
-                                   'intra_H_migration_suprafacial',
-                                   'intra_R_migration',
-                                   'intra_OH_migration',
-                                   'cpd_H_migration',
-                                   'Intra_RH_Add_Endocyclic_F',
-                                   'Intra_RH_Add_Endocyclic_R',
-                                   'Cyclic_Ether_Formation',
-                                   'Intra_RH_Add_Exocyclic_F',
-                                   'Intra_RH_Add_Exocyclic_R',
-                                   'Retro_Ene',
-                                   'Intra_R_Add_Endocyclic_F',
-                                   'Intra_R_Add_ExoTetCyclic_F',
-                                   'Intra_R_Add_Exocyclic_F',
-                                   'Korcek_step2',
-                                   'r22_cycloaddition',
-                                   'r12_cycloaddition',
-                                   'r12_insertion_R',
-                                   'r13_insertion_CO2',
-                                   'r13_insertion_ROR',
-                                   'Diels_alder_addition',
-                                   'Intra_Diels_alder_R',
-                                   'ketoenol',
-                                   'HO2_Elimination_from_PeroxyRadical',
-                                   'R_Addition_COm3_R',
-                                   'R_Addition_MultipleBond',
-                                   '12_shift_S_F',
-                                   '12_shift_S_R',
-                                   'R_Addition_CSm_R',
-                                   'r13_insertion_RSR,'
-                                   ]
+        self.family_map = {'1+2_Cycloaddition': ['r12_cycloaddition'],
+                           '1,2_Insertion_CO': ['r12_insertion_R'],
+                           '1,2_Insertion_carbene': ['r12_insertion_R'],
+                           '1,2_shiftS': ['12_shift_S_F', '12_shift_S_R'],
+                           '1,3_Insertion_CO2': ['r13_insertion_CO2'],
+                           '1,3_Insertion_ROR': ['r13_insertion_ROR'],
+                           '1,3_Insertion_RSR': ['r13_insertion_RSR'],
+                           '2+2_cycloaddition_CCO': ['r22_cycloaddition'],
+                           '2+2_cycloaddition_CO': ['r22_cycloaddition'],
+                           '2+2_cycloaddition_CS': ['r22_cycloaddition'],
+                           '2+2_cycloaddition_Cd': ['r22_cycloaddition'],
+                           'Cyclic_Ether_Formation': ['Cyclic_Ether_Formation'],
+                           'Diels_alder_addition': ['Diels_alder_addition'],
+                           'HO2_Elimination_from_PeroxyRadical': ['HO2_Elimination_from_PeroxyRadical'],
+                           'Intra_Diels_alder_monocyclic': ['Intra_Diels_alder_R'],
+                           'Intra_ene_reaction': ['cpd_H_migration'],
+                           'intra_H_migration': ['intra_H_migration', 'intra_H_migration_suprafacial'],
+                           'intra_OH_migration': ['intra_OH_migration'],
+                           'Intra_R_Add_Endocyclic': ['Intra_R_Add_Endocyclic_F'],
+                           'Intra_R_Add_Exocyclic': ['Intra_R_Add_Exocyclic_F'],
+                           'Intra_R_Add_ExoTetCyclic': ['Intra_R_Add_ExoTetCyclic_F'],
+                           'Intra_Retro_Diels_alder_bicyclic': ['Intra_Diels_alder_R'],  # not sure these fit together
+                           'Intra_RH_Add_Endocyclic': ['Intra_RH_Add_Endocyclic_F', 'Intra_RH_Add_Endocyclic_R'],
+                           'Intra_RH_Add_Exocyclic': ['Intra_RH_Add_Exocyclic_F', 'Intra_RH_Add_Exocyclic_R'],
+                           'ketoenol': ['ketoenol'],
+                           'Korcek_step2': ['Korcek_step2'],
+                           'R_Addition_COm': ['R_Addition_COm3_R'],
+                           'R_Addition_CSm': ['R_Addition_CSm_R'],
+                           'R_Addition_MultipleBond': ['R_Addition_MultipleBond'],
+                           'Retroene': ['Retro_Ene'],
+                           # '?': ['intra_R_migration'],  # unknown
+                           }
+
+# todo: add .supported_rmg_families
 
         if reactions is None:
             raise ValueError('Cannot execute KinBot without ARCReaction object(s).')
