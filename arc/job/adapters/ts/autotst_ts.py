@@ -9,6 +9,8 @@ import os
 import subprocess
 from typing import TYPE_CHECKING, List, Optional, Tuple, Union
 
+from rmgpy.reaction import Reaction
+
 from arc.common import AUTOTST_PYTHON, arc_path, get_logger, read_yaml_file
 from arc.job.adapter import JobAdapter
 from arc.job.adapters.common import check_argument_consistency
@@ -20,15 +22,14 @@ HAS_AUTOTST = True
 try:
     # new format
     from autotst.reaction import Reaction as AutoTST_Reaction
-except ImportError:
+except (ImportError, ModuleNotFoundError):
     try:
         # old format
         from autotst.reaction import AutoTST_Reaction
-    except ImportError:
+    except (ImportError, ModuleNotFoundError):
         HAS_AUTOTST = False
 
 if TYPE_CHECKING:
-    from rmgpy.reaction import Reaction
     from arc.level import Level
     from arc.reaction import ARCReaction
     from arc.species import ARCSpecies
@@ -231,35 +232,62 @@ class AutoTSTAdapter(JobAdapter):
         self.initial_time = self.initial_time if self.initial_time else datetime.datetime.now()
 
         self.reactions = [self.reactions] if not isinstance(self.reactions, list) else self.reactions
-        if self.reactions[0].family.label in self.supported_families:
-            reaction_label = get_autotst_reaction_string(self.reactions[0].rmg_reaction)
-            if self.reactions[0].ts_species is None:
-                # mainly used for testing, in an ARC run the TS species should exist
-                self.reactions[0].determine_rxn_charge()
-                self.reactions[0].determine_rxn_multiplicity()
-                self.reactions[0].ts_species = ARCSpecies(label=reaction_label,
-                                                          is_ts=True,
-                                                          charge=self.reactions[0].charge,
-                                                          multiplicity=self.reactions[0].multiplicity,
-                                                          )
+        for rxn in self.reactions:
+            if rxn.family.label in self.supported_families:
+                if rxn.ts_species is None:
+                    # mainly used for testing, in an ARC run the TS species should exist
+                    rxn.determine_rxn_charge()
+                    rxn.determine_rxn_multiplicity()
+                    rxn.ts_species = ARCSpecies(label='TS',
+                                                is_ts=True,
+                                                charge=rxn.charge,
+                                                multiplicity=rxn.multiplicity,
+                                                )
+                reaction_label_fwd = get_autotst_reaction_string(rxn.rmg_reaction)
+                reaction_label_rev = get_autotst_reaction_string(Reaction(reactants=rxn.rmg_reaction.products,
+                                                                          products=rxn.rmg_reaction.reactants))
 
-            # run AutoTST as a subprocess in the reverse directions
-            script_path = os.path.join(arc_path, 'arc', 'job', 'adapters', 'ts', 'scripts', 'autotst_script.py')
-            commands = ['source ~/.bashrc']
-            commands.append(f'{AUTOTST_PYTHON} {script_path} {reaction_label} {self.output_path}')
-            command = '; '.join(commands)
-            output = subprocess.run(command, shell=True, executable='/bin/bash')
-            if output.returncode:
-                logger.error(f'AutoTST subprocess did not give a successful return code for {self.reactions[0]}:\n'
-                             f'Got return code: {output.returncode}\n'
-                             f'stdout: {output.stdout}\n'
-                             f'stderr: {output.stderr}')
-            if os.path.isfile(self.output_path):
-                results = read_yaml_file(path=self.output_path)
-                for result in results:
-                    xyz = xyz_from_data(coords=result['coords'], numbers=result['numbers'])
-                    ts_guess = TSGuess(method='AutoTST', xyz=xyz)
-                    self.reactions[0].ts_species.ts_guesses.append(ts_guess)
+                for reaction_label, direction in zip([reaction_label_fwd, reaction_label_rev], ['F', 'R']):
+                    # run AutoTST as a subprocess in the desired direction
+                    script_path = os.path.join(arc_path, 'arc', 'job', 'adapters', 'ts', 'scripts', 'autotst_script.py')
+                    commands = ['source ~/.bashrc']
+                    commands.append(f'{AUTOTST_PYTHON} {script_path} {reaction_label} {self.output_path}')
+                    command = '; '.join(commands)
+
+                    tic = datetime.datetime.now()
+
+                    output = subprocess.run(command, shell=True, executable='/bin/bash')
+
+                    tok = datetime.datetime.now() - tic
+
+                    if output.returncode:
+                        direction_str = 'forward' if direction == 'F' else 'reverse'
+                        logger.error(f'AutoTST subprocess did not give a successful return code for {rxn} '
+                                     f'in the {direction_str} direction.\n'
+                                     f'Got return code: {output.returncode}\n'
+                                     f'stdout: {output.stdout}\n'
+                                     f'stderr: {output.stderr}')
+                    if os.path.isfile(self.output_path):
+                        results = read_yaml_file(path=self.output_path)
+                        if results:
+                            for i, result in enumerate(results):
+                                ts_guess = TSGuess(method=f'AutoTST',
+                                                   method_direction=direction,
+                                                   method_index=i,
+                                                   t0=tic,
+                                                   execution_time=tok,
+                                                   xyz=xyz_from_data(coords=result['coords'], numbers=result['numbers']),
+                                                   success=True,
+                                                   )
+                                rxn.ts_species.ts_guesses.append(ts_guess)
+                        else:
+                            ts_guess = TSGuess(method=f'AutoTST',
+                                               method_direction=direction,
+                                               t0=tic,
+                                               execution_time=tok,
+                                               success=False,
+                                               )
+                            rxn.ts_species.ts_guesses.append(ts_guess)
 
         self.final_time = datetime.datetime.now()
 
@@ -271,7 +299,7 @@ class AutoTSTAdapter(JobAdapter):
         self.execute_incore()
 
 
-def get_autotst_reaction_string(rmg_reaction: 'Reaction') -> str:
+def get_autotst_reaction_string(rmg_reaction: Reaction) -> str:
     """
     Returns the AutoTST reaction string in the form of r1+r2_p1+p2 (e.g., `CCC+[O]O_[CH2]CC+OO`).
 
