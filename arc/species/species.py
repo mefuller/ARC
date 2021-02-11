@@ -1759,8 +1759,8 @@ class TSGuess(object):
         rmg_reaction (Reaction): An RMG Reaction object.
         arc_reaction (ARCReaction, optional): An ARC Reaction object.
         t0 (float): Initial time of spawning the guess job.
-        execution_time (str): Overall execution time for the TS guess method.
-        success (bool): Whether the TS guess method succeeded in generating an XYZ guess or not.
+        execution_time (str): Overall execution time for the TS guess method.  # todo: change to timedelta, move to args, initialize from AutoTST, GCN, Kinbot
+        success (bool): Whether the TS guess method succeeded in generating an XYZ guess or not.  # todo: move to initi to define insuccerssfull objects
         energy (float): Relative energy of all TS conformers in kJ/mol.
         index (int): An index corresponding to the conformer jobs spawned for each TSGuess object.
                      Assigned only if self.success is ``True``.

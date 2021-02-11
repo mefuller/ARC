@@ -53,6 +53,8 @@ class JobEnum(str, Enum):
     """
     The supported job software adapters.
     The available adapters are a finite set.
+
+    Todo: Add missing adapters
     """
     # ESS
     # arc = 'arc'
