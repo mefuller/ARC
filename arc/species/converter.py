@@ -8,6 +8,7 @@ from typing import Dict, Iterable, List, Optional, Tuple, Union
 
 import pybel
 import qcelemental as qcel
+from ase import Atoms
 from rdkit import Chem
 from rdkit.Chem import rdMolTransforms as rdMT
 from rdkit.Chem.rdchem import AtomValenceException
@@ -369,6 +370,19 @@ def xyz_from_data(coords, numbers=None, symbols=None, isotopes=None):
         isotopes = tuple(get_most_common_isotope_for_element(symbol) for symbol in symbols)
     xyz_dict = {'symbols': symbols, 'isotopes': isotopes, 'coords': coords}
     return xyz_dict
+
+
+def xyz_to_ase(xyz_dict: dict) -> Atoms:
+    """
+    Convert an xyz dict to an ASE Atoms object.
+
+    Args:
+        xyz_dict (dict): The ARC xyz format.
+
+    Returns:
+        Type[Atoms]: The corresponding ASE Atom object.
+    """
+    return Atoms(xyz_dict['symbols'], xyz_dict['coords'])
 
 
 def rmg_conformer_to_xyz(conformer):
