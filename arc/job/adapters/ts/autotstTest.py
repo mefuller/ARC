@@ -48,12 +48,16 @@ class TestAutoTSTAdapter(unittest.TestCase):
         self.assertTrue(rxn1.ts_species.is_ts)
         self.assertEqual(rxn1.ts_species.charge, 0)
         self.assertEqual(rxn1.ts_species.multiplicity, 2)
-        self.assertEqual(len(rxn1.ts_species.ts_guesses), 2)
+        self.assertEqual(len(rxn1.ts_species.ts_guesses), 4)
         self.assertEqual(rxn1.ts_species.ts_guesses[0].initial_xyz['symbols'],
                          ('O', 'O', 'C', 'C', 'C', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H'))
         self.assertEqual(rxn1.ts_species.ts_guesses[1].initial_xyz['symbols'],
                          ('O', 'O', 'C', 'C', 'C', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H'))
         self.assertEqual(len(rxn1.ts_species.ts_guesses[1].initial_xyz['coords']), 14)
+        self.assertTrue(rxn1.ts_species.ts_guesses[0].success)
+        self.assertTrue(rxn1.ts_species.ts_guesses[1].success)
+        self.assertTrue(rxn1.ts_species.ts_guesses[2].success)
+        self.assertTrue(rxn1.ts_species.ts_guesses[3].success)
 
         rxn2 = ARCReaction(reactants=['CCCOH', 'OH'], products=['CCCO', 'H2O'])
         rxn2.rmg_reaction = Reaction(reactants=[Species().from_smiles('CCCO'), Species().from_smiles('[OH]')],
@@ -69,7 +73,7 @@ class TestAutoTSTAdapter(unittest.TestCase):
         self.assertTrue(rxn2.ts_species.is_ts)
         self.assertEqual(rxn2.ts_species.charge, 0)
         self.assertEqual(rxn2.ts_species.multiplicity, 2)
-        self.assertEqual(len(rxn2.ts_species.ts_guesses), 2)
+        self.assertEqual(len(rxn2.ts_species.ts_guesses), 4)
         self.assertEqual(rxn2.ts_species.ts_guesses[0].initial_xyz['symbols'],
                          ('O', 'O', 'C', 'C', 'C', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H'))
         self.assertEqual(len(rxn2.ts_species.ts_guesses[1].initial_xyz['coords']), 14)
@@ -88,10 +92,13 @@ class TestAutoTSTAdapter(unittest.TestCase):
         self.assertTrue(rxn3.ts_species.is_ts)
         self.assertEqual(rxn3.ts_species.charge, 0)
         self.assertEqual(rxn3.ts_species.multiplicity, 2)
-        self.assertEqual(len(rxn3.ts_species.ts_guesses), 2)
+        self.assertEqual(len(rxn3.ts_species.ts_guesses), 4)
         self.assertEqual(rxn3.ts_species.ts_guesses[0].initial_xyz['symbols'],
                          ('O', 'C', 'C', 'H', 'H', 'H', 'H', 'H'))
+        self.assertEqual(len(rxn3.ts_species.ts_guesses[0].initial_xyz['coords']), 8)
         self.assertEqual(len(rxn3.ts_species.ts_guesses[1].initial_xyz['coords']), 8)
+        self.assertEqual(len(rxn3.ts_species.ts_guesses[2].initial_xyz['coords']), 8)
+        self.assertEqual(len(rxn3.ts_species.ts_guesses[3].initial_xyz['coords']), 8)
 
     def test_autotst_intra_h_migration(self):
         """Test AutoTST for intra-H migration reactions"""
@@ -107,12 +114,29 @@ class TestAutoTSTAdapter(unittest.TestCase):
                                )
         atst1.execute_incore()
         self.assertEqual(rxn1.ts_species.multiplicity, 2)
-        self.assertEqual(len(rxn1.ts_species.ts_guesses), 2)
+        self.assertEqual(len(rxn1.ts_species.ts_guesses), 4)
         self.assertEqual(rxn1.ts_species.ts_guesses[0].initial_xyz['symbols'],
                          ('O', 'C', 'C', 'H', 'H', 'H', 'H', 'H'))
         self.assertEqual(rxn1.ts_species.ts_guesses[1].initial_xyz['symbols'],
                          ('O', 'C', 'C', 'H', 'H', 'H', 'H', 'H'))
         self.assertEqual(len(rxn1.ts_species.ts_guesses[1].initial_xyz['coords']), 8)
+        self.assertEqual(rxn1.ts_species.ts_guesses[0].method, 'autotst')
+        self.assertEqual(rxn1.ts_species.ts_guesses[1].method, 'autotst')
+        self.assertEqual(rxn1.ts_species.ts_guesses[2].method, 'autotst')
+        self.assertEqual(rxn1.ts_species.ts_guesses[3].method, 'autotst')
+        self.assertEqual(rxn1.ts_species.ts_guesses[0].method_index, 0)
+        self.assertEqual(rxn1.ts_species.ts_guesses[1].method_index, 1)
+        self.assertEqual(rxn1.ts_species.ts_guesses[2].method_index, 0)
+        self.assertEqual(rxn1.ts_species.ts_guesses[3].method_index, 1)
+        self.assertEqual(rxn1.ts_species.ts_guesses[0].method_direction, 'F')
+        self.assertEqual(rxn1.ts_species.ts_guesses[1].method_direction, 'F')
+        self.assertEqual(rxn1.ts_species.ts_guesses[2].method_direction, 'R')
+        self.assertEqual(rxn1.ts_species.ts_guesses[3].method_direction, 'R')
+        self.assertTrue(rxn1.ts_species.ts_guesses[3].execution_time.seconds < 59)  # 0:00:13.143187
+        self.assertTrue(rxn1.ts_species.ts_guesses[0].success)
+        self.assertTrue(rxn1.ts_species.ts_guesses[1].success)
+        self.assertTrue(rxn1.ts_species.ts_guesses[2].success)
+        self.assertTrue(rxn1.ts_species.ts_guesses[3].success)
 
     def test_autotst_r_addition_multiple_bond(self):
         """Test AutoTST for R addition multiple bond reactions"""
@@ -128,7 +152,7 @@ class TestAutoTSTAdapter(unittest.TestCase):
                                )
         atst1.execute_incore()
         self.assertEqual(rxn1.ts_species.multiplicity, 2)
-        self.assertEqual(len(rxn1.ts_species.ts_guesses), 2)
+        self.assertEqual(len(rxn1.ts_species.ts_guesses), 4)
         self.assertEqual(rxn1.ts_species.ts_guesses[0].initial_xyz['symbols'],
                          ('O', 'C', 'C', 'H', 'H', 'H'))
         self.assertEqual(rxn1.ts_species.ts_guesses[1].initial_xyz['symbols'],
