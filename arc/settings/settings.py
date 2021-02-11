@@ -63,6 +63,9 @@ global_ess_settings = {
     'terachem': 'server1',
 }
 
+# TS methods to try:
+ts_adapters = ['AutoTST', 'GCN', 'KinBot']
+
 # List here job types to execute by default
 default_job_types = {'conformers': True,      # defaults to True if not specified
                      'opt': True,             # defaults to True if not specified
@@ -163,9 +166,6 @@ orca_default_options_dict = {
     'global': {'keyword': {'scf_convergence': 'TightSCF',
                            'dlpno_threshold': 'normalPNO'}},
 }
-
-# default_ts_methods = ['QST2', 'DEGSM', 'NEB', 'Kinbot', 'AutoTST']
-default_ts_methods = []
 
 valid_chars = "-_()[]=., %s%s" % (string.ascii_letters, string.digits)
 
