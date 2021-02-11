@@ -59,6 +59,24 @@ class TestKinBotAdapter(unittest.TestCase):
         self.assertEqual(len(rxn1.ts_species.ts_guesses[1].initial_xyz['coords']), 8)
         self.assertEqual(len(rxn1.ts_species.ts_guesses[2].initial_xyz['coords']), 8)
         self.assertEqual(len(rxn1.ts_species.ts_guesses[3].initial_xyz['coords']), 8)
+        print(rxn1.ts_species.ts_guesses[3].execution_time)
+        self.assertEqual(rxn1.ts_species.ts_guesses[0].method, 'kinbot')
+        self.assertEqual(rxn1.ts_species.ts_guesses[1].method, 'kinbot')
+        self.assertEqual(rxn1.ts_species.ts_guesses[2].method, 'kinbot')
+        self.assertEqual(rxn1.ts_species.ts_guesses[3].method, 'kinbot')
+        self.assertEqual(rxn1.ts_species.ts_guesses[0].method_index, 0)
+        self.assertEqual(rxn1.ts_species.ts_guesses[1].method_index, 1)
+        self.assertEqual(rxn1.ts_species.ts_guesses[2].method_index, 0)
+        self.assertEqual(rxn1.ts_species.ts_guesses[3].method_index, 1)
+        self.assertEqual(rxn1.ts_species.ts_guesses[0].method_direction, 'F')
+        self.assertEqual(rxn1.ts_species.ts_guesses[1].method_direction, 'F')
+        self.assertEqual(rxn1.ts_species.ts_guesses[2].method_direction, 'R')
+        self.assertEqual(rxn1.ts_species.ts_guesses[3].method_direction, 'R')
+        self.assertTrue(rxn1.ts_species.ts_guesses[3].execution_time.seconds < 59)  # 0:00:00.003082
+        self.assertTrue(rxn1.ts_species.ts_guesses[0].success)
+        self.assertTrue(rxn1.ts_species.ts_guesses[1].success)
+        self.assertTrue(rxn1.ts_species.ts_guesses[2].success)
+        self.assertTrue(rxn1.ts_species.ts_guesses[3].success)
 
     @classmethod
     def tearDownClass(cls):
