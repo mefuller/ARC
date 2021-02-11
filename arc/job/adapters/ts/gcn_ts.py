@@ -24,6 +24,9 @@ from arc.species.species import ARCSpecies, TSGuess
 HAS_GCN = True
 try:
     from inference import inference
+except ModuleNotFoundError:
+    # arc_env is missing GCN packages such as torch_sparse
+    pass
 except ImportError:
     HAS_GCN = False
 
@@ -228,91 +231,116 @@ class GCNAdapter(JobAdapter):
                                       f'See {self.url} for more information, or use the MAKEFILE provided with ARC.')
         self._log_job_execution()
         self.initial_time = self.initial_time if self.initial_time else datetime.datetime.now()
+        self.reactions = [self.reactions] if not isinstance(self.reactions, list) else self.reactions
+        for rxn in self.reactions:
 
-        # Check that this is indeed an isomerization reaction, i.e., only one reactant and one product.
-        num_reactants = len(self.reactions[0].r_species)
-        num_products = len(self.reactions[0].p_species)
+            if rxn.ts_species is None:
+                # mainly used for testing, in an ARC run the TS species should exist
+                rxn.determine_rxn_charge()
+                rxn.determine_rxn_multiplicity()
+                rxn.ts_species = ARCSpecies(label=self.species_label,
+                                            is_ts=True,
+                                            charge=rxn.charge,
+                                            multiplicity=rxn.multiplicity,
+                                            )
 
-        if num_reactants > 1:
-            logger.error(f'Error while using GCN with reactants: {self.reactions[0].r_species}.\n'
-                         f'Isomerization reactions must have only 1 reactant.')
-        if num_products > 1:
-            logger.error(f'Error while using GCN with products: {self.reactions[0].p_species}.\n'
-                         f'Isomerization reactions must have only 1 product.')
-        if num_reactants > 1 or num_products > 1:
-            return None
+            # Check that this is indeed an isomerization reaction, i.e., only one reactant and one product.
+            num_reactants = len(rxn.r_species)
+            num_products = len(rxn.p_species)
 
-        # prepare run
-        reactant = self.reactions[0].r_species[0]
-        reactant_rdkit_mol = rdkit_conf_from_mol(reactant.mol, reactant.get_xyz())[1]
+            if num_reactants > 1:
+                logger.error(f'Error while using GCN with reactants: {rxn.r_species}.\n'
+                             f'Isomerization reactions must have only 1 reactant.')
+            if num_products > 1:
+                logger.error(f'Error while using GCN with products: {rxn.p_species}.\n'
+                             f'Isomerization reactions must have only 1 product.')
+            if num_reactants > 1 or num_products > 1:
+                return None
 
-        # GCN requires an atom-mapped reaction so map the product atoms onto the reactant atoms
-        mapped_product = self.reactions[0].get_mapped_product_xyz()[1]
-        product_rdkit_mol = rdkit_conf_from_mol(mapped_product.mol, mapped_product.get_xyz())[1]
+            # prepare run
+            reactant = rxn.r_species[0]
+            reactant_rdkit_mol = rdkit_conf_from_mol(reactant.mol, reactant.get_xyz())[1]
 
-        # write input files for GCN to the TS project folder
-        w = Chem.SDWriter(self.reactant_path)
-        w.write(reactant_rdkit_mol)
-        w.close()
+            # GCN requires an atom-mapped reaction so map the product atoms onto the reactant atoms
+            mapped_product = rxn.get_mapped_product_xyz()[1]
+            product_rdkit_mol = rdkit_conf_from_mol(mapped_product.mol, mapped_product.get_xyz())[1]
 
-        w = Chem.SDWriter(self.product_path)
-        w.write(product_rdkit_mol)
-        w.close()
+            # write input files for GCN to the TS project folder
+            w = Chem.SDWriter(self.reactant_path)
+            w.write(reactant_rdkit_mol)
+            w.close()
 
-        # run the GCN as a subprocess in the forward directions
-        script_path = os.path.join(arc_path, 'arc', 'job', 'adapters', 'ts', 'scripts', 'gcn_script.py')
-        command_0 = 'source ~/.bashrc'
+            w = Chem.SDWriter(self.product_path)
+            w.write(product_rdkit_mol)
+            w.close()
+            script_path = os.path.join(arc_path, 'arc', 'job', 'adapters', 'ts', 'scripts', 'gcn_script.py')
+            command_0 = 'source ~/.bashrc'
 
-        ts_xyz_fwd, ts_xyz_rev = None, None
-        commands = [command_0]
-        commands.append(f'{TS_GCN_PYTHON} {script_path} '
-                        f'--r_sdf_path {self.reactant_path} '
-                        f'--p_sdf_path {self.product_path} '
-                        f'--ts_xyz_path {self.ts_fwd_path}')
-        command = '; '.join(commands)
-        output = subprocess.run(command, shell=True, executable='/bin/bash')
-        if output.returncode:
-            logger.error(f'GCN subprocess ran in the forward direction did not give a successful return code '
-                         f'for {self.reactions[0]}:\n'
-                         f'Got return code: {output.returncode}\n'
-                         f'stdout: {output.stdout}\n'
-                         f'stderr: {output.stderr}')
-        elif os.path.isfile(self.ts_fwd_path):
-            ts_xyz_fwd = str_to_xyz(self.ts_fwd_path)
+            ts_xyz_fwd, ts_xyz_rev = None, None
 
-        # run the GCN as a subprocess in the reverse directions
-        commands = [command_0]
-        commands.append(f'{TS_GCN_PYTHON} {script_path} '
-                        f'--r_sdf_path {self.product_path} '
-                        f'--p_sdf_path {self.reactant_path} '
-                        f'--ts_xyz_path {self.ts_rev_path}')
-        command = '; '.join(commands)
-        output = subprocess.run(command, shell=True, executable='/bin/bash')
-        if output.returncode:
-            logger.error(f'GCN subprocess ran in the reverse direction did not give a successful return code '
-                         f'for {self.reactions[0]}:\n'
-                         f'Got return code: {output.returncode}\n'
-                         f'stdout: {output.stdout}\n'
-                         f'stderr: {output.stderr}')
-        elif os.path.isfile(self.ts_rev_path):
-            ts_xyz_rev = str_to_xyz(self.ts_rev_path)
+            # run the GCN as a subprocess in the forward directions
+            ts_guess_f = TSGuess(method=f'GCN',
+                                 method_direction='F',
+                                 )
+            ts_guess_f.tic()
 
-        if self.reactions[0].ts_species is None:
-            # mainly used for testing, in an ARC run the TS species should exist
-            self.reactions[0].determine_rxn_charge()
-            self.reactions[0].determine_rxn_multiplicity()
-            self.reactions[0].ts_species = ARCSpecies(label=self.species_label,
-                                                      is_ts=True,
-                                                      charge=self.reactions[0].charge,
-                                                      multiplicity=self.reactions[0].multiplicity,
-                                                      )
+            commands = [command_0]
+            commands.append(f'{TS_GCN_PYTHON} {script_path} '
+                            f'--r_sdf_path {self.reactant_path} '
+                            f'--p_sdf_path {self.product_path} '
+                            f'--ts_xyz_path {self.ts_fwd_path}')
+            command = '; '.join(commands)
+            output = subprocess.run(command, shell=True, executable='/bin/bash')
+            if output.returncode:
+                logger.error(f'GCN subprocess ran in the forward direction did not give a successful return code '
+                             f'for {rxn} in the forward direction.\n'
+                             f'Got return code: {output.returncode}\n'
+                             f'stdout: {output.stdout}\n'
+                             f'stderr: {output.stderr}')
+            elif os.path.isfile(self.ts_fwd_path):
+                ts_xyz_fwd = str_to_xyz(self.ts_fwd_path)
 
-        for xyz, method in zip([ts_xyz_fwd, ts_xyz_rev], ['GCN forward', 'GCN reverse']):
-            if xyz is not None:  # todo: if None append anyway, say .success = False
-                ts_guess = TSGuess(method=method, xyz=xyz)
-                self.reactions[0].ts_species.ts_guesses.append(ts_guess)
+            ts_guess_f.tok()
 
-        self.final_time = datetime.datetime.now()  # time for two runs
+            if ts_xyz_fwd is not None:
+                ts_guess_f.success = True
+                ts_guess_f.process_xyz(ts_xyz_fwd)
+            else:
+                ts_guess_f.success = False
+            rxn.ts_species.ts_guesses.append(ts_guess_f)
+
+            # run the GCN as a subprocess in the reverse directions
+            ts_guess_r = TSGuess(method=f'GCN',
+                                 method_direction='R',
+                                 )
+            ts_guess_r.tic()
+
+            commands = [command_0]
+            commands.append(f'{TS_GCN_PYTHON} {script_path} '
+                            f'--r_sdf_path {self.product_path} '
+                            f'--p_sdf_path {self.reactant_path} '
+                            f'--ts_xyz_path {self.ts_rev_path}')
+            command = '; '.join(commands)
+            output = subprocess.run(command, shell=True, executable='/bin/bash')
+            if output.returncode:
+                logger.error(f'GCN subprocess ran in the reverse direction did not give a successful return code '
+                             f'for {rxn} in the reverse direction.\n'
+                             f'Got return code: {output.returncode}\n'
+                             f'stdout: {output.stdout}\n'
+                             f'stderr: {output.stderr}')
+            elif os.path.isfile(self.ts_rev_path):
+                ts_xyz_rev = str_to_xyz(self.ts_rev_path)
+
+            ts_guess_r.tok()
+
+            if ts_xyz_fwd is not None:
+                ts_guess_r.success = True
+                ts_guess_r.process_xyz(ts_xyz_rev)
+            else:
+                ts_guess_r.success = False
+            rxn.ts_species.ts_guesses.append(ts_guess_r)
+
+        self.final_time = datetime.datetime.now()
 
     def execute_queue(self):
         """
