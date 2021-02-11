@@ -110,6 +110,9 @@ class ARCReaction(object):
         self.rmg_reactions = None
         self.ts_xyz_guess = ts_xyz_guess or list()
         self.preserve_param_in_scan = preserve_param_in_scan
+        self._atom_map = None
+        self._charge = charge
+        self._multiplicity = multiplicity
         if reaction_dict is not None:
             # Reading from a dictionary
             self.from_dict(reaction_dict=reaction_dict)
@@ -118,22 +121,18 @@ class ARCReaction(object):
             self.label = label
             self.index = None
             self.ts_species = None
-            if self.multiplicity is not None and not isinstance(self.multiplicity, int):
-                raise InputError('Reaction multiplicity must be an integer, got {0} of type {1}.'.format(
-                    self.multiplicity, type(self.multiplicity)))
             self.reactants = reactants
             self.products = products
             self.rmg_reaction = rmg_reaction
             if self.rmg_reaction is None and (self.reactants is None or self.products is None) and not self.label:
-                raise InputError('Cannot determine reactants and/or products labels for reaction {0}'.format(
-                    self.label))
+                raise InputError(f'Cannot determine reactants and/or products labels for reaction {self.label}')
+            if self.multiplicity is not None and not isinstance(self.multiplicity, int):
+                raise InputError(f'Reaction multiplicity must be an integer, '
+                                 f'got {self.multiplicity} of type {type(self.multiplicity)}.')
             self.set_label_reactants_products()
             self.ts_methods = ts_methods if ts_methods is not None else default_ts_methods
             self.ts_methods = [tsm.lower() for tsm in self.ts_methods]
             self.ts_xyz_guess = ts_xyz_guess if ts_xyz_guess is not None else list()
-            self._atom_map = None
-            self._charge = charge
-            self._multiplicity = multiplicity
         if len(self.reactants) > 3 or len(self.products) > 3:
             raise ReactionError(f'An ARC Reaction can have up to three reactants / products. got {len(self.reactants)} '
                                 f'reactants and {len(self.products)} products for reaction {self.label}.')
@@ -336,6 +335,8 @@ class ARCReaction(object):
     def get_rxn_multiplicity(self):
         """A helper function for determining the surface multiplicity"""
         multiplicity = None
+        # the following debug message is important, it calls the ._charge property and sets it if it is None
+        logger.debug(f'Determining multiplicity for reaction {self.label} with charge {self.charge}...')
         ordered_r_mult_list, ordered_p_mult_list = list(), list()
         if len(self.r_species):
             if len(self.r_species) == 1:
@@ -375,7 +376,7 @@ class ARCReaction(object):
                 ordered_p_mult_list = sorted([self.rmg_reaction.products[0].molecule[0].multiplicity,
                                               self.rmg_reaction.products[1].molecule[0].multiplicity,
                                               self.rmg_reaction.products[2].molecule[0].multiplicity])
-        if self.multiplicity is None:
+        if multiplicity is None:
             if ordered_r_mult_list == [1, 1]:
                 multiplicity = 1  # S + S = D
             elif ordered_r_mult_list == [1, 2]:
@@ -443,8 +444,6 @@ class ARCReaction(object):
                     multiplicity = 4
                 multiplicity = 2
                 logger.warning(f'ASSUMING a multiplicity of 2 (doublet) for reaction {self.label}')
-            else:
-                raise ReactionError(f'Could not determine multiplicity for reaction {self.label}')
         return multiplicity
 
     def get_rxn_charge(self):
