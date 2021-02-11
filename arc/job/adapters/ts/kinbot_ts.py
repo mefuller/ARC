@@ -283,8 +283,9 @@ class KinBotAdapter(JobAdapter):
                                  f'Got {len(rxn.r_species)} reactants and {rxn.p_species} products in\n{rxn}.')
                     continue
 
-                for direction, spc in species_to_explore.items():
+                for method_direction, spc in species_to_explore.items():
                     symbols = spc.get_xyz()['symbols']
+                    method_index = 0
                     for m, mol in enumerate(spc.mol_list):
                         reaction_generator = setup_kinbot(mol=mol,
                                                           families=self.family_map[rxn.family.label],
@@ -295,6 +296,11 @@ class KinBotAdapter(JobAdapter):
                         for r, kinbot_rxn in enumerate(reaction_generator.species.reac_obj):
                             step, fix, change, release = kinbot_rxn.get_constraints(step=20,
                                                                                     geom=kinbot_rxn.species.geom)
+                            ts_guess = TSGuess(method=f'KinBot',
+                                               method_direction=method_direction,
+                                               method_index=method_index,
+                                               )
+                            ts_guess.tic()
 
                             change_starting_zero = list()
                             for c in change:
@@ -309,10 +315,15 @@ class KinBotAdapter(JobAdapter):
                                                                  bond=kinbot_rxn.species.bond,
                                                                  )
 
+                            ts_guess.tok()
+
                             if success:
-                                xyz = xyz_from_data(coords=coords, symbols=symbols)
-                                ts_guess = TSGuess(method=f'KinBot {direction} mol {m} kinbot reaction {r}', xyz=xyz)
-                                self.reactions[0].ts_species.ts_guesses.append(ts_guess)
+                                ts_guess.success = True
+                                ts_guess.process_xyz(xyz_from_data(coords=coords, symbols=symbols))
+                            else:
+                                ts_guess.success = False
+                            self.reactions[0].ts_species.ts_guesses.append(ts_guess)
+                            method_index += 1
 
         self.final_time = datetime.datetime.now()
 
