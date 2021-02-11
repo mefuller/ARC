@@ -147,8 +147,7 @@ class KinBotAdapter(JobAdapter):
                            'Retroene': ['Retro_Ene'],
                            # '?': ['intra_R_migration'],  # unknown
                            }
-
-# todo: add .supported_rmg_families
+        self.supported_families = list(self.family_map.keys())
 
         if reactions is None:
             raise ValueError('Cannot execute KinBot without ARCReaction object(s).')
@@ -288,7 +287,7 @@ class KinBotAdapter(JobAdapter):
                     symbols = spc.get_xyz()['symbols']
                     for m, mol in enumerate(spc.mol_list):
                         reaction_generator = setup_kinbot(mol=mol,
-                                                          family=rxn.family.label,
+                                                          families=self.family_map[rxn.family.label],
                                                           kinbot_xyz=xyz_to_kinbot_list(spc.get_xyz()),
                                                           multiplicity=rxn.multiplicity,
                                                           charge=rxn.charge,
@@ -325,7 +324,7 @@ class KinBotAdapter(JobAdapter):
 
 
 def setup_kinbot(mol: 'Molecule',
-                 family: str,
+                 families: List[str],
                  kinbot_xyz: List[Union[str, float]],
                  multiplicity: int,
                  charge: int,
@@ -335,7 +334,7 @@ def setup_kinbot(mol: 'Molecule',
 
     Args:
         mol (Molecule): The RMG Molecule instance representing the unimolecular well to react.
-        family (str): The specific KinBot family to explore.
+        families (List[str]): The specific KinBot families to try.
         kinbot_xyz (list): The cartesian coordinates of the well in the KinBot list format.
         multiplicity (int): The well/reaction multiplicity.
         charge (int): The well/reaction charge.
@@ -353,7 +352,7 @@ def setup_kinbot(mol: 'Molecule',
     params.par['dimer'] = 0
     # steps
     params.par['reaction_search'] = 1
-    params.par['families'] = [family]
+    params.par['families'] = families
     params.par['homolytic_scissions'] = 0
     params.par['pes'] = 0
     params.par['high_level'] = 0
