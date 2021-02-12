@@ -65,6 +65,8 @@ ts_adapters_by_rmg_family = {'1+2_Cycloaddition': ['kinbot'],
                              'Singlet_Carbene_Intra_Disproportionation': ['gcn'],
                              }
 
+all_families_ts_adapters = []
+
 
 def is_restricted(obj) -> bool:
     """
