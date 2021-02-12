@@ -101,6 +101,7 @@ class GaussianAdapter(JobAdapter):
         tasks (int, optional): The number of tasks to use in a job array (each task has several threads).
         testing (bool, optional): Whether the object is generated for testing purposes, ``True`` if it is.
         torsions (List[List[int]], optional): The 0-indexed atom indices of the torsions identifying this scan point.
+        xyz (dict, optional): The 3D coordinates to use. If not give, species.get_xyz() will be used.
     """
 
     def __init__(self,
@@ -134,6 +135,7 @@ class GaussianAdapter(JobAdapter):
                  tasks: Optional[int] = None,
                  testing: bool = False,
                  torsions: List[List[int]] = None,
+                 xyz: Optional[dict] = None,
                  ):
 
         self.job_adapter = 'gaussian'
@@ -186,6 +188,7 @@ class GaussianAdapter(JobAdapter):
         self.tasks = tasks
         self.testing = testing
         self.torsions = torsions
+        self.xyz = xyz
 
         if self.job_num is None:
             self._set_job_number()
@@ -254,7 +257,7 @@ class GaussianAdapter(JobAdapter):
         input_dict['method'] = self.level.method
         input_dict['multiplicity'] = self.multiplicity
         input_dict['scan_trsh'] = self.args['trsh']['scan_trsh'] if 'scan_trsh' in self.args['trsh'] else ''
-        input_dict['xyz'] = xyz_to_str(self.species[0].get_xyz())
+        input_dict['xyz'] = xyz_to_str(self.xyz or self.species[0].get_xyz())
 
         if self.level.basis is not None:
             input_dict['slash_1'] = '/'
