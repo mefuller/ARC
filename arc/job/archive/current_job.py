@@ -1387,7 +1387,7 @@ end
                 remote_file_path = os.path.join(self.remote_path, 'out.txt')
                 with SSHClient(self.server) as ssh:
                     try:
-                        ssh.download_file(remote_file_path=remote_file_path, 
+                        ssh.download_file(remote_file_path=remote_file_path,
                                           local_file_path=local_file_path1)
                     except (TypeError, IOError) as e:
                         logger.warning(f'Got the following error when trying to download out.txt for {self.job_name}:'
@@ -1643,29 +1643,3 @@ end
             elif 'terachem' in available_ess:
                 logger.error('Setting it to TeraChem')
                 self.level.software = 'terachem'
-
-    def add_to_args(self,
-                    val: str,
-                    key1: str = 'keyword',
-                    key2: str = 'general',
-                    separator: Optional[str] = None,
-                    check_val: bool = True,
-                    ):
-        """
-        Add arguments to self.args in a nested dictionary under self.args[key1][key2].
-
-        Args:
-            val (str): The value to add.
-            key1 (str, optional): Key1.
-            key2 (str, optional): Key2.
-            separator (str, optional): A separator (e.g., ``' '``  or ``'\\n'``)
-                                       to apply between existing values and new values.
-            check_val (bool, optional): Only append ``val`` if it doesn't exist in the dictionary.
-        """
-        if separator is None:
-            separator = '\n\n' if key1 == 'block' else ' '
-        if key1 not in list(self.args.keys()):
-            self.args[key1] = dict()
-        if not check_val or not (key2 in self.args[key1] and val in self.args[key1][key2]):
-            separator = separator if key2 in list(self.args[key1].keys()) else ''
-            self.args[key1][key2] = separator + val

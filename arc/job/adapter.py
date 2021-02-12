@@ -53,6 +53,8 @@ class JobEnum(str, Enum):
     """
     The supported job software adapters.
     The available adapters are a finite set.
+
+    Todo: Add missing adapters
     """
     # ESS
     # arc = 'arc'
@@ -314,6 +316,8 @@ class JobAdapter(ABC):
         Determine the number of tasks to use in a job array
         and whether to iterate by conformers, species, reactions, or scan constraints.
         """
+        # Todo: set a capacity for incore jobs per adapter. E.g., 1 for Gaussian, 100 for GCN without parallelization
+        # todo: adapters with high capacity should know about it, they're currently set up to only run one instance
         if len(self.job_types) > 1:
             self.iterate_by.append('job_types')
 

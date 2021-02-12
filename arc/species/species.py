@@ -1084,7 +1084,7 @@ class ARCSpecies(object):
                     self.rotors_dict[max(list(self.rotors_dict.keys())) + 1] = new_rotor
             for i in set(rotor_indices_to_del):
                 if not self.rotors_dict[i]['directed_scan_type']:
-                    del(self.rotors_dict[i])
+                    del (self.rotors_dict[i])
 
             # renumber the keys so iterative looping will make sense
             new_rotors_dict = dict()
@@ -1143,7 +1143,8 @@ class ARCSpecies(object):
                 if rotor['pivots'] == pivots:
                     break
             if rotor is None:
-                raise RotorError(f'Could not identify rotor based of pivots {pivots}:\n{list(self.rotors_dict.values())}')
+                raise RotorError(
+                    f'Could not identify rotor based of pivots {pivots}:\n{list(self.rotors_dict.values())}')
             if count:
                 if rotor['times_dihedral_set'] >= 10:
                     logger.info('\n\n')
