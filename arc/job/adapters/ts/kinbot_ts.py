@@ -194,6 +194,8 @@ class KinBotAdapter(JobAdapter):
 
         self.species_label = self.reactions[0].ts_species.label if self.reactions[0].ts_species is not None \
             else f'TS_{self.job_num}'  # The ts_species attribute should be initialized in a normal ARC run
+        if len(self.reactions) > 1:
+            self.species_label += f'_and_{len(self.reactions) - 1}_others'
 
         if self.job_num is None:
             self._set_job_number()
