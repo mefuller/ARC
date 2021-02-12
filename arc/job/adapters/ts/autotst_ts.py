@@ -45,7 +45,6 @@ class AutoTSTAdapter(JobAdapter):
         project (str): The project's name. Used for setting the remote path.
         project_directory (str): The path to the local project directory.
         job_type (list, str): The job's type, validated against ``JobTypeEnum``. If it's a list, pipe.py will be called.
-        level (Level): The level of theory to use.
         args (dict, optional): Methods (including troubleshooting) to be used in input files.
                                Keys are either 'keyword', 'block', or 'trsh', values are dictionaries with values
                                to be used either as keywords or as blocks in the respective software input file.
@@ -61,13 +60,14 @@ class AutoTSTAdapter(JobAdapter):
         ess_trsh_methods (List[str], optional): A list of troubleshooting methods already tried out.
         execution_type (str, optional): The execution type, 'incore', 'queue', or 'pipe'.
         fine (bool, optional): Whether to use fine geometry optimization parameters. Default: ``False``.
-        initial_time (datetime.datetime, optional): The time at which this job was initiated.
+        initial_time (datetime.datetime or str, optional): The time at which this job was initiated.
         irc_direction (str, optional): The direction of the IRC job (`forward` or `reverse`).
         job_id (int, optional): The job's ID determined by the server.
         job_memory_gb (int, optional): The total job allocated memory in GB (14 by default).
         job_name (str, optional): The job's name (e.g., 'opt_a103').
         job_num (int, optional): Used as the entry number in the database, as well as in ``job_name``.
         job_status (int, optional): The job's server and ESS statuses.
+        level (Level, optional): The level of theory to use.
         max_job_time (float, optional): The maximal allowed job time on the server in hours (can be fractional).
         reactions (List[ARCReaction], optional): Entries are ARCReaction instances, used for TS search methods.
         rotor_index (int, optional): The 0-indexed rotor number (key) in the species.rotors_dict dictionary.
@@ -75,7 +75,6 @@ class AutoTSTAdapter(JobAdapter):
         server_nodes (list, optional): The nodes this job was previously submitted to.
         species (List[ARCSpecies], optional): Entries are ARCSpecies instances.
                                               Either ``reactions`` or ``species`` must be given.
-        tasks (int, optional): The number of tasks to use in a job array (each task has several threads).
         testing (bool, optional): Whether the object is generated for testing purposes, ``True`` if it is.
         torsions (List[List[int]], optional): The 0-indexed atom indices of the torsions identifying this scan point.
         tsg (int, optional): TSGuess number if optimizing TS guesses.
@@ -85,8 +84,7 @@ class AutoTSTAdapter(JobAdapter):
     def __init__(self,
                  project: str,
                  project_directory: str,
-                 job_type: Optional[Union[List[str], str]] = None,
-                 level: Optional['Level'] = None,
+                 job_type: Union[List[str], str],
                  args: Optional[dict] = None,
                  bath_gas: Optional[str] = None,
                  checkfile: Optional[str] = None,
@@ -98,20 +96,20 @@ class AutoTSTAdapter(JobAdapter):
                  ess_trsh_methods: Optional[List[str]] = None,
                  execution_type: Optional[str] = None,
                  fine: bool = False,
-                 initial_time: Optional['datetime.datetime'] = None,
+                 initial_time: Optional[Union['datetime.datetime', str]] = None,
                  irc_direction: Optional[str] = None,
                  job_id: Optional[int] = None,
                  job_memory_gb: float = 14.0,
                  job_name: Optional[str] = None,
                  job_num: Optional[int] = None,
                  job_status: Optional[List[Union[dict, str]]] = None,
+                 level: Optional['Level'] = None,
                  max_job_time: Optional[float] = None,
                  reactions: Optional[List['ARCReaction']] = None,
                  rotor_index: Optional[int] = None,
                  server: Optional[str] = None,
                  server_nodes: Optional[list] = None,
                  species: Optional[List['ARCSpecies']] = None,
-                 tasks: Optional[int] = None,
                  testing: bool = False,
                  torsions: List[List[int]] = None,
                  tsg: Optional[int] = None,
@@ -131,7 +129,6 @@ class AutoTSTAdapter(JobAdapter):
 
         self.job_types = job_type if isinstance(job_type, list) else [job_type]  # always a list
         self.job_type = job_type
-        self.level = level
         self.project = project
         self.project_directory = project_directory
         if self.project_directory and not os.path.isdir(self.project_directory):
@@ -155,13 +152,13 @@ class AutoTSTAdapter(JobAdapter):
         self.job_num = job_num
         self.job_status = job_status \
             or ['initializing', {'status': 'initializing', 'keywords': list(), 'error': '', 'line': ''}]
+        self.level = level
         self.max_job_time = max_job_time
         self.reactions = [reactions] if not isinstance(reactions, list) else reactions
         self.rotor_index = rotor_index
         self.server = server
         self.server_nodes = server_nodes or list()
         self.species = [species] if not isinstance(species, list) else species
-        self.tasks = tasks
         self.testing = testing
         self.torsions = torsions
         self.tsg = tsg
