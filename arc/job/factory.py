@@ -42,6 +42,7 @@ def job_factory(job_adapter: str,
                 args: Optional[Union[dict, str]] = None,
                 bath_gas: Optional[str] = None,
                 checkfile: Optional[str] = None,
+                conformer: Optional[int] = None,
                 constraints: Optional[List[Tuple[List[int], float]]] = None,
                 cpu_cores: Optional[str] = None,
                 dihedrals: Optional[List[float]] = None,
@@ -65,6 +66,7 @@ def job_factory(job_adapter: str,
                 tasks: Optional[int] = None,
                 testing: bool = False,
                 torsions: Optional[List[List[int]]] = None,
+                tsg: Optional[int] = None,
                 xyz: Optional[dict] = None,
                 ) -> JobAdapter:
     """
@@ -84,6 +86,7 @@ def job_factory(job_adapter: str,
         bath_gas (str, optional): A bath gas. Currently only used in OneDMin to calculate L-J parameters. Allowed values
                                   are: ``'He'``, ``'Ne'``, ``'Ar'``, ``'Kr'``, ``'H2'``, ``'N2'``, or ``'O2'``.
         checkfile (str, optional): The path to a previous Gaussian checkfile to be used in the current job.
+        conformer (int, optional): Conformer number if optimizing conformers.
         constraints (list, optional): A list of constraints to use during an optimization or scan.
                                       Entries are constraint tuples. The first entry in the tuple is a list of
                                       1-indexed atom indices (the list length determined the constraint type),
@@ -120,6 +123,7 @@ def job_factory(job_adapter: str,
         tasks (int, optional): The number of tasks to use in a job array (each task has several threads).
         testing (bool, optional): Whether the object is generated for testing purposes, ``True`` if it is.
         torsions (List[List[int]], optional): The 0-indexed atom indices of the torsions identifying this scan point.
+        tsg (int, optional): TSGuess number if optimizing TS guesses.
         xyz (dict, optional): The 3D coordinates to use. If not give, species.get_xyz() will be used.
 
         # shift (str, optional): A string representation alpha- and beta-spin orbitals shifts (molpro only).  # use args
@@ -160,6 +164,7 @@ def job_factory(job_adapter: str,
                                                               args=args,
                                                               bath_gas=bath_gas,
                                                               checkfile=checkfile,
+                                                              conformer=conformer,
                                                               constraints=constraints,
                                                               cpu_cores=cpu_cores,
                                                               dihedrals=dihedrals,
@@ -183,6 +188,7 @@ def job_factory(job_adapter: str,
                                                               tasks=tasks,
                                                               testing=testing,
                                                               torsions=torsions,
+                                                              tsg=tsg,
                                                               xyz=xyz,
                                                               )
     return job_adapter_class
