@@ -61,7 +61,9 @@ global_ess_settings = {
     'terachem': 'server1',
 }
 
-# TS methods to try:
+# Electronic structure software ARC may access (use lowercase):
+supported_ess = ['gaussian', 'molpro', 'orca', 'qchem', 'terachem', 'onedmin']
+# TS methods to try when appropriate for a reaction (other than user guesses which are always allowed):
 ts_adapters = ['AutoTST', 'GCN', 'KinBot']
 
 # List here job types to execute by default
@@ -76,8 +78,6 @@ default_job_types = {'conformers': True,      # defaults to True if not specifie
                      'lennard_jones': False,  # defaults to False if not specified
                      'bde': False,            # defaults to False if not specified
                      }
-
-supported_ess = ['gaussian', 'molpro', 'orca', 'qchem', 'terachem', 'onedmin']  # use lowercase when adding new ones
 
 # List here (complete or partial) phrases of methods or basis sets you'd like to associate to specific ESS
 # Avoid ascribing the same phrase to more than one software, this may cause undeterministic assignment of software
