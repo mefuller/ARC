@@ -59,14 +59,15 @@ class TestGCNAdapter(unittest.TestCase):
         H  -1.4329   -0.1554    0.9349"""
         product = ARCSpecies(label='product', smiles='[N-]=[N+]=C(N=O)C', xyz=product_xyz)
 
-        rxn1 = ARCReaction(label='reactant <=> product', ts_methods=['gcn'], ts_label='TS0')
+        rxn1 = ARCReaction(label='reactant <=> product', ts_label='TS0')
         rxn1.r_species = [reactant]
         rxn1.p_species = [product]
 
-        gcn1 = GCNAdapter(reactions=[rxn1],
+        gcn1 = GCNAdapter(job_type='tsg',
+                          reactions=[rxn1],
                           testing=True,
                           project='test',
-                          project_directory=os.path.join(arc_path, 'arc', 'testing', 'test_GCN'), )
+                          project_directory=os.path.join(arc_path, 'arc', 'testing', 'test_GCN'))
         gcn1.local_path = self.output_dir
         gcn1.execute_incore()
 
