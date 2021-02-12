@@ -149,6 +149,7 @@ class Psi4Adapter(JobAdapter):
         tasks (int, optional): The number of tasks to use in a job array (each task has several threads).
         testing (bool, optional): Whether the object is generated for testing purposes, ``True`` if it is.
         torsions (List[List[int]], optional): The 0-indexed atom indices of the torsions identifying this scan point.
+        xyz (dict, optional): The 3D coordinates to use. If not give, species.get_xyz() will be used.
     """
 
     def __init__(self,
@@ -182,6 +183,7 @@ class Psi4Adapter(JobAdapter):
                  tasks: Optional[int] = None,
                  testing: bool = False,
                  torsions: List[List[int]] = None,
+                 xyz: Optional[dict] = None,
                  ):
 
         self.job_adapter = 'psi4'
@@ -231,6 +233,7 @@ class Psi4Adapter(JobAdapter):
         self.tasks = tasks
         self.testing = testing
         self.torsions = torsions
+        self.xyz = xyz
 
         if self.job_num is None:
             self._set_job_number()
