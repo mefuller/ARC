@@ -38,7 +38,6 @@ def job_factory(job_adapter: str,
                 project: str,
                 project_directory: str,
                 job_type: Optional[Union[List[str], str]] = None,
-                level: Optional['Level'] = None,
                 args: Optional[Union[dict, str]] = None,
                 bath_gas: Optional[str] = None,
                 checkfile: Optional[str] = None,
@@ -50,20 +49,20 @@ def job_factory(job_adapter: str,
                 ess_trsh_methods: Optional[List[str]] = None,
                 execution_type: Optional[str] = None,
                 fine: bool = False,
-                initial_time: Optional['datetime.datetime'] = None,
+                initial_time: Optional[Union['datetime.datetime', str]] = None,
                 irc_direction: Optional[str] = None,
                 job_id: Optional[int] = None,
                 job_memory_gb: float = 14.0,
                 job_name: Optional[str] = None,
                 job_num: Optional[int] = None,
                 job_status: Optional[List[Union[dict, str]]] = None,
+                level: Optional['Level'] = None,
                 max_job_time: Optional[float] = None,
                 reactions: Optional[List['ARCReaction']] = None,
                 rotor_index: Optional[int] = None,
                 server: Optional[str] = None,
                 server_nodes: Optional[list] = None,
                 species: Optional[List['ARCSpecies']] = None,
-                tasks: Optional[int] = None,
                 testing: bool = False,
                 torsions: Optional[List[List[int]]] = None,
                 tsg: Optional[int] = None,
@@ -77,7 +76,6 @@ def job_factory(job_adapter: str,
         project (str): The project's name. Used for setting the remote path.
         project_directory (str): The path to the local project directory.
         job_type (list, str): The job's type, validated against ``JobTypeEnum``. If it's a list, pipe.py will be called.
-        level (Level): The level of theory to use.
         args (dict, str, optional): Methods (including troubleshooting) to be used in input files.
                                     Keys are either 'keyword' or 'block', values are dictionaries with values to be used
                                     either as keywords or as blocks in the respective software input file. If given as
@@ -99,7 +97,7 @@ def job_factory(job_adapter: str,
         ess_trsh_methods (List[str], optional): A list of troubleshooting methods already tried out.
         execution_type (str, optional): The execution type, 'incore', 'queue', or 'pipe'.
         fine (bool, optional): Whether to use fine geometry optimization parameters. Default: ``False``.
-        initial_time (datetime.datetime, optional): The time at which this job was initiated.
+        initial_time (datetime.datetime or str, optional): The time at which this job was initiated.
         irc_direction (str, optional): The direction of the IRC job (`forward` or `reverse`).
         job_id (int, optional): The job's ID determined by the server.
         job_memory_gb (int, optional): The total job allocated memory in GB (14 by default).
@@ -113,6 +111,7 @@ def job_factory(job_adapter: str,
                                     ``'errored'``, ``'unconverged'``, or ``'done'``. If the status is ``'errored'``,
                                     then standardized error keywords, the error description and the identified error
                                     line from the ESS log file are given as well.
+        level (Level): The level of theory to use.
         max_job_time (float, optional): The maximal allowed job time on the server in hours (can be fractional).
         reactions (List[ARCReaction], optional): Entries are ARCReaction instances, used for TS search methods.
         rotor_index (int, optional): The 0-indexed rotor number (key) in the species.rotors_dict dictionary.
@@ -120,7 +119,6 @@ def job_factory(job_adapter: str,
         server_nodes (list, optional): The nodes this job was previously submitted to.
         species (List[ARCSpecies], optional): Entries are ARCSpecies instances.
                                               Either ``reactions`` or ``species`` must be given.
-        tasks (int, optional): The number of tasks to use in a job array (each task has several threads).
         testing (bool, optional): Whether the object is generated for testing purposes, ``True`` if it is.
         torsions (List[List[int]], optional): The 0-indexed atom indices of the torsions identifying this scan point.
         tsg (int, optional): TSGuess number if optimizing TS guesses.
@@ -160,7 +158,6 @@ def job_factory(job_adapter: str,
     job_adapter_class = _registered_job_adapters[job_adapter](project=project,
                                                               project_directory=project_directory,
                                                               job_type=JobTypeEnum(job_type).value,
-                                                              level=level,
                                                               args=args,
                                                               bath_gas=bath_gas,
                                                               checkfile=checkfile,
@@ -179,13 +176,13 @@ def job_factory(job_adapter: str,
                                                               job_name=job_name,
                                                               job_num=job_num,
                                                               job_status=job_status,
+                                                              level=level,
                                                               max_job_time=max_job_time,
                                                               reactions=reactions,
                                                               rotor_index=rotor_index,
                                                               server=server,
                                                               server_nodes=server_nodes,
                                                               species=species,
-                                                              tasks=tasks,
                                                               testing=testing,
                                                               torsions=torsions,
                                                               tsg=tsg,
