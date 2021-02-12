@@ -85,6 +85,7 @@ class OrcaAdapter(JobAdapter):
         bath_gas (str, optional): A bath gas. Currently only used in OneDMin to calculate L-J parameters. Allowed values
                                   are: ``'He'``, ``'Ne'``, ``'Ar'``, ``'Kr'``, ``'H2'``, ``'N2'``, or ``'O2'``.
         checkfile (str, optional): The path to a previous Gaussian checkfile to be used in the current job.
+        conformer (int, optional): Conformer number if optimizing conformers.
         constraints (list, optional): A list of constraints to use during an optimization or scan.
         cpu_cores (int, optional): The total number of cpu cores requested for a job.
         dihedrals (List[float], optional): The dihedral angels corresponding to self.torsions.
@@ -109,6 +110,7 @@ class OrcaAdapter(JobAdapter):
         tasks (int, optional): The number of tasks to use in a job array (each task has several threads).
         testing (bool, optional): Whether the object is generated for testing purposes, ``True`` if it is.
         torsions (List[List[int]], optional): The 0-indexed atom indices of the torsions identifying this scan point.
+        tsg (int, optional): TSGuess number if optimizing TS guesses.
         xyz (dict, optional): The 3D coordinates to use. If not give, species.get_xyz() will be used.
     """
 
@@ -120,6 +122,7 @@ class OrcaAdapter(JobAdapter):
                  args: Optional[dict] = None,
                  bath_gas: Optional[str] = None,
                  checkfile: Optional[str] = None,
+                 conformer: Optional[int] = None,
                  constraints: Optional[List[Tuple[List[int], float]]] = None,
                  cpu_cores: Optional[str] = None,
                  dihedrals: Optional[List[float]] = None,
@@ -143,6 +146,7 @@ class OrcaAdapter(JobAdapter):
                  tasks: Optional[int] = None,
                  testing: bool = False,
                  torsions: List[List[int]] = None,
+                 tsg: Optional[int] = None,
                  xyz: Optional[dict] = None,
                  ):
 
@@ -169,6 +173,7 @@ class OrcaAdapter(JobAdapter):
         self.args = args or dict()
         self.bath_gas = bath_gas
         self.checkfile = checkfile
+        self.conformer = conformer
         self.constraints = constraints or list()
         self.cpu_cores = cpu_cores
         self.dihedrals = dihedrals
@@ -193,6 +198,7 @@ class OrcaAdapter(JobAdapter):
         self.tasks = tasks
         self.testing = testing
         self.torsions = torsions
+        self.tsg = tsg
         self.xyz = xyz
 
         if self.job_num is None:
