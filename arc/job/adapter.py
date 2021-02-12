@@ -77,14 +77,21 @@ class JobEnum(str, Enum):
     # Todo: see https://doi.org/10.1021/acs.jctc.7b00764
     autotst = 'autotst'  # AutoTST
     # gsm = 'gsm'  # double ended growing string method (DE-GSM)
-    # pygsm = 'pygsm'  # double ended growing string method (DE-GSM)
+    # pygsm = 'pygsm'  # double ended growing string method (DE-GSM): pyGSM: https://github.com/ZimmermanGroup/molecularGSM/wiki
     # heuristics = 'heuristics'  # brute force heuristics
     kinbot = 'kinbot'  # KinBot
     gcn = 'gcn'  # Graph neural network for isomerization, https://doi.org/10.1021/acs.jpclett.0c00500
-    # neb_ase = 'neb_ase'  # NEB in ASE
+    # neb_ase = 'neb_ase'  # NEB in ASE: https://www.scm.com/doc/Tutorials/ADF/Transition_State_with_ASE.html, https://wiki.fysik.dtu.dk/ase/ase/neb.html, https://wiki.fysik.dtu.dk/ase/tutorials/neb/idpp.html#idpp-tutorial., ASE autoNEB: https://wiki.fysik.dtu.dk/ase/dev/_modules/ase/autoneb.html
     # neb_terachem = 'neb_terachem'  # NEB in TeraChem
+    # NEB GPR: https://journals.aps.org/prl/abstract/10.1103/PhysRevLett.122.156001
     # qst2 = 'qst2'  # Synchronous Transit-Guided Quasi-Newton (STQN) implemented in Gaussian
     # user = 'user'  # user guesses
+    # ReaDuct: https://doi.org/10.1021/acs.jctc.8b00169
+    # Copenhagen: https://chemrxiv.org/articles/Fast_and_Automatic_Estimation_of_Transition_State_Structures_Using_Tight_Binding_Quantum_Chemical_Calculations/12600443/1
+    # FSM in QChem: http://www.q-chem.com/qchem-website/manual/qchem43_manual/sect-approx_hess.html
+    # NEBTERPOLATION using MD to find TSs: https://pubs.acs.org/doi/full/10.1021/acs.jctc.5b00830?src=recsys
+    # https://chemrxiv.org/articles/preprint/Fast_and_Automatic_Estimation_of_Transition_State_Structures_Using_Tight_Binding_Quantum_Chemical_Calculations/12600443
+    # (growing string method [10.1021/ct400319w, 10.1063/1.4804162], nudge elastic band [10.1063/1.1329672, 10.1063/1.1323224], synchronous transit and quasi‐Newton methods [https://onlinelibrary.wiley.com/doi/epdf/10.1002/ijch.199300051], KinBot [10.1016/j.cpc.2019.106947], AutoTST [10.1021/acs.jpca.7b07361, 10.26434/chemrxiv.13277870.v2], tight binding reaction path [10.26434/chemrxiv.12600443.v1], freezing string method [10.1021/acs.jctc.5b00407, 10.1063/1.3664901], and deep learning [10.26434/chemrxiv.12302084.v2])
 
 
 class JobTypeEnum(str, Enum):
@@ -259,17 +266,6 @@ class JobAdapter(ABC):
         """
         Set the input_file_memory attribute.
         """
-        # # determine amount of memory in job input file based on ESS
-        # if self.job_adapter in ['molpro', 'terachem']:
-        #     # Molpro's and TeraChem's memory is per cpu core and in MW (mega word; 1 MW ~= 8 MB; 1 GB = 128 MW)
-        #     self.input_file_memory = math.ceil(self.job_memory_gb * 128 / self.cpu_cores)
-        # elif self.job_adapter in ['orca']:
-        #     # Orca's memory is per cpu core and in MB
-        #     self.input_file_memory = math.ceil(self.job_memory_gb * 1024 / self.cpu_cores)
-        # elif self.job_adapter in ['qchem']:
-        #     # QChem manages its memory automatically, for now ARC will not intervene
-        #     # see http://www.q-chem.com/qchem-website/manual/qchem44_manual/CCparallel.html
-        #     self.input_file_memory = math.ceil(self.job_memory_gb)
         pass
 
     @abstractmethod
@@ -1014,11 +1010,10 @@ class JobAdapter(ABC):
 
             if directed_scan_type == 'ess' and not rotor_dict['scan_path'] and rotor_dict['success'] is None:
                 # allow the ESS to control the scan
-                torsions = self.torsions or list()
-                if not torsions:
-                    for scan in scans:
-                        # As an internal convention throughout ARCt, "orsions" are 0-indexed, "scans" are 1-indexed.
-                        torsions.append([atom_index - 1 for atom_index in scan])
+                torsions = list()
+                for scan in scans:
+                    # As an internal convention throughout ARCt, "orsions" are 0-indexed, "scans" are 1-indexed.
+                    torsions.append([atom_index - 1 for atom_index in scan])
                 data_list.append(DataPoint(job_types=['scan'],
                                            label=species.label,
                                            level=self.level,
