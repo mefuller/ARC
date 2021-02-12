@@ -64,7 +64,8 @@ def job_factory(job_adapter: str,
                 species: Optional[List['ARCSpecies']] = None,
                 tasks: Optional[int] = None,
                 testing: bool = False,
-                torsions: List[List[int]] = None,
+                torsions: Optional[List[List[int]]] = None,
+                xyz: Optional[dict] = None,
                 ) -> JobAdapter:
     """
     A factory generating a job adapter corresponding to ``job_adapter``.
@@ -119,11 +120,9 @@ def job_factory(job_adapter: str,
         tasks (int, optional): The number of tasks to use in a job array (each task has several threads).
         testing (bool, optional): Whether the object is generated for testing purposes, ``True`` if it is.
         torsions (List[List[int]], optional): The 0-indexed atom indices of the torsions identifying this scan point.
+        xyz (dict, optional): The 3D coordinates to use. If not give, species.get_xyz() will be used.
 
-        # multiplicity (int): The species multiplicity.  # use the species
-        # charge (int, optional): The species net charge. Default is 0.  # use the species
         # shift (str, optional): A string representation alpha- and beta-spin orbitals shifts (molpro only).  # use args
-        # software (str, optional): The electronic structure software to be used.  # use self.job_adapter
         # is_ts (bool): Whether this species represents a transition structure. Default: ``False``.  # use species
         # occ (int, optional): The number of occupied orbitals (core + val) from a molpro CCSD sp calc.
         # number_of_radicals (int, optional): The number of radicals (inputted by the user, ARC won't attempt to
@@ -184,5 +183,6 @@ def job_factory(job_adapter: str,
                                                               tasks=tasks,
                                                               testing=testing,
                                                               torsions=torsions,
+                                                              xyz=xyz,
                                                               )
     return job_adapter_class
