@@ -638,42 +638,6 @@ class Scheduler(object):
                                     opt_level=self.opt_level)
                         self.timer = False
                         break
-                    elif 'ff_param_fit' in job_name \
-                            and self.job_dict[label]['ff_param_fit'][job_name].job_id not in self.servers_jobs_ids:
-                        job = self.job_dict[label]['ff_param_fit'][job_name]
-                        successful_server_termination = self.end_job(job=job, label=label, job_name=job_name)
-                        mmff94_fallback = False
-                        if successful_server_termination and job.job_status[1]['status'] == 'done':
-                            # copy the fitting file to the species output folder
-                            ff_param_fit_path = os.path.join(self.project_directory, 'calcs', 'Species', label,
-                                                             'ff_param_fit')
-                            if not os.path.isdir(ff_param_fit_path):
-                                os.makedirs(ff_param_fit_path)
-                            ff_param_fit_path = os.path.join(ff_param_fit_path, 'gaussian.out')
-                            if os.path.isfile(job.local_path_to_output_file):
-                                try:
-                                    shutil.copyfile(job.local_path_to_output_file, ff_param_fit_path)
-                                except shutil.SameFileError:
-                                    pass
-                                self.output[label]['job_types']['ff_param_fit'] = True
-                                self.spawn_md_jobs(label)
-                            else:
-                                mmff94_fallback = True
-                        else:
-                            mmff94_fallback = True
-                        if mmff94_fallback:
-                            logger.error(f'Force field parameter fitting job in Gaussian failed. Generating standard '
-                                         f'MMFF94s conformers instead of fitting a force field for species {label}, '
-                                         f'although its force_field attribute was set to "fit".')
-                            self.species_dict[label].force_field = 'MMFF94s'
-                            self.species_dict[label].generate_conformers(
-                                n_confs=self.n_confs,
-                                e_confs=self.e_confs,
-                                plot_path=os.path.join(
-                                    self.project_directory, 'output', 'Species', label, 'geometry', 'conformers'))
-                            self.process_conformers(label)
-                        self.timer = False
-                        break
 
                 if self.species_dict[label].is_ts and not self.species_dict[label].ts_conf_spawned \
                         and not any([tsg.success is None for tsg in self.species_dict[label].ts_guesses]):
