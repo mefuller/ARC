@@ -209,8 +209,10 @@ class GaussianAdapter(JobAdapter):
         self.server = self.args['trsh']['server'] if 'server' in self.args['trsh'] \
             else self.ess_settings[self.job_adapter][0] if isinstance(self.ess_settings[self.job_adapter], list) \
             else self.ess_settings[self.job_adapter]
-        # self.species_label = self.species[0].label if self.species is not None else self.reaction.ts_label  # transfer to QST2
+        # self.species_label = self.species[0].label if self.species is not None else self.reaction.ts_label  # Todo: transfer to QST2
         self.species_label = self.species[0].label
+        if len(self.species) > 1:
+            self.species_label += f'_and_{len(self.species) - 1}_others'
 
         self.cpu_cores, self.input_file_memory, self.submit_script_memory = None, None, None
         self.set_cpu_and_mem()
