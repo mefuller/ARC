@@ -101,6 +101,7 @@ class TeraChemAdapter(JobAdapter):
         tasks (int, optional): The number of tasks to use in a job array (each task has several threads).
         testing (bool, optional): Whether the object is generated for testing purposes, ``True`` if it is.
         torsions (List[List[int]], optional): The 0-indexed atom indices of the torsions identifying this scan point.
+        xyz (dict, optional): The 3D coordinates to use. If not give, species.get_xyz() will be used.
     """
 
     def __init__(self,
@@ -134,6 +135,7 @@ class TeraChemAdapter(JobAdapter):
                  tasks: Optional[int] = None,
                  testing: bool = False,
                  torsions: List[List[int]] = None,
+                 xyz: Optional[dict] = None,
                  ):
 
         self.job_adapter = 'terachem'
@@ -183,6 +185,7 @@ class TeraChemAdapter(JobAdapter):
         self.tasks = tasks
         self.testing = testing
         self.torsions = torsions
+        self.xyz = xyz
 
         if self.job_num is None:
             self._set_job_number()
@@ -286,7 +289,7 @@ class TeraChemAdapter(JobAdapter):
                     scans.append([atom_index + 1 for atom_index in torsion])
             scan_string = '\n$constraint_scan\n'
             for scan in scans:
-                dihedral_1 = int(calculate_dihedral_angle(coords=self.species[0].get_xyz(), torsion=scan, index=1))
+                dihedral_1 = int(calculate_dihedral_angle(coords=xyz or self.species[0].get_xyz(), torsion=scan, index=1))
                 scan_atoms_str = '_'.join([str(atom_index) for atom_index in scan])
                 scan_string += f'    dihedral {scan_atoms_str} {dihedral_1} {dihedral_1 + 360.0} {self.scan_res}\n'
             scan_string += '$end\n'
@@ -314,7 +317,7 @@ class TeraChemAdapter(JobAdapter):
         """
         # TeraChem requires an auxiliary xyz file.
         # Note: the xyz filename must correspond to the xyz filename specified in TeraChem's input file, 'coords.xyz'.
-        save_geo(xyz=self.species[0].get_xyz(), path=self.local_path, filename='coords', format_='xyz')
+        save_geo(xyz=self.xyz or self.species[0].get_xyz(), path=self.local_path, filename='coords', format_='xyz')
 
         self.files_to_upload, self.files_to_download = list(), list()
         # 1. ** Upload **
