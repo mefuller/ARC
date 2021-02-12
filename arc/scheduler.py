@@ -11,7 +11,6 @@ import pprint
 import shutil
 import time
 from IPython.display import display
-from pprint import pformat
 from typing import TYPE_CHECKING, List, Optional, Tuple, Union
 
 from arc import parser, plotter
@@ -28,7 +27,7 @@ from arc.exceptions import (InputError,
                             TrshError,
                             )
 from arc.imports import settings
-from arc.job.adapters.common import ts_adapters_by_rmg_family
+from arc.job.adapters.common import all_families_ts_adapters, ts_adapters_by_rmg_family
 from arc.job.factory import job_factory
 from arc.job.local import check_running_jobs_ids
 from arc.job.ssh import SSHClient
@@ -679,7 +678,7 @@ class Scheduler(object):
                 irc_direction: Optional[str] = None,
                 job_adapter: Optional[str] = None,
                 label: Optional[str] = None,
-                level_of_theory: Optional[Union[Level, dict, str]]=None,
+                level_of_theory: Optional[Union[Level, dict, str]] = None,
                 memory: Optional[int] = None,
                 max_job_time: Optional[int] = None,
                 rotor_index: Optional[int] = None,
@@ -719,10 +718,6 @@ class Scheduler(object):
             tsg (int, optional): TSGuess number if optimizing TS guesses.
             xyz (dict, optional): The 3D coordinates for the species.
         """
-
-        # todo: continue working on spawn_ts_jobs
-
-
         max_job_time = max_job_time or self.max_job_time  # if it's None, set to default
         ess_trsh_methods = ess_trsh_methods if ess_trsh_methods is not None else list()
         species = self.species_dict[label] if label is not None else None
@@ -1353,21 +1348,21 @@ class Scheduler(object):
 
     def spawn_ts_jobs(self):
         """
-        Check if any new reaction has all of its reactants and products optimized
+        Check if any new reaction has all of its reactants and products optimized,
+        and if so spawn the respective TSG jobs.
         """
         for rxn in self.rxn_list:
             if not rxn.done_opt_r_n_p and all(spc.final_xyz is not None for spc in [rxn.r_species + rxn.p_species]):
                 rxn.done_opt_r_n_p = True
+                tsg_index = 0
                 for method in ts_adapters:
-                    if method in ts_adapters_by_rmg_family[rxn.family.label]:  # Todo: "or method in all_families"
-
-
-            # todo: this does not need to be done, the TS adapter creates several of these per method.
-            # todo: once opt is done for reactants and products, loop these methods for the reaction and spawn adapters
-            # todo: so have a way to mark whether all reactants and products were optimized per reaction, check flag before spawning and raise the flag
-            # todo: eventually: decide which TS xyz to keep like Species.conformers
-
-
+                    if method in all_families_ts_adapters or method in ts_adapters_by_rmg_family[rxn.family.label]:
+                        self.run_job(job_type='tsg',
+                                     job_adapter=method,
+                                     reactions=[rxn],
+                                     tsg=tsg_index
+                                     )
+                        tsg_index += 1
 
     def spawn_directed_scan_jobs(self,
                                  label: str,
@@ -1417,7 +1412,7 @@ class Scheduler(object):
                                                                                     torsion=scan,
                                                                                     index=1))
                 dihedrals[tuple(scan)] = [get_angle_in_180_range(original_dihedral + i * increment) for i in
-                                                 range(int(360 / increment) + 1)]
+                                          range(int(360 / increment) + 1)]
             modified_xyz = xyz
             if 'diagonal' not in directed_scan_type:
                 # increment dihedrals one by one (resulting in an ND scan)
@@ -2045,7 +2040,7 @@ class Scheduler(object):
         success = False
         logger.debug(f'parsing opt geo for {job.job_name}')
         if job.job_status[1]['status'] == 'done':
-            opt_xyz = parser.parse_xyz_from_file( path=job.local_path_to_xyz or job.local_path_to_output_file)
+            opt_xyz = parser.parse_xyz_from_file(path=job.local_path_to_xyz or job.local_path_to_output_file)
             if not job.fine and self.job_types['fine'] and not job.software == 'molpro':
                 # Run opt again using a finer grid.
                 # Save the optimized geometry as ``initial_xyz``, since trsh looks there.
