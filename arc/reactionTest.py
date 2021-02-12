@@ -17,9 +17,6 @@ from arc.reaction import ARCReaction
 from arc.species import ARCSpecies
 
 
-default_ts_methods = settings['default_ts_methods']
-
-
 class TestARCReaction(unittest.TestCase):
     """
     Contains unit tests for the ARCSpecies class
@@ -71,7 +68,7 @@ class TestARCReaction(unittest.TestCase):
                          'reactants': ['CH4', 'OH'],
                          'ts_label': None,
                          'ts_xyz_guess': [],
-                         'ts_methods': [tsm.lower() for tsm in default_ts_methods]}
+                         }
         self.assertEqual(rxn_dict, expected_dict)
 
     def test_from_dict(self):
@@ -79,7 +76,6 @@ class TestARCReaction(unittest.TestCase):
         rxn_dict = self.rxn1.as_dict()
         rxn = ARCReaction(reaction_dict=rxn_dict)
         self.assertEqual(rxn.label, 'CH4 + OH <=> CH3 + H2O')
-        self.assertEqual(rxn.ts_methods, [tsm.lower() for tsm in default_ts_methods])
 
     def test_rmg_reaction_to_str(self):
         """Test the rmg_reaction_to_str() method and the reaction label generated"""
