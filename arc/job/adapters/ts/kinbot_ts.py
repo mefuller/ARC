@@ -42,8 +42,7 @@ class KinBotAdapter(JobAdapter):
     Args:
         project (str): The project's name. Used for setting the remote path.
         project_directory (str): The path to the local project directory.
-        job_type (str): The job's type, validated against ``JobTypeEnum``.
-                        If it's a list, pipe.py will be called.
+        job_type (list, str): The job's type, validated against ``JobTypeEnum``. If it's a list, pipe.py will be called.
         level (Level): The level of theory to use.
         args (dict, optional): Methods (including troubleshooting) to be used in input files.
                                Keys are either 'keyword', 'block', or 'trsh', values are dictionaries with values
@@ -69,7 +68,7 @@ class KinBotAdapter(JobAdapter):
         max_job_time (float, optional): The maximal allowed job time on the server in hours (can be fractional).
         reactions (List[ARCReaction], optional): Entries are ARCReaction instances, used for TS search methods.
         rotor_index (int, optional): The 0-indexed rotor number (key) in the species.rotors_dict dictionary.
-        server: Optional[str] = None,
+        server (str): The server to run on.
         server_nodes (list, optional): The nodes this job was previously submitted to.
         species (List[ARCSpecies], optional): Entries are ARCSpecies instances.
                                               Either ``reactions`` or ``species`` must be given.
