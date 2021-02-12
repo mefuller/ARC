@@ -73,8 +73,7 @@ def job_factory(job_adapter: str,
         job_adapter (str): The string representation of the job adapter, validated against ``JobEnum``.
         project (str): The project's name. Used for setting the remote path.
         project_directory (str): The path to the local project directory.
-        job_type (list, str): The job's type, validated against ``JobTypeEnum``.
-                              If it's a list, pipe.py will be called.
+        job_type (list, str): The job's type, validated against ``JobTypeEnum``. If it's a list, pipe.py will be called.
         level (Level): The level of theory to use.
         args (dict, str, optional): Methods (including troubleshooting) to be used in input files.
                                     Keys are either 'keyword' or 'block', values are dictionaries with values to be used
