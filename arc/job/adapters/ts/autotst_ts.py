@@ -77,6 +77,7 @@ class AutoTSTAdapter(JobAdapter):
         tasks (int, optional): The number of tasks to use in a job array (each task has several threads).
         testing (bool, optional): Whether the object is generated for testing purposes, ``True`` if it is.
         torsions (List[List[int]], optional): The 0-indexed atom indices of the torsions identifying this scan point.
+        xyz (dict, optional): The 3D coordinates to use. If not give, species.get_xyz() will be used.
     """
 
     def __init__(self,
@@ -110,6 +111,7 @@ class AutoTSTAdapter(JobAdapter):
                  tasks: Optional[int] = None,
                  testing: bool = False,
                  torsions: List[List[int]] = None,
+                 xyz: Optional[dict] = None,
                  ):
 
         self.job_adapter = 'autotst'
@@ -157,6 +159,7 @@ class AutoTSTAdapter(JobAdapter):
         self.tasks = tasks
         self.testing = testing
         self.torsions = torsions
+        self.xyz = xyz
         self.species_label = self.reactions[0].ts_species.label if self.reactions[0].ts_species is not None \
             else f'TS_{self.job_num}'  # The ts_species attribute should be initialized in a normal ARC run
 
