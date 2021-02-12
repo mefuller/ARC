@@ -39,7 +39,8 @@ class TestAutoTSTAdapter(unittest.TestCase):
                                      products=[Species().from_smiles('[CH2]CC'), Species().from_smiles('OO')])
         rxn1.determine_family(rmg_database=self.rmgdb)
         self.assertEqual(rxn1.family.label, 'H_Abstraction')
-        atst1 = AutoTSTAdapter(reactions=[rxn1],
+        atst1 = AutoTSTAdapter(job_type='tsg',
+                               reactions=[rxn1],
                                testing=True,
                                project='test',
                                project_directory=os.path.join(arc_path, 'arc', 'testing', 'test_AutoTST', 'tst1'),
@@ -64,7 +65,8 @@ class TestAutoTSTAdapter(unittest.TestCase):
                                      products=[Species().from_smiles('CCC[O]'), Species().from_smiles('O')])
         rxn2.determine_family(rmg_database=self.rmgdb)
         self.assertEqual(rxn2.family.label, 'H_Abstraction')
-        atst2 = AutoTSTAdapter(reactions=[rxn2],
+        atst2 = AutoTSTAdapter(job_type='tsg',
+                               reactions=[rxn2],
                                testing=True,
                                project='test',
                                project_directory=os.path.join(arc_path, 'arc', 'testing', 'test_AutoTST', 'ts2'),
@@ -83,7 +85,8 @@ class TestAutoTSTAdapter(unittest.TestCase):
                                      products=[Species().from_smiles('C=C[O]'), Species().from_smiles('[H][H]')])
         rxn3.determine_family(rmg_database=self.rmgdb)
         self.assertEqual(rxn3.family.label, 'H_Abstraction')
-        atst3 = AutoTSTAdapter(reactions=[rxn3],
+        atst3 = AutoTSTAdapter(job_type='tsg',
+                               reactions=[rxn3],
                                testing=True,
                                project='test',
                                project_directory=os.path.join(arc_path, 'arc', 'testing', 'test_AutoTST', 'tst3'),
@@ -107,7 +110,8 @@ class TestAutoTSTAdapter(unittest.TestCase):
                                      products=[Species().from_smiles('CC[O]')])
         rxn1.determine_family(rmg_database=self.rmgdb)
         self.assertEqual(rxn1.family.label, 'intra_H_migration')
-        atst1 = AutoTSTAdapter(reactions=[rxn1],
+        atst1 = AutoTSTAdapter(job_type='tsg',
+                               reactions=[rxn1],
                                testing=True,
                                project='test',
                                project_directory=os.path.join(arc_path, 'arc', 'testing', 'test_AutoTST', 'tst4'),
@@ -145,7 +149,8 @@ class TestAutoTSTAdapter(unittest.TestCase):
                                      products=[Species().from_smiles('[CH]=CO')])
         rxn1.determine_family(rmg_database=self.rmgdb)
         self.assertEqual(rxn1.family.label, 'R_Addition_MultipleBond')
-        atst1 = AutoTSTAdapter(reactions=[rxn1],
+        atst1 = AutoTSTAdapter(job_type='tsg',
+                               reactions=[rxn1],
                                testing=True,
                                project='test',
                                project_directory=os.path.join(arc_path, 'arc', 'testing', 'test_AutoTST', 'tst4'),
