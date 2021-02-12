@@ -72,9 +72,10 @@ class ARCReaction(object):
         ts_label (str): The :ref:`ARCSpecies <species>` label of the respective TS.
         preserve_param_in_scan (list): Entries are length two iterables of atom indices (1-indexed) between which
                                        distances and dihedrals of these pivots must be preserved.
-        _atom_map (List[int]): An atom map, mapping the reactant atoms to the product atoms.
-                               I.e., an atom map of [0, 2, 1] means that reactant atom 0 matches product atom 0,
-                               reactant atom 1 matches product atom 2, and reactant atom 2 matches product atom 1.
+        atom_map (List[int]): An atom map, mapping the reactant atoms to the product atoms.
+                              I.e., an atom map of [0, 2, 1] means that reactant atom 0 matches product atom 0,
+                              reactant atom 1 matches product atom 2, and reactant atom 2 matches product atom 1.
+        done_opt_r_n_p (bool): Whether the optimization of all reactants and products is complete.
     """
     def __init__(self,
                  label: str = '',
@@ -105,6 +106,7 @@ class ARCReaction(object):
         self._atom_map = None
         self._charge = charge
         self._multiplicity = multiplicity
+        self.done_opt_r_n_p = False
         if reaction_dict is not None:
             # Reading from a dictionary
             self.from_dict(reaction_dict=reaction_dict)
@@ -208,6 +210,7 @@ class ARCReaction(object):
         reaction_dict['label'] = self.label
         reaction_dict['ts_xyz_guess'] = self.ts_xyz_guess
         reaction_dict['ts_label'] = self.ts_label
+        reaction_dict['done_opt_r_n_p'] = self.done_opt_r_n_p
         return reaction_dict
 
     def from_dict(self, reaction_dict: dict):
@@ -250,6 +253,7 @@ class ARCReaction(object):
         self.preserve_param_in_scan = reaction_dict['preserve_param_in_scan'] \
             if 'preserve_param_in_scan' in reaction_dict else None
         self.atom_map = reaction_dict['atom_map'] if 'atom_map' in reaction_dict else None
+        self.done_opt_r_n_p = reaction_dict['done_opt_r_n_p'] if 'done_opt_r_n_p' in reaction_dict else False
 
     def set_label_reactants_products(self):
         """A helper function for settings the label, reactants, and products attributes for a Reaction"""
