@@ -464,7 +464,7 @@ def standardize_xyz_string(xyz_str, isotope_format=None):
     return xyz_to_str(xyz_dict=xyz_dict, isotope_format=isotope_format)
 
 
-def check_xyz_dict(xyz):
+def check_xyz_dict(xyz: Union[dict, str]) -> dict:
     """
     Check that the xyz dictionary entered is valid.
     If it is a string, convert it.
@@ -498,7 +498,7 @@ def check_xyz_dict(xyz):
     return xyz_dict
 
 
-def check_zmat_dict(zmat):
+def check_zmat_dict(zmat: Union[dict, str]) -> dict:
     """
     Check that the zmat dictionary entered is valid.
     If it is a string, convert it.
