@@ -687,46 +687,54 @@ class JobAdapter(ABC):
         """
         job_dict = dict()
         job_dict['job_adapter'] = self.job_adapter
-        job_dict['execution'] = self.execution
-        job_dict['job_type'] = self.job_type
-        job_dict['level'] = self.level
         job_dict['project'] = self.project
         job_dict['project_directory'] = self.project_directory
+        job_dict['job_type'] = self.job_type
         job_dict['args'] = self.args
         if self.bath_gas is not None:
             job_dict['bath_gas'] = self.bath_gas
         if self.checkfile is not None:
             job_dict['checkfile'] = self.checkfile
-        if self.conformers:
+        if self.conformers is not None:
             job_dict['conformers'] = self.conformers
+        if self.constraints is not None:
+            job_dict['constraints'] = self.constraints
         job_dict['cpu_cores'] = self.cpu_cores
+        if self.dihedrals is not None:
+            job_dict['dihedrals'] = self.dihedrals
         job_dict['ess_settings'] = self.ess_settings
         if self.ess_trsh_methods:
             job_dict['ess_trsh_methods'] = self.ess_trsh_methods
+        job_dict['execution_type'] = self.execution_type
         if self.fine:
             job_dict['fine'] = self.fine
-        if self.final_time is not None:
-            job_dict['final_time'] = self.final_time.strftime('%Y-%m-%d %H:%M:%S')
         if self.initial_time is not None:
-            job_dict['initial_time'] = self.initial_time.strftime('%Y-%m-%d %H:%M:%S')
+            job_dict['initial_time'] = str(self.initial_time)
+        if self.irc_direction is not None:
+            job_dict['irc_direction'] = self.irc_direction
         job_dict['job_id'] = self.job_id
         job_dict['job_memory_gb'] = float(self.job_memory_gb)
         job_dict['job_name'] = self.job_name
         job_dict['job_num'] = self.job_num
         job_dict['job_status'] = self.job_status
+        job_dict['level'] = self.level
         job_dict['max_job_time'] = self.max_job_time
         if self.reactions is not None:
             job_dict['reaction_indices'] = [reaction.index for reaction in self.reactions]
         if self.rotor_index is not None:
             job_dict['rotor_index'] = self.rotor_index
-        if self.scan is not None:
-            job_dict['scan'] = self.scan
-        if self.scan_type is not None:
-            job_dict['scan_type'] = self.scan_type
+        if self.server is not None:
+            job_dict['server'] = self.server
         if self.server_nodes:
             job_dict['server_nodes'] = self.server_nodes
         if self.species is not None:
             job_dict['species_labels'] = [species.label for species in self.species]
+        if self.torsions:
+            job_dict['torsions'] = self.torsions
+        if self.tsg:
+            job_dict['tsg'] = self.tsg
+        if self.xyz:
+            job_dict['xyz'] = self.xyz
         return job_dict
 
     def format_max_job_time(self, time_format: str) -> str:
