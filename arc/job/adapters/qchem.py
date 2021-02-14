@@ -56,7 +56,7 @@ $end
 ${job_type_2}
 ${scan}
 
-""",
+"""
 
 
 class QChemAdapter(JobAdapter):
@@ -193,7 +193,7 @@ class QChemAdapter(JobAdapter):
         self.tsg = tsg
         self.xyz = xyz or self.species[0].get_xyz()
 
-        if self.job_num is None:
+        if self.job_num is None or self.job_name is None or self.job_server_name:
             self._set_job_number()
 
         self.args = set_job_args(args=self.args, level=self.level, job_name=self.job_name)
@@ -293,8 +293,9 @@ class QChemAdapter(JobAdapter):
                      and self.species[0].rotors_dict[self.rotor_index]['directed_scan_type'] == 'ess')):
             # In a pipe run, the species object is initialized with species.rotors_dict as an empty dict.
             scans = list()
-            if self.species[0].rotors_dict:
+            if self.species[0].rotors_dict and self.rotor_index is not None:
                 scans = self.species[0].rotors_dict[self.rotor_index]['scan']
+                scans = [scans] if not isinstance(scans[0], list) else scans
             else:
                 for torsion in self.torsions:
                     scans.append([atom_index + 1 for atom_index in torsion])
