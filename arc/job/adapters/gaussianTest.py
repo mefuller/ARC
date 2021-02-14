@@ -77,6 +77,7 @@ class TestGaussianAdapter(unittest.TestCase):
                                     project='test',
                                     project_directory=os.path.join(arc_path, 'arc', 'testing', 'test_GaussianAdapter'),
                                     species=[spc_4],
+                                    rotor_index=0,
                                     testing=True,
                                     args={'block': {'general': 'additional\ngaussian\nblock'}},
                                     )
@@ -114,12 +115,11 @@ class TestGaussianAdapter(unittest.TestCase):
 
     def test_set_cpu_and_mem(self):
         """Test assigning number of cpu's and memory"""
-        self.job_1.cpu_cores = 8
         self.job_1.input_file_memory = None
         self.job_1.submit_script_memory = None
         self.job_1.server = 'server2'
         self.job_1.set_cpu_and_mem()
-        self.assertEqual(self.job_1.cpu_cores, 48)
+        self.assertEqual(self.job_1.cpu_cores, 8)
 
     def test_set_input_file_memory(self):
         """Test setting the input_file_memory argument"""
@@ -174,13 +174,20 @@ O       0.00000000    0.00000000    1.00000000
 
 #P opt=(modredundant, calcfc, noeigentest, maxStep=5) scf=(tight, direct) integral=(grid=ultrafine, Acc2E=12) guess=mix wb97xd/def2-tzvp   IOp(2/9=2000) scf=xqc  
 
-Argon
+ethanol
 
 0 1
-Ar      0.00000000    0.00000000    0.00000000
+C       1.16582100   -0.40435500    0.00000000
+C       0.00000000    0.55180500    0.00000000
+O      -1.18946000   -0.21419400    0.00000000
+H      -1.94125800    0.37518500    0.00000000
+H       2.10540200    0.14511600    0.00000000
+H       1.13062400   -1.03878500    0.88303200
+H       1.13062400   -1.03878500   -0.88303200
+H       0.04768200    1.19305700    0.88359100
+H       0.04768200    1.19305700   -0.88359100
 
-D 1 2 3 4 S 45 8.0
-D 4 5 6 7 S 45 8.0
+D 5 1 2 3 S 45 8.0
 
 
 additional
@@ -266,9 +273,9 @@ O       0.00000000    0.00000000    1.00000000
         self.assertEqual(self.job_1.files_to_upload, job_1_files_to_upload)
         self.assertEqual(self.job_1.files_to_download, job_1_files_to_download)
 
-        job_2_files_to_upload = [{'file_name': 'submit.sh',
-                                  'local': os.path.join(self.job_2.local_path, 'submit.sh'),
-                                  'remote': os.path.join(self.job_2.remote_path, 'submit.sh'),
+        job_2_files_to_upload = [{'file_name': 'submit.sl',
+                                  'local': os.path.join(self.job_2.local_path, 'submit.sl'),
+                                  'remote': os.path.join(self.job_2.remote_path, 'submit.sl'),
                                   'source': 'path',
                                   'make_x': False},
                                  {'file_name': 'data.hdf5',
