@@ -462,7 +462,7 @@ def clean_output_directory(species_path: str,
                 if '.yml' in yml_file:
                     shutil.move(src=os.path.join(species_yaml_base_path, yml_file),
                                 dst=os.path.join(species_path, yml_file))
-        shutil.rmtree(species_yaml_base_path)
+        shutil.rmtree(species_yaml_base_path, ignore_errors=True)
 
     if is_ts:
         # 2. reaction files
@@ -475,7 +475,7 @@ def clean_output_directory(species_path: str,
                 target_file = os.path.join(os.path.dirname(path_file), f'reaction_path.{path_file.split(".")[-1]}')
                 shutil.move(src=os.path.join(paths_path, path_file),
                             dst=os.path.join(species_path, target_file))
-            shutil.rmtree(paths_path)
+            shutil.rmtree(paths_path, ignore_errors=True)
 
         # 2.2. the Arrhenius plot
         plot_path = os.path.join(species_path, 'arkane', 'plots')
@@ -488,7 +488,7 @@ def clean_output_directory(species_path: str,
                         shutil.move(src=os.path.join(plot_path, plot_file),
                                     dst=os.path.join(species_path, target_file))
                         if len(plot_files) == 1:
-                            shutil.rmtree(plot_path)
+                            shutil.rmtree(plot_path, ignore_errors=True)
 
     # 3. thermo plots
     plot_path = os.path.join(species_path, 'arkane', 'plots')

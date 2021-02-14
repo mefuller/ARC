@@ -18,7 +18,8 @@ class TestSubmit(unittest.TestCase):
     def test_servers(self):
         """Test server keys in submit_scripts"""
         for server in submit_scripts.keys():
-            self.assertTrue(server in ['local', 'c3ddb', 'rmg', 'pharos', 'txe1', 'pbs_sample'])
+            print(server)
+            self.assertTrue(server in ['local', 'c3ddb', 'rmg', 'pharos', 'txe1', 'pbs_sample', 'server1', 'server2'])
 
 
 if __name__ == '__main__':

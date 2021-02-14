@@ -57,7 +57,8 @@ class TestARCReaction(unittest.TestCase):
         """Test Species.as_dict()"""
         rxn_dict = self.rxn1.as_dict()
         expected_dict = {'charge': 0,
-                         'multiplicity': None,
+                         'done_opt_r_n_p': False,
+                         'multiplicity': 2,
                          'family': None,
                          'family_own_reverse': 0,
                          'label': 'CH4 + OH <=> CH3 + H2O',

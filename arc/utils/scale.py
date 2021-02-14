@@ -88,7 +88,7 @@ def determine_scaling_factors(levels: List[Union[Level, dict, str]],
         project = 'scaling_' + renamed_level
         project_directory = os.path.join(arc_path, 'Projects', 'scaling_factors', project)
         if os.path.isdir(project_directory):
-            shutil.rmtree(project_directory)
+            shutil.rmtree(project_directory, ignore_errors=True)
 
         species_list = get_species_list()
 

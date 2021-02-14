@@ -38,38 +38,38 @@ default_job_settings, global_ess_settings, input_filenames, output_filenames, ro
                        settings['output_filenames'], settings['rotor_scan_resolution'], settings['servers'], \
                        settings['submit_filenames']
 
-psi4.core.be_quiet()
-psi4.core.set_output_file('full_path/output.dat', False)  # don't append
-psi4.core.print_out('str')  # Prints a string (using printf-like notation) to the output file.
-psi4.core.close_outfile()
-
-psi4.core.set_memory_bytes(int(5e8))  # 4 GB in bytes
-psi4.core.set_num_threads(8)  # number of threads, int
-
-# compute_energy(self: psi4.core.Wavefunction) → float
-# energy(self: psi4.core.Wavefunction) → float
-# compute_hessian(self: psi4.core.Wavefunction) → psi4.core.Matrix
-# hessian(self: psi4.core.Wavefunction)
-psi4.driver.frequencies(name='scf' or 'mp2' or 'ci5' or 'ccsd', molecule=mol_obj_if_not_the_last_mol_defined)
-# legacy_frequencies()
-
-
-psi4.core.clean()  # Remove scratch files. Call between independent jobs.
-psi4.core.clean_options()
-psi4.core.clean_variables()
-
-xyz_str = """O 0 0 0"""
-psi4.driver.molutil.mol_from_str = psi4.driver.geometry(geom=xyz_str, name='name')
-psi4.driver.molutil.mol_from_array = psi4.driver.molutil.molecule_from_arrays(
-    name='label',
-    units='Angstrom',
-    geom='Cartesian coordinates as ndarray',
-    elea='mass number (isotope), ndarray of str int',
-    elem='element symbols, ndarray of str; either this or elea',
-    molecular_charge=0,
-    molecular_multiplicity=1,
-    connectivity=[(0, 1, 1), (1, 2, 3), (21, 74, 2)],  # 0-indexed atom A, atom B and BO
-)
+# psi4.core.be_quiet()
+# psi4.core.set_output_file('full_path/output.dat', False)  # don't append
+# psi4.core.print_out('str')  # Prints a string (using printf-like notation) to the output file.
+# psi4.core.close_outfile()
+#
+# psi4.core.set_memory_bytes(int(5e8))  # 4 GB in bytes
+# psi4.core.set_num_threads(8)  # number of threads, int
+#
+# # compute_energy(self: psi4.core.Wavefunction) → float
+# # energy(self: psi4.core.Wavefunction) → float
+# # compute_hessian(self: psi4.core.Wavefunction) → psi4.core.Matrix
+# # hessian(self: psi4.core.Wavefunction)
+# psi4.driver.frequencies(name='scf' or 'mp2' or 'ci5' or 'ccsd', molecule=mol_obj_if_not_the_last_mol_defined)
+# # legacy_frequencies()
+#
+#
+# psi4.core.clean()  # Remove scratch files. Call between independent jobs.
+# psi4.core.clean_options()
+# psi4.core.clean_variables()
+#
+# xyz_str = """O 0 0 0"""
+# psi4.driver.molutil.mol_from_str = psi4.driver.geometry(geom=xyz_str, name='name')
+# psi4.driver.molutil.mol_from_array = psi4.driver.molutil.molecule_from_arrays(
+#     name='label',
+#     units='Angstrom',
+#     geom='Cartesian coordinates as ndarray',
+#     elea='mass number (isotope), ndarray of str int',
+#     elem='element symbols, ndarray of str; either this or elea',
+#     molecular_charge=0,
+#     molecular_multiplicity=1,
+#     connectivity=[(0, 1, 1), (1, 2, 3), (21, 74, 2)],  # 0-indexed atom A, atom B and BO
+# )
 
 # optking: http://www.psicode.org/psi4manual/master/optking.html
 

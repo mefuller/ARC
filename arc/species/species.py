@@ -1030,15 +1030,7 @@ class ARCSpecies(object):
                 # reformat as nested lists
                 directed_rotors[key] = list()
                 for val1 in vals:
-                    if len(val1) != 2:
-                        raise SpeciesError(f'directed_scan pivots must be lists of length 2, got {val1}.')
-                    if isinstance(val1, (tuple, list)) and isinstance(val1[0], int):
-                        corrected_val = val1 if list(val1) in all_pivots else [val1[1], val1[0]]
-                        directed_rotors[key].append([list(corrected_val)])
-                    elif isinstance(val1, (tuple, list)) and isinstance(val1[0], (tuple, list)):
-                        directed_rotors[key].append([list(val2 if list(val2) in all_pivots else [val2[1], val2[0]])
-                                                     for val2 in val1])
-                    elif val1 == 'all':
+                    if val1 == 'all':
                         # 1st level all, add all pivots, they will be treated separately
                         for i in range(self.number_of_rotors):
                             if [self.rotors_dict[i]['pivots']] not in directed_rotors[key]:
@@ -1046,6 +1038,14 @@ class ARCSpecies(object):
                     elif val1 == ['all']:
                         # 2nd level all, add all pivots, they will be treated together
                         directed_rotors[key].append(all_pivots)
+                    elif len(val1) != 2:
+                        raise SpeciesError(f'directed_scan pivots must be lists of length 2, got {val1}.')
+                    elif isinstance(val1, (tuple, list)) and isinstance(val1[0], int):
+                        corrected_val = val1 if list(val1) in all_pivots else [val1[1], val1[0]]
+                        directed_rotors[key].append([list(corrected_val)])
+                    elif isinstance(val1, (tuple, list)) and isinstance(val1[0], (tuple, list)):
+                        directed_rotors[key].append([list(val2 if list(val2) in all_pivots else [val2[1], val2[0]])
+                                                     for val2 in val1])
             for key, vals1 in directed_rotors.items():
                 # check
                 for vals2 in vals1:
@@ -1733,7 +1733,7 @@ class TSGuess(object):
         family (str): The RMG family that corresponds to the reaction, if applicable.
         rmg_reaction (Reaction): An RMG Reaction object.
         arc_reaction (ARCReaction): An ARC Reaction object.
-        t0 (float): Initial time of spawning the guess job.
+        t0 (datetime.datetime, optional): Initial time of spawning the guess job.
         execution_time (str): Overall execution time for the TS guess method.
         success (bool): Whether the TS guess method succeeded in generating an XYZ guess or not.
         energy (float): Relative energy of all TS conformers in kJ/mol.
@@ -1788,14 +1788,15 @@ class TSGuess(object):
     def as_dict(self) -> dict:
         """A helper function for dumping this object as a dictionary in a YAML file for restarting ARC"""
         ts_dict = dict()
-        ts_dict['t0'] = self.t0.isoformat()
+        ts_dict['t0'] = self.t0.isoformat() if isinstance(self.t0, datetime.datetime) else self.t0
         ts_dict['method'] = self.method
         ts_dict['method_index'] = self.method_index
         ts_dict['method_direction'] = self.method_direction
         ts_dict['success'] = self.success
         ts_dict['energy'] = self.energy
         ts_dict['index'] = self.index
-        ts_dict['execution_time'] = str(self.execution_time)
+        ts_dict['execution_time'] = str(self.execution_time) if isinstance(self.execution_time, datetime.datetime) \
+            else self.execution_time
         if self.initial_xyz:
             ts_dict['initial_xyz'] = self.initial_xyz
         if self.opt_xyz:
@@ -1814,7 +1815,8 @@ class TSGuess(object):
         """
         A helper function for loading this object from a dictionary in a YAML file for restarting ARC
         """
-        self.t0 = datetime.datetime.fromisoformat(ts_dict['t0']) if 't0' in ts_dict else None
+        self.t0 = datetime.datetime.fromisoformat(ts_dict['t0']) if 't0' in ts_dict and isinstance(ts_dict['t0'], str) \
+            else ts_dict['t0'] if 't0' in ts_dict else None
         self.index = ts_dict['index'] if 'index' in ts_dict else None
         self.initial_xyz = ts_dict['initial_xyz'] if 'initial_xyz' in ts_dict else None
         self.process_xyz(self.initial_xyz)  # re-populates self.initial_xyz

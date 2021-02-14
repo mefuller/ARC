@@ -661,8 +661,8 @@ class Scheduler(object):
                             self.timer = False
                             break
 
-                if not len(job_list) and not (self.species_dict[label].is_ts
-                                              and not self.species_dict[label].ts_conf_spawned):
+                if not len(job_list) and not \
+                        (self.species_dict[label].is_ts and not self.species_dict[label].ts_conf_spawned):
                     self.check_all_done(label)
                     if not self.running_jobs[label]:
                         # delete the label only if it represents an empty dictionary
@@ -2657,9 +2657,10 @@ class Scheduler(object):
         Check job status of all incore jobs, get a list of relevant completed job IDs.
         """
         self.completed_incore_jobs = list()
-        for job in self.running_jobs.values():
-            if job.execution_type == 'incore' and job.job_status[0] == 'done':
-                self.servers_jobs_ids.append(job.job_id)
+        for jobs in self.running_jobs.values():
+            for job in jobs:
+                if job.execution_type == 'incore' and job.job_status[0] == 'done':
+                    self.servers_jobs_ids.append(job.job_id)
 
     def troubleshoot_negative_freq(self,
                                    label: str,

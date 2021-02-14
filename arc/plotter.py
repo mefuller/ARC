@@ -792,7 +792,7 @@ def save_kinetics_lib(rxn_list, path, name, lib_long_desc):
         kinetics_library.entries = entries
         lib_path = os.path.join(path, 'kinetics', '')
         if os.path.exists(lib_path):
-            shutil.rmtree(lib_path)
+            shutil.rmtree(lib_path, ignore_errors=True)
         try:
             os.makedirs(lib_path)
         except OSError:
