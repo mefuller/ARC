@@ -170,7 +170,7 @@ class GCNAdapter(JobAdapter):
         if len(self.reactions) > 1:
             self.species_label += f'_and_{len(self.reactions) - 1}_others'
 
-        if self.job_num is None:
+        if self.job_num is None or self.job_name is None or self.job_server_name:
             self._set_job_number()
 
         self.args = dict()
