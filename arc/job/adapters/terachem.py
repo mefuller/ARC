@@ -344,7 +344,7 @@ class TeraChemAdapter(JobAdapter):
             self.files_to_upload.append(self.get_file_property_dictionary(file_name='coords.xyz'))
         # 1.4. checkfile
         if self.checkfile is not None and os.path.isfile(self.checkfile):
-            self.files_to_upload.append(self.get_file_property_dictionary(file_name='teracheck.chk',
+            self.files_to_upload.append(self.get_file_property_dictionary(file_name='check.chk',
                                                                           local=self.checkfile))
         # 1.4. HDF5 file
         if self.iterate_by and os.path.isfile(os.path.join(self.local_path, 'data.hdf5')):
@@ -358,7 +358,7 @@ class TeraChemAdapter(JobAdapter):
             self.files_to_download.append(self.get_file_property_dictionary(
                 file_name=output_filenames[self.job_adapter]))
             # 2.3. checkfile
-            self.files_to_download.append(self.get_file_property_dictionary(file_name='teracheck.chk'))
+            self.files_to_download.append(self.get_file_property_dictionary(file_name='check.chk'))
 
     def set_additional_file_paths(self) -> None:
         """
@@ -385,6 +385,7 @@ class TeraChemAdapter(JobAdapter):
               )
         self._log_job_execution()
         execute_command(incore_commands[self.server][self.job_adapter])
+        self.job_status[0] = 'done'
 
     def execute_queue(self):
         """
