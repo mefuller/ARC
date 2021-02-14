@@ -55,6 +55,7 @@ def job_factory(job_adapter: str,
                 job_memory_gb: float = 14.0,
                 job_name: Optional[str] = None,
                 job_num: Optional[int] = None,
+                job_server_name: Optional[str] = None,
                 job_status: Optional[List[Union[dict, str]]] = None,
                 level: Optional['Level'] = None,
                 max_job_time: Optional[float] = None,
@@ -103,6 +104,7 @@ def job_factory(job_adapter: str,
         job_memory_gb (int, optional): The total job allocated memory in GB (14 by default).
         job_name (str, optional): The job's name (e.g., 'opt_a103').
         job_num (int, optional): Used as the entry number in the database, as well as in ``job_name``.
+        job_server_name (str, optional): Job's name on the server (e.g., 'a103').
         job_status (int, optional): The job's server and ESS statuses.
                                     The job server status is in job_status[0] and can be either ``'initializing'``,
                                     ``'running'``, ``'errored'``, or ``'done'``. The job ESS status is in job_status[1]
@@ -175,6 +177,7 @@ def job_factory(job_adapter: str,
                                                               job_memory_gb=job_memory_gb,
                                                               job_name=job_name,
                                                               job_num=job_num,
+                                                              job_server_name=job_server_name,
                                                               job_status=job_status,
                                                               level=level,
                                                               max_job_time=max_job_time,
