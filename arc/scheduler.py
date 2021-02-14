@@ -1659,7 +1659,7 @@ class Scheduler(object):
                 self.job_dict[label]['conformers'] = dict()
                 for i, xyz in enumerate(self.species_dict[label].conformers):
                     self.run_job(label=label, xyz=xyz, level_of_theory=self.conformer_level,
-                                 job_type='conformer', conformer=i)
+                                 job_type='conformers', conformer=i)
             elif len(self.species_dict[label].conformers) == 1:
                 logger.info(f'Only one conformer is available for species {label}, using it as initial xyz.')
                 self.species_dict[label].initial_xyz = self.species_dict[label].conformers[0]
@@ -2697,7 +2697,7 @@ class Scheduler(object):
             self.species_dict[label].conformer_energies = [None] * len(confs)
             self.job_dict[label]['conformers'] = dict()  # initialize the conformer job dictionary
             for i, xyz in enumerate(self.species_dict[label].conformers):
-                self.run_job(label=label, xyz=xyz, level_of_theory=self.conformer_level, job_type='conformer',
+                self.run_job(label=label, xyz=xyz, level_of_theory=self.conformer_level, job_type='conformers',
                              conformer=i)
 
     def troubleshoot_scan_job(self,
