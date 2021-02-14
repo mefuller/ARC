@@ -241,7 +241,7 @@ class Psi4Adapter(JobAdapter):
         self.tsg = tsg
         self.xyz = xyz or self.species[0].get_xyz()
 
-        if self.job_num is None:
+        if self.job_num is None or self.job_name is None or self.job_server_name:
             self._set_job_number()
 
         self.args = set_job_args(args=self.args, level=self.level, job_name=self.job_name)
