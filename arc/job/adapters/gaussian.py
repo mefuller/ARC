@@ -196,7 +196,7 @@ class GaussianAdapter(JobAdapter):
         self.tsg = tsg
         self.xyz = xyz or self.species[0].get_xyz()
 
-        if self.job_num is None:
+        if self.job_num is None or self.job_name is None or self.job_server_name:
             self._set_job_number()
 
         self.args = set_job_args(args=self.args, level=self.level, job_name=self.job_name)
@@ -320,18 +320,20 @@ class GaussianAdapter(JobAdapter):
                      or (self.species[0].rotors_dict
                      and self.species[0].rotors_dict[self.rotor_index]['directed_scan_type'] == 'ess')):
             # In a pipe run, the species object is initialized with species.rotors_dict as an empty dict.
-            scans = list()
-            if self.species[0].rotors_dict:
-                for scan_indices in self.species[0].rotors_dict[self.rotor_index]['scan']:
-                    scans.append(' '.join([str(atom_index) for atom_index in scan_indices]))
+            scans, scans_strings = list(), list()
+            if self.species[0].rotors_dict and self.rotor_index is not None:
+                scans = self.species[0].rotors_dict[self.rotor_index]['scan']
+                scans = [scans] if not isinstance(scans[0], list) else scans
             else:
                 for torsion in self.torsions:
-                    scans.append(' '.join([str(atom_index + 1) for atom_index in torsion]))
+                    scans.append([atom_index + 1 for atom_index in torsion])
+            for scan_indices in scans:
+                scans_strings.append(' '.join([str(atom_index) for atom_index in scan_indices]))
             ts = 'ts, ' if self.is_ts else ''
             input_dict['job_type_1'] = f'opt=({ts}modredundant, calcfc, noeigentest, maxStep=5) scf=(tight, direct) ' \
                                        f'integral=(grid=ultrafine, Acc2E=12)'
             input_dict['scan'] = '\n\n' if not input_dict['scan'] else input_dict['scan']
-            for scan in scans:
+            for scan in scans_strings:
                 input_dict['scan'] += f'D {scan} S {int(360 / self.scan_res)} {self.scan_res:.1f}\n'
 
         elif self.job_type == 'irc':
