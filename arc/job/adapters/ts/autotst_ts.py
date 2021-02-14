@@ -286,6 +286,7 @@ class AutoTSTAdapter(JobAdapter):
                                                    execution_time=tok,
                                                    xyz=xyz_from_data(coords=result['coords'], numbers=result['numbers']),
                                                    success=True,
+                                                   index=len(rxn.ts_species.ts_guesses),
                                                    )
                                 rxn.ts_species.ts_guesses.append(ts_guess)
                         else:
@@ -294,10 +295,12 @@ class AutoTSTAdapter(JobAdapter):
                                                t0=tic,
                                                execution_time=tok,
                                                success=False,
+                                               index=len(rxn.ts_species.ts_guesses),
                                                )
                             rxn.ts_species.ts_guesses.append(ts_guess)
 
         self.final_time = datetime.datetime.now()
+        self.job_status[0] = 'done'
 
     def execute_queue(self):
         """
