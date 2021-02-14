@@ -13,7 +13,7 @@ git pull origin master
 # Add to PYTHONPATH
 echo "Adding KinBot to PYTHONPATH"
 export PYTHONPATH=$PYTHONPATH:$(pwd)
-echo "export PYTHONPATH=$$PYTHONPATH:$(pwd)" >> ~/.bashrc
+echo 'export PYTHONPATH=$PYTHONPATH:'"$(pwd)" >> ~/.bashrc
 
 # Restore the original directory
 echo "Done installing Kinbot."
