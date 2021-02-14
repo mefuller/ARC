@@ -8,7 +8,7 @@ import datetime
 import os
 from typing import TYPE_CHECKING, List, Optional, Tuple, Union
 
-from arc.common import arc_path, get_logger, read_yaml_file
+from arc.common import get_logger
 from arc.job.adapter import JobAdapter
 from arc.job.adapters.common import check_argument_consistency
 from arc.job.factory import register_job_adapter
@@ -362,7 +362,7 @@ def setup_kinbot(mol: 'Molecule',
         charge (int): The well/reaction charge.
 
     Returns:
-        ReactionGenerator: THe KinBot ReactionGenerator instance.
+        ReactionGenerator: The KinBot ReactionGenerator instance.
     """
     params = Parameters()
     params.par['title'] = 'ARC'
