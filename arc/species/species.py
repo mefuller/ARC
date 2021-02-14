@@ -257,7 +257,8 @@ class ARCSpecies(object):
         fragments (Optional[List[List[int]]]):
             Fragments represented by this species, i.e., as in a VdW well or a TS.
             Entries are atom index lists of all atoms in a fragment, each list represents a different fragment.
-        occ (int, optional): The number of occupied orbitals (core + val) from a molpro CCSD sp calc.
+        occ (int): The number of occupied orbitals (core + val) from a molpro CCSD sp calc.
+        tsg_spawned (bool): If this species is a TS, this attribute describes whether TS guess jobs were already spawned.
     """
 
     def __init__(self,
@@ -361,6 +362,7 @@ class ARCSpecies(object):
             self.number_of_rotors = 0
             self.rotors_dict = dict()
             self.rmg_species = rmg_species
+            self.tsg_spawned = False
             if bond_corrections is None:
                 self.bond_corrections = dict()
             else:
@@ -572,6 +574,8 @@ class ARCSpecies(object):
             species_dict['e0'] = self.e0
         if self.e0_only is not False:
             species_dict['e0_only'] = self.e0_only
+        if self.tsg_spawned is not False:
+            species_dict['tsg_spawned'] = self.tsg_spawned
         if self.yml_path is not None:
             species_dict['yml_path'] = self.yml_path
         if self.run_time is not None:
@@ -653,6 +657,7 @@ class ARCSpecies(object):
         self.t1 = species_dict['t1'] if 't1' in species_dict else None
         self.e_elect = species_dict['e_elect'] if 'e_elect' in species_dict else None
         self.e0 = species_dict['e0'] if 'e0' in species_dict else None
+        self.tsg_spawned = species_dict['tsg_spawned'] if 'tsg_spawned' in species_dict else False
         self.occ = species_dict['occ'] if 'occ' in species_dict else None
         self.arkane_file = species_dict['arkane_file'] if 'arkane_file' in species_dict else None
         self.yml_path = species_dict['yml_path'] if 'yml_path' in species_dict else None
@@ -1084,7 +1089,7 @@ class ARCSpecies(object):
                     self.rotors_dict[max(list(self.rotors_dict.keys())) + 1] = new_rotor
             for i in set(rotor_indices_to_del):
                 if not self.rotors_dict[i]['directed_scan_type']:
-                    del(self.rotors_dict[i])
+                    del (self.rotors_dict[i])
 
             # renumber the keys so iterative looping will make sense
             new_rotors_dict = dict()
