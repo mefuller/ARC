@@ -90,6 +90,7 @@ class GaussianAdapter(JobAdapter):
         job_memory_gb (int, optional): The total job allocated memory in GB (14 by default).
         job_name (str, optional): The job's name (e.g., 'opt_a103').
         job_num (int, optional): Used as the entry number in the database, as well as in ``job_name``.
+        job_server_name (str, optional): Job's name on the server (e.g., 'a103').
         job_status (int, optional): The job's server and ESS statuses.
         level (Level, optional): The level of theory to use.
         max_job_time (float, optional): The maximal allowed job time on the server in hours (can be fractional).
@@ -126,6 +127,7 @@ class GaussianAdapter(JobAdapter):
                  job_memory_gb: float = 14.0,
                  job_name: Optional[str] = None,
                  job_num: Optional[int] = None,
+                 job_server_name: Optional[str] = None,
                  job_status: Optional[List[Union[dict, str]]] = None,
                  level: Optional['Level'] = None,
                  max_job_time: Optional[float] = None,
@@ -179,15 +181,16 @@ class GaussianAdapter(JobAdapter):
         self.job_memory_gb = job_memory_gb
         self.job_name = job_name
         self.job_num = job_num
+        self.job_server_name = job_server_name
         self.job_status = job_status \
             or ['initializing', {'status': 'initializing', 'keywords': list(), 'error': '', 'line': ''}]
         self.level = level
         self.max_job_time = max_job_time or default_job_settings.get('job_time_limit_hrs', 120)
-        self.reactions = [reactions] if not isinstance(reactions, list) else reactions
+        self.reactions = [reactions] if reactions is not None and not isinstance(reactions, list) else reactions
         self.rotor_index = rotor_index
         self.server = server
         self.server_nodes = server_nodes or list()
-        self.species = [species] if not isinstance(species, list) else species
+        self.species = [species] if species is not None and not isinstance(species, list) else species
         self.testing = testing
         self.torsions = torsions
         self.tsg = tsg
@@ -195,7 +198,6 @@ class GaussianAdapter(JobAdapter):
 
         if self.job_num is None:
             self._set_job_number()
-            self.job_name = f'{self.job_type}_a{self.job_num}'
 
         self.args = set_job_args(args=self.args, level=self.level, job_name=self.job_name)
 
