@@ -318,6 +318,8 @@ class JobAdapter(ABC):
         Determine the number of tasks to use in a job array
         and whether to iterate by conformers, species, reactions, or scan constraints.
         """
+        # Todo: set a capacity for incore jobs per adapter. E.g., 1 for Gaussian, 100 for GCN without parallelization
+        # todo: adapters with high capacity should know about it, they're currently set up to only run one instance
         if len(self.job_types) > 1:
             self.iterate_by.append('job_types')
 
@@ -887,9 +889,10 @@ class JobAdapter(ABC):
                 os.remove(self.local_path_to_orbitals_file)
             if os.path.exists(self.local_path_to_check_file):
                 os.remove(self.local_path_to_check_file)
-            self._download_output_file()  # also downloads the check file and orbital file if exist
+            self._download_output_file()  # Also downloads the check file and orbital file if they exist.
         else:
-            # If running locally, just rename the output file to "output.out" for consistency between software
+            # If running locally (local queue or incore),
+            # just rename the output file to "output.out" for consistency between software.
             if self.final_time is None:
                 self.final_time = get_last_modified_time(
                     file_path=os.path.join(self.local_path, output_filenames[self.software]))
@@ -898,10 +901,13 @@ class JobAdapter(ABC):
             if os.path.isfile(xyz_path):
                 self.local_path_to_xyz = xyz_path
         self.determine_run_time()
-        status, keywords, error, line = determine_ess_status(output_path=self.local_path_to_output_file,
-                                                             species_label=self.species_label,
-                                                             job_type=self.job_type,
-                                                             software=self.software)
+        if os.path.isfile(self.local_path_to_output_file):
+            status, keywords, error, line = determine_ess_status(output_path=self.local_path_to_output_file,
+                                                                 species_label=self.species_label,
+                                                                 job_type=self.job_type,
+                                                                 software=self.software)
+        else:
+            status, keywords, error, line = '', '', '', ''
         self.job_status[1]['status'] = status
         self.job_status[1]['keywords'] = keywords
         self.job_status[1]['error'] = error
