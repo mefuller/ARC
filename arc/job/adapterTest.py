@@ -50,7 +50,7 @@ class TestEnumerationClasses(unittest.TestCase):
         self.assertEqual(JobEnum('pygsm').value, 'pygsm')
         self.assertEqual(JobEnum('heuristics').value, 'heuristics')
         self.assertEqual(JobEnum('kinbot').value, 'kinbot')
-        self.assertEqual(JobEnum('gnn_isomerization').value, 'gnn_isomerization')
+        self.assertEqual(JobEnum('gcn').value, 'gcn')
         self.assertEqual(JobEnum('neb_ase').value, 'neb_ase')
         self.assertEqual(JobEnum('neb_terachem').value, 'neb_terachem')
         self.assertEqual(JobEnum('qst2').value, 'qst2')
@@ -185,6 +185,7 @@ class TestJobAdapter(unittest.TestCase):
                                 directed_rotors={'cont_opt_diagonal': ['all']})
         cls.job_3 = GaussianAdapter(execution_type='incore',
                                     job_type='scan',
+                                    torsions=[[1, 2, 3, 4]],
                                     level=Level(method='wb97xd', basis='def2-tzvp'),
                                     project='test_scans',
                                     project_directory=os.path.join(arc_path, 'arc', 'testing', 'test_JobAdapter_scan'),
@@ -246,7 +247,7 @@ class TestJobAdapter(unittest.TestCase):
         self.job_1.cpu_cores = None
         self.job_1.set_cpu_and_mem()
         self.assertEqual(self.job_1.cpu_cores, 8)
-        expected_memory = math.ceil(14 * 1024 * 1.1)
+        expected_memory = math.ceil((14 * 1024 * 1.1) / self.job_1.cpu_cores)
         self.assertEqual(self.job_1.submit_script_memory, expected_memory)
 
     def test_set_file_paths(self):
@@ -265,12 +266,12 @@ class TestJobAdapter(unittest.TestCase):
 
     def test_add_to_args(self):
         """Test adding parameters to self.args"""
-        self.assertEqual(self.job_1.args, {'block': {}, 'keyword': {'general': 'scf=xqc'}, 'trsh': {}})
+        self.assertEqual(self.job_1.args, {'block': {}, 'keyword': {}, 'trsh': {}})
         self.job_1.add_to_args(val='val_tst_1')
         self.job_1.add_to_args(val='val_tst_2')
         self.job_1.add_to_args(val='val_tst_3', separator='     ')
         self.job_1.add_to_args(val="""val_tst_4\nval_tst_5""", key1='block', key2='specific_key_2')
-        expected_args = {'keyword': {'general': 'scf=xqc val_tst_1 val_tst_2     val_tst_3'},
+        expected_args = {'keyword': {'general': 'val_tst_1 val_tst_2     val_tst_3'},
                          'block': {'specific_key_2': 'val_tst_4\nval_tst_5'},
                          'trsh': {}}
         self.assertEqual(self.job_1.args, expected_args)
@@ -307,7 +308,7 @@ class TestJobAdapter(unittest.TestCase):
         Delete all project directories created during these unit tests
         """
         shutil.rmtree(os.path.join(arc_path, 'arc', 'testing', 'test_JobAdapter'))
-        # shutil.rmtree(os.path.join(arc_path, 'arc', 'testing', 'test_JobAdapter_scan'))
+        shutil.rmtree(os.path.join(arc_path, 'arc', 'testing', 'test_JobAdapter_scan'))
 
 
 if __name__ == '__main__':
