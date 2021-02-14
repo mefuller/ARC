@@ -289,6 +289,7 @@ class GCNAdapter(JobAdapter):
             # run the GCN as a subprocess in the forward directions
             ts_guess_f = TSGuess(method=f'GCN',
                                  method_direction='F',
+                                 index=len(rxn.ts_species.ts_guesses),
                                  )
             ts_guess_f.tic()
 
@@ -320,6 +321,7 @@ class GCNAdapter(JobAdapter):
             # run the GCN as a subprocess in the reverse directions
             ts_guess_r = TSGuess(method=f'GCN',
                                  method_direction='R',
+                                 index=len(rxn.ts_species.ts_guesses),
                                  )
             ts_guess_r.tic()
 
@@ -349,6 +351,7 @@ class GCNAdapter(JobAdapter):
             rxn.ts_species.ts_guesses.append(ts_guess_r)
 
         self.final_time = datetime.datetime.now()
+        self.job_status[0] = 'done'
 
     def execute_queue(self):
         """
