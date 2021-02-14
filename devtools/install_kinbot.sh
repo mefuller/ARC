@@ -1,5 +1,6 @@
 # temporarily change directory to install software, and move one directory up in the tree
-pushd ..
+pushd .
+cd ..
 
 # clone the repo in the parent directory and update it
 echo "Cloning/Updating KinBot..."
