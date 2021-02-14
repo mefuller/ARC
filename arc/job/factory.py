@@ -5,13 +5,13 @@ A module for generating job adapters.
 from typing import TYPE_CHECKING, List, Optional, Type, Tuple, Union
 
 from arc.exceptions import JobError
-from arc.job.adapter import JobAdapter, JobEnum, JobTypeEnum, JobExecutionTypeEnum
+from arc.job.adapter import JobAdapter, JobEnum, JobTypeEnum
+from arc.reaction import ARCReaction
+from arc.species import ARCSpecies
 
 if TYPE_CHECKING:
     import datetime
     from arc.level import Level
-    from arc.reaction import ARCReaction
-    from arc.species import ARCSpecies
 
 _registered_job_adapters = {}  # keys are JobEnum, values are JobAdapter subclasses
 
@@ -147,10 +147,10 @@ def job_factory(job_adapter: str,
     if reactions is None and species is None:
         raise JobError('Either reactions or species must be given, got neither.')
     if reactions is not None and any(not isinstance(reaction, ARCReaction) for reaction in reactions):
-        raise JobError(f'The reactions argument must contain only ARCReaction instance entries,'
+        raise JobError(f'The reactions argument must contain only ARCReaction instance entries, '
                        f'got types {[type(reaction) for reaction in reactions]}.')
     if species is not None and any(not isinstance(spc, ARCSpecies) for spc in species):
-        raise JobError(f'The species argument must contain only ARCSpecies instance entries,'
+        raise JobError(f'The species argument must contain only ARCSpecies instance entries, '
                        f'got types {[type(spc) for spc in species]}.')
     if isinstance(args, str):
         args = {'keyword': {'general': args}}
