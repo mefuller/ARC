@@ -473,7 +473,7 @@ class JobAdapter(ABC):
         self.local_path_to_orbitals_file = os.path.join(self.local_path, 'orbitals.fchk')  # todo: qchem
         self.local_path_to_lj_file = os.path.join(self.local_path, 'lj.dat')  # Todo: onedmin
         self.local_path_to_hess_file = os.path.join(self.local_path, 'input.hess')
-        self.local_path_to_xyz = None  # Todo: only used for Terachem, perhaps move to that adapter
+        self.local_path_to_xyz = None
 
         if not os.path.isdir(self.local_path):
             os.makedirs(self.local_path)
@@ -953,7 +953,7 @@ class JobAdapter(ABC):
             constraints = constraints[0] if len(constraints) == 1 else constraints
             info += f'(pivots: {pivots}'
             info += f' constraints: {constraints})' if constraints else ')'
-        execution_type = {'array': 'job array', 'incore': 'incore job', 'single': 'job'}[self.execution_type]
+        execution_type = {'incore': 'incore job', 'queue': 'queue job', 'pipe': 'job array (pipe)'}[self.execution_type]
         logger.info(f'Running {execution_type} {self.job_name} for {self.species_label}{info}')
 
     def get_file_property_dictionary(self,
