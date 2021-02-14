@@ -1,0 +1,39 @@
+ARC execution initiated on Sun Feb 14 12:42:46 2021
+
+###############################################################
+#                                                             #
+#                 Automatic Rate Calculator                   #
+#                            ARC                              #
+#                                                             #
+#   Version: 1.1.0                                            #
+#                                                             #
+###############################################################
+
+The current git HEAD for ARC is:
+    f82be13cbd01e349d8abe36a7b1745a0278e4c31
+    Sun Feb 14 11:54:27 2021 +0200
+    (running on the job8 branch)
+
+Starting project test_globalizing_paths
+
+Using the following ESS settings:
+{'gaussian': ['local', 'server2'],
+ 'molpro': ['local', 'server2'],
+ 'onedmin': ['server1'],
+ 'orca': ['local'],
+ 'qchem': ['server1'],
+ 'terachem': ['server1']}
+
+
+
+Using the following levels of theory:
+
+Conformers: (default) wb97xd/def2svp, software: gaussian (dft)
+Geometry optimization: (default) wb97xd/def2tzvp, software: gaussian (dft)
+Frequencies: (user-defined opt) wb97xd/def2tzvp, software: gaussian (dft)
+Energy: (default) ccsd(t)-f12/cc-pvtz-f12, software: molpro (wavefunction)
+Rotor scans: (user-defined opt) wb97xd/def2tzvp, software: gaussian (dft)
+IRC: (default) wb97xd/def2tzvp, software: gaussian (dft)
+
+Considering the following job types: ['bde', 'conformers', 'fine', 'freq', 'irc', 'opt', 'rotors', 'sp']
+
