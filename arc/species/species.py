@@ -1823,7 +1823,9 @@ class TSGuess(object):
         self.opt_xyz = ts_dict['opt_xyz'] if 'opt_xyz' in ts_dict else None
         self.success = ts_dict['success'] if 'success' in ts_dict else None
         self.energy = ts_dict['energy'] if 'energy' in ts_dict else None
-        self.execution_time = timedelta_from_str(ts_dict['execution_time']) if 'execution_time' in ts_dict else None
+        self.execution_time = timedelta_from_str(ts_dict['execution_time']) if 'execution_time' in ts_dict \
+            and isinstance(ts_dict['execution_time'], str) \
+            else ts_dict['execution_time'] if 'execution_time' in ts_dict else None
         self.method = ts_dict['method'].lower() if 'method' in ts_dict else 'user guess'
         self.method_index = ts_dict['method_index'] if 'method_index' in ts_dict else None
         self.method_direction = ts_dict['method_direction'] if 'method_index' in ts_dict else None
