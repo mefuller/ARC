@@ -53,43 +53,45 @@ class JobEnum(str, Enum):
     """
     The supported job software adapters.
     The available adapters are a finite set.
+
+    Todo: Add missing adapters
     """
     # ESS
-    # arc = 'arc'
-    # cfour = 'cfour'
-    # cosmo = 'cosmo'
+    arc = 'arc'  # Todo
+    cfour = 'cfour'  # Todo
+    cosmo = 'cosmo'  # Todo
     gaussian = 'gaussian'
     molpro = 'molpro'
-    # onedmin = 'onedmin'
-    # openbabel = 'openbabel'
+    onedmin = 'onedmin'  # Todo
+    openbabel = 'openbabel'  # Todo
     orca = 'orca'
-    # psi4 = 'psi4'
+    psi4 = 'psi4'  # Todo
     qchem = 'qchem'
-    # rdkit = 'rdkit'
+    rdkit = 'rdkit'  # Todo
     terachem = 'terachem'
-    # torchani = 'torchani'
+    torchani = 'torchani'  # Todo
     turbomol = 'turbomol'
-    # xtb = 'xtb'
+    xtb = 'xtb'  # Todo
 
     # TS search methods
     # Todo: see https://doi.org/10.1021/acs.jctc.7b00764
     autotst = 'autotst'  # AutoTST
-    # gsm = 'gsm'  # double ended growing string method (DE-GSM)
-    # pygsm = 'pygsm'  # double ended growing string method (DE-GSM): pyGSM: https://github.com/ZimmermanGroup/molecularGSM/wiki
-    # heuristics = 'heuristics'  # brute force heuristics
+    gsm = 'gsm'  # Todo  # double ended growing string method (DE-GSM)
+    pygsm = 'pygsm'  # Todo  # double ended growing string method (DE-GSM): pyGSM: https://github.com/ZimmermanGroup/molecularGSM/wiki
+    heuristics = 'heuristics'  # Todo  # brute force heuristics
     kinbot = 'kinbot'  # KinBot
     gcn = 'gcn'  # Graph neural network for isomerization, https://doi.org/10.1021/acs.jpclett.0c00500
-    # neb_ase = 'neb_ase'  # NEB in ASE: https://www.scm.com/doc/Tutorials/ADF/Transition_State_with_ASE.html, https://wiki.fysik.dtu.dk/ase/ase/neb.html, https://wiki.fysik.dtu.dk/ase/tutorials/neb/idpp.html#idpp-tutorial., ASE autoNEB: https://wiki.fysik.dtu.dk/ase/dev/_modules/ase/autoneb.html
-    # neb_terachem = 'neb_terachem'  # NEB in TeraChem
-    # NEB GPR: https://journals.aps.org/prl/abstract/10.1103/PhysRevLett.122.156001
-    # qst2 = 'qst2'  # Synchronous Transit-Guided Quasi-Newton (STQN) implemented in Gaussian
-    # user = 'user'  # user guesses
-    # ReaDuct: https://doi.org/10.1021/acs.jctc.8b00169
-    # Copenhagen: https://chemrxiv.org/articles/Fast_and_Automatic_Estimation_of_Transition_State_Structures_Using_Tight_Binding_Quantum_Chemical_Calculations/12600443/1
-    # FSM in QChem: http://www.q-chem.com/qchem-website/manual/qchem43_manual/sect-approx_hess.html
-    # NEBTERPOLATION using MD to find TSs: https://pubs.acs.org/doi/full/10.1021/acs.jctc.5b00830?src=recsys
-    # https://chemrxiv.org/articles/preprint/Fast_and_Automatic_Estimation_of_Transition_State_Structures_Using_Tight_Binding_Quantum_Chemical_Calculations/12600443
-    # (growing string method [10.1021/ct400319w, 10.1063/1.4804162], nudge elastic band [10.1063/1.1329672, 10.1063/1.1323224], synchronous transit and quasi‐Newton methods [https://onlinelibrary.wiley.com/doi/epdf/10.1002/ijch.199300051], KinBot [10.1016/j.cpc.2019.106947], AutoTST [10.1021/acs.jpca.7b07361, 10.26434/chemrxiv.13277870.v2], tight binding reaction path [10.26434/chemrxiv.12600443.v1], freezing string method [10.1021/acs.jctc.5b00407, 10.1063/1.3664901], and deep learning [10.26434/chemrxiv.12302084.v2])
+    neb_ase = 'neb_ase'  # Todo  # NEB in ASE: https://www.scm.com/doc/Tutorials/ADF/Transition_State_with_ASE.html, https://wiki.fysik.dtu.dk/ase/ase/neb.html, https://wiki.fysik.dtu.dk/ase/tutorials/neb/idpp.html#idpp-tutorial., ASE autoNEB: https://wiki.fysik.dtu.dk/ase/dev/_modules/ase/autoneb.html
+    neb_terachem = 'neb_terachem'  # Todo  # NEB in TeraChem
+    # # Todo  NEB GPR:  https://journals.aps.org/prl/abstract/10.1103/PhysRevLett.122.156001
+    qst2 = 'qst2'  # Todo  # Synchronous Transit-Guided Quasi-Newton (STQN) implemented in Gaussian
+    user = 'user'  # Todo  # user guesses
+    #  # Todo   TodoReaDuct: https://doi.org/10.1021/acs.jctc.8b00169
+    # # Todo  Copenhagen: https://chemrxiv.org/articles/Fast_and_Automatic_Estimation_of_Transition_State_Structures_Using_Tight_Binding_Quantum_Chemical_Calculations/12600443/1
+    # # Todo  FSM in QChem: http://www.q-chem.com/qchem-website/manual/qchem43_manual/sect-approx_hess.html
+    # # Todo  NEBTERPOLATION using MD to find TSs: https://pubs.acs.org/doi/full/10.1021/acs.jctc.5b00830?src=recsys
+    # # Todo  https://chemrxiv.org/articles/preprint/Fast_and_Automatic_Estimation_of_Transition_State_Structures_Using_Tight_Binding_Quantum_Chemical_Calculations/12600443
+    # # Todo  (growing string method [10.1021/ct400319w, 10.1063/1.4804162], nudge elastic band [10.1063/1.1329672, 10.1063/1.1323224], synchronous transit and quasi‐Newton methods [https://onlinelibrary.wiley.com/doi/epdf/10.1002/ijch.199300051], KinBot [10.1016/j.cpc.2019.106947], AutoTST [10.1021/acs.jpca.7b07361, 10.26434/chemrxiv.13277870.v2], tight binding reaction path [10.26434/chemrxiv.12600443.v1], freezing string method [10.1021/acs.jctc.5b00407, 10.1063/1.3664901], and deep learning [10.26434/chemrxiv.12302084.v2])
 
 
 class JobTypeEnum(str, Enum):
@@ -301,7 +303,9 @@ class JobAdapter(ABC):
         """
         execution_type = JobExecutionTypeEnum(self.execution_type)
         if execution_type == JobExecutionTypeEnum.incore:
+            self.job_status[0] = 'running'
             self.execute_incore()
+            self.job_status[0] = 'done'
         elif execution_type == JobExecutionTypeEnum.queue:
             self.execute_queue()
         elif execution_type == JobExecutionTypeEnum.pipe:
@@ -426,7 +430,7 @@ class JobAdapter(ABC):
             else pipe_submit[self.server]
         try:
             submit_script = submit_script.format(
-                name=self.job_name,
+                name=self.job_server_name,
                 un=servers[self.server]['un'],
                 t_max=self.format_max_job_time(time_format=t_max_format[servers[self.server]['cluster_soft']]),
                 memory=int(self.submit_script_memory),
@@ -486,7 +490,7 @@ class JobAdapter(ABC):
         # If 'source' = 'path', then the value in 'local' is treated as a file path.
         # If 'source' = 'input_files', then the value in 'local' will be taken from the respective entry in inputs.py
         # If 'make_x' is True, the file will be made executable.
-        if self.job_type == 'onedmin':
+        if self.job_type == 'onedmin':  # SHOULD GO TO self.set_files(), see implementation in terachem
             with open(os.path.join(self.local_path, 'geo.xyz'), 'w') as f:
                 f.write(xyz_to_str(self.species.get_xyz()))
             self.additional_files_to_upload.append({'name': 'geo',
@@ -503,12 +507,6 @@ class JobAdapter(ABC):
             self.additional_files_to_upload.append({'name': 'qc.mol', 'source': 'input_files', 'make_x': False,
                                                     'local': 'onedmin.qc.mol',
                                                     'remote': os.path.join(self.remote_path, 'qc.mol')})
-        if self.job_adapter == 'terachem':
-            self.additional_files_to_upload.append({'name': 'geo',
-                                                    'source': 'path',
-                                                    'make_x': False,
-                                                    'local': os.path.join(self.local_path, 'coord.xyz'),
-                                                    'remote': os.path.join(self.remote_path, 'coord.xyz')})
 
     def upload_files(self):
         """
@@ -572,8 +570,10 @@ class JobAdapter(ABC):
     def _set_job_number(self):
         """
         Used as the entry number in the database, as well as the job name on the server.
+        Also sets other attributes: job_name, job_server_id.
         This is not an abstract method and should not be overwritten.
         """
+        # job_number
         csv_path = os.path.join(arc_path, 'initiated_jobs.csv')
         if os.path.isfile(csv_path):
             # check that this is the updated version
@@ -596,6 +596,18 @@ class JobAdapter(ABC):
                 if job_num == 100000:
                     job_num = 0
             self.job_num = job_num
+        # set other related attributes job_name and job_server_name)
+        self.job_server_name = self.job_server_name or 'a' + str(self.job_num)
+        if self.conformer is not None and (self.job_name is None or 'conformer_a' in self.job_name):
+            if self.job_name is not None:
+                logger.warning(f'Replacing job name {self.job_name} with conformer{self.conformer}')
+            self.job_name = f'conformer{self.conformer}'
+        elif self.tsg is not None and (self.job_name is None or 'tsg_a' in self.job_name):
+            if self.job_name is not None:
+                logger.warning(f'Replacing job name {self.job_name} with tsg{self.conformer}')
+            self.job_name = f'tsg{self.tsg}'
+        elif self.job_name is None:
+            self.job_name = f'{self.job_type}_{self.job_server_name}'
 
     def _write_initiated_job_to_csv_file(self):
         """
@@ -657,8 +669,7 @@ class JobAdapter(ABC):
         if max_cpu is not None and job_cpu_cores > max_cpu:
             job_cpu_cores = max_cpu
         self.cpu_cores = self.cpu_cores or job_cpu_cores
-
-        max_mem = servers[self.server].get('memory', None)  # max memory per node in GB
+        max_mem = servers[self.server].get('memory', None)  # Max memory per node in GB.
         job_max_server_node_memory_allocation = default_job_settings.get('job_max_server_node_memory_allocation', 0.8)
         if max_mem is not None and self.job_memory_gb > max_mem * job_max_server_node_memory_allocation:
             logger.warning(f'The memory for job {self.job_name} using {self.job_adapter} ({self.job_memory_gb} GB) '
@@ -666,19 +677,17 @@ class JobAdapter(ABC):
                            f'{self.server}. Setting it to {job_max_server_node_memory_allocation * max_mem:.2f} GB.')
             self.job_memory_gb = job_max_server_node_memory_allocation * max_mem
             total_submit_script_memory = self.job_memory_gb * 1024 * 1.05  # MB
-            self.job_status[1]['keywords'].append('max_total_job_memory')  # useful info when trouble shoot
+            self.job_status[1]['keywords'].append('max_total_job_memory')  # Useful info when troubleshooting.
         else:
             total_submit_script_memory = self.job_memory_gb * 1024 * 1.1  # MB
-
-        # determine amount of memory in submit script based on cluster job scheduling system
+        # Determine amount of memory in submit script based on cluster job scheduling system.
         cluster_software = servers[self.server].get('cluster_soft').lower()
-        if cluster_software in ['oge', 'sge']:
+        if cluster_software in ['oge', 'sge', 'pbs']:
             # In SGE, "-l h_vmem=5000M" specifies the amount of maximum memory required for all cores to be 5000 MB.
             self.submit_script_memory = math.ceil(total_submit_script_memory)  # in MB
         elif cluster_software in ['slurm']:
             # In Slurm, "#SBATCH --mem-per-cpu=2000" specifies the amount of memory required per cpu core to be 2000 MB.
             self.submit_script_memory = math.ceil(total_submit_script_memory / self.cpu_cores)  # in MB
-
         self.set_input_file_memory()
 
     def as_dict(self) -> dict:
@@ -716,6 +725,7 @@ class JobAdapter(ABC):
         job_dict['job_memory_gb'] = float(self.job_memory_gb)
         job_dict['job_name'] = self.job_name
         job_dict['job_num'] = self.job_num
+        job_dict['job_server_name'] = self.job_server_name
         job_dict['job_status'] = self.job_status
         job_dict['level'] = self.level
         job_dict['max_job_time'] = self.max_job_time
