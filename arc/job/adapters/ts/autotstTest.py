@@ -170,7 +170,7 @@ class TestAutoTSTAdapter(unittest.TestCase):
         A function that is run ONCE after all unit tests in this class.
         Delete all project directories created during these unit tests.
         """
-        shutil.rmtree(os.path.join(arc_path, 'arc', 'testing', 'test_AutoTST'))
+        shutil.rmtree(os.path.join(arc_path, 'arc', 'testing', 'test_AutoTST'), ignore_errors=True)
 
 
 if __name__ == '__main__':
