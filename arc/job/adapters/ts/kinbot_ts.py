@@ -307,6 +307,7 @@ class KinBotAdapter(JobAdapter):
                             ts_guess = TSGuess(method=f'KinBot',
                                                method_direction=method_direction,
                                                method_index=method_index,
+                                               index=len(rxn.ts_species.ts_guesses),
                                                )
                             ts_guess.tic()
 
@@ -334,6 +335,7 @@ class KinBotAdapter(JobAdapter):
                             method_index += 1
 
         self.final_time = datetime.datetime.now()
+        self.job_status[0] = 'done'
 
     def execute_queue(self):
         """
