@@ -389,6 +389,7 @@ class QChemAdapter(JobAdapter):
               )
         self._log_job_execution()
         execute_command(incore_commands[self.server][self.job_adapter])
+        self.job_status[0] = 'done'
 
     def execute_queue(self):
         """
