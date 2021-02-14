@@ -297,7 +297,7 @@ O       0.00000000    0.00000000    1.00000000
         A function that is run ONCE after all unit tests in this class.
         Delete all project directories created during these unit tests.
         """
-        shutil.rmtree(os.path.join(arc_path, 'arc', 'testing', 'test_GaussianAdapter'))
+        shutil.rmtree(os.path.join(arc_path, 'arc', 'testing', 'test_GaussianAdapter'), ignore_errors=True)
 
 
 if __name__ == '__main__':
