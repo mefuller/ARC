@@ -161,6 +161,7 @@ def check_running_jobs_ids():
     stdout = execute_command(cmd)[0]
     for i, status_line in enumerate(stdout):
         if servers['local']['cluster_soft'].lower() == 'slurm' and i > 0:
+            print(status_line)
             running_jobs_ids.append(int(status_line.split()[0]))
         elif servers['local']['cluster_soft'].lower() == 'oge' and i > 1:
             running_jobs_ids.append(int(status_line.split()[0]))
