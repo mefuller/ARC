@@ -706,8 +706,8 @@ class JobAdapter(ABC):
             job_dict['bath_gas'] = self.bath_gas
         if self.checkfile is not None:
             job_dict['checkfile'] = self.checkfile
-        if self.conformers is not None:
-            job_dict['conformers'] = self.conformers
+        if self.conformer is not None:
+            job_dict['conformer'] = self.conformer
         if self.constraints is not None:
             job_dict['constraints'] = self.constraints
         job_dict['cpu_cores'] = self.cpu_cores
