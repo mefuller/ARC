@@ -926,7 +926,7 @@ class Scheduler(object):
                      level_of_theory=job.level,
                      job_type=job.job_type,
                      fine=job.fine,
-                     software=job.software,
+                     job_adapter=job.job_adapter,
                      shift=job.shift,
                      trsh=job.args['keyword']['trsh'] if 'trsh' in job.args['keyword'] else '',
                      memory=job.job_memory_gb,
@@ -1021,7 +1021,7 @@ class Scheduler(object):
             self.job_dict[label]['conformers'] = dict()
             for i, tsg in enumerate(successful_tsgs):
                 self.run_job(label=label, xyz=tsg.initial_xyz, level_of_theory=self.ts_guess_level,
-                             job_type='conformer', conformer=i)
+                             job_type='conformers', conformer=i)
         elif len(successful_tsgs) == 1:
             if 'opt' not in self.job_dict[label] and 'composite' not in self.job_dict[label]:
                 # proceed only if opt (/composite) not already spawned
@@ -2050,7 +2050,7 @@ class Scheduler(object):
                 plotter.draw_structure(species=self.species_dict[label],
                                        project_directory=self.project_directory,
                                        method='draw_3d')
-            frequencies = parser.parse_frequencies(job.local_path_to_output_file, job.software)
+            frequencies = parser.parse_frequencies(job.local_path_to_output_file, job.job_adapter)
             freq_ok = self.check_negative_freq(label=label, job=job, vibfreqs=frequencies)
             if freq_ok:
                 # Update restart dictionary and save a restart file:
@@ -2093,7 +2093,7 @@ class Scheduler(object):
         logger.debug(f'parsing opt geo for {job.job_name}')
         if job.job_status[1]['status'] == 'done':
             opt_xyz = parser.parse_xyz_from_file(path=job.local_path_to_xyz or job.local_path_to_output_file)
-            if not job.fine and self.job_types['fine'] and not job.software == 'molpro':
+            if not job.fine and self.job_types['fine'] and not job.job_adapter == 'molpro':
                 # Run opt again using a finer grid.
                 # Save the optimized geometry as ``initial_xyz``, since trsh looks there.
                 self.species_dict[label].initial_xyz = opt_xyz
@@ -2158,7 +2158,7 @@ class Scheduler(object):
         if job.job_status[1]['status'] == 'done':
             if not os.path.isfile(job.local_path_to_output_file):
                 raise SchedulerError('Called check_freq_job with no output file')
-            vibfreqs = parser.parse_frequencies(path=str(job.local_path_to_output_file), software=job.software)
+            vibfreqs = parser.parse_frequencies(path=str(job.local_path_to_output_file), software=job.job_adapter)
             freq_ok = self.check_negative_freq(label=label, job=job, vibfreqs=vibfreqs)
             if not self.species_dict[label].is_ts and not freq_ok:
                 self.troubleshoot_negative_freq(label=label, job=job)
@@ -2891,7 +2891,7 @@ class Scheduler(object):
         logger.warning(f'Troubleshooting {label} job {job.job_name} which failed with status: '
                        f'"{job.job_status[1]["status"]},"\n'
                        f'with keywords: {job.job_status[1]["keywords"]}\n'
-                       f'in {job.software}.\n'
+                       f'in {job.job_adapter}.\n'
                        f'The error "{job.job_status[1]["error"]}" was derived from the following line in the log '
                        f'file:\n"{job.job_status[1]["line"]}".')
         if conformer != -1:
@@ -2904,7 +2904,7 @@ class Scheduler(object):
             job.troubleshoot_server()
             if job.job_name not in self.running_jobs[label]:
                 self.running_jobs[label].append(job.job_name)  # mark as a running job
-        if job.software == 'gaussian':
+        if job.job_adapter == 'gaussian':
             if self.species_dict[label].checkfile is None:
                 self.species_dict[label].checkfile = job.checkfile
         # determine if the species is a hydrogen (or its isotope) atom
@@ -2919,7 +2919,7 @@ class Scheduler(object):
                          is_h=is_h,
                          job_type=job.job_type,
                          num_heavy_atoms=self.species_dict[label].number_of_heavy_atoms,
-                         software=job.software,
+                         software=job.job_adapter,
                          fine=job.fine,
                          memory_gb=job.job_memory_gb,
                          cpu_cores=job.cpu_cores,
@@ -2937,7 +2937,7 @@ class Scheduler(object):
             self.run_job(label=label,
                          xyz=xyz,
                          level_of_theory=level_of_theory,
-                         software=software,
+                         job_adapter=software,
                          memory=memory,
                          job_type=job_type,
                          fine=fine,
@@ -2974,7 +2974,7 @@ class Scheduler(object):
         # use the first conformer of a species to determine applicable troubleshooting method
         job = self.job_dict[label]['conformers'][0]
 
-        level_of_theory = trsh_conformer_isomorphism(software=job.software, ess_trsh_methods=job.ess_trsh_methods)
+        level_of_theory = trsh_conformer_isomorphism(software=job.job_adapter, ess_trsh_methods=job.ess_trsh_methods)
 
         if level_of_theory is None:
             logger.error(f'ARC has attempted all built-in conformer isomorphism troubleshoot methods for species '
@@ -2984,7 +2984,7 @@ class Scheduler(object):
             self.output[label]['conformers'] += 'Error: No conformer was found to be isomorphic with the 2D' \
                                                 ' graph representation!; '
         else:
-            logger.info(f'Troubleshooting conformer job in {job.software} using {level_of_theory} for species {label}')
+            logger.info(f'Troubleshooting conformer job in {job.job_adapter} using {level_of_theory} for species {label}')
 
             # rerun conformer job at higher level for all conformers
             for conformer in range(0, num_of_conformers):
@@ -2996,8 +2996,8 @@ class Scheduler(object):
                 if 'Conformers: ' + level_of_theory not in job.ess_trsh_methods:
                     job.ess_trsh_methods.append('Conformers: ' + level_of_theory)
 
-                self.run_job(label=label, xyz=xyz, level_of_theory=level_of_theory, software=job.software,  # todo: fix args for all .run_job() calls
-                             job_type='conformer', ess_trsh_methods=job.ess_trsh_methods, conformer=conformer)
+                self.run_job(label=label, xyz=xyz, level_of_theory=level_of_theory, job_adapter=job.job_adapter,
+                             job_type='conformers', ess_trsh_methods=job.ess_trsh_methods, conformer=conformer)
 
     def delete_all_species_jobs(self, label: str):
         """
