@@ -306,8 +306,8 @@ class TestJobAdapter(unittest.TestCase):
         A function that is run ONCE after all unit tests in this class.
         Delete all project directories created during these unit tests
         """
-        shutil.rmtree(os.path.join(arc_path, 'arc', 'testing', 'test_JobAdapter'))
-        shutil.rmtree(os.path.join(arc_path, 'arc', 'testing', 'test_JobAdapter_scan'))
+        shutil.rmtree(os.path.join(arc_path, 'arc', 'testing', 'test_JobAdapter'), ignore_errors=True)
+        shutil.rmtree(os.path.join(arc_path, 'arc', 'testing', 'test_JobAdapter_scan'), ignore_errors=True)
 
 
 if __name__ == '__main__':
