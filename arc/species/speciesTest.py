@@ -18,7 +18,6 @@ from arc.common import almost_equal_coords_lists, arc_path
 from arc.exceptions import SpeciesError
 from arc.level import Level
 from arc.plotter import save_conformers_file
-from arc.reaction import ARCReaction
 from arc.species.converter import (check_isomorphism,
                                    molecules_from_xyz,
                                    str_to_xyz,
@@ -360,7 +359,7 @@ H      -1.97060638    1.29922153   -0.25658392"""
         self.assertIn([3, 1, 2, 4], spc1.directed_rotors['brute_force_sp'][0])
         self.assertIn([[3, 1, 2, 4], [2, 1, 3, 9]], spc1.directed_rotors['brute_force_opt'])
         self.assertEqual(len(spc1.rotors_dict.keys()), 12)
-        self.assertEqual(spc1.rotors_dict[5]['dimensions'], 4)
+        self.assertEqual(spc1.rotors_dict[6]['dimensions'], 3)
         self.assertIn([1, 3], spc1.rotors_dict[3]['pivots'])
         self.assertIn([1, 2], spc1.rotors_dict[3]['pivots'])
         self.assertIn([2, 4], spc1.rotors_dict[3]['pivots'])
