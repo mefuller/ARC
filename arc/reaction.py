@@ -148,8 +148,12 @@ class ARCReaction(object):
     @property
     def charge(self):
         """The net electric charge of the reaction PES"""
-        if self._charge is None and len(self.r_species):
-            self._charge = self.get_rxn_charge()
+        if self._charge is None:
+            if len(self.r_species):
+                self._charge = self.get_rxn_charge()
+            elif self.rmg_reaction is not None:
+                self._charge = sum([spc.molecule[0].get_net_charge() for spc in
+                                    self.rmg_reaction.reactants + self.rmg_reaction.products])
         return self._charge
 
     @charge.setter
