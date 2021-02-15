@@ -152,21 +152,31 @@ def delete_job(job_id):
             logger.warning(f'Job {job_id} is no longer running, so we can continue.')
 
 
-def check_running_jobs_ids():
+def check_running_jobs_ids() -> list:
     """
     Return a list of ``int`` representing job IDs of all jobs submitted by the user on a server
     """
     running_jobs_ids = list()
     cmd = check_status_command[servers['local']['cluster_soft']] + ' -u $USER'
     stdout = execute_command(cmd)[0]
+    job_id = None
     for i, status_line in enumerate(stdout):
         if servers['local']['cluster_soft'].lower() == 'slurm' and i > 0:
-            running_jobs_ids.append(int(status_line.split()[0]))
+            job_id = status_line.split()[0]
+            break
         elif servers['local']['cluster_soft'].lower() == 'oge' and i > 1:
-            running_jobs_ids.append(int(status_line.split()[0]))
+            job_id = status_line.split()[0]
+            break
         elif servers['local']['cluster_soft'].lower() == 'pbs' and i > 4:
-            running_jobs_ids.append(int(status_line.split('.')[0]))
-
+            job_id = status_line.split('.')[0]
+            break
+    if job_id is None:
+        raise ValueError(f"Server cluster software {servers['local']['cluster_soft']} is not supported.")
+    try:
+        job_id = int(job_id)
+    except ValueError:
+        pass
+    running_jobs_ids.append(job_id)
     return running_jobs_ids
 
 
@@ -217,6 +227,9 @@ def rename_output(local_file_path, software):
     `local_file_path` is the full path to the output.out file,
     `software` is the software used for the job by which the original output file name is determined
     """
+    print('L233 in rename_output')
+    print(f'L234 renaming {os.path.join(os.path.dirname(local_file_path), output_filenames[software])}')
+    print(f'L 235 into {local_file_path}')
     software = software.lower()
     if os.path.isfile(os.path.join(os.path.dirname(local_file_path), output_filenames[software])):
         shutil.move(src=os.path.join(os.path.dirname(local_file_path), output_filenames[software]), dst=local_file_path)
