@@ -10,9 +10,10 @@ import os
 import shutil
 import unittest
 
+from arc.common import arc_path
 from arc.job.adapters.molpro import MolproAdapter
 from arc.level import Level
-from arc.settings import arc_path, input_filenames, output_filenames
+from arc.settings.settings import input_filenames, output_filenames
 from arc.species import ARCSpecies
 
 
@@ -122,7 +123,7 @@ uccsd(t)-f12;
         A function that is run ONCE after all unit tests in this class.
         Delete all project directories created during these unit tests
         """
-        shutil.rmtree(os.path.join(arc_path, 'arc', 'testing', 'test_MolproAdapter'))
+        shutil.rmtree(os.path.join(arc_path, 'arc', 'testing', 'test_MolproAdapter'), ignore_errors=True)
 
 
 if __name__ == '__main__':
