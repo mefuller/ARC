@@ -74,7 +74,9 @@ class Scheduler(object):
     Dictionary structures::
 
         job_dict = {label_1: {'conformers': {0: Job1,
-                                             1: Job2, ...},  # TS guesses are considered `conformers` as well
+                                             1: Job2, ...},
+                              'tsg':        {0: Job1,
+                                             1: Job2, ...},  # TS guesses
                               'pre-opt':    {job_name1: Job1,  # opt a TS geometry constraining the reactive site    # TODO: support this with constraints
                                              job_name2: Job2, ...},
                               'opt':        {job_name1: Job1,
@@ -499,7 +501,7 @@ class Scheduler(object):
                     continue
                 for job_name in job_list:
                     if 'conformer' in job_name:
-                        i = int(job_name[9:])  # the conformer number. parsed from a string like 'conformer12'.
+                        i = get_i_from_job_name(job_name)
                         job = self.job_dict[label]['conformers'][i]
                         if job.job_id in self.completed_incore_jobs or job.job_id not in self.servers_jobs_ids:
                             # this is a completed conformer job
@@ -528,7 +530,7 @@ class Scheduler(object):
                             self.timer = False
                             break
                     if 'tsg' in job_name:
-                        i = int(job_name[3:])  # The tsg number. parsed from a string like 'tsg3'.
+                        i = get_i_from_job_name(job_name)
                         job = self.job_dict[label]['tsg'][i]
                         if self.species_dict[label].ts_guesses[i].success:
                             # This is a successfully completed tsg job.
@@ -2658,11 +2660,21 @@ class Scheduler(object):
     def get_completed_incore_jobs(self):
         """
         Check job status of all incore jobs, get a list of relevant completed job IDs.
+
+        Todo: Add tests.
         """
         self.completed_incore_jobs = list()
-        pprint.pprint(self.running_jobs)
-        for jobs in self.running_jobs.values():
-            for job in jobs:
+        for label, job_names in self.running_jobs.items():
+            for job_name in job_names:
+                i = get_i_from_job_name(job_name)
+                if i is None:
+                    job = self.job_dict[label][job_name]
+                elif 'conformer' in job_name:
+                    job = self.job_dict[label]['conformers'][i]
+                elif 'tsg' in job_name:
+                    job = self.job_dict[label]['tsg'][i]
+                else:
+                    raise ValueError(f'Did not recognize job {job_name} of species {label}.')
                 if job.execution_type == 'incore' and job.job_status[0] == 'done':
                     self.servers_jobs_ids.append(job.job_id)
 
@@ -3223,3 +3235,24 @@ def sum_time_delta(timedelta_list: List[datetime.timedelta]) -> datetime.timedel
         if timedelta is not None:
             result += timedelta
     return result
+
+
+def get_i_from_job_name(job_name: str) -> Optional[int]:
+    """
+    Get the conformer or tsg index from the job name.
+
+    Args:
+        job_name (str): The job name, e.g., 'conformer12' or 'tsg5'.
+
+    Returns:
+        Optional[int]: The corresponding conformer or tsg index.
+
+    Todo:
+        Add tests.
+    """
+    i = None
+    if 'conformer' in job_name:
+        i = int(job_name[9:])
+    elif 'tsg' in job_name:
+        i = int(job_name[3:])
+    return i
