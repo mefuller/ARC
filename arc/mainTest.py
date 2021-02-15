@@ -41,6 +41,12 @@ class TestARC(unittest.TestCase):
                           'lennard_jones': False,
                           'bde': True,
                           }
+        projects = ['arc_project_for_testing_delete_after_usage_test_from_dict',
+                    'arc_model_chemistry_test', 'arc_test', 'test', 'unit_test_specific_job', 'wrong']
+        for project in projects:
+            project_directory = os.path.join(arc_path, 'Projects', project)
+            if os.path.isdir(project_directory):
+                shutil.rmtree(project_directory, ignore_errors=True)
 
     def test_as_dict(self):
         """Test the as_dict() method of ARC"""
@@ -77,7 +83,7 @@ class TestARC(unittest.TestCase):
                                              'software': 'gaussian'},
                          'e_confs': 5.0,
                          'ess_settings': {'gaussian': ['local', 'server2'],
-                                          'molpro': ['server2'],
+                                          'molpro': ['local', 'server2'],
                                           'onedmin': ['server1'],
                                           'orca': ['local'],
                                           'qchem': ['server1'],
@@ -428,7 +434,8 @@ class TestARC(unittest.TestCase):
                     'arc_model_chemistry_test', 'arc_test', 'test', 'unit_test_specific_job', 'wrong']
         for project in projects:
             project_directory = os.path.join(arc_path, 'Projects', project)
-            shutil.rmtree(project_directory)
+            if os.path.isdir(project_directory):
+                shutil.rmtree(project_directory, ignore_errors=True)
 
 
 if __name__ == '__main__':
