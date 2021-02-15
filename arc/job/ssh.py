@@ -545,24 +545,31 @@ def check_job_status_in_stdout(job_id: int,
         if str(job_id) in status_line:
             break
     else:
+        print(11)
         return 'done'
     if servers[server]['cluster_soft'].lower() == 'slurm':
         status = status_line.split()[4]
         if status.lower() in ['r', 'qw', 't', 'cg']:
+            print(12)
             return 'running'
         elif status.lower() in ['bf', 'ca', 'f', 'nf', 'st', 'oom']:
+            print(13)
             return 'errored'
     elif servers[server]['cluster_soft'].lower() == 'pbs':
         status = status_line.split()[-2]
         if status.lower() in ['r', 'q', 'c', 'e', 'w']:
+            print(14)
             return 'running'
         elif status.lower() in ['h', 's']:
+            print(15)
             return 'errored'
     elif servers[server]['cluster_soft'].lower() in ['oge', 'sge']:
         status = status_line.split()[4]
         if status.lower() in ['r', 'qw', 't']:
+            print(16)
             return 'running'
         elif status.lower() in ['e',]:
+            print(17)
             return 'errored'
     else:
         raise ValueError(f'Unknown cluster software {servers[server]["cluster_soft"]}')
