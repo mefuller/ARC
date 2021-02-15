@@ -257,7 +257,8 @@ class ARCSpecies(object):
         fragments (Optional[List[List[int]]]):
             Fragments represented by this species, i.e., as in a VdW well or a TS.
             Entries are atom index lists of all atoms in a fragment, each list represents a different fragment.
-        occ (int, optional): The number of occupied orbitals (core + val) from a molpro CCSD sp calc.
+        occ (int): The number of occupied orbitals (core + val) from a molpro CCSD sp calc.
+        tsg_spawned (bool): If this species is a TS, this attribute describes whether TS guess jobs were already spawned.
     """
 
     def __init__(self,
@@ -361,6 +362,7 @@ class ARCSpecies(object):
             self.number_of_rotors = 0
             self.rotors_dict = dict()
             self.rmg_species = rmg_species
+            self.tsg_spawned = False
             if bond_corrections is None:
                 self.bond_corrections = dict()
             else:
@@ -572,6 +574,8 @@ class ARCSpecies(object):
             species_dict['e0'] = self.e0
         if self.e0_only is not False:
             species_dict['e0_only'] = self.e0_only
+        if self.tsg_spawned is not False:
+            species_dict['tsg_spawned'] = self.tsg_spawned
         if self.yml_path is not None:
             species_dict['yml_path'] = self.yml_path
         if self.run_time is not None:
@@ -653,6 +657,7 @@ class ARCSpecies(object):
         self.t1 = species_dict['t1'] if 't1' in species_dict else None
         self.e_elect = species_dict['e_elect'] if 'e_elect' in species_dict else None
         self.e0 = species_dict['e0'] if 'e0' in species_dict else None
+        self.tsg_spawned = species_dict['tsg_spawned'] if 'tsg_spawned' in species_dict else False
         self.occ = species_dict['occ'] if 'occ' in species_dict else None
         self.arkane_file = species_dict['arkane_file'] if 'arkane_file' in species_dict else None
         self.yml_path = species_dict['yml_path'] if 'yml_path' in species_dict else None
@@ -672,8 +677,9 @@ class ARCSpecies(object):
         self.conf_is_isomorphic = species_dict['conf_is_isomorphic'] if 'conf_is_isomorphic' in species_dict else None
         self.zmat = check_zmat_dict(species_dict['zmat']) if 'zmat' in species_dict else None
         self.is_ts = species_dict['is_ts'] if 'is_ts' in species_dict else False
+        self.ts_conf_spawned = species_dict['ts_conf_spawned'] if 'ts_conf_spawned' in species_dict \
+            else False if self.is_ts else None
         if self.is_ts:
-            self.ts_conf_spawned = species_dict['ts_conf_spawned'] if 'ts_conf_spawned' in species_dict else False
             self.ts_number = species_dict['ts_number'] if 'ts_number' in species_dict else None
             self.ts_report = species_dict['ts_report'] if 'ts_report' in species_dict else ''
             self.ts_guesses = [TSGuess(ts_dict=tsg) for tsg in species_dict['ts_guesses']] \
@@ -1025,15 +1031,7 @@ class ARCSpecies(object):
                 # reformat as nested lists
                 directed_rotors[key] = list()
                 for val1 in vals:
-                    if len(val1) != 2:
-                        raise SpeciesError(f'directed_scan pivots must be lists of length 2, got {val1}.')
-                    if isinstance(val1, (tuple, list)) and isinstance(val1[0], int):
-                        corrected_val = val1 if list(val1) in all_pivots else [val1[1], val1[0]]
-                        directed_rotors[key].append([list(corrected_val)])
-                    elif isinstance(val1, (tuple, list)) and isinstance(val1[0], (tuple, list)):
-                        directed_rotors[key].append([list(val2 if list(val2) in all_pivots else [val2[1], val2[0]])
-                                                     for val2 in val1])
-                    elif val1 == 'all':
+                    if val1 == 'all':
                         # 1st level all, add all pivots, they will be treated separately
                         for i in range(self.number_of_rotors):
                             if [self.rotors_dict[i]['pivots']] not in directed_rotors[key]:
@@ -1041,6 +1039,14 @@ class ARCSpecies(object):
                     elif val1 == ['all']:
                         # 2nd level all, add all pivots, they will be treated together
                         directed_rotors[key].append(all_pivots)
+                    elif len(val1) != 2:
+                        raise SpeciesError(f'directed_scan pivots must be lists of length 2, got {val1}.')
+                    elif isinstance(val1, (tuple, list)) and isinstance(val1[0], int):
+                        corrected_val = val1 if list(val1) in all_pivots else [val1[1], val1[0]]
+                        directed_rotors[key].append([list(corrected_val)])
+                    elif isinstance(val1, (tuple, list)) and isinstance(val1[0], (tuple, list)):
+                        directed_rotors[key].append([list(val2 if list(val2) in all_pivots else [val2[1], val2[0]])
+                                                     for val2 in val1])
             for key, vals1 in directed_rotors.items():
                 # check
                 for vals2 in vals1:
@@ -1084,7 +1090,7 @@ class ARCSpecies(object):
                     self.rotors_dict[max(list(self.rotors_dict.keys())) + 1] = new_rotor
             for i in set(rotor_indices_to_del):
                 if not self.rotors_dict[i]['directed_scan_type']:
-                    del(self.rotors_dict[i])
+                    del (self.rotors_dict[i])
 
             # renumber the keys so iterative looping will make sense
             new_rotors_dict = dict()
@@ -1728,7 +1734,7 @@ class TSGuess(object):
         family (str): The RMG family that corresponds to the reaction, if applicable.
         rmg_reaction (Reaction): An RMG Reaction object.
         arc_reaction (ARCReaction): An ARC Reaction object.
-        t0 (float): Initial time of spawning the guess job.
+        t0 (datetime.datetime, optional): Initial time of spawning the guess job.
         execution_time (str): Overall execution time for the TS guess method.
         success (bool): Whether the TS guess method succeeded in generating an XYZ guess or not.
         energy (float): Relative energy of all TS conformers in kJ/mol.
@@ -1783,14 +1789,15 @@ class TSGuess(object):
     def as_dict(self) -> dict:
         """A helper function for dumping this object as a dictionary in a YAML file for restarting ARC"""
         ts_dict = dict()
-        ts_dict['t0'] = self.t0.isoformat()
+        ts_dict['t0'] = self.t0.isoformat() if isinstance(self.t0, datetime.datetime) else self.t0
         ts_dict['method'] = self.method
         ts_dict['method_index'] = self.method_index
         ts_dict['method_direction'] = self.method_direction
         ts_dict['success'] = self.success
         ts_dict['energy'] = self.energy
         ts_dict['index'] = self.index
-        ts_dict['execution_time'] = str(self.execution_time)
+        ts_dict['execution_time'] = str(self.execution_time) if isinstance(self.execution_time, datetime.datetime) \
+            else self.execution_time
         if self.initial_xyz:
             ts_dict['initial_xyz'] = self.initial_xyz
         if self.opt_xyz:
@@ -1809,14 +1816,17 @@ class TSGuess(object):
         """
         A helper function for loading this object from a dictionary in a YAML file for restarting ARC
         """
-        self.t0 = datetime.datetime.fromisoformat(ts_dict['t0']) if 't0' in ts_dict else None
+        self.t0 = datetime.datetime.fromisoformat(ts_dict['t0']) if 't0' in ts_dict and isinstance(ts_dict['t0'], str) \
+            else ts_dict['t0'] if 't0' in ts_dict else None
         self.index = ts_dict['index'] if 'index' in ts_dict else None
         self.initial_xyz = ts_dict['initial_xyz'] if 'initial_xyz' in ts_dict else None
         self.process_xyz(self.initial_xyz)  # re-populates self.initial_xyz
         self.opt_xyz = ts_dict['opt_xyz'] if 'opt_xyz' in ts_dict else None
         self.success = ts_dict['success'] if 'success' in ts_dict else None
         self.energy = ts_dict['energy'] if 'energy' in ts_dict else None
-        self.execution_time = timedelta_from_str(ts_dict['execution_time']) if 'execution_time' in ts_dict else None
+        self.execution_time = timedelta_from_str(ts_dict['execution_time']) if 'execution_time' in ts_dict \
+            and isinstance(ts_dict['execution_time'], str) \
+            else ts_dict['execution_time'] if 'execution_time' in ts_dict else None
         self.method = ts_dict['method'].lower() if 'method' in ts_dict else 'user guess'
         self.method_index = ts_dict['method_index'] if 'method_index' in ts_dict else None
         self.method_direction = ts_dict['method_direction'] if 'method_index' in ts_dict else None
