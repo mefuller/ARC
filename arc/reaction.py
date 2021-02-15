@@ -650,6 +650,9 @@ class ARCReaction(object):
                 well_str.endswith(f' {species.label}')
         return count
 
+
+    # todo: sort the atom pap methods + tests
+
     def get_atom_map(self, verbose: int = 0) -> Optional[List[int]]:
         """
         Get the atom mapping of the reactant atoms to the product atoms.
