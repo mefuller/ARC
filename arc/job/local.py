@@ -128,9 +128,11 @@ def check_job_status(job_id):
         2016614.zeldo.local     u780444     workq    scan.pbs          75380     1     10       --  730:00:00 R  00:00:20
         2016616.zeldo.local     u780444     workq    scan.pbs          75380     1     10       --  730:00:00 R  00:00:20
     """
+    print('in local check_job_status')
     server = 'local'
     cmd = check_status_command[servers[server]['cluster_soft']] + ' -u $USER'
     stdout = execute_command(cmd)[0]
+    print(stdout)
     return check_job_status_in_stdout(job_id=job_id, stdout=stdout, server=server)
 
 
