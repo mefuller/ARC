@@ -796,6 +796,8 @@ class JobAdapter(ABC):
         Raises:
             IOError: If the output file and any additional server information cannot be found.
         """
+        print('in determine_job_status')
+        print(self.job_status)
         if self.job_status[0] == 'errored':
             return
         self.job_status[0] = self._check_job_server_status()
@@ -885,6 +887,7 @@ class JobAdapter(ABC):
         Check the status of the job ran by the electronic structure software (ESS).
         Possible statuses: `initializing`, `running`, `errored: {error type / message}`, `unconverged`, `done`.
         """
+        print('in _check_job_ess_status')
         if self.server != 'local':
             if os.path.exists(self.local_path_to_output_file):
                 os.remove(self.local_path_to_output_file)
