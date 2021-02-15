@@ -1,5 +1,6 @@
 # temporarily change directory to install software, and move one directory up in the tree
-pushd ..
+pushd .
+cd ../..
 
 # clone the repo in the parent directory
 echo "Cloning/Updating AutoTST..."
@@ -17,9 +18,9 @@ echo 'export PYTHONPATH=$PYTHONPATH:'"$(pwd)" >> ~/.bashrc
 # create the environment
 echo "Creating the AutoTST environment..."
 conda deactivate
-conda env create -f environment.yml
+conda env create -f environment.yml -y
 conda activate tst_env
-conda install -c anaconda yaml
+conda install -c anaconda yaml -y
 conda deactivate
 
 # Restore the original directory
