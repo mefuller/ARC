@@ -801,6 +801,7 @@ class JobAdapter(ABC):
         if self.job_status[0] == 'errored':
             return
         self.job_status[0] = self._check_job_server_status()
+        print(f'setting job status to {self.job_status[0]}')
         if self.job_status[0] == 'done':
             try:
                 self._check_job_ess_status()  # populates self.job_status[1], and downloads the output file
@@ -876,10 +877,12 @@ class JobAdapter(ABC):
         """
         Possible statuses: `initializing`, `running`, `errored on node xx`, `done`.
         """
+        print('in _check_job_server_status')
         if self.server != 'local':
             with SSHClient(self.server) as ssh:
                 return ssh.check_job_status(self.job_id)
         else:
+            print(f'status: {check_job_status(self.job_id)}')
             return check_job_status(self.job_id)
 
     def _check_job_ess_status(self):
