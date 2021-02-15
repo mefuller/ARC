@@ -40,7 +40,8 @@ class TestKinBotAdapter(unittest.TestCase):
         rxn1.determine_family(rmg_database=self.rmgdb)
         rxn1.arc_species_from_rmg_reaction()
         self.assertEqual(rxn1.family.label, 'intra_H_migration')
-        kinbot1 = KinBotAdapter(reactions=[rxn1],
+        kinbot1 = KinBotAdapter(job_type='tsg',
+                                reactions=[rxn1],
                                 testing=True,
                                 project='test',
                                 project_directory=os.path.join(arc_path, 'arc', 'testing', 'test_KinBot', 'tst1'),
@@ -57,7 +58,6 @@ class TestKinBotAdapter(unittest.TestCase):
         self.assertEqual(len(rxn1.ts_species.ts_guesses[1].initial_xyz['coords']), 8)
         self.assertEqual(len(rxn1.ts_species.ts_guesses[2].initial_xyz['coords']), 8)
         self.assertEqual(len(rxn1.ts_species.ts_guesses[3].initial_xyz['coords']), 8)
-        print(rxn1.ts_species.ts_guesses[3].execution_time)
         self.assertEqual(rxn1.ts_species.ts_guesses[0].method, 'kinbot')
         self.assertEqual(rxn1.ts_species.ts_guesses[1].method, 'kinbot')
         self.assertEqual(rxn1.ts_species.ts_guesses[2].method, 'kinbot')
@@ -82,7 +82,7 @@ class TestKinBotAdapter(unittest.TestCase):
         A function that is run ONCE after all unit tests in this class.
         Delete all project directories created during these unit tests.
         """
-        shutil.rmtree(os.path.join(arc_path, 'arc', 'testing', 'test_KinBot'))
+        shutil.rmtree(os.path.join(arc_path, 'arc', 'testing', 'test_KinBot'), ignore_errors=True)
 
 
 if __name__ == '__main__':
