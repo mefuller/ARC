@@ -2663,7 +2663,6 @@ class Scheduler(object):
 
         Todo: Add tests.
         """
-        pprint.pprint(self.job_dict)
         self.completed_incore_jobs = list()
         for label, job_names in self.running_jobs.items():
             for job_name in job_names:
