@@ -274,13 +274,24 @@ class SSHClient(object):
         running_jobs_ids = list()
         cmd = check_status_command[servers[self.server]['cluster_soft']] + ' -u $USER'
         stdout = self._send_command_to_server(cmd)[0]
+        job_id = None
         for i, status_line in enumerate(stdout):
             if servers[self.server]['cluster_soft'].lower() == 'slurm' and i > 0:
-                running_jobs_ids.append(int(status_line.split()[0]))
-            elif servers[self.server]['cluster_soft'].lower() in ['oge', 'sge'] and i > 1:
-                running_jobs_ids.append(int(status_line.split()[0]))
+                job_id = status_line.split()[0]
+                break
+            elif servers[self.server]['cluster_soft'].lower() == 'oge' and i > 1:
+                job_id = status_line.split()[0]
+                break
             elif servers[self.server]['cluster_soft'].lower() == 'pbs' and i > 4:
-                running_jobs_ids.append(int(status_line.split('.')[0]))
+                job_id = status_line.split('.')[0]
+                break
+        if job_id is None:
+            raise ValueError(f"Server cluster software {servers['local']['cluster_soft']} is not supported.")
+        try:
+            job_id = int(job_id)
+        except ValueError:
+            pass
+        running_jobs_ids.append(job_id)
         return running_jobs_ids
 
     def submit_job(self, remote_path: str) -> Tuple[str, int]:
@@ -537,7 +548,7 @@ def check_job_status_in_stdout(job_id: int,
         return 'done'
     if servers[server]['cluster_soft'].lower() == 'slurm':
         status = status_line.split()[4]
-        if status.lower() in ['r', 'qw', 't', 'cg']:
+        if status.lower() in ['r', 'qw', 't', 'cg', 'pd']:
             return 'running'
         elif status.lower() in ['bf', 'ca', 'f', 'nf', 'st', 'oom']:
             return 'errored'
