@@ -896,8 +896,8 @@ class JobAdapter(ABC):
             # just rename the output file to "output.out" for consistency between software.
             if self.final_time is None:
                 self.final_time = get_last_modified_time(
-                    file_path=os.path.join(self.local_path, output_filenames[self.software]))
-            rename_output(local_file_path=self.local_path_to_output_file, software=self.software)
+                    file_path=os.path.join(self.local_path, output_filenames[self.job_adapter]))
+            rename_output(local_file_path=self.local_path_to_output_file, software=self.job_adapter)
             xyz_path = os.path.join(self.local_path, 'scr', 'optim.xyz')
             if os.path.isfile(xyz_path):
                 self.local_path_to_xyz = xyz_path
@@ -906,7 +906,7 @@ class JobAdapter(ABC):
             status, keywords, error, line = determine_ess_status(output_path=self.local_path_to_output_file,
                                                                  species_label=self.species_label,
                                                                  job_type=self.job_type,
-                                                                 software=self.software)
+                                                                 software=self.job_adapter)
         else:
             status, keywords, error, line = '', '', '', ''
         self.job_status[1]['status'] = status
