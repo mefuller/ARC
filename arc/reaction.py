@@ -114,8 +114,8 @@ class ARCReaction(object):
         self.ts_xyz_guess = ts_xyz_guess or list()
         self.preserve_param_in_scan = preserve_param_in_scan
         self._atom_map = None
-        self._multiplicity = multiplicity
         self._charge = charge
+        self._multiplicity = multiplicity
         if reaction_dict is not None:
             # Reading from a dictionary
             self.from_dict(reaction_dict=reaction_dict, species_list=species_list)

@@ -175,9 +175,6 @@ orca_default_options_dict = {
                            'dlpno_threshold': 'normalPNO'}},
 }
 
-# default_ts_methods = ['QST2', 'DEGSM', 'NEB', 'Kinbot', 'AutoTST']
-default_ts_methods = []
-
 valid_chars = "-_[]=.,%s%s" % (string.ascii_letters, string.digits)
 
 # A scan with better resolution (lower number here) takes more time to compute,
