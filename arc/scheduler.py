@@ -578,6 +578,7 @@ class Scheduler(object):
                             break
                     elif 'composite' in job_name:
                         job = self.job_dict[label]['composite'][job_name]
+                        print(f'Sc581 {job.job_id}\n{self.completed_incore_jobs}\n{self.servers_jobs_ids}')
                         if job.job_id in self.completed_incore_jobs or job.job_id not in self.servers_jobs_ids:
                             successful_server_termination = self.end_job(job=job, label=label, job_name=job_name)
                             if successful_server_termination:
