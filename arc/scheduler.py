@@ -866,6 +866,8 @@ class Scheduler(object):
         Returns:
              bool: ``True`` if job terminated successfully on the server, ``False`` otherwise.
         """
+        print('Sc 869 in end_job')
+        raise
         try:
             job.determine_job_status()  # also downloads output file
         except IOError:

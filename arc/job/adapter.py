@@ -828,6 +828,7 @@ class JobAdapter(ABC):
                             self.job_status[1]['line'] = ''
                 raise
         elif self.job_status[0] == 'running':
+            print(f'A831 setting job_status 1 to running')
             self.job_status[1]['status'] = 'running'
 
     def _get_additional_job_info(self):
