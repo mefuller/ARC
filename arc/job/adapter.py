@@ -421,6 +421,8 @@ class JobAdapter(ABC):
         """
         Write a submit script to execute the job.
         """
+        print('in write_submit_script')
+        print(f'tasks: {self.tasks}')
         if self.max_job_time > 9999 or self.max_job_time <= 0:
             self.max_job_time = 120
         architecture = ''
