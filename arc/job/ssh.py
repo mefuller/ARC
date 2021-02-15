@@ -539,7 +539,7 @@ def check_job_status_in_stdout(job_id: int,
     Returns:
         str: The job status on the server ('running', 'done', or 'errored').
     """
-    print(f'in check_job_status_in_stdout: job_id: {job_id}')
+    print(f'S542 in check_job_status_in_stdout: job_id: {job_id}')
     if not isinstance(stdout, list):
         stdout = stdout.splitlines()
     for status_line in stdout:

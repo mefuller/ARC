@@ -421,8 +421,8 @@ class JobAdapter(ABC):
         """
         Write a submit script to execute the job.
         """
-        print('in write_submit_script')
-        print(f'tasks: {self.tasks}')
+        print('A424 in write_submit_script')
+        print(f'A425 tasks: {self.tasks}')
         if self.max_job_time > 9999 or self.max_job_time <= 0:
             self.max_job_time = 120
         architecture = ''
@@ -796,14 +796,15 @@ class JobAdapter(ABC):
         Raises:
             IOError: If the output file and any additional server information cannot be found.
         """
-        print('in determine_job_status')
+        print('A799 in determine_job_status')
         print(self.job_status)
         if self.job_status[0] == 'errored':
             return
         self.job_status[0] = self._check_job_server_status()
-        print(f'setting job status to {self.job_status[0]}')
+        print(f'A804 setting job status 0 to {self.job_status[0]}')
         if self.job_status[0] == 'done':
             try:
+                print('A807 lets check job status 1')
                 self._check_job_ess_status()  # populates self.job_status[1], and downloads the output file
             except IOError:
                 logger.error(f'Got an IOError when trying to download output file for job {self.job_name}.')
@@ -877,12 +878,12 @@ class JobAdapter(ABC):
         """
         Possible statuses: `initializing`, `running`, `errored on node xx`, `done`.
         """
-        print('in _check_job_server_status')
+        print('A881 in _check_job_server_status')
         if self.server != 'local':
             with SSHClient(self.server) as ssh:
                 return ssh.check_job_status(self.job_id)
         else:
-            print(f'status: {check_job_status(self.job_id)}')
+            print(f'A886 status: {check_job_status(self.job_id)}')
             return check_job_status(self.job_id)
 
     def _check_job_ess_status(self):
@@ -890,7 +891,7 @@ class JobAdapter(ABC):
         Check the status of the job ran by the electronic structure software (ESS).
         Possible statuses: `initializing`, `running`, `errored: {error type / message}`, `unconverged`, `done`.
         """
-        print('in _check_job_ess_status')
+        print('A894 in _check_job_ess_status (status 1)')
         if self.server != 'local':
             if os.path.exists(self.local_path_to_output_file):
                 os.remove(self.local_path_to_output_file)

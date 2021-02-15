@@ -128,11 +128,12 @@ def check_job_status(job_id):
         2016614.zeldo.local     u780444     workq    scan.pbs          75380     1     10       --  730:00:00 R  00:00:20
         2016616.zeldo.local     u780444     workq    scan.pbs          75380     1     10       --  730:00:00 R  00:00:20
     """
-    print('in local check_job_status')
+    print('L 131in local check_job_status')
     server = 'local'
     cmd = check_status_command[servers[server]['cluster_soft']] + ' -u $USER'
     stdout = execute_command(cmd)[0]
     print(stdout)
+    print(f'L136 determined status: {check_job_status_in_stdout(job_id=job_id, stdout=stdout, server=server)}')
     return check_job_status_in_stdout(job_id=job_id, stdout=stdout, server=server)
 
 
@@ -229,9 +230,9 @@ def rename_output(local_file_path, software):
     `local_file_path` is the full path to the output.out file,
     `software` is the software used for the job by which the original output file name is determined
     """
-    print('in rename_output')
-    print(f'renaming {os.path.join(os.path.dirname(local_file_path), output_filenames[software])}')
-    print(f'into {local_file_path}')
+    print('L233 in rename_output')
+    print(f'L234 renaming {os.path.join(os.path.dirname(local_file_path), output_filenames[software])}')
+    print(f'L 235 into {local_file_path}')
     software = software.lower()
     if os.path.isfile(os.path.join(os.path.dirname(local_file_path), output_filenames[software])):
         shutil.move(src=os.path.join(os.path.dirname(local_file_path), output_filenames[software]), dst=local_file_path)
