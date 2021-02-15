@@ -550,7 +550,7 @@ def check_job_status_in_stdout(job_id: int,
         return 'done'
     if servers[server]['cluster_soft'].lower() == 'slurm':
         status = status_line.split()[4]
-        if status.lower() in ['r', 'qw', 't', 'cg']:
+        if status.lower() in ['r', 'qw', 't', 'cg', 'pd']:
             print(12)
             return 'running'
         elif status.lower() in ['bf', 'ca', 'f', 'nf', 'st', 'oom']:
