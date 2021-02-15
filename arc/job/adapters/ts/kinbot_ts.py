@@ -8,7 +8,7 @@ import datetime
 import os
 from typing import TYPE_CHECKING, List, Optional, Tuple, Union
 
-from arc.common import arc_path, get_logger, read_yaml_file
+from arc.common import get_logger
 from arc.job.adapter import JobAdapter
 from arc.job.adapters.common import check_argument_consistency
 from arc.job.factory import register_job_adapter
@@ -200,7 +200,7 @@ class KinBotAdapter(JobAdapter):
         if len(self.reactions) > 1:
             self.species_label += f'_and_{len(self.reactions) - 1}_others'
 
-        if self.job_num is None:
+        if self.job_num is None or self.job_name is None or self.job_server_name:
             self._set_job_number()
 
         self.args = dict()
@@ -362,7 +362,7 @@ def setup_kinbot(mol: 'Molecule',
         charge (int): The well/reaction charge.
 
     Returns:
-        ReactionGenerator: THe KinBot ReactionGenerator instance.
+        ReactionGenerator: The KinBot ReactionGenerator instance.
     """
     params = Parameters()
     params.par['title'] = 'ARC'
