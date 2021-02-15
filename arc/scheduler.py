@@ -2660,6 +2660,7 @@ class Scheduler(object):
         Check job status of all incore jobs, get a list of relevant completed job IDs.
         """
         self.completed_incore_jobs = list()
+        pprint.pprint(self.running_jobs)
         for jobs in self.running_jobs.values():
             for job in jobs:
                 if job.execution_type == 'incore' and job.job_status[0] == 'done':
