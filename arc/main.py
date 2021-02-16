@@ -932,7 +932,8 @@ class ARC(object):
             else:
                 logger.warning("Not performing rotor scans, since it was not requested by the user. This might "
                                "compromise finding the best conformer, as dihedral angles won't be corrected. "
-                               "Also, the calculated entropy and heat capacity won't be accurate.")
+                               "Also, the calculated thermodynamic properties and rate coefficients "
+                               "will be less accurate.")
 
             if self.job_types['irc']:
                 if not self.irc_level:
@@ -1006,7 +1007,8 @@ class ARC(object):
             else:
                 logger.warning("Not performing rotor scans, since it was not requested by the user. This might "
                                "compromise finding the best conformer, as dihedral angles won't be corrected. "
-                               "Also, the calculated entropy and heat capacity won't be accurate.")
+                               "Also, the calculated thermodynamic properties and rate coefficients "
+                               "will be less accurate.")
 
             if self.job_types['irc']:
                 if not self.irc_level:
