@@ -500,7 +500,6 @@ class Scheduler(object):
                 except KeyError:
                     continue
                 for job_name in job_list:
-                    print(f'looping with {job_name}')
                     if 'conformer' in job_name:
                         i = get_i_from_job_name(job_name)
                         job = self.job_dict[label]['conformers'][i]
@@ -900,8 +899,6 @@ class Scheduler(object):
             return False
 
         if job.job_status[0] != 'running' and job.job_status[1]['status'] != 'running':
-            print(f'******** ending job {job_name} for {label}')
-            print(f'running jobs: {self.running_jobs}')
             if job_name in self.running_jobs[label]:
                 self.running_jobs[label].pop(self.running_jobs[label].index(job_name))
             self.timer = False
