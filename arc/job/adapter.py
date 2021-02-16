@@ -798,7 +798,7 @@ class JobAdapter(ABC):
         """
         if self.job_status[0] == 'errored':
             return
-        self.job_status[0] = self._check_job_server_status()
+        self.job_status[0] = self._check_job_server_status() if self.execution_type != 'incore' else 'done'
         if self.job_status[0] == 'done':
             try:
                 self._check_job_ess_status()  # populates self.job_status[1], and downloads the output file
