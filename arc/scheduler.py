@@ -482,8 +482,11 @@ class Scheduler(object):
                     else:
                         self.run_opt_job(species.label, fine=self.fine_only)
         self.run_conformer_jobs()
+        print(f' before  main loop, got running_jobs: {self.running_jobs}')
         while self.running_jobs != {}:  # loop while jobs are still running
+            print('loop while jobs are still running')
             logger.debug(f'Currently running jobs:\n{pprint.pformat(self.running_jobs)}')
+            logger.info(f'Currently running jobs:\n{pprint.pformat(self.running_jobs)}')  # debug todo remove
             self.timer = True
             job_list = list()
             for label in self.unique_species_labels:
@@ -499,7 +502,9 @@ class Scheduler(object):
                     job_list = self.running_jobs[label]
                 except KeyError:
                     continue
+                print(f'job list:\n{job_list}')
                 for job_name in job_list:
+                    print(f'in main Sc loop for {job_name}')
                     if 'conformer' in job_name:
                         print(f'Sc504 conformer in {job_name}')
                         i = get_i_from_job_name(job_name)
