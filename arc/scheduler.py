@@ -700,7 +700,7 @@ class Scheduler(object):
                 rotor_index: Optional[int] = None,
                 reactions: Optional[List['ARCReaction']] = None,
                 scan_trsh: Optional[str] = '',
-                # shift: Optional[str] = '',  # todo: is this in agrs? trsh?
+                shift: Optional[str] = '',
                 trsh: Optional[str] = '',
                 torsions: Optional[List[List[int]]] = None,
                 tsg: Optional[int] = None,
@@ -728,7 +728,7 @@ class Scheduler(object):
             rotor_index (int, optional): The 0-indexed rotor number (key) in the species.rotors_dict dictionary.
             reactions (List[ARCReaction], optional): Entries are ARCReaction instances, used for TS search methods.
             scan_trsh (str, optional): A troubleshooting method for rotor scans.
-            # shift (str, optional): A string representation alpha- and beta-spin orbitals shifts (molpro only).
+            shift (str, optional): A string representation alpha- and beta-spin orbitals shifts (molpro only).
             torsions (List[List[int]], optional): The 0-indexed atom indices of the torsions identifying this scan point.
             trsh (str, optional): A troubleshooting keyword to be used in input files.
             tsg (int, optional): TSGuess number if optimizing TS guesses.
@@ -744,13 +744,20 @@ class Scheduler(object):
                                                             heavy_atoms=self.species_dict[label].number_of_heavy_atoms)
         job_adapter = job_adapter if job_adapter is not None else \
             self.deduce_job_adapter(level=Level(repr=level_of_theory), job_type=job_type)
+        args = {'keyword': {}, 'block': {}}
+        if trsh:
+            args['trsh'] = trsh
+        if shift:
+            args['shift'] = shift
+        if scan_trsh:
+            args['scan_trsh'] = scan_trsh
 
         job = job_factory(job_adapter=job_adapter,
                           project=self.project,
                           project_directory=self.project_directory,
                           job_type=job_type,
                           level=Level(repr=level_of_theory) if level_of_theory is not None else None,
-                          args={'keyword': {'trsh': trsh}, 'block': {}} if trsh else None,
+                          args=args,
                           bath_gas=self.bath_gas,
                           checkfile=checkfile,
                           conformer=conformer,
@@ -784,6 +791,7 @@ class Scheduler(object):
         #           directed_scans=directed_scans,
         #           directed_dihedrals=directed_dihedrals,
         #           )
+        label = label or reactions[0].ts_species.label  # todo: think about calculating a batch of reactions
         if conformer is None and tsg is None:
             # this is NOT a conformer DFT job nor a TS guess job
             self.running_jobs[label].append(job.job_name)  # mark as a running job
@@ -2964,6 +2972,7 @@ class Scheduler(object):
                          # directed_scan_type=job.directed_scan_type,
                          rotor_index=job.rotor_index,
                          cpu_cores=cpu_cores,
+                         shift=shift,
                          )
         self.save_restart_dict()
 
