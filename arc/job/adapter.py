@@ -954,15 +954,17 @@ class JobAdapter(ABC):
             constraints = constraints[0] if len(constraints) == 1 else constraints
             info += f'(pivots: {pivots}'
             info += f' constraints: {constraints})' if constraints else ')'
-        local, server = '', ''
+        local, server, job_server_name = '', '', ''
         if self.execution_type != 'incore':
             if self.server == 'local':
                 local = 'local '
             else:
                 server = f' on {self.server}'
+        if 'conformer' in self.job_name or 'tsg' in self.job_name:
+            job_server_name = self.job_server_name
         execution_type = {'incore': 'incore job', 'queue': 'queue job', 'pipe': 'job array (pipe)'}[self.execution_type]
         logger.info(f'Running {local}{execution_type}{server} {self.job_name} '
-                    f'({self.job_server_name}) for {self.species_label}{info}')
+                    f'({job_server_name}) for {self.species_label}{info}')
 
     def get_file_property_dictionary(self,
                                      file_name: str,
