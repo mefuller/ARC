@@ -354,8 +354,6 @@ class GCNAdapter(JobAdapter):
             rxn.ts_species.ts_guesses.append(ts_guess_r)
 
         self.final_time = datetime.datetime.now()
-        self.job_status[0] = 'done'
-        self.job_status[1]['status'] = 'done'
 
     def execute_queue(self):
         """
