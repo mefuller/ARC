@@ -903,7 +903,8 @@ class JobAdapter(ABC):
             status, keywords, error, line = determine_ess_status(output_path=self.local_path_to_output_file,
                                                                  species_label=self.species_label,
                                                                  job_type=self.job_type,
-                                                                 software=self.job_adapter)
+                                                                 software=self.job_adapter,
+                                                                 )
         else:
             status, keywords, error, line = '', '', '', ''
         self.job_status[1]['status'] = status
