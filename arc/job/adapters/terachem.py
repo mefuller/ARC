@@ -199,10 +199,10 @@ class TeraChemAdapter(JobAdapter):
         self.args = set_job_args(args=self.args, level=self.level, job_name=self.job_name)
 
         self.final_time = None
+        self.run_time = None
         self.charge = self.species[0].charge
         self.multiplicity = self.species[0].multiplicity
         self.is_ts = self.species[0].is_ts
-        self.run_time = None
         self.scan_res = self.args['trsh']['scan_res'] if 'scan_res' in self.args['trsh'] else rotor_scan_resolution
 
         self.server = self.args['trsh']['server'] if 'server' in self.args['trsh'] \
