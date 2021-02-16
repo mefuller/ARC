@@ -133,8 +133,11 @@ def update_input_dict_with_args(args: dict,
             for block in arg_dict.values():
                 input_dict['block'] += f'{block}\n'
         elif arg_type == 'keyword' and arg_dict:
-            for keyword in arg_dict.values():
-                input_dict['keywords'] += f'{keyword} '
+            for key, value in arg_dict.items():
+                if key == 'scan_trsh':
+                    input_dict['scan_trsh'] += f'{value} '
+                else:
+                    input_dict['keywords'] += f'{value} '
     return input_dict
 
 
