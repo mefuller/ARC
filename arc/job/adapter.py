@@ -26,15 +26,14 @@ from arc.exceptions import JobError
 from arc.imports import pipe_submit, settings, submit_scripts
 from arc.job.local import (check_job_status,
                            delete_job,
-                           execute_command,
                            get_last_modified_time,
                            rename_output,
-                           submit_job,
                            )
+from arc.job.trsh import trsh_job_on_server
 from arc.job.ssh import SSHClient
 from arc.job.trsh import determine_ess_status
 from arc.species.converter import xyz_to_str
-from arc.species.vectors import get_angle, calculate_dihedral_angle
+from arc.species.vectors import calculate_dihedral_angle
 
 if TYPE_CHECKING:
     from arc.species import ARCSpecies
@@ -306,6 +305,7 @@ class JobAdapter(ABC):
             self.job_status[0] = 'running'
             self.execute_incore()
             self.job_status[0] = 'done'
+            self.job_status[1]['status'] = 'done'
         elif execution_type == JobExecutionTypeEnum.queue:
             self.execute_queue()
         elif execution_type == JobExecutionTypeEnum.pipe:
@@ -798,8 +798,8 @@ class JobAdapter(ABC):
         """
         if self.job_status[0] == 'errored':
             return
-        self.job_status[0] = self._check_job_server_status()
-        if self.job_status[0] == 'done':
+        self.job_status[0] = self._check_job_server_status() if self.execution_type != 'incore' else 'done'
+        if self.job_status[0] == 'done' and self.job_status[1]['status'] != 'done':
             try:
                 self._check_job_ess_status()  # populates self.job_status[1], and downloads the output file
             except IOError:
@@ -1187,3 +1187,20 @@ class JobAdapter(ABC):
                             rotor_dict['cont_indices'][index] = 0
 
         return data_list
+
+    def troubleshoot_server(self):
+        """
+        Troubleshoot server errors.
+        """
+        node, run_job = trsh_job_on_server(server=self.server,
+                                           job_name=self.job_name,
+                                           job_id=self.job_id,
+                                           job_server_status=self.job_status[0],
+                                           remote_path=self.remote_path,
+                                           server_nodes=self.server_nodes,
+                                           )
+        if node is not None:
+            self.server_nodes.append(node)
+        if run_job:
+            # resubmit job
+            self.execute()
