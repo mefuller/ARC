@@ -872,6 +872,7 @@ class Scheduler(object):
         Returns:
              bool: ``True`` if job terminated successfully on the server, ``False`` otherwise.
         """
+        print(f'ending job {job_name} for {label}')
         if job.job_status[0] != 'done' or job.job_status[1]['status'] != 'done':
             try:
                 job.determine_job_status()  # also downloads output file
@@ -898,9 +899,13 @@ class Scheduler(object):
                 self.running_jobs[label].pop(self.running_jobs[label].index(job_name))
             return False
 
+        print(job.job_status)
         if job.job_status[0] != 'running' and job.job_status[1]['status'] != 'running':
+            print('this job is not running')
+            print(f'Before popping: {self.running_jobs}')
             if job_name in self.running_jobs[label]:
                 self.running_jobs[label].pop(self.running_jobs[label].index(job_name))
+            print(f'After popping: {self.running_jobs}')
             self.timer = False
             job.write_completed_job_to_csv_file()
             logger.info(f'  Ending job {job_name} for {label} (run time: {job.run_time})')
