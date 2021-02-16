@@ -873,7 +873,7 @@ class Scheduler(object):
         Returns:
              bool: ``True`` if job terminated successfully on the server, ``False`` otherwise.
         """
-        if self.job_status[0] != 'done' or self.job_status[1]['status'] != 'done'
+        if self.job_status[0] != 'done' or self.job_status[1]['status'] != 'done':
             try:
                 job.determine_job_status()  # also downloads output file
             except IOError:
