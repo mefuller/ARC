@@ -637,7 +637,7 @@ class JobAdapter(ABC):
                 # check that this is the updated version
                 with open(csv_path, 'r') as f:
                     d_reader = csv.DictReader(f)
-                headers = d_reader.fieldnames
+                    headers = d_reader.fieldnames
                 if 'comments' in headers:
                     os.remove(csv_path)
             if not os.path.isfile(csv_path):
