@@ -207,6 +207,9 @@ class KinBotAdapter(JobAdapter):
 
         self.final_time = None
         self.run_time = None
+        self.charge = None
+        self.multiplicity = None
+        self.is_ts = True
         self.scan_res = None
         self.set_file_paths()
 
