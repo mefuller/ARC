@@ -156,28 +156,25 @@ def check_running_jobs_ids() -> list:
     """
     Return a list of ``int`` representing job IDs of all jobs submitted by the user on a server
     """
-    running_jobs_ids = list()
+    running_job_ids = list()
     cmd = check_status_command[servers['local']['cluster_soft']] + ' -u $USER'
     stdout = execute_command(cmd)[0]
     job_id = None
     for i, status_line in enumerate(stdout):
         if servers['local']['cluster_soft'].lower() == 'slurm' and i > 0:
             job_id = status_line.split()[0]
-            break
         elif servers['local']['cluster_soft'].lower() == 'oge' and i > 1:
             job_id = status_line.split()[0]
-            break
         elif servers['local']['cluster_soft'].lower() == 'pbs' and i > 4:
             job_id = status_line.split('.')[0]
-            break
     if job_id is None:
         raise ValueError(f"Server cluster software {servers['local']['cluster_soft']} is not supported.")
     try:
         job_id = int(job_id)
     except ValueError:
         pass
-    running_jobs_ids.append(job_id)
-    return running_jobs_ids
+    running_job_ids.append(job_id)
+    return running_job_ids
 
 
 def submit_job(path):
