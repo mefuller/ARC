@@ -532,13 +532,8 @@ class Scheduler(object):
                             break
                     if 'tsg' in job_name:
                         i = get_i_from_job_name(job_name)
-                        print(f'in tsg! {job_name}, {i}')
                         job = self.job_dict[label]['tsg'][i]
-                        print(job.job_id in self.server_job_ids)
-                        print(f'job_id: {job.job_id}, server_job_ids: {self.server_job_ids}')
-                        print(job.job_id not in self.completed_incore_jobs)
                         if not(job.job_id in self.server_job_ids and job.job_id not in self.completed_incore_jobs):
-                            print(f'ending job ....... {job_name}')
                             # This is a successfully completed tsg job. It may have resulted in several TSGuesses.
                             successful_server_termination = self.end_job(job=job, label=label, job_name=job_name)
                             if successful_server_termination:
@@ -878,15 +873,16 @@ class Scheduler(object):
         Returns:
              bool: ``True`` if job terminated successfully on the server, ``False`` otherwise.
         """
-        try:
-            job.determine_job_status()  # also downloads output file
-        except IOError:
-            if job.job_type not in ['orbitals']:
-                logger.warning(f'Tried to determine status of job {job.job_name}, but it seems like the job never ran. '
-                               f'Re-running job.')
-                self._run_a_job(job=job, label=label)
-            if job_name in self.running_jobs[label]:
-                self.running_jobs[label].pop(self.running_jobs[label].index(job_name))
+        if self.job_status[0] != 'done' or self.job_status[1]['status'] != 'done'
+            try:
+                job.determine_job_status()  # also downloads output file
+            except IOError:
+                if job.job_type not in ['orbitals']:
+                    logger.warning(f'Tried to determine status of job {job.job_name}, but it seems like the job never ran. '
+                                   f'Re-running job.')
+                    self._run_a_job(job=job, label=label)
+                if job_name in self.running_jobs[label]:
+                    self.running_jobs[label].pop(self.running_jobs[label].index(job_name))
 
         if not os.path.exists(job.local_path_to_output_file) and not job.execution_type == 'incore':
             if 'restart_due_to_file_not_found' in job.ess_trsh_methods:
