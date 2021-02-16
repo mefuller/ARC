@@ -543,7 +543,7 @@ class Scheduler(object):
                                 if 'tsg' in spec_jobs and spec_jobs != job_name:
                                     break
                             else:
-                                # All tsg jobs terminated. Spawn confs. # todo: run on all of them??
+                                # All tsg jobs terminated. Spawn confs.
                                 logger.info(f'\nTS Guess jobs for {label} successfully terminated.\n')
                                 self.run_conformer_jobs(labels=[label])
                             self.timer = False
