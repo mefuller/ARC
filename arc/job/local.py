@@ -162,13 +162,30 @@ def check_running_jobs_ids() -> list:
     job_id = None
     for i, status_line in enumerate(stdout):
         if servers['local']['cluster_soft'].lower() == 'slurm' and i > 0:
-            job_id = status_line.split()[0]
+            running_job_ids = append_job_id_to_running_job_ids(status_line.split()[0], running_job_ids)
         elif servers['local']['cluster_soft'].lower() == 'oge' and i > 1:
-            job_id = status_line.split()[0]
+            running_job_ids = append_job_id_to_running_job_ids(status_line.split()[0], running_job_ids)
         elif servers['local']['cluster_soft'].lower() == 'pbs' and i > 4:
-            job_id = status_line.split('.')[0]
+            running_job_ids = append_job_id_to_running_job_ids(status_line.split('.')[0], running_job_ids)
     if job_id is None:
         raise ValueError(f"Server cluster software {servers['local']['cluster_soft']} is not supported.")
+    return running_job_ids
+
+
+def append_job_id_to_running_job_ids(job_id: str,
+                                     running_job_ids: list,
+                                     ) -> list:
+    """
+    Append ``job_id`` to ``running_job_ids``.
+    Try converting to int if possible.
+
+    Args:
+        job_id (str): The job ID on the server.
+        running_job_ids (list): Already identified job IDs.
+
+    Returns:
+         list: The updated running_job_ids list.
+    """
     try:
         job_id = int(job_id)
     except ValueError:
