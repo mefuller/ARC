@@ -68,6 +68,10 @@ ts_adapters_by_rmg_family = {'1+2_Cycloaddition': ['kinbot'],
 all_families_ts_adapters = []
 
 
+# Default is "queue", "pipe" will be called whenever needed. So just list 'incore'.
+default_incore_adapters = ['autotst:', 'gcn', 'kinbot', 'psi4']
+
+
 def is_restricted(obj) -> bool:
     """
     Check whether a Job Adapter should be executed as restricted or unrestricted.
@@ -133,8 +137,11 @@ def update_input_dict_with_args(args: dict,
             for block in arg_dict.values():
                 input_dict['block'] += f'{block}\n'
         elif arg_type == 'keyword' and arg_dict:
-            for keyword in arg_dict.values():
-                input_dict['keywords'] += f'{keyword} '
+            for key, value in arg_dict.items():
+                if key == 'scan_trsh':
+                    input_dict['scan_trsh'] += f'{value} '
+                else:
+                    input_dict['keywords'] += f'{value} '
     return input_dict
 
 
