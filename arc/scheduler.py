@@ -2891,7 +2891,7 @@ class Scheduler(object):
                          label: str,
                          job: 'JobAdapter',
                          level_of_theory: Union[Level, dict, str],
-                         conformer: int = -1):
+                         conformer: Optional[int] = None):
         """
         Troubleshoot issues related to the electronic structure software, such as conversion.
 
@@ -2909,7 +2909,7 @@ class Scheduler(object):
                        f'in {job.job_adapter}.\n'
                        f'The error "{job.job_status[1]["error"]}" was derived from the following line in the log '
                        f'file:\n"{job.job_status[1]["line"]}".')
-        if conformer != -1:
+        if conformer is not None:
             xyz = self.species_dict[label].conformers[conformer]
         else:
             xyz = self.species_dict[label].final_xyz or self.species_dict[label].initial_xyz
@@ -2924,7 +2924,7 @@ class Scheduler(object):
                 self.species_dict[label].checkfile = job.checkfile
         # determine if the species is a hydrogen (or its isotope) atom
         is_h = self.species_dict[label].number_of_atoms == 1 and \
-               self.species_dict[label].mol.atoms[0].element.symbol in ['H', 'D', 'T']
+            self.species_dict[label].mol.atoms[0].element.symbol in ['H', 'D', 'T']
         output_errors, ess_trsh_methods, remove_checkfile, level_of_theory, \
             software, job_type, fine, trsh_keyword, memory, shift, cpu_cores, dont_rerun = \
             trsh_ess_job(label=label,
