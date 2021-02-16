@@ -749,7 +749,7 @@ class Scheduler(object):
                           project=self.project,
                           project_directory=self.project_directory,
                           job_type=job_type,
-                          level=Level(repr=level_of_theory),
+                          level=Level(repr=level_of_theory) if level_of_theory is not None else None,
                           args={'keyword': {'trsh': trsh}, 'block': {}} if trsh else None,
                           bath_gas=self.bath_gas,
                           checkfile=checkfile,
@@ -1328,9 +1328,10 @@ class Scheduler(object):
                 # useful for TS species where xyz might not be given to perceive a .mol attribute,
                 # and a user guess, if provided, cannot always be trusted
                 self.species_dict[label].mol_from_xyz()
-            if not self.species_dict[label].rotors_dict:
-                self.species_dict[label].determine_rotors()
-            self.run_scan_jobs(label)
+            if self.job_types['rotors']:
+                if not self.species_dict[label].rotors_dict:
+                    self.species_dict[label].determine_rotors()
+                self.run_scan_jobs(label)
 
         if composite and self.composite_method:
             self.post_sp_actions(label=label,
