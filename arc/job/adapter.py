@@ -611,6 +611,8 @@ class JobAdapter(ABC):
             self.job_name = f'tsg{self.tsg}'
         elif self.job_name is None:
             self.job_name = f'{self.job_type}_{self.job_server_name}'
+        # job_id
+        self.job_id = self.job_num if self.execution_type == 'incore' and self.job_id is None else self.job_id
 
     def _write_initiated_job_to_csv_file(self):
         """
