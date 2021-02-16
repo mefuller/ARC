@@ -530,8 +530,11 @@ class Scheduler(object):
                             self.timer = False
                             break
                     if 'tsg' in job_name:
+                        print(f'in scheduler tsg: {job_name}')
                         i = get_i_from_job_name(job_name)
                         job = self.job_dict[label]['tsg'][i]
+                        print(job.job_id in self.server_job_ids, self.server_job_ids)
+                        print(job.job_id not in self.completed_incore_jobs, self.completed_incore_jobs)
                         if not(job.job_id in self.server_job_ids and job.job_id not in self.completed_incore_jobs):
                             # This is a successfully completed tsg job. It may have resulted in several TSGuesses.
                             successful_server_termination = self.end_job(job=job, label=label, job_name=job_name)
