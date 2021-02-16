@@ -578,7 +578,6 @@ class Scheduler(object):
                             break
                     elif 'composite' in job_name:
                         job = self.job_dict[label]['composite'][job_name]
-                        print(f'Sc581 {job.job_id}\n{self.completed_incore_jobs}\n{self.servers_jobs_ids}')
                         if job.job_id in self.completed_incore_jobs and job.job_id not in self.servers_jobs_ids:
                             successful_server_termination = self.end_job(job=job, label=label, job_name=job_name)
                             if successful_server_termination:
@@ -666,8 +665,6 @@ class Scheduler(object):
 
                 if not len(job_list) and not \
                         (self.species_dict[label].is_ts and not self.species_dict[label].ts_conf_spawned):
-                    print(f'\n\n\n\n\nChecking all_done for {label} is_ts: {self.species_dict[label].is_ts} '
-                          f'ts_conf_spawned: {self.species_dict[label].ts_conf_spawned}\n\n\n\n\n\n')
                     self.check_all_done(label)
                     if not self.running_jobs[label]:
                         # delete the label only if it represents an empty dictionary
@@ -867,8 +864,6 @@ class Scheduler(object):
         Returns:
              bool: ``True`` if job terminated successfully on the server, ``False`` otherwise.
         """
-        print('Sc 869 in end_job')
-        raise
         try:
             job.determine_job_status()  # also downloads output file
         except IOError:
@@ -1379,7 +1374,6 @@ class Scheduler(object):
         Check if any new reaction has all of its reactants and products optimized,
         and if so spawn the respective TSG jobs.
         """
-        print(f'\n\n\n\n\nin spawn_ts_jobs!!\n\n\n\n\n\n')
         for rxn in self.rxn_list:
             if not rxn.done_opt_r_n_p and all(spc.final_xyz is not None for spc in [rxn.r_species + rxn.p_species]):
                 rxn.done_opt_r_n_p = True
