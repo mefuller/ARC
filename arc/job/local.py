@@ -240,9 +240,6 @@ def rename_output(local_file_path, software):
     `local_file_path` is the full path to the output.out file,
     `software` is the software used for the job by which the original output file name is determined
     """
-    print('L233 in rename_output')
-    print(f'L234 renaming {os.path.join(os.path.dirname(local_file_path), output_filenames[software])}')
-    print(f'L 235 into {local_file_path}')
     software = software.lower()
     if os.path.isfile(os.path.join(os.path.dirname(local_file_path), output_filenames[software])):
         shutil.move(src=os.path.join(os.path.dirname(local_file_path), output_filenames[software]), dst=local_file_path)
