@@ -961,10 +961,10 @@ class JobAdapter(ABC):
             else:
                 server = f' on {self.server}'
         if 'conformer' in self.job_name or 'tsg' in self.job_name:
-            job_server_name = self.job_server_name
+            job_server_name = f' ({self.job_server_name})'
         execution_type = {'incore': 'incore job', 'queue': 'queue job', 'pipe': 'job array (pipe)'}[self.execution_type]
-        logger.info(f'Running {local}{execution_type}{server} {self.job_name} '
-                    f'({job_server_name}) for {self.species_label}{info}')
+        logger.info(f'Running {local}{execution_type}{server} {self.job_name}{job_server_name} '
+                    f'for {self.species_label}{info}')
 
     def get_file_property_dictionary(self,
                                      file_name: str,
