@@ -501,8 +501,10 @@ class Scheduler(object):
                     continue
                 for job_name in job_list:
                     if 'conformer' in job_name:
+                        print(f'Sc504 conformer in {job_name}')
                         i = get_i_from_job_name(job_name)
                         job = self.job_dict[label]['conformers'][i]
+                        print(f'{job.job_id} -- completed_incore_jobs: {self.completed_incore_jobs}, servers_jobs_ids: {self.servers_jobs_ids}')
                         if job.job_id in self.completed_incore_jobs and job.job_id not in self.servers_jobs_ids:
                             # this is a completed conformer job
                             successful_server_termination = self.end_job(job=job, label=label, job_name=job_name)
@@ -577,7 +579,9 @@ class Scheduler(object):
                             self.timer = False
                             break
                     elif 'composite' in job_name:
+                        print(f'Sc504 composite in {job_name}')
                         job = self.job_dict[label]['composite'][job_name]
+                        print(f'{job.job_id} -- completed_incore_jobs: {self.completed_incore_jobs}, servers_jobs_ids: {self.servers_jobs_ids}')
                         if job.job_id in self.completed_incore_jobs and job.job_id not in self.servers_jobs_ids:
                             successful_server_termination = self.end_job(job=job, label=label, job_name=job_name)
                             if successful_server_termination:
