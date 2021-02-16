@@ -1494,6 +1494,7 @@ def find_internal_rotors(mol):
                         rotor['scan'] = [determine_smallest_atom_index_in_scan(atom1=atom1, atom2=atom2, mol=mol)]
                         rotor['scan'].extend([mol.vertices.index(atom1) + 1, mol.vertices.index(atom2) + 1])
                         rotor['scan'].append(determine_smallest_atom_index_in_scan(atom1=atom2, atom2=atom1, mol=mol))
+                        rotor['torsion'] = [s - 1 for s in rotor['scan']]
 
                         # other keys:
                         rotor['number_of_running_jobs'] = 0
