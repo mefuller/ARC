@@ -2688,7 +2688,7 @@ class Scheduler(object):
                 else:
                     raise ValueError(f'Did not recognize job {job_name} of species {label}.')
                 if job.execution_type == 'incore' and job.job_status[0] == 'done':
-                    self.server_job_ids.append(job.job_id)
+                    self.completed_incore_jobs.append(job.job_id)
 
     def troubleshoot_negative_freq(self,
                                    label: str,
