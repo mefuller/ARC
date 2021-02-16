@@ -500,6 +500,7 @@ class Scheduler(object):
                 except KeyError:
                     continue
                 for job_name in job_list:
+                    print(f'looping with {job_name}')
                     if 'conformer' in job_name:
                         i = get_i_from_job_name(job_name)
                         job = self.job_dict[label]['conformers'][i]
@@ -531,8 +532,13 @@ class Scheduler(object):
                             break
                     if 'tsg' in job_name:
                         i = get_i_from_job_name(job_name)
+                        print(f'in tsg! {job_name}, {i}')
                         job = self.job_dict[label]['tsg'][i]
+                        print(job.job_id in self.server_job_ids)
+                        print(f'job_id: {job.job_id}, server_job_ids: {self.server_job_ids}')
+                        print(job.job_id not in self.completed_incore_jobs)
                         if not(job.job_id in self.server_job_ids and job.job_id not in self.completed_incore_jobs):
+                            print(f'ending job ....... {job_name}')
                             # This is a successfully completed tsg job. It may have resulted in several TSGuesses.
                             successful_server_termination = self.end_job(job=job, label=label, job_name=job_name)
                             if successful_server_termination:
@@ -742,7 +748,7 @@ class Scheduler(object):
         if self.adaptive_levels is not None and label is not None:
             level_of_theory = self.determine_adaptive_level(original_level_of_theory=level_of_theory, job_type=job_type,
                                                             heavy_atoms=self.species_dict[label].number_of_heavy_atoms)
-        job_adapter = job_adapter if job_adapter is not None else \
+        job_adapter = job_adapter.lower() if job_adapter is not None else \
             self.deduce_job_adapter(level=Level(repr=level_of_theory), job_type=job_type)
         args = {'keyword': {}, 'block': {}}
         if trsh:
@@ -855,7 +861,7 @@ class Scheduler(object):
                 logger.error('Setting it to TeraChem')
                 level.software = 'terachem'
             job_adapter = level.software
-        return job_adapter
+        return job_adapter.lower()
 
     def end_job(self, job: 'JobAdapter',
                 label: str,
@@ -898,6 +904,8 @@ class Scheduler(object):
             return False
 
         if job.job_status[0] != 'running' and job.job_status[1]['status'] != 'running':
+            print(f'******** ending job {job_name} for {label}')
+            print(f'running jobs: {self.running_jobs}')
             if job_name in self.running_jobs[label]:
                 self.running_jobs[label].pop(self.running_jobs[label].index(job_name))
             self.timer = False
