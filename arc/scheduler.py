@@ -502,8 +502,11 @@ class Scheduler(object):
                 for job_name in job_list:
                     if 'conformer' in job_name:
                         i = get_i_from_job_name(job_name)
+                        print(f'examining conformer {i} {job_name}:')
                         job = self.job_dict[label]['conformers'][i]
+                        print(job.job_id in self.servers_jobs_ids, job.job_id not in self.completed_incore_jobs)
                         if not(job.job_id in self.servers_jobs_ids and job.job_id not in self.completed_incore_jobs):
+                            print('we are in')
                             # this is a completed conformer job
                             successful_server_termination = self.end_job(job=job, label=label, job_name=job_name)
                             if successful_server_termination:
@@ -577,8 +580,12 @@ class Scheduler(object):
                             self.timer = False
                             break
                     elif 'composite' in job_name:
+                        print(f'examining composite {job_name}')
                         job = self.job_dict[label]['composite'][job_name]
+                        print(f'Currently running jobs:\n{pprint.pformat(self.running_jobs)}')
+                        print(job.job_id in self.servers_jobs_ids, job.job_id not in self.completed_incore_jobs)
                         if not(job.job_id in self.servers_jobs_ids and job.job_id not in self.completed_incore_jobs):
+                            print('we are in')
                             successful_server_termination = self.end_job(job=job, label=label, job_name=job_name)
                             if successful_server_termination:
                                 success = self.parse_composite_geo(label=label, job=job)
@@ -864,6 +871,7 @@ class Scheduler(object):
         Returns:
              bool: ``True`` if job terminated successfully on the server, ``False`` otherwise.
         """
+        print(f'end_job for {job.job_name}')
         try:
             job.determine_job_status()  # also downloads output file
         except IOError:
