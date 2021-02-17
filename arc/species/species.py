@@ -1698,19 +1698,10 @@ class ARCSpecies(object):
 
 class TSGuess(object):
     """
-    TSGuess class
-
-    The user can define xyz directly, and the default `method` will be 'User guess'.
-    Alternatively, either ARC or the user can provide reactant/s and product/s geometries with a specified `method`.
-    `method` could be one of the following:
-    - QST2 (not implemented)
-    - DEGSM (not implemented)
-    - NEB (not implemented)
-    - Kinbot: requires the RMG family, only works for H,C,O,S (not implemented)
-    - AutoTST
-    - GCN
+    A class for representing TS a guess.
 
     Args:
+        index (int, optional): A running index of all TSGuess objects belonging to an ARCSpecies object.
         method (str, optional): The method/source used for the xyz guess.
         method_index (int, optional): A sub-index, used for cases where a single method generates several guesses.
                                       Counts separately for each direction, 'F' and 'R'.
@@ -1738,9 +1729,12 @@ class TSGuess(object):
         execution_time (str): Overall execution time for the TS guess method.
         success (bool): Whether the TS guess method succeeded in generating an XYZ guess or not.
         energy (float): Relative energy of all TS conformers in kJ/mol.
-        index (int): An index corresponding to the conformer jobs spawned for each TSGuess object.
-                     Assigned only if self.success is ``True``.
-
+        index (int): A running index of all TSGuess objects belonging to an ARCSpecies object.
+        imaginary_freqs (List[float]): The imaginary frequencies of the TS guess after optimization.
+        conformer_index (int): An index corresponding to the conformer jobs spawned for each TSGuess object.
+                               Assigned only if self.success is ``True``.
+        successful_irc (bool): Whether the IRS run(s) identified this to be the correct TS by isomorphism of the wells.
+        successful_normal_mode (bool): Whether a normal mode check was successful.
     """
 
     def __init__(self,
@@ -1785,6 +1779,10 @@ class TSGuess(object):
             self.rmg_reaction = rmg_reaction
             self.arc_reaction = arc_reaction
             self.family = family
+            self.imaginary_freqs = None
+            self.conformer_index = None
+            self.successful_irc = None
+            self.successful_normal_mode = None
 
     def as_dict(self) -> dict:
         """A helper function for dumping this object as a dictionary in a YAML file for restarting ARC"""
@@ -1796,6 +1794,10 @@ class TSGuess(object):
         ts_dict['success'] = self.success
         ts_dict['energy'] = self.energy
         ts_dict['index'] = self.index
+        ts_dict['imaginary_freqs'] = self.imaginary_freqs
+        ts_dict['conformer_index'] = self.conformer_index
+        ts_dict['successful_irc'] = self.successful_irc
+        ts_dict['successful_normal_mode'] = self.successful_normal_mode
         ts_dict['execution_time'] = str(self.execution_time) if isinstance(self.execution_time, datetime.datetime) \
             else self.execution_time
         if self.initial_xyz:
@@ -1830,6 +1832,10 @@ class TSGuess(object):
         self.method = ts_dict['method'].lower() if 'method' in ts_dict else 'user guess'
         self.method_index = ts_dict['method_index'] if 'method_index' in ts_dict else None
         self.method_direction = ts_dict['method_direction'] if 'method_index' in ts_dict else None
+        self.imaginary_freqs = ts_dict['imaginary_freqs'] if 'imaginary_freqs' in ts_dict else None
+        self.conformer_index = ts_dict['conformer_index'] if 'conformer_index' in ts_dict else None
+        self.successful_irc = ts_dict['successful_irc'] if 'successful_irc' in ts_dict else None
+        self.successful_normal_mode = ts_dict['successful_normal_mode'] if 'successful_normal_mode' in ts_dict else None
         if 'user guess' in self.method:
             if self.initial_xyz is None:
                 raise TSError('If no method is specified, an xyz guess must be given (initial_xyz).')
@@ -1899,6 +1905,32 @@ class TSGuess(object):
         """
         if self.t0 is not None:
             self.execution_time = datetime.datetime.now() - self.t0
+
+    def check_imaginary_frequencies(self) -> bool:
+        """
+        Check that the number of imaginary frequencies make sense.
+        Theoretically a TS should only have one imaginary frequency,
+        however additional imaginary frequency are allowed if they are very small in magnitude.
+        This method does not consider the normal displacement mode check.
+
+        Returns:
+            bool: Whether the imaginary frequencies make sense.
+
+        Todo:
+            Add tests.
+        """
+        if len(self.imaginary_freqs) == 0:
+            return False
+        if len(self.imaginary_freqs) == 1 and 25 < abs(self.imaginary_freqs[0]) < 10000:
+            return True
+        else:
+            num_major_freqs = 0
+            for im_freq in self.imaginary_freqs:
+                if 25 < abs(im_freq) < 10000:
+                    num_major_freqs += 1
+            if num_major_freqs == 1:
+                return True
+            return False
 
 
 def determine_occ(xyz, charge):
