@@ -837,6 +837,7 @@ def save_conformers_file(project_directory: str,
                                    If not given (None) then the Species.conformer_energies are used instead.
         ts_methods (list, optional): Entries are method names used to generate the TS guess.
     """
+    print('\n\n\n In save_conformers_file')
     spc_dir = 'rxns' if is_ts else 'Species'
     geo_dir = os.path.join(project_directory, 'output', spc_dir, label, 'geometry', 'conformers')
     if not os.path.exists(geo_dir):
@@ -848,6 +849,7 @@ def save_conformers_file(project_directory: str,
     else:
         optimized = False
         conf_path = os.path.join(geo_dir, 'conformers_before_optimization.txt')
+    print(conf_path)
     with open(conf_path, 'w') as f:
         content = ''
         if optimized:
@@ -877,6 +879,7 @@ def save_conformers_file(project_directory: str,
                 content += 'Failed to converge'
             content += '\n\n\n'
         f.write(content)
+    print(content)
 
 
 # *** Torsions ***
