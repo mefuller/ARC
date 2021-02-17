@@ -671,6 +671,8 @@ class Scheduler(object):
                         del self.running_jobs[label]
 
             if self.timer and len(job_list):
+                print(f'still has job_list: {job_list}')
+                print(f'Currently running jobs:\n{pprint.pformat(self.running_jobs)}')
                 time.sleep(30)  # wait 30 sec before bugging the servers again.
             t = time.time() - self.report_time
             if t > 3600 and self.running_jobs:
