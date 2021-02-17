@@ -484,7 +484,6 @@ class Scheduler(object):
         self.run_conformer_jobs()
         while self.running_jobs != {}:  # loop while jobs are still running
             logger.debug(f'Currently running jobs:\n{pprint.pformat(self.running_jobs)}')
-            print(f'Currently running jobs:\n{pprint.pformat(self.running_jobs)}')
             self.timer = True
             job_list = list()
             for label in self.unique_species_labels:
@@ -500,7 +499,6 @@ class Scheduler(object):
                     job_list = self.running_jobs[label]
                 except KeyError:
                     continue
-                print(f'job_list: {job_list}')
                 for job_name in job_list:
                     if 'conformer' in job_name:
                         i = get_i_from_job_name(job_name)
@@ -673,8 +671,6 @@ class Scheduler(object):
                         del self.running_jobs[label]
 
             if self.timer and len(job_list):
-                print(f'still has job_list: {job_list}')
-                print(f'Currently running jobs:\n{pprint.pformat(self.running_jobs)}')
                 time.sleep(30)  # wait 30 sec before bugging the servers again.
             t = time.time() - self.report_time
             if t > 3600 and self.running_jobs:
@@ -876,7 +872,6 @@ class Scheduler(object):
         Returns:
              bool: ``True`` if job terminated successfully on the server, ``False`` otherwise.
         """
-        print(f'Ending job {job_name}')
         if job.job_status[0] != 'done' or job.job_status[1]['status'] != 'done':
             try:
                 job.determine_job_status()  # also downloads output file
@@ -967,8 +962,13 @@ class Scheduler(object):
                            self.unique_species_labels.
         """
         labels_to_consider = labels if labels is not None else self.unique_species_labels
+        print(f'in run_conformer_jobs for {labels_to_consider}')
         log_info_printed = False
         for label in labels_to_consider:
+            print(f'self.species_dict[label].is_ts: {self.species_dict[label].is_ts}')
+            print(f'self.species_dict[label].tsg_spawned: {self.species_dict[label].tsg_spawned}')
+            print(f'not self.species_dict[label].ts_conf_spawned: {not self.species_dict[label].ts_conf_spawned}')
+            print(f'all([tsg.success is not None for tsg in self.species_dict[label].ts_guesses]): {all([tsg.success is not None for tsg in self.species_dict[label].ts_guesses])}')
             if not self.species_dict[label].is_ts and not self.output[label]['job_types']['opt'] \
                     and 'opt' not in self.job_dict[label] and 'composite' not in self.job_dict[label] \
                     and all([e is None for e in self.species_dict[label].conformer_energies]) \
