@@ -294,7 +294,12 @@ class AutoTSTAdapter(JobAdapter):
                                                    index=len(rxn.ts_species.ts_guesses),
                                                    )
                                 rxn.ts_species.ts_guesses.append(ts_guess)
-                                save_geo(xyz=xyz, path=self.local_path, filename=f'AutoTST {direction}', format_='xyz')
+                                save_geo(xyz=xyz,
+                                         path=self.local_path,
+                                         filename=f'AutoTST {direction}',
+                                         format_='xyz',
+                                         comment=f'AutoTST {direction}',
+                                         )
                         else:
                             ts_guess = TSGuess(method=f'AutoTST',
                                                method_direction=direction,
