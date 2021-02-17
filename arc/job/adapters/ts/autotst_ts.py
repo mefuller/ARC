@@ -15,6 +15,7 @@ from arc.common import AUTOTST_PYTHON, arc_path, get_logger, read_yaml_file
 from arc.job.adapter import JobAdapter
 from arc.job.adapters.common import check_argument_consistency
 from arc.job.factory import register_job_adapter
+from arc.plotter import save_geo
 from arc.species.converter import xyz_from_data
 from arc.species.species import ARCSpecies, TSGuess
 
@@ -273,25 +274,27 @@ class AutoTSTAdapter(JobAdapter):
 
                     if output.returncode:
                         direction_str = 'forward' if direction == 'F' else 'reverse'
-                        logger.error(f'AutoTST subprocess did not give a successful return code for {rxn} '
-                                     f'in the {direction_str} direction.\n'
-                                     f'Got return code: {output.returncode}\n'
-                                     f'stdout: {output.stdout}\n'
-                                     f'stderr: {output.stderr}')
+                        logger.warning(f'AutoTST subprocess did not give a successful return code for {rxn} '
+                                       f'in the {direction_str} direction.\n'
+                                       f'Got return code: {output.returncode}\n'
+                                       f'stdout: {output.stdout}\n'
+                                       f'stderr: {output.stderr}')
                     if os.path.isfile(self.output_path):
                         results = read_yaml_file(path=self.output_path)
                         if results:
                             for i, result in enumerate(results):
+                                xyz = xyz_from_data(coords=result['coords'], numbers=result['numbers'])
                                 ts_guess = TSGuess(method=f'AutoTST',
                                                    method_direction=direction,
                                                    method_index=i,
                                                    t0=tic,
                                                    execution_time=tok,
-                                                   xyz=xyz_from_data(coords=result['coords'], numbers=result['numbers']),
+                                                   xyz=xyz,
                                                    success=True,
                                                    index=len(rxn.ts_species.ts_guesses),
                                                    )
                                 rxn.ts_species.ts_guesses.append(ts_guess)
+                                save_geo(xyz=xyz, path=self.local_path, filename=f'AutoTST {direction}', format_='xyz')
                         else:
                             ts_guess = TSGuess(method=f'AutoTST',
                                                method_direction=direction,
@@ -303,7 +306,6 @@ class AutoTSTAdapter(JobAdapter):
                             rxn.ts_species.ts_guesses.append(ts_guess)
 
         self.final_time = datetime.datetime.now()
-        self.job_status[0] = 'done'
 
     def execute_queue(self):
         """
