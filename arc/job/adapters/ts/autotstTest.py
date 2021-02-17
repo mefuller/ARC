@@ -136,7 +136,7 @@ class TestAutoTSTAdapter(unittest.TestCase):
         self.assertEqual(rxn1.ts_species.ts_guesses[1].method_direction, 'F')
         self.assertEqual(rxn1.ts_species.ts_guesses[2].method_direction, 'R')
         self.assertEqual(rxn1.ts_species.ts_guesses[3].method_direction, 'R')
-        self.assertTrue(rxn1.ts_species.ts_guesses[3].execution_time.seconds < 59)  # 0:00:13.143187
+        self.assertTrue(rxn1.ts_species.ts_guesses[3].execution_time.seconds < 300)  # 0:00:13.143187
         self.assertTrue(rxn1.ts_species.ts_guesses[0].success)
         self.assertTrue(rxn1.ts_species.ts_guesses[1].success)
         self.assertTrue(rxn1.ts_species.ts_guesses[2].success)
