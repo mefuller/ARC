@@ -1031,8 +1031,12 @@ class Scheduler(object):
         if len(successful_tsgs) > 1:
             self.job_dict[label]['conformers'] = dict()
             for i, tsg in enumerate(successful_tsgs):
-                self.run_job(label=label, xyz=tsg.initial_xyz, level_of_theory=self.ts_guess_level,
-                             job_type='conformers', conformer=i)
+                self.run_job(label=label,
+                             xyz=tsg.initial_xyz,
+                             level_of_theory=self.ts_guess_level,
+                             job_type='conformers',
+                             conformer=i,
+                             )
                 tsg.conformer_index = i  # Store the conformer index in the TSGuess object to match them later.
         elif len(successful_tsgs) == 1:
             if 'opt' not in self.job_dict[label] and 'composite' not in self.job_dict[label]:
@@ -1986,7 +1990,7 @@ class Scheduler(object):
         logger.info(message)
         logger.info('\n')
 
-        if all(tsg.energy is None for tsg in self.species_dict[label].ts_guesses):
+        if all([tsg.energy is None for tsg in self.species_dict[label].ts_guesses]):
             logger.error(f'No guess converged for TS {label}!')
         else:
             rxn_txt = '' if self.species_dict[label].rxn_label is None \
@@ -2237,6 +2241,7 @@ class Scheduler(object):
             logger.error(f'TS {label} has {len(neg_freqs)} imaginary frequencies ({neg_freqs}), should have exactly 1.')
             if f'{len(neg_freqs)} imaginary freqs for' not in self.output[label]['warnings']:
                 self.output[label]['warnings'] += f'Warning: {len(neg_freqs)} imaginary freqs for TS ({neg_freqs}); '
+            self.determine_most_likely_ts_conformer(label=label)
             return False
         elif not self.species_dict[label].is_ts and len(neg_freqs) != 0:
             logger.error(f'Species {label} has {len(neg_freqs)} imaginary frequencies ({neg_freqs}), '
