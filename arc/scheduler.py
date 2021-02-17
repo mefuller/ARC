@@ -2063,7 +2063,8 @@ class Scheduler(object):
             if self.job_types['fine']:
                 self.output[label]['job_types']['fine'] = True  # all composite jobs are fine if fine was asked for
             self.output[label]['paths']['composite'] = os.path.join(job.local_path, 'output.out')
-            self.species_dict[label].opt_level = self.composite_method.simple()
+            if self.composite_method is not None:
+                self.species_dict[label].opt_level = self.composite_method.simple()
             rxn_str = ''
             if self.species_dict[label].is_ts:
                 rxn_str = f' of reaction {self.species_dict[label].rxn_label}'
