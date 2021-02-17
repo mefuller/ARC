@@ -12,6 +12,7 @@ from arc.common import get_logger
 from arc.job.adapter import JobAdapter
 from arc.job.adapters.common import check_argument_consistency
 from arc.job.factory import register_job_adapter
+from arc.plotter import save_geo
 from arc.species.converter import xyz_from_data, xyz_to_kinbot_list
 from arc.species.species import ARCSpecies, TSGuess
 
@@ -331,14 +332,19 @@ class KinBotAdapter(JobAdapter):
 
                             if success:
                                 ts_guess.success = True
-                                ts_guess.process_xyz(xyz_from_data(coords=coords, symbols=symbols))
+                                xyz = xyz_from_data(coords=coords, symbols=symbols)
+                                ts_guess.process_xyz(xyz)
+                                save_geo(xyz=xyz,
+                                         path=self.local_path,
+                                         filename=f'KinBot {method_direction} {method_index}',
+                                         format_='xyz',
+                                         )
                             else:
                                 ts_guess.success = False
                             self.reactions[0].ts_species.ts_guesses.append(ts_guess)
                             method_index += 1
 
         self.final_time = datetime.datetime.now()
-        self.job_status[0] = 'done'
 
     def execute_queue(self):
         """
