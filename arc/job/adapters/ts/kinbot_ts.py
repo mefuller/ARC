@@ -338,6 +338,7 @@ class KinBotAdapter(JobAdapter):
                                          path=self.local_path,
                                          filename=f'KinBot {method_direction} {method_index}',
                                          format_='xyz',
+                                         comment=f'KinBot {method_direction} {method_index}'
                                          )
                             else:
                                 ts_guess.success = False
