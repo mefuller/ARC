@@ -950,7 +950,7 @@ class Scheduler(object):
                      xyz=job.xyz,
                      )
 
-    def run_conformer_jobs(self, labels=None):
+    def run_conformer_jobs(self, labels: Optional[List[str]] = None):
         """
         Select the most stable conformer for each species using molecular dynamics (force fields) and subsequently
         spawning opt jobs at the conformer level of theory, usually a reasonable yet cheap DFT, e.g., b97d3/6-31+g(d,p).
@@ -962,7 +962,7 @@ class Scheduler(object):
                            self.unique_species_labels.
         """
         labels_to_consider = labels if labels is not None else self.unique_species_labels
-        print(f'in run_conformer_jobs for {labels_to_consider}')
+        print(f'\n\n\nIn run_conformer_jobs for {labels_to_consider}')
         log_info_printed = False
         for label in labels_to_consider:
             print(f'self.species_dict[label].is_ts: {self.species_dict[label].is_ts}')
@@ -1006,33 +1006,40 @@ class Scheduler(object):
             elif self.species_dict[label].is_ts \
                     and self.species_dict[label].tsg_spawned \
                     and not self.species_dict[label].ts_conf_spawned \
-                    and all([tsg.success is not None for tsg in self.species_dict[label].ts_guesses]):
+                    and all([tsg.success is not None for tsg in self.species_dict[label].ts_guesses]) \
+                    and any([tsg.success for tsg in self.species_dict[label].ts_guesses]):
                 # This is a TS Species for which all TSGs were spawned, but conformers haven't been spawned,
                 # and all tsg.success flags contain a values (either ``True`` or ``False``), so they are done.
                 # We're ready to spawn conformer jobs for this TS Species
                 self.run_ts_conformer_jobs(label=label)
                 self.species_dict[label].ts_conf_spawned = True
 
-    def run_ts_conformer_jobs(self, label):
+    def run_ts_conformer_jobs(self, label: str):
         """
         Spawn opt jobs at the ts_guesses level of theory for the TS guesses.
 
         Args:
             label (str): The TS species label.
         """
+        print('\n\n\nIn run_ts_conformer_jobs')
         plotter.save_conformers_file(project_directory=self.project_directory, label=label,
                                      xyzs=[tsg.initial_xyz for tsg in self.species_dict[label].ts_guesses],
                                      level_of_theory=self.ts_guess_level,
                                      multiplicity=self.species_dict[label].multiplicity,
-                                     charge=self.species_dict[label].charge, is_ts=True,
-                                     ts_methods=[tsg.method for tsg in self.species_dict[label].ts_guesses])
+                                     charge=self.species_dict[label].charge,
+                                     is_ts=True,
+                                     ts_methods=[f'{tsg.method} {tsg.method_direction} {tsg.method_index}'
+                                                 for tsg in self.species_dict[label].ts_guesses])
         successful_tsgs = [tsg for tsg in self.species_dict[label].ts_guesses if tsg.success]
+        print(f'len successful_tsgs: {len(successful_tsgs)}')
         if len(successful_tsgs) > 1:
+            print('>1')
             self.job_dict[label]['conformers'] = dict()
             for i, tsg in enumerate(successful_tsgs):
                 self.run_job(label=label, xyz=tsg.initial_xyz, level_of_theory=self.ts_guess_level,
                              job_type='conformers', conformer=i)
         elif len(successful_tsgs) == 1:
+            print('= 1')
             if 'opt' not in self.job_dict[label] and 'composite' not in self.job_dict[label]:
                 # proceed only if opt (/composite) not already spawned
                 rxn = ''
@@ -1047,7 +1054,7 @@ class Scheduler(object):
                     self.run_composite_job(label)
                 self.species_dict[label].chosen_ts_method = self.species_dict[label].ts_guesses[0].method
 
-    def run_opt_job(self, label, fine=False):
+    def run_opt_job(self, label: str, fine: bool = False):
         """
         Spawn a geometry optimization job. The initial guess is taken from the `initial_xyz` attribute.
 
@@ -1063,7 +1070,7 @@ class Scheduler(object):
         self.run_job(label=label, xyz=self.species_dict[label].initial_xyz, level_of_theory=self.opt_level,
                      job_type='opt', fine=fine)
 
-    def run_composite_job(self, label):
+    def run_composite_job(self, label: str):
         """
         Spawn a composite job (e.g., CBS-QB3) using 'final_xyz' for species ot TS 'label'.
 
