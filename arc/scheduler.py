@@ -969,6 +969,7 @@ class Scheduler(object):
             print(f'self.species_dict[label].tsg_spawned: {self.species_dict[label].tsg_spawned}')
             print(f'not self.species_dict[label].ts_conf_spawned: {not self.species_dict[label].ts_conf_spawned}')
             print(f'all([tsg.success is not None for tsg in self.species_dict[label].ts_guesses]): {all([tsg.success is not None for tsg in self.species_dict[label].ts_guesses])}')
+            print(f'any([tsg.success for tsg in self.species_dict[label].ts_guesses]): {any([tsg.success for tsg in self.species_dict[label].ts_guesses])}')
             if not self.species_dict[label].is_ts and not self.output[label]['job_types']['opt'] \
                     and 'opt' not in self.job_dict[label] and 'composite' not in self.job_dict[label] \
                     and all([e is None for e in self.species_dict[label].conformer_energies]) \
@@ -984,23 +985,23 @@ class Scheduler(object):
                     logger.info('\nStarting (non-TS) species conformational analysis...\n')
                     log_info_printed = True
                 if self.species_dict[label].force_field == 'cheap':
-                    # just embed in RDKit and use MMFF94s for opt and energies
+                    # Just embed in RDKit and use MMFF94s for opt and energies.
                     if self.species_dict[label].initial_xyz is None:
                         self.species_dict[label].initial_xyz = self.species_dict[label].get_xyz()
                 else:
-                    # run the combinatorial method w/o fitting a force field
+                    # Run the combinatorial method w/o fitting a force field.
                     self.species_dict[label].generate_conformers(
                         n_confs=self.n_confs,
                         e_confs=self.e_confs,
                         plot_path=os.path.join(self.project_directory, 'output', 'Species',
                                                label, 'geometry', 'conformers'))
                 self.process_conformers(label)
-            elif not self.job_types['conformers']:
-                # we're not running conformer jobs
+            elif not self.job_types['conformers'] and not self.species_dict[label].is_ts:
+                # We're not running conformer jobs and this is not a TS.
                 if self.species_dict[label].initial_xyz is not None or self.species_dict[label].final_xyz is not None:
                     pass
                 elif self.species_dict[label].conformers:
-                    # the species was defined with xyz's
+                    # The species was defined with xyz's.
                     self.process_conformers(label)
             # TSs:
             elif self.species_dict[label].is_ts \
