@@ -342,8 +342,15 @@ class KinBotAdapter(JobAdapter):
                                          )
                             else:
                                 ts_guess.success = False
-                            self.reactions[0].ts_species.ts_guesses.append(ts_guess)
+                            rxn.ts_species.ts_guesses.append(ts_guess)
                             method_index += 1
+
+            if len(self.reactions) < 5:
+                successes = len([tsg for tsg in rxn.ts_species.ts_guesses if tsg.success])
+                if successes:
+                    logger.info(f'KinBot successfully found {successes} TS guesses for {rxn.label}.')
+                else:
+                    logger.info(f'KinBot did not find any successful TS guesses for {rxn.label}.')
 
         self.final_time = datetime.datetime.now()
 
