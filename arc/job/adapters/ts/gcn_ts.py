@@ -298,8 +298,6 @@ class GCNAdapter(JobAdapter):
             ts_guess_f.tic()
 
             commands = [command_0]
-            print(f'running GCN from {TS_GCN_PYTHON}')
-            print(os.path.isdir(TS_GCN_PYTHON))
             commands.append(f'{TS_GCN_PYTHON} {script_path} '
                             f'--r_sdf_path {self.reactant_path} '
                             f'--p_sdf_path {self.product_path} '
