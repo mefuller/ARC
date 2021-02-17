@@ -484,6 +484,7 @@ class Scheduler(object):
         self.run_conformer_jobs()
         while self.running_jobs != {}:  # loop while jobs are still running
             logger.debug(f'Currently running jobs:\n{pprint.pformat(self.running_jobs)}')
+            print(f'Currently running jobs:\n{pprint.pformat(self.running_jobs)}')
             self.timer = True
             job_list = list()
             for label in self.unique_species_labels:
@@ -499,6 +500,7 @@ class Scheduler(object):
                     job_list = self.running_jobs[label]
                 except KeyError:
                     continue
+                print(f'job_list: {job_list}')
                 for job_name in job_list:
                     if 'conformer' in job_name:
                         i = get_i_from_job_name(job_name)
@@ -874,6 +876,7 @@ class Scheduler(object):
         Returns:
              bool: ``True`` if job terminated successfully on the server, ``False`` otherwise.
         """
+        print(f'Ending job {job_name}')
         if job.job_status[0] != 'done' or job.job_status[1]['status'] != 'done':
             try:
                 job.determine_job_status()  # also downloads output file
