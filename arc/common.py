@@ -47,7 +47,7 @@ gcn_pypath_2 = os.path.join(os.environ.get('HOME'), 'anaconda3', 'envs', 'ts_gcn
 gcn_pypath_3 = os.path.join(os.environ.get('HOME'), 'miniconda3', 'envs', 'ts_gcn', 'bin', 'python')
 gcn_pypath_4 = os.path.join(os.environ.get('HOME'), '.conda', 'envs', 'ts_gcn', 'bin', 'python')
 for gcn_pypath in [gcn_pypath_1, gcn_pypath_2, gcn_pypath_3, gcn_pypath_4]:
-    if os.path.isdir(gcn_pypath):
+    if os.path.isfile(gcn_pypath):
         TS_GCN_PYTHON = gcn_pypath
         break
 
@@ -57,7 +57,7 @@ autotst_pypath_2 = os.path.join(os.environ.get('HOME'), 'anaconda3', 'envs', 'ts
 autotst_pypath_3 = os.path.join(os.environ.get('HOME'), 'miniconda3', 'envs', 'tst_env', 'bin', 'python')
 autotst_pypath_4 = os.path.join(os.environ.get('HOME'), '.conda', 'envs', 'tst_env', 'bin', 'python')
 for autotst_pypath in [autotst_pypath_1, autotst_pypath_2, autotst_pypath_3, autotst_pypath_4]:
-    if os.path.isdir(autotst_pypath):
+    if os.path.isfile(autotst_pypath):
         AUTOTST_PYTHON = autotst_pypath
         break
 
