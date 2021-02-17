@@ -18,6 +18,7 @@ from arc.common import TS_GCN_PYTHON, arc_path, get_logger
 from arc.job.adapter import JobAdapter
 from arc.job.adapters.common import check_argument_consistency
 from arc.job.factory import register_job_adapter
+from arc.plotter import save_geo
 from arc.species.converter import rdkit_conf_from_mol, str_to_xyz
 from arc.species.species import ARCSpecies, TSGuess
 
@@ -304,11 +305,11 @@ class GCNAdapter(JobAdapter):
             command = '; '.join(commands)
             output = subprocess.run(command, shell=True, executable='/bin/bash')
             if output.returncode:
-                logger.error(f'GCN subprocess ran in the forward direction did not give a successful return code '
-                             f'for {rxn} in the forward direction.\n'
-                             f'Got return code: {output.returncode}\n'
-                             f'stdout: {output.stdout}\n'
-                             f'stderr: {output.stderr}')
+                logger.warning(f'GCN subprocess ran in the forward direction did not give a successful return code '
+                               f'for {rxn} in the forward direction.\n'
+                               f'Got return code: {output.returncode}\n'
+                               f'stdout: {output.stdout}\n'
+                               f'stderr: {output.stderr}')
             elif os.path.isfile(self.ts_fwd_path):
                 ts_xyz_fwd = str_to_xyz(self.ts_fwd_path)
 
@@ -317,6 +318,7 @@ class GCNAdapter(JobAdapter):
             if ts_xyz_fwd is not None:
                 ts_guess_f.success = True
                 ts_guess_f.process_xyz(ts_xyz_fwd)
+                save_geo(xyz=ts_xyz_fwd, path=self.local_path, filename=f'GCN F', format_='xyz')
             else:
                 ts_guess_f.success = False
             rxn.ts_species.ts_guesses.append(ts_guess_f)
@@ -336,11 +338,11 @@ class GCNAdapter(JobAdapter):
             command = '; '.join(commands)
             output = subprocess.run(command, shell=True, executable='/bin/bash')
             if output.returncode:
-                logger.error(f'GCN subprocess ran in the reverse direction did not give a successful return code '
-                             f'for {rxn} in the reverse direction.\n'
-                             f'Got return code: {output.returncode}\n'
-                             f'stdout: {output.stdout}\n'
-                             f'stderr: {output.stderr}')
+                logger.warning(f'GCN subprocess ran in the reverse direction did not give a successful return code '
+                               f'for {rxn} in the reverse direction.\n'
+                               f'Got return code: {output.returncode}\n'
+                               f'stdout: {output.stdout}\n'
+                               f'stderr: {output.stderr}')
             elif os.path.isfile(self.ts_rev_path):
                 ts_xyz_rev = str_to_xyz(self.ts_rev_path)
 
@@ -349,12 +351,12 @@ class GCNAdapter(JobAdapter):
             if ts_xyz_fwd is not None:
                 ts_guess_r.success = True
                 ts_guess_r.process_xyz(ts_xyz_rev)
+                save_geo(xyz=ts_xyz_rev, path=self.local_path, filename=f'GCN R', format_='xyz')
             else:
                 ts_guess_r.success = False
             rxn.ts_species.ts_guesses.append(ts_guess_r)
 
         self.final_time = datetime.datetime.now()
-        self.job_status[0] = 'done'
 
     def execute_queue(self):
         """
