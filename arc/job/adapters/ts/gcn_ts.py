@@ -366,6 +366,13 @@ class GCNAdapter(JobAdapter):
                 ts_guess_r.success = False
             rxn.ts_species.ts_guesses.append(ts_guess_r)
 
+            if len(self.reactions) < 5:
+                successes = len([tsg for tsg in rxn.ts_species.ts_guesses if tsg.success])
+                if successes:
+                    logger.info(f'GCN successfully found {successes} TS guesses for {rxn.label}.')
+                else:
+                    logger.info(f'GCN did not find any successful TS guesses for {rxn.label}.')
+
         self.final_time = datetime.datetime.now()
 
     def execute_queue(self):
