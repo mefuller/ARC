@@ -557,7 +557,7 @@ class JobAdapter(ABC):
             elif self.server == 'local':
                 self.final_time = get_last_modified_time(
                     file_path=os.path.join(self.local_path, output_filenames[self.job_adapter]))
-            self.final_time = self.final_time or datetime.datetime.now()
+        self.final_time = self.final_time or datetime.datetime.now()
 
     def determine_run_time(self):
         """
@@ -799,31 +799,30 @@ class JobAdapter(ABC):
         if self.job_status[0] == 'errored':
             return
         self.job_status[0] = self._check_job_server_status() if self.execution_type != 'incore' else 'done'
-        if self.job_status[0] == 'done' and self.job_status[1]['status'] != 'done':
-            try:
-                self._check_job_ess_status()  # populates self.job_status[1], and downloads the output file
-            except IOError:
-                logger.error(f'Got an IOError when trying to download output file for job {self.job_name}.')
-                content = self._get_additional_job_info()
-                if content:
-                    logger.info('Got the following information from the server:')
-                    logger.info(content)
-                    for line in content.splitlines():
-                        # example:
-                        # slurmstepd: *** JOB 7752164 CANCELLED AT 2019-03-27T00:30:50 DUE TO TIME LIMIT on node096 ***
-                        if 'cancelled' in line.lower() and 'due to time limit' in line.lower():
-                            logger.warning(f'Looks like the job was cancelled on {self.server} due to time limit. '
-                                           f'Got: {line}')
-                            new_max_job_time = self.max_job_time - 24 if self.max_job_time > 25 else 1
-                            logger.warning(f'Setting max job time to {new_max_job_time} (was {self.max_job_time})')
-                            self.max_job_time = new_max_job_time
-                            self.job_status[1]['status'] = 'errored'
-                            self.job_status[1]['keywords'] = ['ServerTimeLimit']
-                            self.job_status[1]['error'] = 'Job cancelled by the server since it reached the maximal ' \
-                                                          'time limit.'
-                            self.job_status[1]['line'] = ''
-                raise
-        elif self.job_status[0] == 'running':
+        try:
+            self._check_job_ess_status()  # populates self.job_status[1], and downloads the output file
+        except IOError:
+            logger.error(f'Got an IOError when trying to download output file for job {self.job_name}.')
+            content = self._get_additional_job_info()
+            if content:
+                logger.info('Got the following information from the server:')
+                logger.info(content)
+                for line in content.splitlines():
+                    # example:
+                    # slurmstepd: *** JOB 7752164 CANCELLED AT 2019-03-27T00:30:50 DUE TO TIME LIMIT on node096 ***
+                    if 'cancelled' in line.lower() and 'due to time limit' in line.lower():
+                        logger.warning(f'Looks like the job was cancelled on {self.server} due to time limit. '
+                                       f'Got: {line}')
+                        new_max_job_time = self.max_job_time - 24 if self.max_job_time > 25 else 1
+                        logger.warning(f'Setting max job time to {new_max_job_time} (was {self.max_job_time})')
+                        self.max_job_time = new_max_job_time
+                        self.job_status[1]['status'] = 'errored'
+                        self.job_status[1]['keywords'] = ['ServerTimeLimit']
+                        self.job_status[1]['error'] = 'Job cancelled by the server since it reached the maximal ' \
+                                                      'time limit.'
+                        self.job_status[1]['line'] = ''
+            raise
+        if self.job_status[0] == 'running':
             self.job_status[1]['status'] = 'running'
 
     def _get_additional_job_info(self):
@@ -885,7 +884,7 @@ class JobAdapter(ABC):
         Check the status of the job ran by the electronic structure software (ESS).
         Possible statuses: `initializing`, `running`, `errored: {error type / message}`, `unconverged`, `done`.
         """
-        if self.server != 'local':
+        if self.server != 'local' and self.execution_type != 'incore':
             if os.path.exists(self.local_path_to_output_file):
                 os.remove(self.local_path_to_output_file)
             if os.path.exists(self.local_path_to_orbitals_file):
