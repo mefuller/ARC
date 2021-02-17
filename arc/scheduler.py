@@ -2019,7 +2019,7 @@ class Scheduler(object):
     def parse_composite_geo(self,
                             label: str,
                             job: 'JobAdapter',
-                            ):
+                            ) -> bool:
         """
         Check that a 'composite' job converged successfully, and parse the geometry into `final_xyz`.
         Also checks (QA) that no imaginary frequencies were assigned for stable species,
@@ -2029,6 +2029,9 @@ class Scheduler(object):
         Args:
             label (str): The species label.
             job (JobAdapter): The composite job object.
+
+        Returns:
+            bool: Whether the job converged successfully.
         """
         logger.debug(f'parsing composite geo for {job.job_name}')
         freq_ok = False
@@ -2081,7 +2084,8 @@ class Scheduler(object):
 
     def parse_opt_geo(self,
                       label: str,
-                      job: 'JobAdapter'):
+                      job: 'JobAdapter',
+                      ) -> bool:
         """
         Check that an 'opt' or 'optfreq' job converged successfully, and parse the geometry into `final_xyz`.
         If the job is 'optfreq', also checks (QA) that no imaginary frequencies were assigned for stable species,
