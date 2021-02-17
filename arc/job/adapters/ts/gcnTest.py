@@ -80,7 +80,7 @@ class TestGCNAdapter(unittest.TestCase):
                          ('C', 'C', 'N', 'O', 'N', 'N', 'H', 'H', 'H'))
         self.assertEqual(len(rxn1.ts_species.ts_guesses[1].initial_xyz['coords']), 9)
         self.assertTrue(rxn1.ts_species.ts_guesses[0].success)
-        self.assertTrue(rxn1.ts_species.ts_guesses[0].execution_time.seconds < 59)  # 0:00:01.985336
+        self.assertTrue(rxn1.ts_species.ts_guesses[0].execution_time.seconds < 300)  # 0:00:01.985336
 
         # 2. Test intra-H migration
         reactant_xyz = """C      -0.45684508   -0.05786787   -0.03035793
@@ -115,7 +115,7 @@ H      -0.53338088   -0.77135867   -0.54806440"""
         self.assertEqual(rxn1.ts_species.ts_guesses[1].initial_xyz['symbols'], ('C', 'O', 'H', 'H', 'H'))
         self.assertEqual(len(rxn1.ts_species.ts_guesses[1].initial_xyz['coords']), 5)
         self.assertTrue(rxn1.ts_species.ts_guesses[0].success)
-        self.assertTrue(rxn1.ts_species.ts_guesses[0].execution_time.seconds < 59)  # 0:00:01.985336
+        self.assertTrue(rxn1.ts_species.ts_guesses[0].execution_time.seconds < 300)  # 0:00:01.985336
 
         # 3. Test keto-enol
         reactant_xyz = """C      -0.80601307   -0.11773769    0.32792128
@@ -154,7 +154,7 @@ H       1.36260637    0.37153887   -0.86221771"""
         self.assertEqual(rxn1.ts_species.ts_guesses[1].initial_xyz['symbols'], ('C', 'C', 'O', 'H', 'H', 'H', 'H'))
         self.assertEqual(len(rxn1.ts_species.ts_guesses[1].initial_xyz['coords']), 7)
         self.assertTrue(rxn1.ts_species.ts_guesses[0].success)
-        self.assertTrue(rxn1.ts_species.ts_guesses[0].execution_time.seconds < 59)  # 0:00:01.985336
+        self.assertTrue(rxn1.ts_species.ts_guesses[0].execution_time.seconds < 300)  # 0:00:01.985336
 
     @classmethod
     def tearDownClass(cls):
@@ -162,6 +162,7 @@ H       1.36260637    0.37153887   -0.86221771"""
         A function that is run ONCE after all unit tests in this class.
         Delete all project directories created during these unit tests.
         """
+        shutil.rmtree(os.path.join(arc_path, 'arc', 'testing', 'GCN'), ignore_errors=True)
         shutil.rmtree(os.path.join(arc_path, 'arc', 'testing', 'test_GCN1'), ignore_errors=True)
         shutil.rmtree(os.path.join(arc_path, 'arc', 'testing', 'test_GCN2'), ignore_errors=True)
         shutil.rmtree(os.path.join(arc_path, 'arc', 'testing', 'test_GCN3'), ignore_errors=True)
