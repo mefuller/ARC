@@ -318,7 +318,12 @@ class GCNAdapter(JobAdapter):
             if ts_xyz_fwd is not None:
                 ts_guess_f.success = True
                 ts_guess_f.process_xyz(ts_xyz_fwd)
-                save_geo(xyz=ts_xyz_fwd, path=self.local_path, filename=f'GCN F', format_='xyz')
+                save_geo(xyz=ts_xyz_fwd,
+                         path=self.local_path,
+                         filename='GCN F',
+                         format_='xyz',
+                         comment='GCN F',
+                         )
             else:
                 ts_guess_f.success = False
             rxn.ts_species.ts_guesses.append(ts_guess_f)
@@ -351,7 +356,12 @@ class GCNAdapter(JobAdapter):
             if ts_xyz_fwd is not None:
                 ts_guess_r.success = True
                 ts_guess_r.process_xyz(ts_xyz_rev)
-                save_geo(xyz=ts_xyz_rev, path=self.local_path, filename=f'GCN R', format_='xyz')
+                save_geo(xyz=ts_xyz_rev,
+                         path=self.local_path,
+                         filename='GCN R',
+                         format_='xyz',
+                         comment='GCN R',
+                         )
             else:
                 ts_guess_r.success = False
             rxn.ts_species.ts_guesses.append(ts_guess_r)
