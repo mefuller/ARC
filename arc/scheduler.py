@@ -500,7 +500,6 @@ class Scheduler(object):
                 except KeyError:
                     continue
                 for job_name in job_list:
-                    print(f'looping with {job_name}')
                     if 'conformer' in job_name:
                         i = get_i_from_job_name(job_name)
                         job = self.job_dict[label]['conformers'][i]
@@ -532,13 +531,8 @@ class Scheduler(object):
                             break
                     if 'tsg' in job_name:
                         i = get_i_from_job_name(job_name)
-                        print(f'in tsg! {job_name}, {i}')
                         job = self.job_dict[label]['tsg'][i]
-                        print(job.job_id in self.server_job_ids)
-                        print(f'job_id: {job.job_id}, server_job_ids: {self.server_job_ids}')
-                        print(job.job_id not in self.completed_incore_jobs)
                         if not(job.job_id in self.server_job_ids and job.job_id not in self.completed_incore_jobs):
-                            print(f'ending job ....... {job_name}')
                             # This is a successfully completed tsg job. It may have resulted in several TSGuesses.
                             successful_server_termination = self.end_job(job=job, label=label, job_name=job_name)
                             if successful_server_termination:
@@ -878,15 +872,16 @@ class Scheduler(object):
         Returns:
              bool: ``True`` if job terminated successfully on the server, ``False`` otherwise.
         """
-        try:
-            job.determine_job_status()  # also downloads output file
-        except IOError:
-            if job.job_type not in ['orbitals']:
-                logger.warning(f'Tried to determine status of job {job.job_name}, but it seems like the job never ran. '
-                               f'Re-running job.')
-                self._run_a_job(job=job, label=label)
-            if job_name in self.running_jobs[label]:
-                self.running_jobs[label].pop(self.running_jobs[label].index(job_name))
+        if job.job_status[0] != 'done' or job.job_status[1]['status'] != 'done':
+            try:
+                job.determine_job_status()  # also downloads output file
+            except IOError:
+                if job.job_type not in ['orbitals']:
+                    logger.warning(f'Tried to determine status of job {job.job_name}, but it seems like the job never ran. '
+                                   f'Re-running job.')
+                    self._run_a_job(job=job, label=label)
+                if job_name in self.running_jobs[label]:
+                    self.running_jobs[label].pop(self.running_jobs[label].index(job_name))
 
         if not os.path.exists(job.local_path_to_output_file) and not job.execution_type == 'incore':
             if 'restart_due_to_file_not_found' in job.ess_trsh_methods:
@@ -904,8 +899,6 @@ class Scheduler(object):
             return False
 
         if job.job_status[0] != 'running' and job.job_status[1]['status'] != 'running':
-            print(f'******** ending job {job_name} for {label}')
-            print(f'running jobs: {self.running_jobs}')
             if job_name in self.running_jobs[label]:
                 self.running_jobs[label].pop(self.running_jobs[label].index(job_name))
             self.timer = False
@@ -2079,10 +2072,11 @@ class Scheduler(object):
                 return success
             elif not self.species_dict[label].is_ts:
                 self.troubleshoot_negative_freq(label=label, job=job)
-        if job.job_status[1]['status'] != 'done' or not freq_ok:
+        if job.job_status[1]['status'] != 'done' or (not freq_ok and not self.species_dict[label].is_ts):
             self.troubleshoot_ess(label=label,
                                   job=job,
-                                  level_of_theory=job.level)
+                                  level_of_theory=job.level,
+                                  )
         return False  # return ``False``, so no freq / scan jobs are initiated for this unoptimized geometry
 
     def parse_opt_geo(self,
@@ -2687,7 +2681,7 @@ class Scheduler(object):
                 else:
                     raise ValueError(f'Did not recognize job {job_name} of species {label}.')
                 if job.execution_type == 'incore' and job.job_status[0] == 'done':
-                    self.server_job_ids.append(job.job_id)
+                    self.completed_incore_jobs.append(job.job_id)
 
     def troubleshoot_negative_freq(self,
                                    label: str,
