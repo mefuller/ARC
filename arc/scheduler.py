@@ -962,14 +962,8 @@ class Scheduler(object):
                            self.unique_species_labels.
         """
         labels_to_consider = labels if labels is not None else self.unique_species_labels
-        print(f'\n\n\nIn run_conformer_jobs for {labels_to_consider}')
         log_info_printed = False
         for label in labels_to_consider:
-            print(f'self.species_dict[label].is_ts: {self.species_dict[label].is_ts}')
-            print(f'self.species_dict[label].tsg_spawned: {self.species_dict[label].tsg_spawned}')
-            print(f'not self.species_dict[label].ts_conf_spawned: {not self.species_dict[label].ts_conf_spawned}')
-            print(f'all([tsg.success is not None for tsg in self.species_dict[label].ts_guesses]): {all([tsg.success is not None for tsg in self.species_dict[label].ts_guesses])}')
-            print(f'any([tsg.success for tsg in self.species_dict[label].ts_guesses]): {any([tsg.success for tsg in self.species_dict[label].ts_guesses])}')
             if not self.species_dict[label].is_ts and not self.output[label]['job_types']['opt'] \
                     and 'opt' not in self.job_dict[label] and 'composite' not in self.job_dict[label] \
                     and all([e is None for e in self.species_dict[label].conformer_energies]) \
@@ -1022,25 +1016,25 @@ class Scheduler(object):
         Args:
             label (str): The TS species label.
         """
-        print('\n\n\nIn run_ts_conformer_jobs')
         plotter.save_conformers_file(project_directory=self.project_directory, label=label,
                                      xyzs=[tsg.initial_xyz for tsg in self.species_dict[label].ts_guesses],
                                      level_of_theory=self.ts_guess_level,
                                      multiplicity=self.species_dict[label].multiplicity,
                                      charge=self.species_dict[label].charge,
                                      is_ts=True,
-                                     ts_methods=[f'{tsg.method} {tsg.method_direction} {tsg.method_index}'
-                                                 for tsg in self.species_dict[label].ts_guesses])
+                                     ts_methods=[f'{tsg.method} '
+                                                 f'{tsg.method_direction if tsg.method_direction is not None else ""} '
+                                                 f'{tsg.method_index if tsg.method_index is not None else ""}'
+                                                 for tsg in self.species_dict[label].ts_guesses],
+                                     )
         successful_tsgs = [tsg for tsg in self.species_dict[label].ts_guesses if tsg.success]
-        print(f'len successful_tsgs: {len(successful_tsgs)}')
         if len(successful_tsgs) > 1:
-            print('>1')
             self.job_dict[label]['conformers'] = dict()
             for i, tsg in enumerate(successful_tsgs):
                 self.run_job(label=label, xyz=tsg.initial_xyz, level_of_theory=self.ts_guess_level,
                              job_type='conformers', conformer=i)
+                tsg.conformer_index = i  # Store the conformer index in the TSGuess object to match them later.
         elif len(successful_tsgs) == 1:
-            print('= 1')
             if 'opt' not in self.job_dict[label] and 'composite' not in self.job_dict[label]:
                 # proceed only if opt (/composite) not already spawned
                 rxn = ''
@@ -1849,7 +1843,8 @@ class Scheduler(object):
                                          xyzs=self.species_dict[label].conformers, level_of_theory=self.conformer_level,
                                          multiplicity=self.species_dict[label].multiplicity,
                                          charge=self.species_dict[label].charge, is_ts=False,
-                                         energies=self.species_dict[label].conformer_energies)  # after optimization
+                                         energies=self.species_dict[label].conformer_energies,  # after optimization
+                                         )
             # Run isomorphism checks if a 2D representation is available
             if self.species_dict[label].mol is not None:
                 for i, xyz in enumerate(xyzs):
@@ -1960,7 +1955,7 @@ class Scheduler(object):
                             f'used for geometry optimization.')
                 self.output[label]['job_types']['conformers'] = True
 
-    def determine_most_likely_ts_conformer(self, label):
+    def determine_most_likely_ts_conformer(self, label: str):
         """
         Determine the most likely TS conformer.
         Save the resulting xyz as `initial_xyz`.
@@ -1977,7 +1972,8 @@ class Scheduler(object):
                 self.species_dict[label].unsuccessful_methods.append(tsg.method)
         message = f'\nAll TS guesses for {label} terminated.'
         if self.species_dict[label].successful_methods and not self.species_dict[label].unsuccessful_methods:
-            message += f'\n All methods were successful: {self.species_dict[label].successful_methods}'
+            message += f'\n All methods were successful in generating guesses: ' \
+                       f'{self.species_dict[label].successful_methods}'
         elif self.species_dict[label].successful_methods:
             message += f' Successful methods: {self.species_dict[label].successful_methods}'
         elif self.species_dict[label].yml_path is not None and self.species_dict[label].final_xyz is not None:
@@ -1993,30 +1989,33 @@ class Scheduler(object):
         if all(tsg.energy is None for tsg in self.species_dict[label].ts_guesses):
             logger.error(f'No guess converged for TS {label}!')
         else:
-            # currently we take the most stable guess. We'll need to implement additional checks here:
-            # - normal displacement mode of the imaginary frequency
-            # - IRC isomorphism checks
             rxn_txt = '' if self.species_dict[label].rxn_label is None \
                 else f' of reaction {self.species_dict[label].rxn_label}'
-            logger.info(f'\n\nGeometry *guesses* of successful TS guesses for {label}{rxn_txt}:')
-            e_min = extermum_list([tsg.energy for tsg in self.species_dict[label].ts_guesses], return_min=True)
-            i_min = None
+            logger.info(f'\nGeometry *guesses* of successful TS guesses for {label}{rxn_txt}:')
+            # Select the TSG with the lowest energy given that it has only one significant imaginary frequency.
+            # Todo: consider IRC well isomorphism, normal mode check (respective TSG attributes already exist)
+            e_min = self.species_dict[label].ts_guesses[0].energy + 1
+            selected_i = None
+            check_freqs = any([tsg.imaginary_freqs is not None for tsg in self.species_dict[label].ts_guesses])
             for tsg in self.species_dict[label].ts_guesses:
-                if tsg.energy is not None and tsg.energy == e_min:
-                    i_min = tsg.index
+                if tsg.energy < e_min and (not check_freqs or tsg.check_imaginary_frequencies()):
+                    e_min = tsg.energy
+                    selected_i = tsg.conformer_index
             for tsg in self.species_dict[label].ts_guesses:
-                if tsg.index == i_min:
-                    self.species_dict[label].chosen_ts = i_min  # change this if selecting a better TS later
-                    self.species_dict[label].chosen_ts_method = tsg.method  # change if selecting a better TS later
-                    self.species_dict[label].initial_xyz = tsg.initial_xyz
+                if tsg.conformer_index == selected_i:
+                    self.species_dict[label].chosen_ts = selected_i
+                    self.species_dict[label].chosen_ts_method = tsg.method
+                    self.species_dict[label].initial_xyz = tsg.opt_xyz
+                    self.species_dict[label].final_xyz = None
                 if tsg.success and tsg.energy is not None:  # guess method and ts_level opt were both successful
                     tsg.energy -= e_min
+                    im_freqs = f', imaginary frequencies {tsg.imaginary_freqs}' if tsg.imaginary_freqs is not None else ''
                     logger.info(f'TS guess {tsg.index} for {label}. Method: {tsg.method}, relative energy: '
-                                f'{tsg.energy:.2f} kJ/mol, guess execution time: {tsg.execution_time}')
+                                f'{tsg.energy:.2f} kJ/mol, guess execution time: {tsg.execution_time}{im_freqs}')
                     # for TSs, only use `draw_3d()`, not `show_sticks()` which gets connectivity wrong:
                     plotter.draw_structure(xyz=tsg.initial_xyz, method='draw_3d')
             if self.species_dict[label].chosen_ts is None:
-                raise SpeciesError(f'Could not pair most stable conformer {i_min} of {label} to a respective '
+                raise SpeciesError(f'Could not pair most stable conformer {selected_i} of {label} to a respective '
                                    f'TS guess')
             plotter.save_conformers_file(project_directory=self.project_directory,
                                          label=label,
@@ -2026,7 +2025,11 @@ class Scheduler(object):
                                          charge=self.species_dict[label].charge,
                                          is_ts=True,
                                          energies=[tsg.energy for tsg in self.species_dict[label].ts_guesses],
-                                         ts_methods=[tsg.method for tsg in self.species_dict[label].ts_guesses],
+                                         ts_methods=[f'{tsg.method} '
+                                                     f'{tsg.method_direction if tsg.method_direction is not None else ""} '
+                                                     f'{tsg.method_index if tsg.method_index is not None else ""} '
+                                                     f'{tsg.imaginary_freqs if tsg.imaginary_freqs is not None else ""}'
+                                                     for tsg in self.species_dict[label].ts_guesses],
                                          )
 
     def parse_composite_geo(self,
@@ -2226,6 +2229,10 @@ class Scheduler(object):
         for freq in vibfreqs:
             if freq < 0:
                 neg_freqs.append(freq)
+        if self.species_dict[label].is_ts:
+            for tsg in self.species_dict[label].ts_guesses:
+                if tsg.conformer_index == self.species_dict[label].chosen_ts:
+                    tsg.imaginary_freqs = neg_freqs
         if self.species_dict[label].is_ts and len(neg_freqs) != 1:
             logger.error(f'TS {label} has {len(neg_freqs)} imaginary frequencies ({neg_freqs}), should have exactly 1.')
             if f'{len(neg_freqs)} imaginary freqs for' not in self.output[label]['warnings']:
