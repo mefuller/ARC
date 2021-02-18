@@ -167,7 +167,6 @@ class GaussianAdapter(JobAdapter):
         self.args = args or dict()
         self.bath_gas = bath_gas
         self.checkfile = checkfile
-        print(f'\n\n\n\nGaussian checkfile is {self.checkfile}')
         self.conformer = conformer
         self.constraints = constraints or list()
         self.cpu_cores = cpu_cores
@@ -230,13 +229,9 @@ class GaussianAdapter(JobAdapter):
 
         if self.checkfile is None:
             if os.path.isfile(os.path.join(self.local_path, 'check.chk')):
-                print(f'identified an existing local checkfile at {os.path.join(self.local_path, "check.chk")}')
                 self.checkfile = os.path.join(self.local_path, 'check.chk')
-                print(f'setting self.checkfile to: {self.checkfile}')
             elif self.species[0].checkfile is not None and os.path.isfile(self.species[0].checkfile):
-                print(f'identified an existing SPECIES checkfile at {os.path.join(self.local_path, "check.chk")}')
                 self.checkfile = self.species[0].checkfile
-                print(f'setting self.checkfile to: {self.checkfile}')
 
         if job_num is None:
             # This checks job_num and not self.job_num on purpose.
