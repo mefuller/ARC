@@ -33,34 +33,11 @@ from arc.exceptions import InputError, SettingsError
 from arc.imports import settings
 
 
+VERSION = '1.1.0'
+
 logger = logging.getLogger('arc')
 
 arc_path = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))  # absolute path to the ARC folder
-
-VERSION = '1.1.0'
-
-# default environment names for sister repos
-TS_GCN_PYTHON, AUTOTST_PYTHON = None, None
-gcn_pypath_1 = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(sys.executable))),
-                           'ts_gcn', 'bin', 'python')
-gcn_pypath_2 = os.path.join(os.environ.get('HOME'), 'anaconda3', 'envs', 'ts_gcn', 'bin', 'python')
-gcn_pypath_3 = os.path.join(os.environ.get('HOME'), 'miniconda3', 'envs', 'ts_gcn', 'bin', 'python')
-gcn_pypath_4 = os.path.join(os.environ.get('HOME'), '.conda', 'envs', 'ts_gcn', 'bin', 'python')
-for gcn_pypath in [gcn_pypath_1, gcn_pypath_2, gcn_pypath_3, gcn_pypath_4]:
-    if os.path.isfile(gcn_pypath):
-        TS_GCN_PYTHON = gcn_pypath
-        break
-
-autotst_pypath_1 = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(sys.executable))),
-                           'tst_env', 'bin', 'python')
-autotst_pypath_2 = os.path.join(os.environ.get('HOME'), 'anaconda3', 'envs', 'tst_env', 'bin', 'python')
-autotst_pypath_3 = os.path.join(os.environ.get('HOME'), 'miniconda3', 'envs', 'tst_env', 'bin', 'python')
-autotst_pypath_4 = os.path.join(os.environ.get('HOME'), '.conda', 'envs', 'tst_env', 'bin', 'python')
-for autotst_pypath in [autotst_pypath_1, autotst_pypath_2, autotst_pypath_3, autotst_pypath_4]:
-    if os.path.isfile(autotst_pypath):
-        AUTOTST_PYTHON = autotst_pypath
-        break
-
 
 default_job_types, servers = settings['default_job_types'], settings['servers']
 
