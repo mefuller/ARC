@@ -536,7 +536,7 @@ class JobAdapter(ABC):
             else:
                 # running locally, just copy the check file, if exists, to the job folder
                 for up_file in self.files_to_upload:
-                    if up_file['file_name'] == 'checkfile':
+                    if up_file['file_name'] == 'check.chk':
                         print(f"copying {up_file['local']} into {os.path.join(self.local_path, 'check.chk')}")
                         try:
                             shutil.copyfile(src=up_file['local'], dst=os.path.join(self.local_path, 'check.chk'))
