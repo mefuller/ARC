@@ -144,6 +144,11 @@ def job_factory(job_adapter: str,
         JobAdapter: The requested JobAdapter subclass, initialized with the respective arguments.
     """
 
+    if job_adapter not in _registered_job_adapters.keys():
+        raise ValueError(f'The "job_adapter" argument of {job_adapter} was not present in the keys for the '
+                         f'_registered_job_adapters dictionary: {list(_registered_job_adapters.keys())}'
+                         f'\nPlease check that the job adapter was registered properly.')
+
     if reactions is None and species is None:
         raise JobError('Either reactions or species must be given, got neither.')
     if reactions is not None and any(not isinstance(reaction, ARCReaction) for reaction in reactions):
