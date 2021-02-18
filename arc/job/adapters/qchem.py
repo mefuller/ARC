@@ -221,6 +221,8 @@ class QChemAdapter(JobAdapter):
         self.number_of_processes = 0
         self.determine_job_array_parameters()  # Writes the local HDF5 file if needed.
 
+        self.files_to_upload = list()
+        self.files_to_download = list()
         self.set_files()  # Set the actual files (and write them if relevant).
 
         if job_num is None:
@@ -339,7 +341,6 @@ class QChemAdapter(JobAdapter):
         from the respective entry in inputs.py
         If ``'make_x'`` is ``True``, the file will be made executable.
         """
-        self.files_to_upload, self.files_to_download = list(), list()
         # 1. ** Upload **
         # 1.1. submit file
         if self.execution_type != 'incore':
