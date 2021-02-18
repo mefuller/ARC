@@ -218,6 +218,7 @@ class ARCSpecies(object):
         successful_methods (list): Methods used to generate a TS guess that successfully generated an XYZ guess.
         unsuccessful_methods (list): Methods used to generate a TS guess that were unsuccessfully.
         chosen_ts (int): The TSGuess index corresponding to the chosen TS conformer used for optimization.
+        chosen_ts_list (List[int]): The TSGuess index corresponding to the TS conformers that were tried out.
         chosen_ts_method (str): The TS method that was actually used for optimization.
         ts_conf_spawned (bool): Whether conformers were already spawned for the Species (representing a TS) based on its
                                 TSGuess objects.
@@ -352,6 +353,7 @@ class ARCSpecies(object):
             self.unsuccessful_methods = list()
             self.chosen_ts_method = None
             self.chosen_ts = None
+            self.chosen_ts_list = list()
             self.compute_thermo = compute_thermo if compute_thermo is not None else not self.is_ts
             self.e0_only = e0_only
             self.long_thermo_description = ''
@@ -566,6 +568,7 @@ class ARCSpecies(object):
             species_dict['unsuccessful_methods'] = self.unsuccessful_methods
             species_dict['chosen_ts_method'] = self.chosen_ts_method
             species_dict['chosen_ts'] = self.chosen_ts
+            species_dict['chosen_ts_list'] = self.chosen_ts_list
         if self.e_elect is not None:
             species_dict['e_elect'] = self.e_elect
         if self.fragments is not None:
@@ -690,6 +693,7 @@ class ARCSpecies(object):
                 if 'unsuccessful_methods' in species_dict else list()
             self.chosen_ts_method = species_dict['chosen_ts_method'] if 'chosen_ts_method' in species_dict else None
             self.chosen_ts = species_dict['chosen_ts'] if 'chosen_ts' in species_dict else None
+            self.chosen_ts_list = species_dict['chosen_ts_list'] if 'chosen_ts_list' in species_dict else list()
             self.checkfile = species_dict['checkfile'] if 'checkfile' in species_dict else None
         if 'xyz' in species_dict and self.initial_xyz is None and self.final_xyz is None:
             self.process_xyz(species_dict['xyz'])
