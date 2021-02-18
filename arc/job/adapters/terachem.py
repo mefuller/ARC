@@ -221,6 +221,8 @@ class TeraChemAdapter(JobAdapter):
         self.number_of_processes = 0
         self.determine_job_array_parameters()  # Writes the local HDF5 file if needed.
 
+        self.files_to_upload = list()
+        self.files_to_download = list()
         self.set_files()  # Set the actual files (and write them if relevant).
 
         if self.checkfile is None and os.path.isfile(os.path.join(self.local_path, 'teracheck.chk')):
@@ -324,8 +326,6 @@ class TeraChemAdapter(JobAdapter):
         """
         # TeraChem requires an auxiliary xyz file.
         # Note: The xyz filename must correspond to the xyz filename specified in TeraChem's input file, 'coords.xyz'.
-
-        self.files_to_upload, self.files_to_download = list(), list()
         # 1. ** Upload **
         # 1.1. submit file
         if self.execution_type != 'incore':
