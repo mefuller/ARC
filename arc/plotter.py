@@ -820,6 +820,7 @@ def save_conformers_file(project_directory: str,
                          is_ts: bool = False,
                          energies: Optional[List[float]] = None,
                          ts_methods: Optional[List[str]] = None,
+                         im_freqs: Optional[List[List[float]]] = None,
                          ):
     """
     Save the conformers before or after optimization.
@@ -836,8 +837,8 @@ def save_conformers_file(project_directory: str,
         energies (list, optional): Entries are energies corresponding to the conformer list in kJ/mol.
                                    If not given (None) then the Species.conformer_energies are used instead.
         ts_methods (list, optional): Entries are method names used to generate the TS guess.
+        im_freqs (list, optional): Entries lists of imaginary frequencies.
     """
-    print('\n\n\n In save_conformers_file')
     spc_dir = 'rxns' if is_ts else 'Species'
     geo_dir = os.path.join(project_directory, 'output', spc_dir, label, 'geometry', 'conformers')
     if not os.path.exists(geo_dir):
@@ -849,7 +850,6 @@ def save_conformers_file(project_directory: str,
     else:
         optimized = False
         conf_path = os.path.join(geo_dir, 'conformers_before_optimization.txt')
-    print(conf_path)
     with open(conf_path, 'w') as f:
         content = ''
         if optimized:
@@ -867,6 +867,8 @@ def save_conformers_file(project_directory: str,
                     content += f'\nSMILES: {smiles}\n'
                 elif ts_methods is not None:
                     content += f'TS guess method: {ts_methods[i]}\n'
+                if im_freqs is not None and im_freqs[i] is not None:
+                    content += f'Imaginary frequencies: {im_freqs[i]}\n'
                 if optimized:
                     if energies[i] == min_e:
                         content += 'Relative Energy: 0 kJ/mol (lowest)'
@@ -879,7 +881,6 @@ def save_conformers_file(project_directory: str,
                 content += 'Failed to converge'
             content += '\n\n\n'
         f.write(content)
-    print(content)
 
 
 # *** Torsions ***
