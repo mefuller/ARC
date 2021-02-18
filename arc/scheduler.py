@@ -2011,14 +2011,11 @@ class Scheduler(object):
                 # Reset e_min to the lowest value regardless of imaginary frequencies, IRC, normal modes.
                 if tsg.energy is not None and (e_min is None or tsg.energy < e_min):
                     e_min = tsg.energy
-            print('\n\n\n\n*2 Starting critical part: will it re-opt TS0?\n\n\n')
             for tsg in self.species_dict[label].ts_guesses:
                 if tsg.conformer_index == selected_i:
-                    print(f'Setting chosen_ts to {selected_i}')
                     self.species_dict[label].chosen_ts = selected_i
                     self.species_dict[label].chosen_ts_list.append(selected_i)
                     self.species_dict[label].chosen_ts_method = tsg.method
-                    print(f'\n\nsetting initial xyz to\n{tsg.opt_xyz}\n\n')
                     self.species_dict[label].initial_xyz = tsg.opt_xyz
                     self.species_dict[label].final_xyz = None
                 if tsg.success and tsg.energy is not None:  # guess method and ts_level opt were both successful
