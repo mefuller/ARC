@@ -1992,17 +1992,22 @@ class Scheduler(object):
 
         if all([tsg.energy is None for tsg in self.species_dict[label].ts_guesses]):
             logger.error(f'No guess converged for TS {label}!')
-        else:
+        elif any(tsg.energy is not None for tsg in self.species_dict[label].ts_guesses):
             rxn_txt = '' if self.species_dict[label].rxn_label is None \
                 else f' of reaction {self.species_dict[label].rxn_label}'
             logger.info(f'\nGeometry *guesses* of successful TS guesses for {label}{rxn_txt}:')
             # Select the TSG with the lowest energy given that it has only one significant imaginary frequency.
             # Todo: consider IRC well isomorphism, normal mode check (respective TSG attributes already exist)
-            e_min = self.species_dict[label].ts_guesses[0].energy + 1
+            e_min = None
+            for tsg in self.species_dict[label].ts_guesses:
+                if tsg.energy is not None:
+                    e_min = tsg.energy + 1.0
+                    break
             selected_i = None
             check_freqs = any([tsg.imaginary_freqs is not None for tsg in self.species_dict[label].ts_guesses])
             for tsg in self.species_dict[label].ts_guesses:
-                if tsg.energy < e_min and (not check_freqs or tsg.check_imaginary_frequencies()):
+                if tsg.energy is not None and tsg.energy < e_min \
+                        and (not check_freqs or tsg.check_imaginary_frequencies()):
                     e_min = tsg.energy
                     selected_i = tsg.conformer_index
             for tsg in self.species_dict[label].ts_guesses:
