@@ -498,18 +498,18 @@ class JobAdapter(ABC):
         if self.job_type == 'onedmin':  # SHOULD GO TO self.set_files(), see implementation in terachem
             with open(os.path.join(self.local_path, 'geo.xyz'), 'w') as f:
                 f.write(xyz_to_str(self.species.get_xyz()))
-            self.additional_files_to_upload.append({'name': 'geo',
+            self.additional_files_to_upload.append({'file_name': 'geo',
                                                     'source': 'path',
                                                     'make_x': False,
                                                     'local': os.path.join(self.local_path, 'geo.xyz'),
                                                     'remote': os.path.join(self.remote_path, 'geo.xyz')})
             # make the m.x file executable
-            self.additional_files_to_upload.append({'name': 'm.x',
+            self.additional_files_to_upload.append({'file_name': 'm.x',
                                                     'source': 'input_files',
                                                     'make_x': True,
                                                     'local': 'onedmin.molpro.x',
                                                     'remote': os.path.join(self.remote_path, 'm.x')})
-            self.additional_files_to_upload.append({'name': 'qc.mol', 'source': 'input_files', 'make_x': False,
+            self.additional_files_to_upload.append({'file_name': 'qc.mol', 'source': 'input_files', 'make_x': False,
                                                     'local': 'onedmin.qc.mol',
                                                     'remote': os.path.join(self.remote_path, 'qc.mol')})
 
@@ -523,20 +523,20 @@ class JobAdapter(ABC):
                 # Also, even if the job is submitted to the que, no need to upload files if the server is local.
                 with SSHClient(self.server) as ssh:
                     for up_file in self.files_to_upload:
-                        logger.debug(f"Uploading {up_file['name']} source {up_file['source']} to {self.server}")
+                        logger.debug(f"Uploading {up_file['file_name']} source {up_file['source']} to {self.server}")
                         if up_file['source'] == 'path':
                             ssh.upload_file(remote_file_path=up_file['remote'], local_file_path=up_file['local'])
                         elif up_file['source'] == 'input_files':
                             ssh.upload_file(remote_file_path=up_file['remote'], file_string=up_file['local'])
                         else:
-                            raise ValueError(f"Unclear file source for {up_file['name']}. Should either be 'path' or "
+                            raise ValueError(f"Unclear file source for {up_file['file_name']}. Should either be 'path' or "
                                              f"'input_files', got: {up_file['source']}")
                         if up_file['make_x']:
-                            ssh.change_mode(mode='+x', file_name=up_file['name'], remote_path=self.remote_path)
+                            ssh.change_mode(mode='+x', file_name=up_file['file_name'], remote_path=self.remote_path)
             else:
                 # running locally, just copy the check file, if exists, to the job folder
                 for up_file in self.files_to_upload:
-                    if up_file['name'] == 'checkfile':
+                    if up_file['file_name'] == 'checkfile':
                         try:
                             shutil.copyfile(src=up_file['local'], dst=os.path.join(self.local_path, 'check.chk'))
                         except shutil.SameFileError:
