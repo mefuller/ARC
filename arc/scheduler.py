@@ -2005,6 +2005,7 @@ class Scheduler(object):
             # Todo: consider IRC well isomorphism, normal mode check (respective TSG attributes already exist)
             e_min, selected_i = None, None
             check_freqs = any([tsg.imaginary_freqs is not None for tsg in self.species_dict[label].ts_guesses])
+            self.species_dict[label].ts_confs_exhausted = True
             for tsg in self.species_dict[label].ts_guesses:
                 if tsg.energy is not None and (e_min is None or tsg.energy < e_min) \
                         and (not check_freqs or tsg.check_imaginary_frequencies()):
@@ -2021,6 +2022,7 @@ class Scheduler(object):
                     self.species_dict[label].chosen_ts_method = tsg.method
                     self.species_dict[label].initial_xyz = tsg.opt_xyz
                     self.species_dict[label].final_xyz = None
+                    self.species_dict[label].ts_confs_exhausted = False
                 if tsg.success and tsg.energy is not None:  # guess method and ts_level opt were both successful
                     tsg.energy -= e_min
                     im_freqs = f', imaginary frequencies {tsg.imaginary_freqs}' if tsg.imaginary_freqs is not None else ''
@@ -2707,7 +2709,7 @@ class Scheduler(object):
                                                 (other_time or zero_delta)
             logger.info(f'\nAll jobs for species {label} successfully converged. '
                         f'Run time: {self.species_dict[label].run_time}')
-        elif not (self.species_dict[label].is_ts and not self.species_dict[label].ts_conf_spawned):
+        elif not self.species_dict[label].is_ts or self.species_dict[label].ts_confs_exhausted:
             job_type_status = {key: val for key, val in self.output[label]['job_types'].items()
                                if key in self.job_types and self.job_types[key]}
             logger.error(f'Species {label} did not converge. Job type status is: {job_type_status}')
