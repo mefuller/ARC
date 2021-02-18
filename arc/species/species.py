@@ -222,6 +222,8 @@ class ARCSpecies(object):
         chosen_ts_method (str): The TS method that was actually used for optimization.
         ts_conf_spawned (bool): Whether conformers were already spawned for the Species (representing a TS) based on its
                                 TSGuess objects.
+        ts_confs_exhausted (bool): Whether all TS guesses were tried out with no luck
+                                   (``True`` if no convergence achieved).
         ts_number (int): An auto-generated number associating the TS ARCSpecies object with the corresponding
                          :ref:`ARCReaction <reaction>` object.
         ts_report (str): A description of all methods used for guessing a TS and their ranking.
@@ -337,6 +339,7 @@ class ARCSpecies(object):
             self.force_field = force_field
             self.is_ts = is_ts
             self.ts_conf_spawned = False
+            self.ts_confs_exhausted = False
             self.e_elect = None
             self.e0 = None
             self.arkane_file = None
@@ -561,6 +564,7 @@ class ARCSpecies(object):
         if self.is_ts:
             species_dict['ts_guesses'] = [tsg.as_dict() for tsg in self.ts_guesses]
             species_dict['ts_conf_spawned'] = self.ts_conf_spawned
+            species_dict['ts_confs_exhausted'] = self.ts_confs_exhausted
             species_dict['ts_number'] = self.ts_number
             species_dict['ts_report'] = self.ts_report
             species_dict['rxn_label'] = self.rxn_label
@@ -684,6 +688,7 @@ class ARCSpecies(object):
             else False if self.is_ts else None
         if self.is_ts:
             self.ts_number = species_dict['ts_number'] if 'ts_number' in species_dict else None
+            self.ts_confs_exhausted = species_dict['ts_confs_exhausted'] if 'ts_confs_exhausted' in species_dict else False
             self.ts_report = species_dict['ts_report'] if 'ts_report' in species_dict else ''
             self.ts_guesses = [TSGuess(ts_dict=tsg) for tsg in species_dict['ts_guesses']] \
                 if 'ts_guesses' in species_dict else list()
