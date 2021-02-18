@@ -961,8 +961,10 @@ class Scheduler(object):
                            self.unique_species_labels.
         """
         labels_to_consider = labels if labels is not None else self.unique_species_labels
+        print(f'in run_conformer_jobs for {labels_to_consider}')
         log_info_printed = False
         for label in labels_to_consider:
+            print(f'confs {label}')
             if not self.species_dict[label].is_ts and not self.output[label]['job_types']['opt'] \
                     and 'opt' not in self.job_dict[label] and 'composite' not in self.job_dict[label] \
                     and all([e is None for e in self.species_dict[label].conformer_energies]) \
@@ -974,6 +976,7 @@ class Scheduler(object):
                 # Also, either 'conformers' are set to True in job_types (and it's not in dont_gen_confs),
                 # or they are set to False (or it's in dont_gen_confs), but the species has no 3D information.
                 # Generate conformers.
+                print('in the long condition')
                 if not log_info_printed:
                     logger.info('\nStarting (non-TS) species conformational analysis...\n')
                     log_info_printed = True
@@ -983,6 +986,7 @@ class Scheduler(object):
                         self.species_dict[label].initial_xyz = self.species_dict[label].get_xyz()
                 else:
                     # Run the combinatorial method w/o fitting a force field.
+                    print('running combinatorial method')
                     self.species_dict[label].generate_conformers(
                         n_confs=self.n_confs,
                         e_confs=self.e_confs,
