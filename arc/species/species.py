@@ -876,7 +876,6 @@ class ARCSpecies(object):
             plot_path (str, optional): A folder path in which the plot will be saved.
                                        If None, the plot will not be shown (nor saved).
         """
-        print(f'Generating confs for {self.label}')
         if not self.is_ts:
             if not self.charge:
                 mol_list = self.mol_list
