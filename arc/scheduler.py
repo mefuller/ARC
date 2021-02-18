@@ -793,6 +793,7 @@ class Scheduler(object):
         label = label or reactions[0].ts_species.label  # todo: think about calculating a batch of reactions
         if conformer is None and tsg is None:
             # this is NOT a conformer DFT job nor a TS guess job
+            self.running_jobs[label] = list() if label not in self.running_jobs else self.running_jobs[label]
             self.running_jobs[label].append(job.job_name)  # mark as a running job
             if job_type not in self.job_dict[label]:
                 # Jobs of this type haven't been spawned for label
@@ -801,6 +802,7 @@ class Scheduler(object):
             self.job_dict[label][job_type][job.job_name].execute()
         elif conformer is not None:
             # Running a conformer DFT job. Append differently to job_dict.
+            self.running_jobs[label] = list() if label not in self.running_jobs else self.running_jobs[label]
             self.running_jobs[label].append(f'conformer{conformer}')  # mark as a running job
             if 'conformers' not in self.job_dict[label]:
                 self.job_dict[label]['conformers'] = dict()
@@ -808,6 +810,7 @@ class Scheduler(object):
             self.job_dict[label]['conformers'][conformer].execute()  # run the job
         elif tsg is not None:
             # Running a TS guess job. Append differently to job_dict.
+            self.running_jobs[label] = list() if label not in self.running_jobs else self.running_jobs[label]
             self.running_jobs[label].append(f'tsg{tsg}')  # mark as a running job
             if 'tsg' not in self.job_dict[label]:
                 self.job_dict[label]['tsg'] = dict()
