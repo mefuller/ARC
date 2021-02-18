@@ -2008,9 +2008,17 @@ class Scheduler(object):
                     e_min = tsg.energy
                     selected_i = tsg.conformer_index
             for tsg in self.species_dict[label].ts_guesses:
+                # Reset e_min to the lowest value regardless of imaginary frequencies, IRC, normal modes.
+                if tsg.energy is not None and (e_min is None or tsg.energy < e_min):
+                    e_min = tsg.energy
+            print('\n\n\n\n*2 Starting critical part: will it re-opt TS0?\n\n\n')
+            for tsg in self.species_dict[label].ts_guesses:
                 if tsg.conformer_index == selected_i:
+                    print(f'Setting chosen_ts to {selected_i}')
                     self.species_dict[label].chosen_ts = selected_i
+                    self.species_dict[label].chosen_ts_list.append(selected_i)
                     self.species_dict[label].chosen_ts_method = tsg.method
+                    print(f'\n\nsetting initial xyz to\n{tsg.opt_xyz}\n\n')
                     self.species_dict[label].initial_xyz = tsg.opt_xyz
                     self.species_dict[label].final_xyz = None
                 if tsg.success and tsg.energy is not None:  # guess method and ts_level opt were both successful
@@ -2102,10 +2110,7 @@ class Scheduler(object):
             elif not self.species_dict[label].is_ts:
                 self.troubleshoot_negative_freq(label=label, job=job)
         if job.job_status[1]['status'] != 'done' or (not freq_ok and not self.species_dict[label].is_ts):
-            self.troubleshoot_ess(label=label,
-                                  job=job,
-                                  level_of_theory=job.level,
-                                  )
+            self.troubleshoot_ess(label=label, job=job, level_of_theory=job.level)
         return False  # return ``False``, so no freq / scan jobs are initiated for this unoptimized geometry
 
     def parse_opt_geo(self,
@@ -2191,13 +2196,12 @@ class Scheduler(object):
             label (str): The species label.
             job (JobAdapter): The frequency job object.
         """
+        freq_ok = False
         if job.job_status[1]['status'] == 'done':
             if not os.path.isfile(job.local_path_to_output_file):
                 raise SchedulerError('Called check_freq_job with no output file')
             vibfreqs = parser.parse_frequencies(path=str(job.local_path_to_output_file), software=job.job_adapter)
             freq_ok = self.check_negative_freq(label=label, job=job, vibfreqs=vibfreqs)
-            if not self.species_dict[label].is_ts and not freq_ok:
-                self.troubleshoot_negative_freq(label=label, job=job)
             if freq_ok:
                 # copy the frequency file to the species / TS output folder
                 folder_name = 'rxns' if self.species_dict[label].is_ts else 'Species'
@@ -2216,10 +2220,11 @@ class Scheduler(object):
                     else:
                         self.species_dict[label].transport_data.comment = \
                             str(f'Polarizability calculated at the {self.freq_level.simple()} level of theory')
-        else:
-            self.troubleshoot_ess(label=label,
-                                  job=job,
-                                  level_of_theory=job.level)
+            elif not self.species_dict[label].is_ts:
+                # Only trsh neg freq here for non TS species, trsh TS species is done in check_negative_freq()
+                self.troubleshoot_negative_freq(label=label, job=job)
+        if job.job_status[1]['status'] != 'done' or (not freq_ok and not self.species_dict[label].is_ts):
+            self.troubleshoot_ess(label=label, job=job, level_of_theory=job.level)
 
     def check_negative_freq(self,
                             label: str,
@@ -2239,34 +2244,54 @@ class Scheduler(object):
         for freq in vibfreqs:
             if freq < 0:
                 neg_freqs.append(freq)
-        if self.species_dict[label].is_ts:
+        if not self.species_dict[label].is_ts:
+            if len(neg_freqs) != 0:
+                logger.error(f'Species {label} has {len(neg_freqs)} imaginary frequencies ({neg_freqs}), '
+                             f'should have exactly 0.')
+                if f'{len(neg_freqs)} imaginary freq for' not in self.output[label]['warnings']:
+                    self.output[label]['warnings'] += f'Warning: {len(neg_freqs)} imaginary freq for stable species ' \
+                                                      f'({neg_freqs}); '
+                return False
+            else:
+                self.output[label]['job_types']['freq'] = True
+                self.output[label]['paths']['geo'] = job.local_path_to_output_file
+                self.output[label]['paths']['freq'] = job.local_path_to_output_file
+                if not self.testing:
+                    # Update restart dictionary and save the yaml restart file:
+                    self.save_restart_dict()
+                return True
+        else:
+            # This is a TS. Assign the imaginary frequencies to the respective TSGuess.
+            tsg = None
             for tsg in self.species_dict[label].ts_guesses:
                 if tsg.conformer_index == self.species_dict[label].chosen_ts:
                     tsg.imaginary_freqs = neg_freqs
-        if self.species_dict[label].is_ts and len(neg_freqs) != 1:
-            logger.error(f'TS {label} has {len(neg_freqs)} imaginary frequencies ({neg_freqs}), should have exactly 1.')
-            if f'{len(neg_freqs)} imaginary freqs for' not in self.output[label]['warnings']:
-                self.output[label]['warnings'] += f'Warning: {len(neg_freqs)} imaginary freqs for TS ({neg_freqs}); '
-            self.determine_most_likely_ts_conformer(label=label)
-            return False
-        elif not self.species_dict[label].is_ts and len(neg_freqs) != 0:
-            logger.error(f'Species {label} has {len(neg_freqs)} imaginary frequencies ({neg_freqs}), '
-                         f'should have exactly 0.')
-            if f'{len(neg_freqs)} imaginary freq for' not in self.output[label]['warnings']:
-                self.output[label]['warnings'] += f'Warning: {len(neg_freqs)} imaginary freq for stable species ' \
-                                                  f'({neg_freqs}); '
-            return False
-        else:
-            if self.species_dict[label].is_ts:
+                    break
+            if tsg is not None and not tsg.check_imaginary_frequencies():
+                # Imaginary frequencies are problematic, try choosing a different TSGuess, and optimize it.
+                logger.error(f'TS {label} has {len(neg_freqs)} imaginary frequencies ({neg_freqs}), '
+                             f'should have exactly 1.')
+                if f'{len(neg_freqs)} imaginary freqs for' not in self.output[label]['warnings']:
+                    # Todo: this warning is obsolete if changing the TS guess during the run.
+                    self.output[label]['warnings'] += f'Warning: {len(neg_freqs)} imaginary freqs for TS ({neg_freqs}); '
+                previously_chosen_ts_list = self.species_dict[label].chosen_ts_list.copy()
+                self.determine_most_likely_ts_conformer(label=label)  # Look for a different TS guess.
+                if self.species_dict[label].chosen_ts not in previously_chosen_ts_list:
+                    if not self.composite_method:
+                        self.run_opt_job(label, fine=self.fine_only)
+                    else:
+                        self.run_composite_job(label)
+                return False
+            else:
                 logger.info(f'TS {label} has exactly one imaginary frequency: {neg_freqs[0]}')
-                self.output[label]['info'] += f'Imaginary frequency: {neg_freqs[0]}; '
-            self.output[label]['job_types']['freq'] = True
-            self.output[label]['paths']['geo'] = job.local_path_to_output_file
-            self.output[label]['paths']['freq'] = job.local_path_to_output_file
-            if not self.testing:
-                # Update restart dictionary and save the yaml restart file:
-                self.save_restart_dict()
-            return True
+                self.output[label]['info'] += f'Imaginary frequency: {neg_freqs[0] if len(neg_freqs) == 1 else neg_freqs}; '
+                self.output[label]['job_types']['freq'] = True
+                self.output[label]['paths']['geo'] = job.local_path_to_output_file
+                self.output[label]['paths']['freq'] = job.local_path_to_output_file
+                if not self.testing:
+                    # Update restart dictionary and save the yaml restart file:
+                    self.save_restart_dict()
+                return True
 
     def check_sp_job(self,
                      label: str,
