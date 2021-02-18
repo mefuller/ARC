@@ -32,19 +32,11 @@ from arc.exceptions import InputError, SettingsError
 from arc.imports import settings
 
 
+VERSION = '1.1.0'
+
 logger = logging.getLogger('arc')
 
 arc_path = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))  # absolute path to the ARC folder
-
-VERSION = '1.1.0'
-
-# define default values for using the optional GCN to predict TS guesses
-# default assumption is that TS-GCN is installed in the same parent folder as the ARC repository
-TS_GCN_PATH = os.path.join(os.path.dirname(arc_path), 'TS-GCN')
-# default environment name for this repo is `ts_gcn`
-TS_GCN_PYTHON = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(sys.executable))),
-                             'ts_gcn', 'bin', 'python')
-
 
 default_job_types, servers = settings['default_job_types'], settings['servers']
 
