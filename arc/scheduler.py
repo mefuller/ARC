@@ -38,7 +38,6 @@ from arc.job.trsh import (scan_quality_check,
                           trsh_scan_job,
                           )
 from arc.level import Level
-from arc.settings.settings import ts_adapters
 from arc.species.species import (ARCSpecies,
                                  are_coords_compliant_with_graph,
                                  determine_rotor_symmetry,
@@ -60,9 +59,10 @@ if TYPE_CHECKING:
 logger = get_logger()
 
 
-default_job_settings, default_job_types, rotor_scan_resolution = settings['default_job_settings'], \
-                                                                 settings['default_job_types'], \
-                                                                 settings['rotor_scan_resolution']
+default_job_settings, default_job_types, rotor_scan_resolution, ts_adapters = settings['default_job_settings'], \
+                                                                              settings['default_job_types'], \
+                                                                              settings['rotor_scan_resolution'], \
+                                                                              settings['ts_adapters']
 ts_adapters = [ts_adapter.lower() for ts_adapter in ts_adapters]
 
 
@@ -2025,6 +2025,7 @@ class Scheduler(object):
                                 f'{tsg.energy:.2f} kJ/mol, guess execution time: {tsg.execution_time}{im_freqs}')
                     # for TSs, only use `draw_3d()`, not `show_sticks()` which gets connectivity wrong:
                     plotter.draw_structure(xyz=tsg.initial_xyz, method='draw_3d')
+            logger.info('\n')
             if self.species_dict[label].chosen_ts is None:
                 raise SpeciesError(f'Could not pair most stable conformer {selected_i} of {label} to a respective '
                                    f'TS guess')
@@ -2274,6 +2275,9 @@ class Scheduler(object):
                 previously_chosen_ts_list = self.species_dict[label].chosen_ts_list.copy()
                 self.determine_most_likely_ts_conformer(label=label)  # Look for a different TS guess.
                 if self.species_dict[label].chosen_ts not in previously_chosen_ts_list:
+                    logger.info(f'Optimizing species {label} again using a different TS guess '
+                                f'({self.species_dict[label].chosen_ts})')
+                    self.delete_all_species_jobs(label=label)
                     if not self.composite_method:
                         self.run_opt_job(label, fine=self.fine_only)
                     else:
