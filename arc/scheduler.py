@@ -646,7 +646,7 @@ class Scheduler(object):
                         if not(job.job_id in self.server_job_ids and job.job_id not in self.completed_incore_jobs):
                             successful_server_termination = self.end_job(job=job, label=label, job_name=job_name)
                             if successful_server_termination:
-                                # copy the lennard_jones file to the species output folder (TS's don't have L-J data)
+                                # Copy the lennard_jones file to the species output folder (TS's don't have L-J data).
                                 lj_output_path = os.path.join(self.project_directory, 'output', 'Species', label,
                                                               'lennard_jones.dat')
                                 if os.path.isfile(job.local_path_to_lj_file):
@@ -666,7 +666,7 @@ class Scheduler(object):
                 if not len(job_list):
                     self.check_all_done(label)
                     if not self.running_jobs[label]:
-                        # delete the label only if it represents an empty dictionary
+                        # Delete the label only if it represents an empty entry.
                         del self.running_jobs[label]
 
             if self.timer and len(job_list):
@@ -964,10 +964,8 @@ class Scheduler(object):
                            self.unique_species_labels.
         """
         labels_to_consider = labels if labels is not None else self.unique_species_labels
-        print(f'in run_conformer_jobs for {labels_to_consider}')
         log_info_printed = False
         for label in labels_to_consider:
-            print(f'confs {label}')
             if not self.species_dict[label].is_ts and not self.output[label]['job_types']['opt'] \
                     and 'opt' not in self.job_dict[label] and 'composite' not in self.job_dict[label] \
                     and all([e is None for e in self.species_dict[label].conformer_energies]) \
@@ -979,7 +977,6 @@ class Scheduler(object):
                 # Also, either 'conformers' are set to True in job_types (and it's not in dont_gen_confs),
                 # or they are set to False (or it's in dont_gen_confs), but the species has no 3D information.
                 # Generate conformers.
-                print('in the long condition')
                 if not log_info_printed:
                     logger.info('\nStarting (non-TS) species conformational analysis...\n')
                     log_info_printed = True
@@ -989,7 +986,6 @@ class Scheduler(object):
                         self.species_dict[label].initial_xyz = self.species_dict[label].get_xyz()
                 else:
                     # Run the combinatorial method w/o fitting a force field.
-                    print('running combinatorial method')
                     self.species_dict[label].generate_conformers(
                         n_confs=self.n_confs,
                         e_confs=self.e_confs,
@@ -2280,10 +2276,11 @@ class Scheduler(object):
                     self.output[label]['warnings'] += f'Warning: {len(neg_freqs)} imaginary freqs for TS ({neg_freqs}); '
                 previously_chosen_ts_list = self.species_dict[label].chosen_ts_list.copy()
                 self.determine_most_likely_ts_conformer(label=label)  # Look for a different TS guess.
-                if self.species_dict[label].chosen_ts not in previously_chosen_ts_list:
+                self.delete_all_species_jobs(label=label)
+                if self.species_dict[label].chosen_ts is not None \
+                        and self.species_dict[label].chosen_ts not in previously_chosen_ts_list:
                     logger.info(f'Optimizing species {label} again using a different TS guess '
                                 f'({self.species_dict[label].chosen_ts})')
-                    self.delete_all_species_jobs(label=label)
                     if not self.composite_method:
                         self.run_opt_job(label, fine=self.fine_only)
                     else:
@@ -2709,7 +2706,7 @@ class Scheduler(object):
                                                 (other_time or zero_delta)
             logger.info(f'\nAll jobs for species {label} successfully converged. '
                         f'Run time: {self.species_dict[label].run_time}')
-        else:
+        elif not (self.species_dict[label].is_ts and not self.species_dict[label].ts_conf_spawned):
             job_type_status = {key: val for key, val in self.output[label]['job_types'].items()
                                if key in self.job_types and self.job_types[key]}
             logger.error(f'Species {label} did not converge. Job type status is: {job_type_status}')
