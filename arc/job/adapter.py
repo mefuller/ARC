@@ -300,6 +300,7 @@ class JobAdapter(ABC):
         Todo:
             - write pipe submit
         """
+        self.upload_files()
         execution_type = JobExecutionTypeEnum(self.execution_type)
         if execution_type == JobExecutionTypeEnum.incore:
             self.job_status[0] = 'running'
@@ -312,6 +313,7 @@ class JobAdapter(ABC):
             # Todo: check that HDF5 is available, else raise error
             # Todo: submit ARC workers with a HDF5 file
             pass
+        self.download_files()
 
     def determine_job_array_parameters(self):
         """
