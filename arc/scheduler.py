@@ -663,8 +663,7 @@ class Scheduler(object):
                             self.timer = False
                             break
 
-                if not len(job_list) and not \
-                        (self.species_dict[label].is_ts and not self.species_dict[label].ts_conf_spawned):
+                if not len(job_list):
                     self.check_all_done(label)
                     if not self.running_jobs[label]:
                         # delete the label only if it represents an empty dictionary
