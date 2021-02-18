@@ -189,6 +189,8 @@ class GCNAdapter(JobAdapter):
         self.number_of_processes = 0
         self.determine_job_array_parameters()  # Writes the local HDF5 file if needed.
 
+        self.files_to_upload = list()
+        self.files_to_download = list()
         self.set_files()  # Set the actual files (and write them if relevant).
 
         if job_num is None:
