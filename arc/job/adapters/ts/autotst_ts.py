@@ -11,7 +11,8 @@ from typing import TYPE_CHECKING, List, Optional, Tuple, Union
 
 from rmgpy.reaction import Reaction
 
-from arc.common import AUTOTST_PYTHON, arc_path, get_logger, read_yaml_file
+from arc.common import arc_path, get_logger, read_yaml_file
+from arc.imports import settings
 from arc.job.adapter import JobAdapter
 from arc.job.adapters.common import check_argument_consistency
 from arc.job.factory import register_job_adapter
@@ -34,6 +35,9 @@ if TYPE_CHECKING:
     from arc.level import Level
     from arc.reaction import ARCReaction
     from arc.species import ARCSpecies
+
+
+AUTOTST_PYTHON = settings['AUTOTST_PYTHON']
 
 logger = get_logger()
 
