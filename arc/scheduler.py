@@ -2026,20 +2026,23 @@ class Scheduler(object):
             if self.species_dict[label].chosen_ts is None:
                 raise SpeciesError(f'Could not pair most stable conformer {selected_i} of {label} to a respective '
                                    f'TS guess')
-            plotter.save_conformers_file(project_directory=self.project_directory,
-                                         label=label,
-                                         xyzs=[tsg.opt_xyz for tsg in self.species_dict[label].ts_guesses],
-                                         level_of_theory=self.ts_guess_level,
-                                         multiplicity=self.species_dict[label].multiplicity,
-                                         charge=self.species_dict[label].charge,
-                                         is_ts=True,
-                                         energies=[tsg.energy for tsg in self.species_dict[label].ts_guesses],
-                                         ts_methods=[f'{tsg.method} '
-                                                     f'{tsg.method_direction if tsg.method_direction is not None else ""} '
-                                                     f'{tsg.method_index if tsg.method_index is not None else ""} '
-                                                     f'{tsg.imaginary_freqs if tsg.imaginary_freqs is not None else ""}'
-                                                     for tsg in self.species_dict[label].ts_guesses],
-                                         )
+            plotter.save_conformers_file(
+                project_directory=self.project_directory,
+                label=label,
+                xyzs=[tsg.opt_xyz for tsg in self.species_dict[label].ts_guesses],
+                level_of_theory=self.ts_guess_level,
+                multiplicity=self.species_dict[label].multiplicity,
+                charge=self.species_dict[label].charge,
+                is_ts=True,
+                energies=[tsg.energy for tsg in self.species_dict[label].ts_guesses],
+                ts_methods=[f'{tsg.method} '
+                            f'{tsg.method_direction if tsg.method_direction is not None else ""} '
+                            f'{tsg.method_index if tsg.method_index is not None else ""} '
+                            f'{tsg.imaginary_freqs if tsg.imaginary_freqs is not None else ""}'
+                            for tsg in self.species_dict[label].ts_guesses],
+                im_freqs=[tsg.imaginary_freqs for tsg in self.species_dict[label].ts_guesses]
+                if any(tsg.imaginary_freqs is not None for tsg in self.species_dict[label].ts_guesses) else None,
+            )
 
     def parse_composite_geo(self,
                             label: str,
