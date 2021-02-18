@@ -1969,44 +1969,41 @@ class Scheduler(object):
         """
         if not self.species_dict[label].is_ts:
             raise SchedulerError('determine_most_likely_ts_conformer() method only processes transition state guesses.')
-        for tsg in self.species_dict[label].ts_guesses:
-            if tsg.success:
-                self.species_dict[label].successful_methods.append(tsg.method)
+        if not self.species_dict[label].successful_methods:
+            # only run this block once, not every time a TS is selecting a different guess
+            for tsg in self.species_dict[label].ts_guesses:
+                if tsg.success:
+                    self.species_dict[label].successful_methods.append(tsg.method)
+                else:
+                    self.species_dict[label].unsuccessful_methods.append(tsg.method)
+            message = f'\nAll TS guesses for {label} terminated.'
+            if self.species_dict[label].successful_methods and not self.species_dict[label].unsuccessful_methods:
+                message += f'\n All methods were successful in generating guesses: ' \
+                           f'{self.species_dict[label].successful_methods}'
+            elif self.species_dict[label].successful_methods:
+                message += f' Successful methods: {self.species_dict[label].successful_methods}'
+            elif self.species_dict[label].yml_path is not None and self.species_dict[label].final_xyz is not None:
+                message += ' Geometry parsed from YAML file.'
             else:
-                self.species_dict[label].unsuccessful_methods.append(tsg.method)
-        message = f'\nAll TS guesses for {label} terminated.'
-        if self.species_dict[label].successful_methods and not self.species_dict[label].unsuccessful_methods:
-            message += f'\n All methods were successful in generating guesses: ' \
-                       f'{self.species_dict[label].successful_methods}'
-        elif self.species_dict[label].successful_methods:
-            message += f' Successful methods: {self.species_dict[label].successful_methods}'
-        elif self.species_dict[label].yml_path is not None and self.species_dict[label].final_xyz is not None:
-            message += ' Geometry parsed from YAML file.'
-        else:
-            message += ' No method has converged!'
-            logger.error(f'No TS methods for {label} have converged!')
-        if self.species_dict[label].unsuccessful_methods:
-            message += f' Unsuccessful methods: {self.species_dict[label].unsuccessful_methods}'
-        logger.info(message)
-        logger.info('\n')
+                message += ' No method has converged!'
+                logger.error(f'No TS methods for {label} have converged!')
+            if self.species_dict[label].unsuccessful_methods:
+                message += f' Unsuccessful methods: {self.species_dict[label].unsuccessful_methods}'
+            logger.info(message)
+            logger.info('\n')
 
         if all([tsg.energy is None for tsg in self.species_dict[label].ts_guesses]):
             logger.error(f'No guess converged for TS {label}!')
-        elif any(tsg.energy is not None for tsg in self.species_dict[label].ts_guesses):
+        else:
             rxn_txt = '' if self.species_dict[label].rxn_label is None \
                 else f' of reaction {self.species_dict[label].rxn_label}'
             logger.info(f'\nGeometry *guesses* of successful TS guesses for {label}{rxn_txt}:')
             # Select the TSG with the lowest energy given that it has only one significant imaginary frequency.
             # Todo: consider IRC well isomorphism, normal mode check (respective TSG attributes already exist)
-            e_min = None
-            for tsg in self.species_dict[label].ts_guesses:
-                if tsg.energy is not None:
-                    e_min = tsg.energy + 1.0
-                    break
-            selected_i = None
+            e_min, selected_i = None, None
             check_freqs = any([tsg.imaginary_freqs is not None for tsg in self.species_dict[label].ts_guesses])
             for tsg in self.species_dict[label].ts_guesses:
-                if tsg.energy is not None and tsg.energy < e_min \
+                if tsg.energy is not None and (e_min is None or tsg.energy < e_min) \
                         and (not check_freqs or tsg.check_imaginary_frequencies()):
                     e_min = tsg.energy
                     selected_i = tsg.conformer_index
