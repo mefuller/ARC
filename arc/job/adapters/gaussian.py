@@ -167,6 +167,7 @@ class GaussianAdapter(JobAdapter):
         self.args = args or dict()
         self.bath_gas = bath_gas
         self.checkfile = checkfile
+        print(f'\n\n\n\nGaussian checkfile is {self.checkfile}')
         self.conformer = conformer
         self.constraints = constraints or list()
         self.cpu_cores = cpu_cores
@@ -227,8 +228,15 @@ class GaussianAdapter(JobAdapter):
 
         self.set_files()  # Set the actual files (and write them if relevant).
 
-        if self.checkfile is None and os.path.isfile(os.path.join(self.local_path, 'check.chk')):
-            self.checkfile = os.path.join(self.local_path, 'check.chk')
+        if self.checkfile is None:
+            if os.path.isfile(os.path.join(self.local_path, 'check.chk')):
+                print(f'identified an existing local checkfile at {os.path.join(self.local_path, "check.chk")}')
+                self.checkfile = os.path.join(self.local_path, 'check.chk')
+                print(f'setting self.checkfile to: {self.checkfile}')
+            elif self.species[0].checkfile is not None and os.path.isfile(self.species[0].checkfile):
+                print(f'identified an existing SPECIES checkfile at {os.path.join(self.local_path, "check.chk")}')
+                self.checkfile = self.species[0].checkfile
+                print(f'setting self.checkfile to: {self.checkfile}')
 
         if job_num is None:
             # This checks job_num and not self.job_num on purpose.
@@ -352,7 +360,8 @@ class GaussianAdapter(JobAdapter):
         if self.level.solvation_method is not None:
             input_dict['job_type_1'] += f' SCRF=({self.level.solvation_method}, Solvent={self.level.solvent})'
 
-        input_dict['job_type_1'] += ' guess=read' if self.checkfile is not None else ' guess=mix'
+        input_dict['job_type_1'] += ' guess=read' if self.checkfile is not None and os.path.isfile(self.checkfile) \
+            else ' guess=mix'
 
         input_dict = update_input_dict_with_args(args=self.args, input_dict=input_dict)
 
