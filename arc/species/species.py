@@ -1919,7 +1919,7 @@ class TSGuess(object):
         Todo:
             Add tests.
         """
-        if len(self.imaginary_freqs) == 0:
+        if self.imaginary_freqs is None or len(self.imaginary_freqs) == 0:
             return False
         if len(self.imaginary_freqs) == 1 and 25 < abs(self.imaginary_freqs[0]) < 10000:
             return True
