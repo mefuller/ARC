@@ -14,7 +14,8 @@ from typing import TYPE_CHECKING, List, Optional, Tuple, Union
 
 from rdkit import Chem
 
-from arc.common import TS_GCN_PYTHON, arc_path, get_logger
+from arc.common import arc_path, get_logger
+from arc.imports import settings
 from arc.job.adapter import JobAdapter
 from arc.job.adapters.common import check_argument_consistency
 from arc.job.factory import register_job_adapter
@@ -35,6 +36,9 @@ if TYPE_CHECKING:
     from arc.level import Level
     from arc.reaction import ARCReaction
     from arc.species import ARCSpecies
+
+
+TS_GCN_PYTHON = settings['TS_GCN_PYTHON']
 
 logger = get_logger()
 
