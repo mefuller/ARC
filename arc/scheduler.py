@@ -58,11 +58,14 @@ if TYPE_CHECKING:
 
 logger = get_logger()
 
+LOWEST_MAJOR_TS_FREQ, HIGHEST_MAJOR_TS_FREQ, default_job_settings, \
+    default_job_types, rotor_scan_resolution, ts_adapters = settings['LOWEST_MAJOR_TS_FREQ'], \
+                                                            settings['HIGHEST_MAJOR_TS_FREQ'], \
+                                                            settings['default_job_settings'], \
+                                                            settings['default_job_types'], \
+                                                            settings['rotor_scan_resolution'], \
+                                                            settings['ts_adapters']
 
-default_job_settings, default_job_types, rotor_scan_resolution, ts_adapters = settings['default_job_settings'], \
-                                                                              settings['default_job_types'], \
-                                                                              settings['rotor_scan_resolution'], \
-                                                                              settings['ts_adapters']
 ts_adapters = [ts_adapter.lower() for ts_adapter in ts_adapters]
 
 
@@ -2272,8 +2275,11 @@ class Scheduler(object):
                     break
             if tsg is not None and not tsg.check_imaginary_frequencies():
                 # Imaginary frequencies are problematic, try choosing a different TSGuess, and optimize it.
+                add_text = f' major imaginary frequency between {LOWEST_MAJOR_TS_FREQ} and {HIGHEST_MAJOR_TS_FREQ}.' \
+                    if len(neg_freqs) == 1 and (neg_freqs[0] < LOWEST_MAJOR_TS_FREQ
+                                                or neg_freqs[0] > HIGHEST_MAJOR_TS_FREQ) else ''
                 logger.error(f'TS {label} has {len(neg_freqs)} imaginary frequencies ({neg_freqs}), '
-                             f'should have exactly 1.')
+                             f'should have exactly 1{add_text}.')
                 if f'{len(neg_freqs)} imaginary freqs for' not in self.output[label]['warnings']:
                     # Todo: this warning is obsolete if changing the TS guess during the run.
                     self.output[label]['warnings'] += f'Warning: {len(neg_freqs)} imaginary freqs for TS ({neg_freqs}); '
