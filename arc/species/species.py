@@ -55,7 +55,10 @@ from arc.species.vectors import calculate_distance
 
 logger = get_logger()
 
-valid_chars, minimum_barrier = settings['valid_chars'], settings['minimum_barrier']
+LOWEST_MAJOR_TS_FREQ, HIGHEST_MAJOR_TS_FREQ, valid_chars, minimum_barrier = settings['LOWEST_MAJOR_TS_FREQ'],\
+                                                                            settings['HIGHEST_MAJOR_TS_FREQ'], \
+                                                                            settings['valid_chars'], \
+                                                                            settings['minimum_barrier']
 
 
 class ARCSpecies(object):
@@ -1934,7 +1937,8 @@ class TSGuess(object):
         if len(self.imaginary_freqs) == 0:
             # Freqs have been calculated, and there are no imaginary frequencies.
             return False
-        if len(self.imaginary_freqs) == 1 and 25 < abs(self.imaginary_freqs[0]) < 10000:
+        if len(self.imaginary_freqs) == 1 \
+                and LOWEST_MAJOR_TS_FREQ < abs(self.imaginary_freqs[0]) < HIGHEST_MAJOR_TS_FREQ:
             # Freqs have been calculated, and there is only one imaginary frequency within the right range.
             return True
         else:
