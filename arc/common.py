@@ -754,8 +754,8 @@ def key_by_val(dictionary: dict,
     raise ValueError(f'Could not find value {value} in the dictionary\n{dictionary}')
 
 
-def almost_equal_lists(iter1: list or tuple or np.ndarray,
-                       iter2: list or tuple or np.ndarray,
+def almost_equal_lists(iter1: Union[list, tuple, np.ndarray],
+                       iter2: Union[list, tuple, np.ndarray],
                        rtol: float = 1e-05,
                        atol: float = 1e-08,
                        ) -> bool:
