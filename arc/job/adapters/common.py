@@ -36,7 +36,7 @@ ts_adapters_by_rmg_family = {'1+2_Cycloaddition': ['kinbot'],
                              'Cyclic_Ether_Formation': ['kinbot'],
                              'Cyclopentadiene_scission': ['gcn'],
                              'Diels_alder_addition': ['kinbot'],
-                             'H_Abstraction': ['autotst'],
+                             'H_Abstraction': ['heuristics', 'autotst'],
                              'HO2_Elimination_from_PeroxyRadical': ['kinbot'],
                              'Intra_2+2_cycloaddition_Cd': ['gcn'],
                              'Intra_5_membered_conjugated_C=C_C=C_addition': ['gcn'],
@@ -69,7 +69,7 @@ all_families_ts_adapters = []
 
 
 # Default is "queue", "pipe" will be called whenever needed. So just list 'incore'.
-default_incore_adapters = ['autotst', 'gcn', 'kinbot', 'psi4']
+default_incore_adapters = ['autotst', 'gcn', 'heuristics', 'kinbot', 'psi4']
 
 
 def is_restricted(obj) -> bool:
