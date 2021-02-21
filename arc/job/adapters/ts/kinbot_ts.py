@@ -348,7 +348,7 @@ class KinBotAdapter(JobAdapter):
                             method_index += 1
 
             if len(self.reactions) < 5:
-                successes = len([tsg for tsg in rxn.ts_species.ts_guesses if tsg.success])
+                successes = len([tsg for tsg in rxn.ts_species.ts_guesses if tsg.success and 'Kinbot' in tsg.method])
                 if successes:
                     logger.info(f'KinBot successfully found {successes} TS guesses for {rxn.label}.')
                 else:
