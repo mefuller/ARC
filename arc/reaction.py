@@ -35,8 +35,10 @@ class ARCReaction(object):
     Args:
         label (str, optional): The reaction's label in the format `r1 + r2 <=> p1 + p2`
                                (or unimolecular on either side, as appropriate).
-        reactants (list, optional): A list of reactants labels corresponding to an :ref:`ARCSpecies <species>`.
-        products (list, optional): A list of products labels corresponding to an :ref:`ARCSpecies <species>`.
+        reactants (list, optional): A list of reactant *labels* corresponding to an :ref:`ARCSpecies <species>`.
+        products (list, optional): A list of product *labels* corresponding to an :ref:`ARCSpecies <species>`.
+        r_species (list, optional): A list of reactants :ref:`ARCSpecies <species>` objects.
+        p_species (list, optional): A list of products :ref:`ARCSpecies <species>` objects.
         ts_label (str, optional): The :ref:`ARCSpecies <species>` label of the respective TS.
         rmg_reaction (Reaction, optional): An RMG Reaction class.
         ts_xyz_guess (list, optional): A list of TS XYZ user guesses, each in a string format.
@@ -80,6 +82,8 @@ class ARCReaction(object):
                  label: str = '',
                  reactants: Optional[List[str]] = None,
                  products: Optional[List[str]] = None,
+                 r_species: Optional[List[ARCSpecies]] = None,
+                 p_species: Optional[List[ARCSpecies]] = None,
                  ts_label: Optional[str] = None,
                  rmg_reaction: Optional[Reaction] = None,
                  ts_xyz_guess: Optional[list] = None,
@@ -90,8 +94,8 @@ class ARCReaction(object):
                  ):
         self.arrow = ' <=> '
         self.plus = ' + '
-        self.r_species = list()
-        self.p_species = list()
+        self.r_species = r_species or list()
+        self.p_species = p_species or list()
         self.kinetics = None
         self.rmg_kinetics = None
         self.long_kinetic_description = ''
