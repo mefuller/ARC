@@ -995,13 +995,6 @@ class Scheduler(object):
                         plot_path=os.path.join(self.project_directory, 'output', 'Species',
                                                label, 'geometry', 'conformers'))
                 self.process_conformers(label)
-            elif not self.job_types['conformers'] and not self.species_dict[label].is_ts:
-                # We're not running conformer jobs and this is not a TS.
-                if self.species_dict[label].initial_xyz is not None or self.species_dict[label].final_xyz is not None:
-                    pass
-                elif self.species_dict[label].conformers:
-                    # The species was defined with xyz's.
-                    self.process_conformers(label)
             # TSs:
             elif self.species_dict[label].is_ts \
                     and self.species_dict[label].tsg_spawned \
@@ -1013,6 +1006,13 @@ class Scheduler(object):
                 # We're ready to spawn conformer jobs for this TS Species
                 self.run_ts_conformer_jobs(label=label)
                 self.species_dict[label].ts_conf_spawned = True
+            if label in self.dont_gen_confs \
+                    and self.species_dict[label].initial_xyz is not None \
+                    and self.species_dict[label].final_xyz is not None \
+                    and self.species_dict[label].conformers \
+                    and not self.species_dict[label].is_ts:
+                # The species was defined with xyzs.
+                self.process_conformers(label)
 
     def run_ts_conformer_jobs(self, label: str):
         """
@@ -1218,13 +1218,13 @@ class Scheduler(object):
                         rotor['success'] = None
                     else:
                         continue
-                tosrion = rotor['tosrion']
-                if not isinstance(tosrion[0], list):
+                torsion = rotor['torsion']
+                if not isinstance(torsion[0], list):
                     # check that a 1D rotor is not linear
                     coords = xyz_to_coords_list(self.species_dict[label].get_xyz())
-                    v1 = [c1 - c2 for c1, c2 in zip(coords[tosrion[0]], coords[tosrion[1]])]
-                    v2 = [c2 - c1 for c1, c2 in zip(coords[tosrion[1]], coords[tosrion[2]])]
-                    v3 = [c1 - c2 for c1, c2 in zip(coords[tosrion[2]], coords[tosrion[3]])]
+                    v1 = [c1 - c2 for c1, c2 in zip(coords[torsion[0]], coords[torsion[1]])]
+                    v2 = [c2 - c1 for c1, c2 in zip(coords[torsion[1]], coords[torsion[2]])]
+                    v3 = [c1 - c2 for c1, c2 in zip(coords[torsion[2]], coords[torsion[3]])]
                     angle1, angle2 = get_angle(v1, v2, units='degs'), get_angle(v2, v3, units='degs')
                     if any([abs(angle - 180.0) < 0.15 for angle in [angle1, angle2]]):
                         # this is not a torsional mode, invalidate rotor
@@ -1270,7 +1270,7 @@ class Scheduler(object):
                                      xyz=self.species_dict[label].get_xyz(generate=False),
                                      level_of_theory=self.scan_level,
                                      job_type='scan',
-                                     torsions=[tosrion],
+                                     torsions=[torsion],
                                      )
 
     def run_irc_job(self, label, irc_direction='forward'):
