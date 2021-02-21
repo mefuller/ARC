@@ -1030,8 +1030,10 @@ class ARCSpecies(object):
         else:
             num_confs = min(500, max(50, len(self.mol.atoms) * 3))
             rd_mol = conformers.embed_rdkit(label=self.label, mol=self.mol, num_confs=num_confs)
-            xyzs, energies = conformers.rdkit_force_field(label=self.label, rd_mol=rd_mol,
-                                                          force_field='MMFF94s')
+            xyzs, energies = conformers.rdkit_force_field(label=self.label,
+                                                          rd_mol=rd_mol,
+                                                          force_field='MMFF94s',
+                                                          )
             if energies:
                 min_energy = min(energies)
                 min_energy_index = energies.index(min_energy)
@@ -1039,7 +1041,7 @@ class ARCSpecies(object):
             elif xyzs:
                 self.cheap_conformer = xyzs[0]
             else:
-                logger.warning('Could not generate a cheap conformer for {0}'.format(self.label))
+                logger.warning(f'Could not generate a cheap conformer for {self.label}')
                 self.cheap_conformer = None
 
     def get_xyz(self, generate: bool = True) -> Optional[dict]:
@@ -2105,7 +2107,7 @@ class TSGuess(object):
         """
         self.success = False
 
-    def process_xyz(self, xyz: dict or str):
+    def process_xyz(self, xyz: Union[dict, str]):
         """
         Process the user's input. If ``xyz`` represents a file path, parse it.
 
