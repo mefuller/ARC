@@ -916,10 +916,10 @@ class Scheduler(object):
                 check_path = os.path.join(job.local_path, 'check.chk')
                 if os.path.isfile(check_path):
                     self.species_dict[label].checkfile = check_path
-            if job.job_type == 'scan' and job.directed_scan_type == 'ess':
-                for rotors_dict in self.species_dict[label].rotors_dict.values():
-                    if rotors_dict['pivots'] == job.pivots:
-                        rotors_dict['scan_path'] = job.local_path_to_output_file
+            # if job.job_type == 'scan' and job.directed_scan_type == 'ess':  # Todo: implement directed_scan_type
+            #     for rotors_dict in self.species_dict[label].rotors_dict.values():
+            #         if rotors_dict['pivots'] == job.pivots:
+            #             rotors_dict['scan_path'] = job.local_path_to_output_file
             self.save_restart_dict()
             return True
 
