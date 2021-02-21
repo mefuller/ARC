@@ -172,7 +172,8 @@ class ARCReaction(object):
     def multiplicity(self, value):
         """Allow setting the reaction multiplicity"""
         self._multiplicity = value
-        logger.info(f'Setting multiplicity of reaction {self.label} to {self._multiplicity}')
+        if value is not None:
+            logger.info(f'Setting multiplicity of reaction {self.label} to {self._multiplicity}')
 
     def __str__(self) -> str:
         """Return a string representation of the object"""
