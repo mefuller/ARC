@@ -950,13 +950,13 @@ class JobAdapter(ABC):
         if self.fine:
             info += ' (fine opt)'
         if self.job_type == 'scan':
-            pivots = [scan[1:3] for scan in self.scan] if len(self.scan) > 1 else self.scan[0][1:3]
+            # pivots = [torsion[1:3] for torsion in self.torsions] if len(self.scan) > 1 else self.scan[0][1:3]
             constraints = list()
             for constraint_tuple in self.constraints:
                 constraints.append(f'{constraint_type_dict[len(constraint_tuple[0])]} '
                                    f'{constraint_tuple[0]} {constraint_tuple[1]}:.2f')
             constraints = constraints[0] if len(constraints) == 1 else constraints
-            info += f'(pivots: {pivots}'
+            # info += f'(pivots: {pivots}'
             info += f' constraints: {constraints})' if constraints else ')'
         local, server, job_server_name = '', '', ''
         if self.execution_type != 'incore':
