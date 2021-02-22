@@ -1184,7 +1184,7 @@ def trsh_job_on_server(server: str,
 
 
 def scan_quality_check(label: str,
-                       pivots: list,
+                       torsion: list,
                        energies: list,
                        scan_res: float = rotor_scan_resolution,
                        used_methods: Optional[list] = None,
@@ -1218,7 +1218,7 @@ def scan_quality_check(label: str,
 
     Args:
         label (str): The species label.
-        pivots (list): The rotor pivots.
+        torsion (list): The rotor torsion atoms.
         energies (list): The scan energies in kJ/mol.
         scan_res (float, optional): The scan resolution in degrees.
         used_methods (list, optional): Troubleshooting methods already tried out.
@@ -1253,7 +1253,7 @@ def scan_quality_check(label: str,
         except NotImplementedError:
             message = f'Rotor scan quality check using conformer internal coordinates ' \
                       f'has not been implemented for current ESS. Using PES curve based ' \
-                      f'check for rotor scan of {label} between pivots {pivots}.'
+                      f'check for rotor scan of {label} of torsion {torsion}.'
             logger.warning(message)
 
     # 1. Check based on intermediate conformers
@@ -1324,7 +1324,7 @@ def scan_quality_check(label: str,
                 broken_bonds = [scan_conformers['atoms'][broken_bond_label]]
                 invalidate = True
                 invalidation_reason = f'Bond ({broken_bonds}) broke during the scan.'
-                message = f'Rotor scan of {label} between pivots {pivots} has broken bonds: ' \
+                message = f'Rotor scan of {label} of torsion {torsion} has broken bonds: ' \
                           f'{broken_bonds}. ARC will attempt to troubleshoot this rotor scan.'
                 logger.error(message)
                 actions = {'freeze': broken_bonds}
@@ -1339,7 +1339,7 @@ def scan_quality_check(label: str,
             invalidate = True
             invalidation_reason = f'Another conformer for {label} exists which is ' \
                                   f'{energy_diff:.2f} kJ/mol lower.'
-            message = f'Species {label} is not oriented correctly around pivots {pivots}, ' \
+            message = f'Species {label} is not oriented correctly in torsion {torsion}, ' \
                       f'searching for a better conformation...'
             logger.info(message)
             # Find the dihedrals in degrees of the lowest conformer:
@@ -1353,7 +1353,7 @@ def scan_quality_check(label: str,
             # Smooth scan with different initial and final conformer
             invalidate = True
             invalidation_reason = 'Inconsistent initial and final conformers'
-            message = f'Rotor scan of {label} between pivots {pivots} has inconsistent initial ' \
+            message = f'Rotor scan of {label} in torsion {torsion} has inconsistent initial ' \
                       f'and final conformers.\nInternal coordinates {changed_ic_dict[0]} are different. ' \
                       f'ARC will attempt to troubleshoot this rotor scan.'
             logger.error(message)
@@ -1364,7 +1364,7 @@ def scan_quality_check(label: str,
             # Not smooth scan
             invalidate = True
             invalidation_reason = 'Significant difference observed between consecutive conformers'
-            message = f'Rotor scan of {label} between pivots {pivots} is inconsistent between ' \
+            message = f'Rotor scan of {label} in torsion {torsion} is inconsistent between ' \
                       f'two consecutive conformers.\nInconsistent consecutive conformers and problematic ' \
                       f'internal coordinates:'
             changed_ic_label = []
@@ -1389,7 +1389,7 @@ def scan_quality_check(label: str,
             # seems like this rotor broke the conformer. Invalidate
             invalidate = True
             invalidation_reason = f'initial and final points are inconsistent by more than {inconsistency_az:.2f} kJ/mol'
-            message = f'Rotor scan of {label} between pivots {pivots} is inconsistent by more ' \
+            message = f'Rotor scan of {label} in torsion {torsion} is inconsistent by more ' \
                       f'than {inconsistency_az:.2f} kJ/mol between initial and final positions. ' \
                       f'Initial energy = {energies[0]}, final energy = {energies[-1]}. ARC will ' \
                       f'attempt to troubleshoot this rotor scan.'
@@ -1405,7 +1405,7 @@ def scan_quality_check(label: str,
                 invalidate = True
                 invalidation_reason = f'Two consecutive points are inconsistent by more than ' \
                                       f'{inconsistency_ab * max(energies):.2f} kJ/mol'
-                message = f'Rotor scan of {label} between pivots {pivots} is inconsistent by' \
+                message = f'Rotor scan of {label} in torsion {torsion} is inconsistent by' \
                           f'more than {inconsistency_ab * max(energies):.2f} kJ/mol between ' \
                           f'two consecutive points. ARC will attempt to troubleshoot this rotor scan.'
                 logger.error(message)
@@ -1435,7 +1435,7 @@ def scan_quality_check(label: str,
                 and (species is None or not species.is_ts):
             invalidate = True
             invalidation_reason = f'Another conformer for {label} exists which is {energy_diff:.2f} kJ/mol lower.'
-            message = f'Species {label} is not oriented correctly around pivots {pivots}. ' \
+            message = f'Species {label} is not oriented correctly in torsion {torsion}. ' \
                       f'Another conformer exists which is {energy_diff:.2f} kJ/mol lower. ' \
                       f'searching for a better conformation...'
             logger.info(message)
@@ -1451,7 +1451,7 @@ def scan_quality_check(label: str,
     if (np.max(energies) - np.min(energies)) > maximum_barrier:
         # The barrier for the internal rotation is higher than `maximum_barrier`
         num_wells = determine_rotor_symmetry(label=label,
-                                             pivots=pivots,
+                                             torsion=torsion,
                                              rotor_path='',
                                              energies=energies,
                                              return_num_wells=True,
@@ -1462,12 +1462,12 @@ def scan_quality_check(label: str,
             invalidation_reason = f'The rotor scan has a barrier of {np.max(energies) - np.min(energies):.2f} ' \
                                   f'kJ/mol, which is higher than the maximal barrier for rotation ' \
                                   f'({maximum_barrier:.2f} kJ/mol)'
-            message = f'Rotor scan of {label} between pivots {pivots} has a barrier ' \
+            message = f'Rotor scan of {label} in torsion {torsion} has a barrier ' \
                       f'larger than {maximum_barrier:.2f} kJ/mol. Invalidating rotor.'
             logger.warning(message)
             return invalidate, invalidation_reason, message, actions
         else:
-            logger.warning(f'The maximal barrier for rotor {pivots} of {label} is '
+            logger.warning(f'The maximal barrier for rotor {torsion} of {label} is '
                            f'{(np.max(energies) - np.min(energies)):.2f} kJ/mol, which is higher than the set threshold '
                            f'of {maximum_barrier} kJ/mol. Since this mode when treated as torsion has {num_wells}, '
                            f'this mode is not invalidated: treating it as a vibrational mode will be less accurate than '
