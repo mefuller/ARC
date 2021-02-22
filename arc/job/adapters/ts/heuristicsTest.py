@@ -7,6 +7,7 @@ This module contains unit tests of the arc.job.adapters.ts.heuristics module
 
 import os
 import unittest
+import shutil
 
 from rmgpy.reaction import Reaction
 from rmgpy.species import Species
@@ -236,6 +237,14 @@ H       0.99232452    1.08896899    0.06242974"""
         self.assertEqual(rxn4.ts_species.multiplicity, 2)
         self.assertEqual(len(rxn4.ts_species.ts_guesses), 1)
         self.assertEqual(rxn4.ts_species.ts_guesses[0].initial_xyz['symbols'], ('C', 'C', 'O', 'H', 'H', 'H', 'H', 'H'))
+
+    @classmethod
+    def tearDownClass(cls):
+        """
+        A function that is run ONCE after all unit tests in this class.
+        Delete all project directories created during these unit tests.
+        """
+        shutil.rmtree(os.path.join(arc_path, 'arc', 'testing', 'heuristics'), ignore_errors=True)
 
 
 if __name__ == '__main__':
