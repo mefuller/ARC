@@ -69,7 +69,7 @@ class ARCSpecies(object):
 
             rotors_dict: {0: {'pivots': ``list``,
                               'top': ``list``,
-                              'scan': ``list``,
+                              'scan': ``list``,  # todo: update
                               'number_of_running_jobs': ``int``,
                               'success': ``bool``,
                               'invalidation_reason': ``str``,
@@ -1971,7 +1971,7 @@ def determine_occ(xyz, charge):
 
 
 def determine_rotor_symmetry(label: str,
-                             pivots: Union[list, str],
+                             torsion: List[int],
                              rotor_path: str = '',
                              energies: Optional[Union[list, np.ndarray]] = None,
                              return_num_wells: bool = False,
@@ -1987,7 +1987,7 @@ def determine_rotor_symmetry(label: str,
 
     Args:
         label (str): The species label (used for error messages).
-        pivots (list, str, optional): A list of two atom indices representing the torsion pivots.
+        torsion (list): A list of two atom indices representing the torsion.
         rotor_path (str): The path to an ESS output rotor scan file.
         energies (list, optional): The list of energies in the scan in kJ/mol.
         return_num_wells (bool, optional): Whether to also return the number of wells, ``True`` to return,
@@ -2049,7 +2049,7 @@ def determine_rotor_symmetry(label: str,
     # something seriously wrong with the scan
     if len(peaks) != len(valleys):
         if log:
-            logger.error(f'Rotor of species {label} between pivots {pivots} does not have the same number '
+            logger.error(f'Rotor of species {label} in torsion {torsion} does not have the same number '
                          f'of peaks ({len(peaks)}) and valleys ({len(valleys)}).')
         if return_num_wells:
             return len(peaks), max_e, len(peaks)  # this works for CC(=O)[O]
@@ -2079,11 +2079,11 @@ def determine_rotor_symmetry(label: str,
         reason = 'number of peaks and valleys, all within the determined resolution criteria'
     if log:
         if symmetry not in [1, 2, 3]:
-            logger.info(f'Determined symmetry number {symmetry} for rotor of species {label} between pivots {pivots}; '
+            logger.info(f'Determined symmetry number {symmetry} for rotor of species {label} in torsion {torsion}; '
                         f'you should make sure this makes sense.')
         else:
-            logger.info(f'Determined a symmetry number of {symmetry} for rotor of species {label} between pivots '
-                        f'{pivots} based on the {reason}.')
+            logger.info(f'Determined a symmetry number of {symmetry} for rotor of species {label} in torsion '
+                        f'{torsion} based on the {reason}.')
     if return_num_wells:
         return symmetry, max_e, len(peaks)
     else:
