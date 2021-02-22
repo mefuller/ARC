@@ -260,10 +260,10 @@ class HeuristicsAdapter(JobAdapter):
                                             multiplicity=rxn.multiplicity,
                                             )
             rxn.arc_species_from_rmg_reaction()
-            print(rxn.r_species[0].get(xyz))
-            print(rxn.r_species[1].get(xyz))
-            print(rxn.p_species[0].get(xyz))
-            print(rxn.p_species[1].get(xyz))
+            print(rxn.r_species[0].get_xyz())
+            print(rxn.r_species[1].get_xyz())
+            print(rxn.p_species[0].get_xyz())
+            print(rxn.p_species[1].get_xyz())
             reactant_mol_combinations = list(
                 itertools.product(*list(reactant.mol_list for reactant in rxn.r_species)))
             product_mol_combinations = list(
