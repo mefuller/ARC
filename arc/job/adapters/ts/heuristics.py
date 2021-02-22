@@ -300,6 +300,9 @@ class HeuristicsAdapter(JobAdapter):
                              format_='xyz',
                              comment=f'Heuristics {method_index}, family: {family}',
                              )
+                    print(len(rxn.ts_species.ts_guesses))
+                    print(ts_guess.method)
+                    print(ts_guess.success)
 
             if len(self.reactions) < 5:
                 successes = len([tsg for tsg in rxn.ts_species.ts_guesses if tsg.success and 'Heuristics' in tsg.method])
