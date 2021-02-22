@@ -1405,8 +1405,10 @@ class Scheduler(object):
                 rxn.ts_species.tsg_spawned = True
                 tsg_index = 0
                 for method in ts_adapters:
+                    print(f'\n\n{method}')
                     if method in all_families_ts_adapters or \
                             (rxn.family is not None and method in ts_adapters_by_rmg_family[rxn.family.label]):
+                        print(f'runing {method}')
                         self.run_job(job_type='tsg',
                                      job_adapter=method,
                                      reactions=[rxn],
