@@ -96,8 +96,7 @@ class TestAutoTSTAdapter(unittest.TestCase):
         self.assertEqual(rxn3.ts_species.charge, 0)
         self.assertEqual(rxn3.ts_species.multiplicity, 2)
         self.assertEqual(len(rxn3.ts_species.ts_guesses), 4)
-        self.assertEqual(rxn3.ts_species.ts_guesses[0].initial_xyz['symbols'],
-                         ('O', 'C', 'C', 'H', 'H', 'H', 'H', 'H'))
+        self.assertEqual(rxn3.ts_species.ts_guesses[0].initial_xyz['symbols'], ('O', 'C', 'C', 'H', 'H', 'H', 'H', 'H'))
         self.assertEqual(len(rxn3.ts_species.ts_guesses[0].initial_xyz['coords']), 8)
         self.assertEqual(len(rxn3.ts_species.ts_guesses[1].initial_xyz['coords']), 8)
         self.assertEqual(len(rxn3.ts_species.ts_guesses[2].initial_xyz['coords']), 8)
