@@ -2457,15 +2457,17 @@ class Scheduler(object):
         # Otherwise, check the scan job quality
         invalidate, actions, energies = False, list(), list()
         for i in range(self.species_dict[label].number_of_rotors):
-            if self.species_dict[label].rotors_dict[i]['torsion'] == job.torsion:
+            if self.species_dict[label].rotors_dict[i]['torsion'] == job.torsions \
+                    or (isinstance(job.torsions, list)
+                        and self.species_dict[label].rotors_dict[i]['torsion'] == job.torsions[0]):
                 # Read energy profile (in kJ/mol), it may be used in the troubleshooting
                 energies, angles = parser.parse_1d_scan_energies(path=job.local_path_to_output_file)
                 self.species_dict[label].rotors_dict[i]['original_dihedrals'] = \
-                    [calculate_dihedral_angle(coords=job.xyz, torsion=job.torsion, index=0, units='degs')]
+                    [calculate_dihedral_angle(coords=job.xyz, torsion=job.torsions[0], index=0, units='degs')]
                 if energies is None:
                     invalidate = True
                     invalidation_reason = 'Could not read energies'
-                    message = f'Energies from rotor scan of {label} of torsion {job.torsion} could not ' \
+                    message = f'Energies from rotor scan of {label} of torsion {job.torsions} could not ' \
                               f'be read. Invalidating rotor.'
                     logger.error(message)
                     break
@@ -2473,7 +2475,7 @@ class Scheduler(object):
                     if self.species_dict[label].is_ts else None
                 invalidate, invalidation_reason, message, actions = scan_quality_check(
                     label=label,
-                    torsion=job.torsion,
+                    torsion=job.torsions,
                     energies=energies,
                     used_methods=self.species_dict[label].rotors_dict[i]['trsh_methods'],
                     log_file=job.local_path_to_output_file,
