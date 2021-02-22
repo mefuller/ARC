@@ -373,7 +373,7 @@ class GCNAdapter(JobAdapter):
             rxn.ts_species.ts_guesses.append(ts_guess_r)
 
             if len(self.reactions) < 5:
-                successes = len([tsg for tsg in rxn.ts_species.ts_guesses if tsg.success and 'GCN' in tsg.method])
+                successes = len([tsg for tsg in rxn.ts_species.ts_guesses if tsg.success and 'gcn' in tsg.method])
                 if successes:
                     logger.info(f'GCN successfully found {successes} TS guesses for {rxn.label}.')
                 else:
