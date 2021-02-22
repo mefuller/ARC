@@ -5,6 +5,8 @@ Todo:
     - eventually this module needs to be applied for all H's connected to the same heavy atom,
       summing up the rates appropriately
     - test H2O2 as the RH abstractor, see that both TS chiralities are attained
+    - Add tests
+    - add database and train from database, see https://github.com/ReactionMechanismGenerator/ARC/commit/081df5bf8e53987e9ff48eef481c17997f9cff2a, https://github.com/ReactionMechanismGenerator/ARC/commit/9a569ee80331494dcca26490fd66accc69697380, https://github.com/ReactionMechanismGenerator/ARC/commit/10d255467334f7821547e7dc5d98bb50bbfab7c0
 """
 
 import datetime
@@ -242,7 +244,18 @@ class HeuristicsAdapter(JobAdapter):
             if family not in supported_families:
                 logger.warning(f'The heuristics TS search adapter does not yet support the {family} reaction family.')
                 continue
+            if any(spc.get_xyz() is None for spc in rxn.r_species + rxn.p_species):
+                logger.warning(f'The heuristics TS search adapter cannot process a reaction if 3D coordinates of '
+                               f'some/all of its reactants/products are missing. Not processing {rxn}.')
+                continue
 
+            if rxn.ts_species is None:
+                # Mainly used for testing, in an ARC run the TS species should already exist.
+                rxn.ts_species = ARCSpecies(label='TS',
+                                            is_ts=True,
+                                            charge=rxn.charge,
+                                            multiplicity=rxn.multiplicity,
+                                            )
             rxn.arc_species_from_rmg_reaction()
             reactant_mol_combinations = list(
                 itertools.product(*list(reactant.mol_list for reactant in rxn.r_species)))
