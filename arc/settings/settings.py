@@ -66,6 +66,9 @@ global_ess_settings = {
 # Electronic structure software ARC may access (use lowercase):
 supported_ess = ['gaussian', 'molpro', 'orca', 'qchem', 'terachem', 'onedmin']
 
+# TS methods to try when appropriate for a reaction (other than user guesses which are always allowed):
+ts_adapters = ['heuristics', 'AutoTST', 'GCN', 'KinBot']
+
 # List here job types to execute by default
 default_job_types = {'conformers': True,      # defaults to True if not specified
                      'opt': True,             # defaults to True if not specified
