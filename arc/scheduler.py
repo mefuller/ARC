@@ -2512,7 +2512,7 @@ class Scheduler(object):
                         label=label, symmetry=self.species_dict[label].rotors_dict[i]['symmetry']))
                 break
         else:
-            raise SchedulerError(f'Could not match rotor with pivots {job.pivots} in species {label}')
+            raise SchedulerError(f'Could not match rotor with torsion {job.torsions} in species {label}')
 
         # This is a bad rotor scan
         if invalidate:
