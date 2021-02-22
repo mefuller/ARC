@@ -734,7 +734,7 @@ class JobAdapter(ABC):
         job_dict['job_num'] = self.job_num
         job_dict['job_server_name'] = self.job_server_name
         job_dict['job_status'] = self.job_status
-        job_dict['level'] = self.level.as_dict()
+        job_dict['level'] = self.level.as_dict() if self.level is not None else None
         job_dict['max_job_time'] = self.max_job_time
         if self.reactions is not None:
             job_dict['reaction_indices'] = [reaction.index for reaction in self.reactions]
