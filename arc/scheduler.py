@@ -2504,7 +2504,7 @@ class Scheduler(object):
                     # the rotor scan is good, calculate the symmetry number
                     self.species_dict[label].rotors_dict[i]['success'] = True
                     self.species_dict[label].rotors_dict[i]['symmetry'] = determine_rotor_symmetry(
-                        label=label, pivots=self.species_dict[label].rotors_dict[i]['pivots'],
+                        label=label, torsion=self.species_dict[label].rotors_dict[i]['torsion'],
                         rotor_path=job.local_path_to_output_file)[0]
                     logger.info('Rotor scan {scan} between pivots {pivots} for {label} has symmetry {symmetry}'.format(
                         scan=self.species_dict[label].rotors_dict[i]['scan'],
