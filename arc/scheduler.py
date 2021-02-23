@@ -967,9 +967,11 @@ class Scheduler(object):
                            If ``None``, conformer jobs will be spawned for all species corresponding to labels in
                            self.unique_species_labels.
         """
+        print('in run_conformer_jobs')
         labels_to_consider = labels if labels is not None else self.unique_species_labels
         log_info_printed = False
         for label in labels_to_consider:
+            print(label)
             if not self.species_dict[label].is_ts and not self.output[label]['job_types']['opt'] \
                     and 'opt' not in self.job_dict[label] and 'composite' not in self.job_dict[label] \
                     and all([e is None for e in self.species_dict[label].conformer_energies]) \
@@ -977,6 +979,7 @@ class Scheduler(object):
                     and self.species_dict[label].yml_path is None \
                     and (self.job_types['conformers'] and label not in self.dont_gen_confs
                          or self.species_dict[label].get_xyz(generate=False) is None):
+                print('in cond')
                 # This is not a TS, opt (/composite) did not converged nor running, and conformer energies were not set.
                 # Also, either 'conformers' are set to True in job_types (and it's not in dont_gen_confs),
                 # or they are set to False (or it's in dont_gen_confs), but the species has no 3D information.
@@ -1674,6 +1677,7 @@ class Scheduler(object):
         Args:
             label (str): The species label.
         """
+        print('in process_conformers')
         plotter.save_conformers_file(project_directory=self.project_directory,
                                      label=label,
                                      xyzs=self.species_dict[label].conformers,
