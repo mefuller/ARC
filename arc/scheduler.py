@@ -1011,10 +1011,11 @@ class Scheduler(object):
                 self.run_ts_conformer_jobs(label=label)
                 self.species_dict[label].ts_conf_spawned = True
             if label in self.dont_gen_confs \
-                    and self.species_dict[label].initial_xyz is not None \
-                    and self.species_dict[label].final_xyz is not None \
-                    and self.species_dict[label].conformers \
+                    and (self.species_dict[label].initial_xyz is not None
+                         or self.species_dict[label].final_xyz is not None
+                         or len(self.species_dict[label].conformers)) \
                     and not self.species_dict[label].is_ts:
+                print('In dont_gen_confs')
                 # The species was defined with xyzs.
                 self.process_conformers(label)
 
