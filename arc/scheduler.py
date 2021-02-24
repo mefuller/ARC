@@ -2013,7 +2013,8 @@ class Scheduler(object):
             self.species_dict[label].ts_confs_exhausted = True
             for tsg in self.species_dict[label].ts_guesses:
                 if tsg.energy is not None and (e_min is None or tsg.energy < e_min) \
-                        and (tsg.imaginary_freqs is None or tsg.check_imaginary_frequencies()):
+                        and (tsg.imaginary_freqs is None or tsg.check_imaginary_frequencies())\
+                        and tsg.conformer_index not in self.species_dict[label].chosen_ts_list:
                     e_min = tsg.energy
                     selected_i = tsg.conformer_index
             e_min = None
