@@ -471,14 +471,14 @@ class ARCReaction(object):
             bool: Whether the TS energy is above both reactants and products wells, ``True`` if it is.
         """
         r_e0 = None if any([spc.e0 is None for spc in self.r_species]) \
-            else sum(spc.e0 for spc in self.r_species)
+            else sum(spc.e0 * self.get_species_count(spc.label, well=0) for spc in self.r_species)
         p_e0 = None if any([spc.e0 is None for spc in self.p_species]) \
-            else sum(spc.e0 for spc in self.p_species)
+            else sum(spc.e0 * self.get_species_count(spc.label, well=1) for spc in self.p_species)
         ts_e0 = self.ts_species.e0
         min_e = extermum_list([r_e0, p_e0, ts_e0], return_min=True)
         if any([val is None for val in [r_e0, p_e0, ts_e0]]):
             if verbose:
-                logger.error(f"Could not get E0's of all species in reaction {self.label}. Cannot check TS E0.\n")
+                logger.error(f"\nCould not get E0's of all species in reaction {self.label}. Cannot check TS E0.\n")
                 r_text = f'{r_e0:.2f} kJ/mol' if r_e0 is not None else 'None'
                 ts_text = f'{ts_e0:.2f} kJ/mol' if ts_e0 is not None else 'None'
                 p_text = f'{p_e0:.2f} kJ/mol' if p_e0 is not None else 'None'
@@ -488,13 +488,13 @@ class ARCReaction(object):
             return True
         if ts_e0 < r_e0 or ts_e0 < p_e0:
             if verbose:
-                logger.error(f'TS of reaction {self.label} has a lower E0 value than expected:\n')
+                logger.error(f'\nTS of reaction {self.label} has a lower E0 value than expected:\n')
                 logger.info(f'Reactants: {r_e0 - min_e:.2f} kJ/mol\n'
                             f'TS: {ts_e0 - min_e:.2f} kJ/mol'
                             f'\nProducts: {p_e0 - min_e:.2f} kJ/mol')
             return False
         if verbose:
-            logger.info(f'Reaction {self.label} has the following path energies:\n'
+            logger.info(f'\nReaction {self.label} has the following path energies:\n'
                         f'Reactants: {r_e0 - min_e:.2f} kJ/mol\n'
                         f'TS: {ts_e0 - min_e:.2f} kJ/mol\n'
                         f'Products: {p_e0 - min_e:.2f} kJ/mol')
@@ -640,23 +640,29 @@ class ARCReaction(object):
         return True
 
     def get_species_count(self,
-                          species: ARCSpecies,
+                          species: Optional[ARCSpecies] = None,
+                          label: Optional[str] = None,
                           well: int = 0,
                           ) -> int:
         """
         Get the number of times a species participates in the reactants or products well.
+        Either ``species`` or ``label`` must be given.
 
         Args:
             species (ARCSpecies): The species to check.
+            label (str, optional): The species label.
             well (int, optional): Either ``0`` or ``1`` for the reactants or products well, respectively.
 
         Returns:
             Union[int, None]: The number of times this species appears in the respective well.
         """
+        if species is None and label is None:
+            raise ValueError('Called get_species_count without a species nor its label.')
+        if well not in [0, 1]:
+            raise ValueError(f'Got well = {well}, expected either 0 or 1.')
+        label = species.label or label
         well_str = self.label.split('<=>')[well]
-        count = well_str.startswith(f'{species.label} ') + \
-                well_str.count(f' {species.label} ') + \
-                well_str.endswith(f' {species.label}')
+        count = well_str.startswith(f'{label} ') + well_str.count(f' {label} ') + well_str.endswith(f' {label}')
         return count
 
 
