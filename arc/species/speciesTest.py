@@ -1397,6 +1397,10 @@ class TestTSGuess(unittest.TestCase):
         """Test TSGuess.as_dict()"""
         tsg_dict = self.tsg1.as_dict()
         expected_dict = {'method': 'autotst',
+                         'conformer_index': None,
+                         'imaginary_freqs': None,
+                         'successful_irc': None,
+                         'successful_normal_mode': None,
                          'energy': None,
                          'family': 'H_Abstraction',
                          'index': None,
