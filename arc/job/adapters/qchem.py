@@ -274,13 +274,13 @@ class QChemAdapter(JobAdapter):
         elif self.job_type == 'sp':
             input_dict['job_type_1'] = 'sp'
 
-        if self.job_type == 'orbitals':
+        elif self.job_type == 'orbitals':
             input_dict['block'] = "\n   NBO       TRUE" \
                                   "\n   RUN_NBO6  TRUE" \
                                   "\n   PRINT_ORBITALS TRUE" \
                                   "\n   GUI       2"
 
-        if self.job_type == 'optfreq':
+        elif self.job_type == 'optfreq':
             input_dict['job_type_2'] = f"\n\n@@@\n$molecule\nread\n$end\n$rem" \
                                        f"\n   JOBTYPE       freq" \
                                        f"\n   METHOD        {self.level.method}" \
@@ -289,16 +289,16 @@ class QChemAdapter(JobAdapter):
                                        f"\n   SCF_GUESS     read" \
                                        f"\n$end\n"
 
-        if self.job_type == 'scan' \
-                and (not self.species[0].rotors_dict
-                     or (self.species[0].rotors_dict
-                     and self.species[0].rotors_dict[self.rotor_index]['directed_scan_type'] == 'ess')):
-            # In a pipe run, the species object is initialized with species.rotors_dict as an empty dict.
+        elif self.job_type == 'scan':
             scans = list()
-            if self.species[0].rotors_dict and self.rotor_index is not None:
-                scans = self.species[0].rotors_dict[self.rotor_index]['scan']
-                scans = [scans] if not isinstance(scans[0], list) else scans
-            else:
+            if not self.species[0].rotors_dict \
+                    or (self.species[0].rotors_dict
+                        and self.species[0].rotors_dict[self.rotor_index]['directed_scan_type'] == 'ess'):
+                # In a pipe run, the species object is initialized with species.rotors_dict as an empty dict.
+                if self.species[0].rotors_dict and self.rotor_index is not None:
+                    scans = self.species[0].rotors_dict[self.rotor_index]['scan']
+                    scans = [scans] if not isinstance(scans[0], list) else scans
+            elif len(self.torsions):
                 for torsion in self.torsions:
                     scans.append([atom_index + 1 for atom_index in torsion])
             scan_string = '\n$scan\n'
