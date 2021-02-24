@@ -1233,7 +1233,6 @@ class Scheduler(object):
                         rotor['invalidation_reason'] = \
                             f'not a torsional mode (angles = {angle1:.2f}, {angle2:.2f} degrees)'
                         continue
-                pivots = rotor['pivots']
                 directed_scan_type = rotor['directed_scan_type'] if 'directed_scan_type' in rotor else ''
 
                 if directed_scan_type:
@@ -1243,13 +1242,13 @@ class Scheduler(object):
                         # we're spawning the first brute force scan jobs for this species
                         self.job_dict[label]['directed_scan'] = dict()
                     for directed_scan_job in self.job_dict[label]['directed_scan'].values():
-                        if directed_scan_job.pivots == pivots \
-                                and directed_scan_job.job_name in self.running_jobs[label]:
+                        if directed_scan_job.pivots == torsion \
+                                and directed_scan_job.job_name in self.running_jobs[label]:  # todo: check if pivots in torsion
                             break
                     else:
                         if 'cont' in directed_scan_type:
-                            for directed_pivots in self.job_dict[label]['directed_scan'].keys():
-                                if directed_pivots == pivots \
+                            for directed_pivots in self.job_dict[label]['directed_scan'].keys():  # todo: check if pivots in torsion
+                                if directed_pivots == torsion \
                                         and self.job_dict[label]['directed_scan'][directed_pivots]:
                                     # the previous job hasn't finished
                                     break
@@ -1264,7 +1263,7 @@ class Scheduler(object):
                         # we're spawning the first scan job for this species
                         self.job_dict[label]['scan'] = dict()
                     for scan_job in self.job_dict[label]['scan'].values():
-                        if scan_job.pivots == pivots and scan_job.job_name in self.running_jobs[label]:
+                        if scan_job.pivots == torsion and scan_job.job_name in self.running_jobs[label]:  # todo: check if pivots in torsion
                             break
                     else:
                         self.run_job(label=label,
