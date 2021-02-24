@@ -1975,6 +1975,7 @@ class Scheduler(object):
         Args:
             label (str): The TS species label.
         """
+        print('\n\n\n\nIn determine_most_likely_ts_conformer\n\n\n\n')
         if not self.species_dict[label].is_ts:
             raise SchedulerError('determine_most_likely_ts_conformer() method only processes transition state guesses.')
         if not self.species_dict[label].successful_methods:
@@ -2009,25 +2010,30 @@ class Scheduler(object):
             # Select the TSG with the lowest energy given that it has only one significant imaginary frequency.
             # Todo: consider IRC well isomorphism, normal mode check (respective TSG attributes already exist)
             e_min, selected_i = None, None
-            check_freqs = any([tsg.imaginary_freqs is not None for tsg in self.species_dict[label].ts_guesses])
             self.species_dict[label].ts_confs_exhausted = True
             for tsg in self.species_dict[label].ts_guesses:
                 if tsg.energy is not None and (e_min is None or tsg.energy < e_min) \
-                        and (not check_freqs or tsg.check_imaginary_frequencies()):
+                        and (tsg.imaginary_freqs is None or tsg.check_imaginary_frequencies()):
                     e_min = tsg.energy
                     selected_i = tsg.conformer_index
+            e_min = None
             for tsg in self.species_dict[label].ts_guesses:
-                # Reset e_min to the lowest value regardless of imaginary frequencies, IRC, normal modes.
+                # Reset e_min to the lowest value regardless of other criteria (imaginary frequencies, IRC, normal modes).
                 if tsg.energy is not None and (e_min is None or tsg.energy < e_min):
                     e_min = tsg.energy
             for tsg in self.species_dict[label].ts_guesses:
                 if tsg.conformer_index == selected_i:
+                    print(f'\n\n\nFound tsg {selected_i}')
                     self.species_dict[label].chosen_ts = selected_i
                     self.species_dict[label].chosen_ts_list.append(selected_i)
                     self.species_dict[label].chosen_ts_method = tsg.method
                     self.species_dict[label].initial_xyz = tsg.opt_xyz
                     self.species_dict[label].final_xyz = None
                     self.species_dict[label].ts_confs_exhausted = False
+                    print(self.species_dict[label].chosen_ts,
+                          self.species_dict[label].chosen_ts_list,
+                          self.species_dict[label].chosen_ts_method,
+                          )
                 if tsg.success and tsg.energy is not None:  # guess method and ts_level opt were both successful
                     tsg.energy -= e_min
                     im_freqs = f', imaginary frequencies {tsg.imaginary_freqs}' if tsg.imaginary_freqs is not None else ''
@@ -2307,10 +2313,10 @@ class Scheduler(object):
         """
         print(f'\n\n\n\nIn switch_ts! \n\n\n\n')
         previously_chosen_ts_list = self.species_dict[label].chosen_ts_list.copy()
+        print(f'previously_chosen_ts_list: {previously_chosen_ts_list}')
         self.determine_most_likely_ts_conformer(label=label)  # Look for a different TS guess.
         self.delete_all_species_jobs(label=label)  # Delete other currently running jobs for this TS.
-        if self.species_dict[label].chosen_ts is not None \
-                and self.species_dict[label].chosen_ts not in previously_chosen_ts_list:
+        if not self.species_dict[label].ts_confs_exhausted:
             logger.info(f'Optimizing species {label} again using a different TS guess: '
                         f'({self.species_dict[label].chosen_ts})')
             if not self.composite_method:
