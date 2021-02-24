@@ -2284,17 +2284,7 @@ class Scheduler(object):
                 if f'{len(neg_freqs)} imaginary freqs for' not in self.output[label]['warnings']:
                     # Todo: this warning is obsolete if changing the TS guess during the run.
                     self.output[label]['warnings'] += f'Warning: {len(neg_freqs)} imaginary freqs for TS ({neg_freqs}); '
-                previously_chosen_ts_list = self.species_dict[label].chosen_ts_list.copy()
-                self.determine_most_likely_ts_conformer(label=label)  # Look for a different TS guess.
-                self.delete_all_species_jobs(label=label)
-                if self.species_dict[label].chosen_ts is not None \
-                        and self.species_dict[label].chosen_ts not in previously_chosen_ts_list:
-                    logger.info(f'Optimizing species {label} again using a different TS guess '
-                                f'({self.species_dict[label].chosen_ts})')
-                    if not self.composite_method:
-                        self.run_opt_job(label, fine=self.fine_only)
-                    else:
-                        self.run_composite_job(label)
+                self.switch_ts(label=label)
                 return False
             else:
                 logger.info(f'TS {label} has exactly one imaginary frequency: {neg_freqs[0]}')
@@ -2307,6 +2297,25 @@ class Scheduler(object):
                     self.save_restart_dict()
                 return True
 
+    def switch_ts(self, label: str):
+        """
+        Try the next optimized TS guess in line if a TS was found to be faulty.
+
+        Args:
+            label (str): The TS species label.
+        """
+        previously_chosen_ts_list = self.species_dict[label].chosen_ts_list.copy()
+        self.determine_most_likely_ts_conformer(label=label)  # Look for a different TS guess.
+        self.delete_all_species_jobs(label=label)  # Delete other currently running jobs for this TS.
+        if self.species_dict[label].chosen_ts is not None \
+                and self.species_dict[label].chosen_ts not in previously_chosen_ts_list:
+            logger.info(f'Optimizing species {label} again using a different TS guess: '
+                        f'({self.species_dict[label].chosen_ts})')
+            if not self.composite_method:
+                self.run_opt_job(label, fine=self.fine_only)
+            else:
+                self.run_composite_job(label)
+
     def check_sp_job(self,
                      label: str,
                      job: 'JobAdapter',
@@ -2318,7 +2327,7 @@ class Scheduler(object):
             label (str): The species label.
             job (JobAdapter): The single point job object.
         """
-        if 'mrci' in self.sp_level.method and 'mrci' not in job.level.method:
+        if 'mrci' in self.sp_level.method and job.level is not None and 'mrci' not in job.level.method:
             # This is a CCSD job ran before MRCI. Spawn MRCI
             self.run_sp_job(label)
         elif job.job_status[1]['status'] == 'done':
@@ -2334,7 +2343,8 @@ class Scheduler(object):
         else:
             self.troubleshoot_ess(label=label,
                                   job=job,
-                                  level_of_theory=job.level)
+                                  level_of_theory=job.level,
+                                  )
 
     def post_sp_actions(self,
                         label: str,
@@ -2383,6 +2393,15 @@ class Scheduler(object):
                 else:
                     self.output[label]['paths']['sp_no_sol'] = sp_path
                 self.output[label]['paths']['sp'] = original_sp_path  # restore the original path
+
+        if self.species_dict[label].is_ts:
+            for rxn in self.rxn_dict.values():
+                if rxn.ts_label == label:
+                    ts_e_elect_success = rxn.check_ts(verbose=True)
+                    if not ts_e_elect_success:
+                        self.switch_ts(label=label)
+                    break
+
 
         # set *at the end* to differentiate between sp jobs when using complex solvation corrections
         self.output[label]['job_types']['sp'] = True
