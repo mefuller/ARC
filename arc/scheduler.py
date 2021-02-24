@@ -1328,6 +1328,7 @@ class Scheduler(object):
             label (str): The species label.
             job_name (str): The opt job name (used for differentiating between ``opt`` and ``optfreq`` jobs).
         """
+        print(f'\n\n\n\nIn spawn post opt jobs for {label}\n\n\n\n')
         composite = 'composite' in job_name  # Whether "post composite jobs" need to be spawned
         if not composite and self.composite_method:
             # This was originally a composite method, probably troubleshooted as 'opt'
@@ -1359,6 +1360,7 @@ class Scheduler(object):
                 self.run_scan_jobs(label)
 
         if composite and self.composite_method:
+            print(f'\n\n\n\ncalling post_sp_actions for {label} from spawn_post_opt_jobs for a composite method\n\n\n\n')
             self.post_sp_actions(label=label,
                                  sp_path=os.path.join(self.job_dict[label]['composite'][job_name].local_path,
                                                       'output.out'))
@@ -2326,10 +2328,12 @@ class Scheduler(object):
             label (str): The species label.
             job (JobAdapter): The single point job object.
         """
+        print(f'\n\n\n\nIn check_sp_job for {label}\n\n\n\n')
         if 'mrci' in self.sp_level.method and job.level is not None and 'mrci' not in job.level.method:
             # This is a CCSD job ran before MRCI. Spawn MRCI
             self.run_sp_job(label)
         elif job.job_status[1]['status'] == 'done':
+            print(f'\n\n\n\ncalling post_sp_actions for {label} from check_sp_job\n\n\n\n')
             self.post_sp_actions(label,
                                  sp_path=os.path.join(job.local_path, 'output.out'),
                                  level=job.level,
@@ -2358,6 +2362,7 @@ class Scheduler(object):
             sp_path (str): The path to 'output.out' for the single point job.
             level (Level, optional): The level of theory used for the sp job.
         """
+        print(f'\n\n\n\nIn post_sp_actions for {label}\n\n\n\n')
         original_sp_path = self.output[label]['paths']['sp'] if 'sp' in self.output[label]['paths'] else None
         self.output[label]['paths']['sp'] = sp_path
         if self.sp_level is not None and 'ccsd' in self.sp_level.method:
@@ -2394,8 +2399,10 @@ class Scheduler(object):
                 self.output[label]['paths']['sp'] = original_sp_path  # restore the original path
 
         if self.species_dict[label].is_ts:
+            print(f'\n\n\n\nthis is a TS\n\n\n\n')
             for rxn in self.rxn_dict.values():
                 if rxn.ts_label == label:
+                    print(f'\n\n\n\nchecking TS for {label}!!!!!!!!\n\n\n\n')
                     ts_e_elect_success = rxn.check_ts(verbose=True)
                     if not ts_e_elect_success:
                         self.switch_ts(label=label)
