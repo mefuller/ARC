@@ -508,9 +508,9 @@ class ARCReaction(object):
         if ts_e < r_e or ts_e < p_e:
             if verbose:
                 logger.error(f'\nTS of reaction {self.label} has a lower E0 value than expected:\n')
-                logger.info(f'Reactants: {r_e0 - min_e:.2f} kJ/mol\n'
-                            f'TS: {ts_e0 - min_e:.2f} kJ/mol'
-                            f'\nProducts: {p_e0 - min_e:.2f} kJ/mol')
+                logger.info(f'Reactants: {r_e - min_e:.2f} kJ/mol\n'
+                            f'TS: {ts_e - min_e:.2f} kJ/mol'
+                            f'\nProducts: {p_e - min_e:.2f} kJ/mol')
             return False
         if verbose:
             logger.info(f'\nReaction {self.label} has the following path E0 energies:\n'
