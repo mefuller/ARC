@@ -471,9 +471,9 @@ class ARCReaction(object):
             bool: Whether the TS energy is above both reactants and products wells, ``True`` if it is.
         """
         r_e0 = None if any([spc.e0 is None for spc in self.r_species]) \
-            else sum(spc.e0 * self.get_species_count(spc.label, well=0) for spc in self.r_species)
+            else sum(spc.e0 * self.get_species_count(species=spc, well=0) for spc in self.r_species)
         p_e0 = None if any([spc.e0 is None for spc in self.p_species]) \
-            else sum(spc.e0 * self.get_species_count(spc.label, well=1) for spc in self.p_species)
+            else sum(spc.e0 * self.get_species_count(species=spc, well=1) for spc in self.p_species)
         ts_e0 = self.ts_species.e0
         min_e = extermum_list([r_e0, p_e0, ts_e0], return_min=True)
         if any([val is None for val in [r_e0, p_e0, ts_e0]]):
@@ -660,11 +660,10 @@ class ARCReaction(object):
             raise ValueError('Called get_species_count without a species nor its label.')
         if well not in [0, 1]:
             raise ValueError(f'Got well = {well}, expected either 0 or 1.')
-        label = species.label or label
+        label = species.label if species is not None else label
         well_str = self.label.split('<=>')[well]
         count = well_str.startswith(f'{label} ') + well_str.count(f' {label} ') + well_str.endswith(f' {label}')
         return count
-
 
     # todo: sort the atom pap methods + tests
 
