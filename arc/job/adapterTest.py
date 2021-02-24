@@ -71,7 +71,7 @@ class TestEnumerationClasses(unittest.TestCase):
         self.assertEqual(JobTypeEnum('orbitals').value, 'orbitals')
         self.assertEqual(JobTypeEnum('scan').value, 'scan')
         self.assertEqual(JobTypeEnum('sp').value, 'sp')
-        self.assertEqual(JobTypeEnum('ts').value, 'ts')
+        self.assertEqual(JobTypeEnum('tsg').value, 'tsg')
         with self.assertRaises(ValueError):
             JobTypeEnum('wrong')
 
@@ -272,7 +272,7 @@ class TestJobAdapter(unittest.TestCase):
 
     def test_add_to_args(self):
         """Test adding parameters to self.args"""
-        self.assertEqual(self.job_1.args, {'block': {}, 'keyword': {}, 'trsh': {}})
+        self.assertEqual(self.job_1.args, {'block': {}, 'keyword': {'general': 'scf=xqc'}, 'trsh': {}})
         self.job_1.add_to_args(val='val_tst_1')
         self.job_1.add_to_args(val='val_tst_2')
         self.job_1.add_to_args(val='val_tst_3', separator='     ')
