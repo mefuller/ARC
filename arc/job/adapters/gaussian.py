@@ -320,20 +320,21 @@ class GaussianAdapter(JobAdapter):
         elif self.job_type == 'sp':
             input_dict['job_type_1'] = 'scf=(tight, direct) integral=(grid=ultrafine, Acc2E=12)'
 
-        elif self.job_type == 'scan' \
-                and (not self.species[0].rotors_dict
-                     or (self.species[0].rotors_dict
-                     and self.species[0].rotors_dict[self.rotor_index]['directed_scan_type'] == 'ess')):
-            # In a pipe run, the species object is initialized with species.rotors_dict as an empty dict.
+        elif self.job_type == 'scan':
             scans, scans_strings = list(), list()
-            if self.species[0].rotors_dict and self.rotor_index is not None:
-                scans = self.species[0].rotors_dict[self.rotor_index]['scan']
-                scans = [scans] if not isinstance(scans[0], list) else scans
-            else:
+            if not self.species[0].rotors_dict \
+                     or (self.species[0].rotors_dict
+                         and self.species[0].rotors_dict[self.rotor_index]['directed_scan_type'] == 'ess'):
+                # In a pipe run, the species object is initialized with species.rotors_dict as an empty dict.
+                if self.species[0].rotors_dict and self.rotor_index is not None:
+                    scans = self.species[0].rotors_dict[self.rotor_index]['scan']
+                    scans = [scans] if not isinstance(scans[0], list) else scans
+            elif len(self.torsions):
                 for torsion in self.torsions:
                     scans.append([atom_index + 1 for atom_index in torsion])
             for scan_indices in scans:
                 scans_strings.append(' '.join([str(atom_index) for atom_index in scan_indices]))
+
             ts = 'ts, ' if self.is_ts else ''
             input_dict['job_type_1'] = f'opt=({ts}modredundant, calcfc, noeigentest, maxStep=5) scf=(tight, direct) ' \
                                        f'integral=(grid=ultrafine, Acc2E=12)'
