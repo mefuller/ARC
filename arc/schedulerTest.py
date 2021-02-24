@@ -259,8 +259,8 @@ H      -1.82570782    0.42754384   -0.56130718"""
     def test_non_rotor(self):
         """Test that a 180 degree angle on either side of a torsion is not considered as a rotor"""
         self.sched1.species_dict['CtripCO'].rotors_dict = {
-            0: {'pivots': [2, 3], 'top': [3, 5], 'scan': [1, 2, 3, 5], 'number_of_running_jobs': 0, 'success': None,
-                'invalidation_reason': '', 'times_dihedral_set': 0, 'trsh_methods': [], 'scan_path': '',
+            0: {'torsion': [1, 2, 3, 4], 'top': [3, 5], 'scan': [1, 2, 3, 5], 'number_of_running_jobs': 0,
+                'success': None, 'invalidation_reason': '', 'times_dihedral_set': 0, 'trsh_methods': [], 'scan_path': '',
                 'directed_scan_type': '', 'directed_scan': {}, 'dimensions': 1, 'original_dihedrals': [],
                 'cont_indices': []}}
         self.sched1.species_dict['CtripCO'].number_of_rotors = 1
