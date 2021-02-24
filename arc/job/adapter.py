@@ -109,7 +109,7 @@ class JobTypeEnum(str, Enum):
     orbitals = 'orbitals'
     scan = 'scan'
     sp = 'sp'
-    ts = 'tsg'  # TS search (guess)
+    tsg = 'tsg'  # TS search (guess)
 
 
 class JobExecutionTypeEnum(str, Enum):
