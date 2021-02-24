@@ -154,6 +154,10 @@ class TestARCReaction(unittest.TestCase):
         self.assertEqual(rxn1.get_species_count(species=spc1, well=1), 0)
         self.assertEqual(rxn1.get_species_count(species=spc2, well=0), 1)
         self.assertEqual(rxn1.get_species_count(species=spc2, well=1), 2)
+        self.assertEqual(rxn1.get_species_count(label=spc1.label, well=0), 1)
+        self.assertEqual(rxn1.get_species_count(label=spc1.label, well=1), 0)
+        self.assertEqual(rxn1.get_species_count(label=spc2.label, well=0), 1)
+        self.assertEqual(rxn1.get_species_count(label=spc2.label, well=1), 2)
 
     def test_get_atom_map(self):
         """Test getting an atom map for a reaction"""
