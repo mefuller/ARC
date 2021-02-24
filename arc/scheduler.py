@@ -2305,6 +2305,7 @@ class Scheduler(object):
         Args:
             label (str): The TS species label.
         """
+        print(f'\n\n\n\nIn switch_ts! \n\n\n\n')
         previously_chosen_ts_list = self.species_dict[label].chosen_ts_list.copy()
         self.determine_most_likely_ts_conformer(label=label)  # Look for a different TS guess.
         self.delete_all_species_jobs(label=label)  # Delete other currently running jobs for this TS.
@@ -2404,6 +2405,7 @@ class Scheduler(object):
                 if rxn.ts_label == label:
                     print(f'\n\n\n\nchecking TS for {label}!!!!!!!!\n\n\n\n')
                     ts_e_elect_success = rxn.check_ts(verbose=True)
+                    print(f'\n\n\n\n\n success?? {ts_e_elect_success}')
                     if not ts_e_elect_success:
                         self.switch_ts(label=label)
                     break
