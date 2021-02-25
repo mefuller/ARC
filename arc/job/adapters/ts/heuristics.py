@@ -242,11 +242,8 @@ class HeuristicsAdapter(JobAdapter):
         supported_families = [key for key, val in ts_adapters_by_rmg_family.items() if 'heuristics' in val]
 
         self.reactions = [self.reactions] if not isinstance(self.reactions, list) else self.reactions
-        print('\n\n\n\nIn Heuristrics')
         for rxn in self.reactions:
-            print(rxn)
             family = rxn.family.label
-            print(family)
             if family not in supported_families:
                 logger.warning(f'The heuristics TS search adapter does not yet support the {family} reaction family.')
                 continue
@@ -263,10 +260,6 @@ class HeuristicsAdapter(JobAdapter):
                                             multiplicity=rxn.multiplicity,
                                             )
             rxn.arc_species_from_rmg_reaction()
-            print(rxn.r_species[0].get_xyz())
-            print(rxn.r_species[1].get_xyz())
-            print(rxn.p_species[0].get_xyz())
-            print(rxn.p_species[1].get_xyz())
             reactant_mol_combinations = list(
                 itertools.product(*list(reactant.mol_list for reactant in rxn.r_species)))
             product_mol_combinations = list(
@@ -279,14 +272,11 @@ class HeuristicsAdapter(JobAdapter):
                         reaction_list.append(reaction)
 
             if family == 'H_Abstraction':
-                print('in family condition')
                 tsg = TSGuess(method=f'Heuristics')
                 tsg.tic()
                 xyzs = h_abstraction(rxn, reaction_list, dihedral_increment=20)  # todo: dihedral_increment should be a variable
                 tsg.tok()
                 for method_index, xyz in enumerate(xyzs):
-                    print(method_index)
-                    print(xyz)
                     ts_guess = TSGuess(method=f'Heuristics',
                                        index=len(rxn.ts_species.ts_guesses),
                                        method_index=method_index,
@@ -303,9 +293,6 @@ class HeuristicsAdapter(JobAdapter):
                              format_='xyz',
                              comment=f'Heuristics {method_index}, family: {family}',
                              )
-                    print(len(rxn.ts_species.ts_guesses))
-                    print(ts_guess.method)
-                    print(ts_guess.success)
 
             if len(self.reactions) < 5:
                 successes = len([tsg for tsg in rxn.ts_species.ts_guesses if tsg.success and 'heuristics' in tsg.method])
