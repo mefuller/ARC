@@ -65,6 +65,7 @@ def job_factory(job_adapter: str,
                 server_nodes: Optional[list] = None,
                 species: Optional[List['ARCSpecies']] = None,
                 testing: bool = False,
+                times_rerun: int = 0,
                 torsions: Optional[List[List[int]]] = None,
                 tsg: Optional[int] = None,
                 xyz: Optional[dict] = None,
@@ -122,6 +123,7 @@ def job_factory(job_adapter: str,
         species (List[ARCSpecies], optional): Entries are ARCSpecies instances.
                                               Either ``reactions`` or ``species`` must be given.
         testing (bool, optional): Whether the object is generated for testing purposes, ``True`` if it is.
+        times_rerun (int, optional): Number of times this job was re-run with the same arguments (no trsh methods).
         torsions (List[List[int]], optional): The 0-indexed atom indices of the torsions identifying this scan point.
         tsg (int, optional): TSGuess number if optimizing TS guesses.
         xyz (dict, optional): The 3D coordinates to use. If not give, species.get_xyz() will be used.
@@ -192,6 +194,7 @@ def job_factory(job_adapter: str,
                                                               server_nodes=server_nodes,
                                                               species=species,
                                                               testing=testing,
+                                                              times_rerun=times_rerun,
                                                               torsions=torsions,
                                                               tsg=tsg,
                                                               xyz=xyz,
