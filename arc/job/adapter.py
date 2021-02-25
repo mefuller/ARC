@@ -557,29 +557,19 @@ class JobAdapter(ABC):
                     if dl_file['file_name'] == output_filenames[self.job_adapter]:
                         self.final_time = ssh.get_last_modified_time(remote_file_path=dl_file['local'])
             elif self.server == 'local':
-                self.final_time = get_last_modified_time(
-                    file_path=os.path.join(self.local_path, output_filenames[self.job_adapter]))
+                self.final_time = get_last_modified_time(file_path=os.path.join(self.local_path,
+                                                                                output_filenames[self.job_adapter]))
         self.final_time = self.final_time or datetime.datetime.now()
-        print(f'in download_files for {self.job_name}. initial_time: {self.initial_time}. '
-              f'Determined final_time: {self.final_time}')
 
     def determine_run_time(self):
         """
         Determine the run time. Update self.run_time and round to seconds.
         """
-        print('\n\n\nin job adapter determine_run_time()')
-        print(f'self.initial_time: {self.initial_time}')
-        print(f'self.final_time: {self.final_time}')
         if self.initial_time is not None and self.final_time is not None:
-            print('actualy determining the run time')
             time_delta = self.final_time - self.initial_time
             remainder = time_delta.microseconds > 5e5
             self.run_time = datetime.timedelta(seconds=time_delta.seconds + remainder)
-            print(f'time_delta: {time_delta}')
-            print(f'remainder: {remainder}')
-            print(f'self.run_time: {self.run_time}')
         else:
-            print('setting the run_time to None...')
             self.run_time = None
 
     def _set_job_number(self):
