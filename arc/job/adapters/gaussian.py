@@ -101,6 +101,7 @@ class GaussianAdapter(JobAdapter):
         species (List[ARCSpecies], optional): Entries are ARCSpecies instances.
                                               Either ``reactions`` or ``species`` must be given.
         testing (bool, optional): Whether the object is generated for testing purposes, ``True`` if it is.
+        times_rerun (int, optional): Number of times this job was re-run with the same arguments (no trsh methods).
         torsions (List[List[int]], optional): The 0-indexed atom indices of the torsions identifying this scan point.
         tsg (int, optional): TSGuess number if optimizing TS guesses.
         xyz (dict, optional): The 3D coordinates to use. If not give, species.get_xyz() will be used.
@@ -137,6 +138,7 @@ class GaussianAdapter(JobAdapter):
                  server_nodes: Optional[list] = None,
                  species: Optional[List['ARCSpecies']] = None,
                  testing: bool = False,
+                 times_rerun: int = 0,
                  torsions: List[List[int]] = None,
                  tsg: Optional[int] = None,
                  xyz: Optional[dict] = None,
@@ -195,6 +197,7 @@ class GaussianAdapter(JobAdapter):
         self.torsions = torsions
         self.tsg = tsg
         self.xyz = xyz or self.species[0].get_xyz()
+        self.times_rerun = times_rerun
 
         if self.job_num is None or self.job_name is None or self.job_server_name:
             self._set_job_number()
