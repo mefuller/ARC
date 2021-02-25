@@ -565,11 +565,19 @@ class JobAdapter(ABC):
         """
         Determine the run time. Update self.run_time and round to seconds.
         """
+        print('\n\n\nin job adapter determine_run_time()')
+        print(f'self.initial_time: {self.initial_time}')
+        print(f'self.final_time: {self.final_time}')
         if self.initial_time is not None and self.final_time is not None:
+            print('actualy determining the run time')
             time_delta = self.final_time - self.initial_time
             remainder = time_delta.microseconds > 5e5
             self.run_time = datetime.timedelta(seconds=time_delta.seconds + remainder)
+            print(f'time_delta: {time_delta}')
+            print(f'remainder: {remainder}')
+            print(f'self.run_time: {self.run_time}')
         else:
+            print('setting the run_time to None...')
             self.run_time = None
 
     def _set_job_number(self):
