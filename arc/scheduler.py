@@ -2010,7 +2010,7 @@ class Scheduler(object):
             # Select the TSG with the lowest energy given that it has only one significant imaginary frequency.
             # Todo: consider IRC well isomorphism, normal mode check (respective TSG attributes already exist)
             e_min, selected_i = None, None
-            self.species_dict[label].ts_confs_exhausted = True
+            self.species_dict[label].ts_guesses_exhausted = True
             for tsg in self.species_dict[label].ts_guesses:
                 if tsg.energy is not None and (e_min is None or tsg.energy < e_min) \
                         and (tsg.imaginary_freqs is None or tsg.check_imaginary_frequencies())\
@@ -2030,7 +2030,7 @@ class Scheduler(object):
                     self.species_dict[label].chosen_ts_method = tsg.method
                     self.species_dict[label].initial_xyz = tsg.opt_xyz
                     self.species_dict[label].final_xyz = None
-                    self.species_dict[label].ts_confs_exhausted = False
+                    self.species_dict[label].ts_guesses_exhausted = False
                     print(self.species_dict[label].chosen_ts,
                           self.species_dict[label].chosen_ts_list,
                           self.species_dict[label].chosen_ts_method,
@@ -2317,7 +2317,7 @@ class Scheduler(object):
         print(f'previously_chosen_ts_list: {previously_chosen_ts_list}')
         self.determine_most_likely_ts_conformer(label=label)  # Look for a different TS guess.
         self.delete_all_species_jobs(label=label)  # Delete other currently running jobs for this TS.
-        if not self.species_dict[label].ts_confs_exhausted:
+        if not self.species_dict[label].ts_guesses_exhausted:
             logger.info(f'Optimizing species {label} again using a different TS guess: '
                         f'({self.species_dict[label].chosen_ts})')
             if not self.composite_method:
@@ -2751,7 +2751,7 @@ class Scheduler(object):
                                                 (other_time or zero_delta)
             logger.info(f'\nAll jobs for species {label} successfully converged. '
                         f'Run time: {self.species_dict[label].run_time}')
-        elif not self.species_dict[label].is_ts or self.species_dict[label].ts_confs_exhausted:
+        elif not self.species_dict[label].is_ts or self.species_dict[label].ts_guesses_exhausted:
             job_type_status = {key: val for key, val in self.output[label]['job_types'].items()
                                if key in self.job_types and self.job_types[key]}
             logger.error(f'Species {label} did not converge. Job type status is: {job_type_status}')
@@ -3045,7 +3045,7 @@ class Scheduler(object):
         is_h = self.species_dict[label].number_of_atoms == 1 and \
             self.species_dict[label].mol.atoms[0].element.symbol in ['H', 'D', 'T']
         output_errors, ess_trsh_methods, remove_checkfile, level_of_theory, \
-            software, job_type, fine, trsh_keyword, memory, shift, cpu_cores, dont_rerun = \
+            software, job_type, fine, trsh_keyword, memory, shift, cpu_cores, couldnt_trsh = \
             trsh_ess_job(label=label,
                          level_of_theory=level_of_theory,
                          server=job.server,
@@ -3066,7 +3066,7 @@ class Scheduler(object):
             self.species_dict[label].checkfile = None
         job.ess_trsh_methods = ess_trsh_methods
 
-        if not dont_rerun:
+        if not couldnt_trsh:
             self.run_job(label=label,
                          xyz=xyz,
                          level_of_theory=level_of_theory,
@@ -3085,6 +3085,10 @@ class Scheduler(object):
                          cpu_cores=cpu_cores,
                          shift=shift,
                          )
+        elif self.species_dict[label].is_ts and not self.species_dict[label].ts_guesses_exhausted:
+            # Try a different TSGuess.
+            self.switch_ts(label=label)
+
         self.save_restart_dict()
 
     def troubleshoot_conformer_isomorphism(self, label: str):
