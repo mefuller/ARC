@@ -560,6 +560,8 @@ class JobAdapter(ABC):
                 self.final_time = get_last_modified_time(
                     file_path=os.path.join(self.local_path, output_filenames[self.job_adapter]))
         self.final_time = self.final_time or datetime.datetime.now()
+        print(f'in download_files for {self.job_name}. initial_time: {self.initial_time}. '
+              f'Determined final_time: {self.final_time}')
 
     def determine_run_time(self):
         """
