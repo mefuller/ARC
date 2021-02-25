@@ -294,83 +294,85 @@ class GCNAdapter(JobAdapter):
             script_path = os.path.join(arc_path, 'arc', 'job', 'adapters', 'ts', 'scripts', 'gcn_script.py')
             command_0 = 'source ~/.bashrc'
 
-            ts_xyz_fwd, ts_xyz_rev = None, None
+            for _ in range(5):  # todo: this number of repetitions shoudl be studied and optimized, perhaps leave it as a handle
 
-            # run the GCN as a subprocess in the forward directions
-            ts_guess_f = TSGuess(method=f'GCN',
-                                 method_direction='F',
-                                 index=len(rxn.ts_species.ts_guesses),
-                                 )
-            ts_guess_f.tic()
+                ts_xyz_fwd, ts_xyz_rev = None, None
 
-            commands = [command_0]
-            commands.append(f'{TS_GCN_PYTHON} {script_path} '
-                            f'--r_sdf_path {self.reactant_path} '
-                            f'--p_sdf_path {self.product_path} '
-                            f'--ts_xyz_path {self.ts_fwd_path}')
-            command = '; '.join(commands)
-            output = subprocess.run(command, shell=True, executable='/bin/bash')
-            if output.returncode:
-                logger.warning(f'GCN subprocess ran in the forward direction did not give a successful return code '
-                               f'for {rxn} in the forward direction.\n'
-                               f'Got return code: {output.returncode}\n'
-                               f'stdout: {output.stdout}\n'
-                               f'stderr: {output.stderr}')
-            elif os.path.isfile(self.ts_fwd_path):
-                ts_xyz_fwd = str_to_xyz(self.ts_fwd_path)
+                # run the GCN as a subprocess in the forward directions
+                ts_guess_f = TSGuess(method=f'GCN',
+                                     method_direction='F',
+                                     index=len(rxn.ts_species.ts_guesses),
+                                     )
+                ts_guess_f.tic()
 
-            ts_guess_f.tok()
+                commands = [command_0]
+                commands.append(f'{TS_GCN_PYTHON} {script_path} '
+                                f'--r_sdf_path {self.reactant_path} '
+                                f'--p_sdf_path {self.product_path} '
+                                f'--ts_xyz_path {self.ts_fwd_path}')
+                command = '; '.join(commands)
+                output = subprocess.run(command, shell=True, executable='/bin/bash')
+                if output.returncode:
+                    logger.warning(f'GCN subprocess ran in the forward direction did not give a successful return code '
+                                   f'for {rxn} in the forward direction.\n'
+                                   f'Got return code: {output.returncode}\n'
+                                   f'stdout: {output.stdout}\n'
+                                   f'stderr: {output.stderr}')
+                elif os.path.isfile(self.ts_fwd_path):
+                    ts_xyz_fwd = str_to_xyz(self.ts_fwd_path)
 
-            if ts_xyz_fwd is not None:
-                ts_guess_f.success = True
-                ts_guess_f.process_xyz(ts_xyz_fwd)
-                save_geo(xyz=ts_xyz_fwd,
-                         path=self.local_path,
-                         filename='GCN F',
-                         format_='xyz',
-                         comment='GCN F',
-                         )
-            else:
-                ts_guess_f.success = False
-            rxn.ts_species.ts_guesses.append(ts_guess_f)
+                ts_guess_f.tok()
 
-            # run the GCN as a subprocess in the reverse directions
-            ts_guess_r = TSGuess(method=f'GCN',
-                                 method_direction='R',
-                                 index=len(rxn.ts_species.ts_guesses),
-                                 )
-            ts_guess_r.tic()
+                if ts_xyz_fwd is not None:
+                    ts_guess_f.success = True
+                    ts_guess_f.process_xyz(ts_xyz_fwd)
+                    save_geo(xyz=ts_xyz_fwd,
+                             path=self.local_path,
+                             filename=f'GCN F {ts_guess_f.index}',
+                             format_='xyz',
+                             comment='GCN F',
+                             )
+                else:
+                    ts_guess_f.success = False
+                rxn.ts_species.ts_guesses.append(ts_guess_f)
 
-            commands = [command_0]
-            commands.append(f'{TS_GCN_PYTHON} {script_path} '
-                            f'--r_sdf_path {self.product_path} '
-                            f'--p_sdf_path {self.reactant_path} '
-                            f'--ts_xyz_path {self.ts_rev_path}')
-            command = '; '.join(commands)
-            output = subprocess.run(command, shell=True, executable='/bin/bash')
-            if output.returncode:
-                logger.warning(f'GCN subprocess ran in the reverse direction did not give a successful return code '
-                               f'for {rxn} in the reverse direction.\n'
-                               f'Got return code: {output.returncode}\n'
-                               f'stdout: {output.stdout}\n'
-                               f'stderr: {output.stderr}')
-            elif os.path.isfile(self.ts_rev_path):
-                ts_xyz_rev = str_to_xyz(self.ts_rev_path)
+                # run the GCN as a subprocess in the reverse directions
+                ts_guess_r = TSGuess(method=f'GCN',
+                                     method_direction='R',
+                                     index=len(rxn.ts_species.ts_guesses),
+                                     )
+                ts_guess_r.tic()
 
-            ts_guess_r.tok()
+                commands = [command_0]
+                commands.append(f'{TS_GCN_PYTHON} {script_path} '
+                                f'--r_sdf_path {self.product_path} '
+                                f'--p_sdf_path {self.reactant_path} '
+                                f'--ts_xyz_path {self.ts_rev_path}')
+                command = '; '.join(commands)
+                output = subprocess.run(command, shell=True, executable='/bin/bash')
+                if output.returncode:
+                    logger.warning(f'GCN subprocess ran in the reverse direction did not give a successful return code '
+                                   f'for {rxn} in the reverse direction.\n'
+                                   f'Got return code: {output.returncode}\n'
+                                   f'stdout: {output.stdout}\n'
+                                   f'stderr: {output.stderr}')
+                elif os.path.isfile(self.ts_rev_path):
+                    ts_xyz_rev = str_to_xyz(self.ts_rev_path)
 
-            if ts_xyz_fwd is not None:
-                ts_guess_r.success = True
-                ts_guess_r.process_xyz(ts_xyz_rev)
-                save_geo(xyz=ts_xyz_rev,
-                         path=self.local_path,
-                         filename='GCN R',
-                         format_='xyz',
-                         comment='GCN R',
-                         )
-            else:
-                ts_guess_r.success = False
-            rxn.ts_species.ts_guesses.append(ts_guess_r)
+                ts_guess_r.tok()
+
+                if ts_xyz_fwd is not None:
+                    ts_guess_r.success = True
+                    ts_guess_r.process_xyz(ts_xyz_rev)
+                    save_geo(xyz=ts_xyz_rev,
+                             path=self.local_path,
+                             filename=f'GCN R {ts_guess_f.index}',
+                             format_='xyz',
+                             comment='GCN R',
+                             )
+                else:
+                    ts_guess_r.success = False
+                rxn.ts_species.ts_guesses.append(ts_guess_r)
 
             if len(self.reactions) < 5:
                 successes = len([tsg for tsg in rxn.ts_species.ts_guesses if tsg.success and 'gcn' in tsg.method])
