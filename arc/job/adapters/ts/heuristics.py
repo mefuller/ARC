@@ -641,21 +641,27 @@ def h_abstraction(arc_reaction, rmg_reactions, r1_stretch=1.2, r2_stretch=1.2, a
 
         zmats = list()
         for d2, d3 in d2_d3_product:
-            xyz_guess = combine_coordinates_with_redundant_atoms(xyz1=arc_reactant.get_xyz(),
-                                                                 xyz2=arc_product.get_xyz(),
-                                                                 mol1=arc_reactant.mol,
-                                                                 mol2=arc_product.mol,
-                                                                 h1=h1,
-                                                                 h2=h2,
-                                                                 c=c,
-                                                                 d=d,
-                                                                 r1_stretch=r1_stretch,
-                                                                 r2_stretch=r2_stretch,
-                                                                 a2=a2,
-                                                                 d2=d2,
-                                                                 d3=d3)
+            xyz_guess = None
+            try:
+                xyz_guess = combine_coordinates_with_redundant_atoms(xyz1=arc_reactant.get_xyz(),
+                                                                     xyz2=arc_product.get_xyz(),
+                                                                     mol1=arc_reactant.mol,
+                                                                     mol2=arc_product.mol,
+                                                                     h1=h1,
+                                                                     h2=h2,
+                                                                     c=c,
+                                                                     d=d,
+                                                                     r1_stretch=r1_stretch,
+                                                                     r2_stretch=r2_stretch,
+                                                                     a2=a2,
+                                                                     d2=d2,
+                                                                     d3=d3,
+                                                                     )
+            except ValueError as e:
+                logger.error(f'Could not generate a guess using Heuristics for H abstraction reaction, got:\n{e}')
 
-            if not colliding_atoms(xyz_guess):  # len(qcel.molutil.guess_connectivity(symbols, geometry, threshold=0.9))
+            if xyz_guess is not None and not colliding_atoms(xyz_guess):
+                # len(qcel.molutil.guess_connectivity(symbols, geometry, threshold=0.9))
                 zmat_guess = zmat_from_xyz(xyz_guess)
                 for existing_zmat_guess in zmats:
                     if compare_zmats(existing_zmat_guess, zmat_guess):
