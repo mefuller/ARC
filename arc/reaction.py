@@ -15,7 +15,7 @@ import arc.rmgdb as rmgdb
 from arc.common import extermum_list, get_logger
 from arc.exceptions import ReactionError, InputError
 from arc.species.converter import check_xyz_dict, str_to_xyz, xyz_to_str
-from arc.species.species import ARCSpecies, check_atom_balance
+from arc.species.species import ARCSpecies, check_atom_balance, check_label
 
 
 logger = get_logger()
@@ -533,6 +533,8 @@ class ARCReaction(object):
         species_labels = self.label.split(self.arrow)
         reactants = species_labels[0].split(self.plus)
         products = species_labels[1].split(self.plus)
+        reactants = [check_label(reactant) for reactant in reactants]
+        products = [check_label(product) for product in products]
         if self.reactants is not None:
             for reactant in reactants:
                 if reactant not in self.reactants:
