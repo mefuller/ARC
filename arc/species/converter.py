@@ -315,7 +315,7 @@ def xyz_file_format_to_xyz(xyz_file: str) -> dict:
     return str_to_xyz(xyz_str)
 
 
-def xyz_from_data(coords, numbers=None, symbols=None, isotopes=None):
+def xyz_from_data(coords, numbers=None, symbols=None, isotopes=None) -> dict:
     """
     Get the ARC xyz dictionary format from raw data.
     Either ``numbers`` or ``symbols`` must be specified.
@@ -327,12 +327,12 @@ def xyz_from_data(coords, numbers=None, symbols=None, isotopes=None):
         symbols (tuple, list, optional): Element symbols.
         isotopes (tuple, list, optional): Element isotope numbers.
 
-    Returns:
-        dict: The ARC dictionary xyz format.
-
     Raises:
         ConverterError: If neither ``numbers`` nor ``symbols`` are specified, if both are specified,
                         or if the input lengths aren't consistent.
+
+    Returns:
+        dict: The ARC dictionary xyz format.
     """
     if isinstance(coords, np.ndarray):
         coords = tuple(tuple(coord.tolist()) for coord in coords)
@@ -470,6 +470,7 @@ def check_xyz_dict(xyz: Union[dict, str]) -> dict:
     If it is a string, convert it.
     If it is a Z matrix, convert it to cartesian coordinates,
     If isotopes are not in xyz_dict, common values will be added.
+    If a part of it is np.ndarray, convert
 
     Args:
          xyz (Union[dict, str]): The xyz dictionary.
@@ -493,8 +494,9 @@ def check_xyz_dict(xyz: Union[dict, str]) -> dict:
     if len(xyz_dict['symbols']) != len(xyz_dict['coords']):
         raise ConverterError(f'Got {len(xyz_dict["symbols"])} symbols and {len(xyz_dict["coords"])} '
                              f'coordinates:\n{xyz_dict}')
-    if 'isotopes' not in list(xyz_dict.keys()):
-        xyz_dict = xyz_from_data(coords=xyz_dict['coords'], symbols=xyz_dict['symbols'])
+    xyz_dict = xyz_from_data(coords=xyz_dict['coords'],
+                             symbols=xyz_dict['symbols'],
+                             isotopes=xyz_dict['isotopes'] if 'isotopes' in list(xyz_dict.keys()) else None)
     if len(xyz_dict['symbols']) != len(xyz_dict['isotopes']):
         raise ConverterError(f'Got {len(xyz_dict["symbols"])} symbols and {len(xyz_dict["isotopes"])} '
                              f'isotopes:\n{xyz_dict}')
