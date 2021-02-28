@@ -3383,7 +3383,8 @@ class Scheduler(object):
                     ts_guess['method'] = tsg.method
                     ts_guess['method_index'] = tsg.method_index
                     ts_guess['method_direction'] = tsg.method_direction
-                    ts_guess['execution_time'] = tsg.execution_time
+                    ts_guess['execution_time'] = str(self.execution_time) \
+                        if isinstance(self.execution_time, datetime.timedelta) else self.execution_time
                     ts_guess['success'] = tsg.success
                     ts_guess['energy'] = tsg.energy
                     ts_guess['imaginary_freqs'] = tsg.imaginary_freqs
