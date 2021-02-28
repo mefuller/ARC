@@ -3371,7 +3371,7 @@ class Scheduler(object):
                 ts_dict['rxn_label'] = species.rxn_label
                 for reaction in self.rxn_list:
                     if reaction.ts_label == species.label:
-                        ts_dict['family'] = reaction.family
+                        ts_dict['family'] = reaction.family.label
                         break
                 else:
                     ts_dict['family'] = None
