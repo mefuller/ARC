@@ -221,12 +221,12 @@ class ARCSpecies(object):
         successful_methods (list): Methods used to generate a TS guess that successfully generated an XYZ guess.
         unsuccessful_methods (list): Methods used to generate a TS guess that were unsuccessfully.
         chosen_ts (int): The TSGuess index corresponding to the chosen TS conformer used for optimization.
-        chosen_ts_list (List[int]): The TSGuess index corresponding to the TS conformers that were tried out.
+        chosen_ts_list (List[int]): The TSGuess index corresponding to the TS guesses that were tried out.
         chosen_ts_method (str): The TS method that was actually used for optimization.
         ts_conf_spawned (bool): Whether conformers were already spawned for the Species (representing a TS) based on its
                                 TSGuess objects.
-        ts_confs_exhausted (bool): Whether all TS guesses were tried out with no luck
-                                   (``True`` if no convergence achieved).
+        ts_guesses_exhausted (bool): Whether all TS guesses were tried out with no luck
+                                     (``True`` if no convergence achieved).
         ts_number (int): An auto-generated number associating the TS ARCSpecies object with the corresponding
                          :ref:`ARCReaction <reaction>` object.
         ts_report (str): A description of all methods used for guessing a TS and their ranking.
@@ -342,7 +342,7 @@ class ARCSpecies(object):
             self.force_field = force_field
             self.is_ts = is_ts
             self.ts_conf_spawned = False
-            self.ts_confs_exhausted = False
+            self.ts_guesses_exhausted = False
             self.e_elect = None
             self.e0 = None
             self.arkane_file = None
@@ -567,7 +567,7 @@ class ARCSpecies(object):
         if self.is_ts:
             species_dict['ts_guesses'] = [tsg.as_dict() for tsg in self.ts_guesses]
             species_dict['ts_conf_spawned'] = self.ts_conf_spawned
-            species_dict['ts_confs_exhausted'] = self.ts_confs_exhausted
+            species_dict['ts_guesses_exhausted'] = self.ts_guesses_exhausted
             species_dict['ts_number'] = self.ts_number
             species_dict['ts_report'] = self.ts_report
             species_dict['rxn_label'] = self.rxn_label
@@ -691,7 +691,7 @@ class ARCSpecies(object):
             else False if self.is_ts else None
         if self.is_ts:
             self.ts_number = species_dict['ts_number'] if 'ts_number' in species_dict else None
-            self.ts_confs_exhausted = species_dict['ts_confs_exhausted'] if 'ts_confs_exhausted' in species_dict else False
+            self.ts_guesses_exhausted = species_dict['ts_guesses_exhausted'] if 'ts_guesses_exhausted' in species_dict else False
             self.ts_report = species_dict['ts_report'] if 'ts_report' in species_dict else ''
             self.ts_guesses = [TSGuess(ts_dict=tsg) for tsg in species_dict['ts_guesses']] \
                 if 'ts_guesses' in species_dict else list()
@@ -1737,6 +1737,9 @@ class TSGuess(object):
         initial_xyz (dict): The 3D coordinates guess.
         opt_xyz (dict): The 3D coordinates after optimization at the ts_guesses level.
         method (str): The method/source used for the xyz guess.
+        method_index (int): A sub-index, used for cases where a single method generates several guesses.
+                            Counts separately for each direction, 'F' and 'R'.
+        method_direction (str): The reaction direction used for generating the guess ('F' or 'R').
         family (str): The RMG family that corresponds to the reaction, if applicable.
         rmg_reaction (Reaction): An RMG Reaction object.
         arc_reaction (ARCReaction): An ARC Reaction object.
@@ -1802,18 +1805,18 @@ class TSGuess(object):
     def as_dict(self) -> dict:
         """A helper function for dumping this object as a dictionary in a YAML file for restarting ARC"""
         ts_dict = dict()
-        ts_dict['t0'] = self.t0.isoformat() if isinstance(self.t0, datetime.datetime) else self.t0
+        ts_dict['t0'] = str(self.t0.isoformat()) if isinstance(self.t0, datetime.datetime) else self.t0
         ts_dict['method'] = self.method
         ts_dict['method_index'] = self.method_index
         ts_dict['method_direction'] = self.method_direction
         ts_dict['success'] = self.success
         ts_dict['energy'] = self.energy
         ts_dict['index'] = self.index
-        ts_dict['imaginary_freqs'] = self.imaginary_freqs
+        ts_dict['imaginary_freqs'] = [float(f) for f in self.imaginary_freqs] if self.imaginary_freqs is not None else None
         ts_dict['conformer_index'] = self.conformer_index
         ts_dict['successful_irc'] = self.successful_irc
         ts_dict['successful_normal_mode'] = self.successful_normal_mode
-        ts_dict['execution_time'] = str(self.execution_time) if isinstance(self.execution_time, datetime.datetime) \
+        ts_dict['execution_time'] = str(self.execution_time) if isinstance(self.execution_time, datetime.timedelta) \
             else self.execution_time
         if self.initial_xyz:
             ts_dict['initial_xyz'] = self.initial_xyz
@@ -2201,11 +2204,21 @@ def check_label(label: str) -> str:
     Returns:
         str: a legal label.
     """
-    char_replacement = {'#': 't'}
+    char_replacement = {'#': 't',
+                        '=': 'd',
+                        '(': '[',
+                        ')': ']',
+                        ' ': '_',
+                        '-': '_',
+                        '%': 'p',
+                        '$': 'd',
+                        '*': 's',
+                        '@': 'a',
+                        }
     modified = False
     original_label = label
     for char in original_label:
-        if char not in valid_chars:
+        if char not in valid_chars or char == ' ':
             logger.error(f'Label {label} contains an invalid character: "{char}"')
             if char in char_replacement.keys():
                 label = label.replace(char, char_replacement[char])
