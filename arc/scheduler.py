@@ -684,6 +684,8 @@ class Scheduler(object):
         for spc in self.species_list:
             if spc.yml_path is not None:
                 self.species_dict[spc.label] = spc
+        # Generate a TS report:
+        self.generate_final_ts_guess_report()
 
     def run_job(self,
                 job_type: str,
@@ -706,6 +708,7 @@ class Scheduler(object):
                 shift: Optional[str] = '',
                 trsh: Optional[str] = '',
                 torsions: Optional[List[List[int]]] = None,
+                times_rerun: int = 0,
                 tsg: Optional[int] = None,
                 xyz: Optional[dict] = None,
                 ):
@@ -732,6 +735,7 @@ class Scheduler(object):
             reactions (List[ARCReaction], optional): Entries are ARCReaction instances, used for TS search methods.
             scan_trsh (str, optional): A troubleshooting method for rotor scans.
             shift (str, optional): A string representation alpha- and beta-spin orbitals shifts (molpro only).
+            times_rerun (int, optional): Number of times this job was re-run with the same arguments (no trsh methods).
             torsions (List[List[int]], optional): The 0-indexed atom indices of the torsions identifying this scan point.
             trsh (str, optional): A troubleshooting keyword to be used in input files.
             tsg (int, optional): TSGuess number if optimizing TS guesses.
@@ -783,6 +787,7 @@ class Scheduler(object):
                           rotor_index=rotor_index,
                           # server_nodes=,
                           species=[species] if species is not None and not isinstance(species, list) else species,
+                          times_rerun=times_rerun,
                           torsions=torsions,
                           tsg=tsg,
                           xyz=xyz,
@@ -926,13 +931,16 @@ class Scheduler(object):
 
     def _run_a_job(self,
                    job: 'JobAdapter',
-                   label: str):
+                   label: str,
+                   rerun: bool = False,
+                   ):
         """
         A helper function to run an ARC job (used internally).
 
         Args:
             job (JobAdapter): The job object.
             label (str): The species label.
+            rerun (bool optional): Whether this job is being re-run.
         """
         self.run_job(job_type=job.job_type,
                      conformer=job.conformer,
@@ -952,6 +960,7 @@ class Scheduler(object):
                      reactions=job.reactions,
                      trsh=job.args['keyword']['trsh'] if 'trsh' in job.args['keyword'] else '',
                      torsions=job.torsions,
+                     times_rerun=job.times_rerun + int(rerun),
                      tsg=job.tsg,
                      xyz=job.xyz,
                      )
@@ -1328,7 +1337,6 @@ class Scheduler(object):
             label (str): The species label.
             job_name (str): The opt job name (used for differentiating between ``opt`` and ``optfreq`` jobs).
         """
-        print(f'\n\n\n\nIn spawn post opt jobs for {label}\n\n\n\n')
         composite = 'composite' in job_name  # Whether "post composite jobs" need to be spawned
         if not composite and self.composite_method:
             # This was originally a composite method, probably troubleshooted as 'opt'
@@ -1360,7 +1368,6 @@ class Scheduler(object):
                 self.run_scan_jobs(label)
 
         if composite and self.composite_method:
-            print(f'\n\n\n\ncalling post_sp_actions for {label} from spawn_post_opt_jobs for a composite method\n\n\n\n')
             self.post_sp_actions(label=label,
                                  sp_path=os.path.join(self.job_dict[label]['composite'][job_name].local_path,
                                                       'output.out'))
@@ -1806,6 +1813,8 @@ class Scheduler(object):
                     logger.debug(f'Energy for conformer {i} of {label} is None')
         else:
             logger.warning(f'Conformer {i} for {label} did not converge.')
+            if job.times_rerun == 0:
+                self._run_a_job(job=job, label=label, rerun=True)
 
     def parse_tsg(self,
                   job: 'JobAdapter',
@@ -1975,7 +1984,6 @@ class Scheduler(object):
         Args:
             label (str): The TS species label.
         """
-        print('\n\n\n\nIn determine_most_likely_ts_conformer\n\n\n\n')
         if not self.species_dict[label].is_ts:
             raise SchedulerError('determine_most_likely_ts_conformer() method only processes transition state guesses.')
         if not self.species_dict[label].successful_methods:
@@ -2012,29 +2020,24 @@ class Scheduler(object):
             e_min, selected_i = None, None
             self.species_dict[label].ts_guesses_exhausted = True
             for tsg in self.species_dict[label].ts_guesses:
-                if tsg.energy is not None and (e_min is None or tsg.energy < e_min) \
-                        and (tsg.imaginary_freqs is None or tsg.check_imaginary_frequencies())\
-                        and tsg.conformer_index not in self.species_dict[label].chosen_ts_list:
+                if tsg.success and tsg.energy is not None and (e_min is None or tsg.energy < e_min) \
+                        and (tsg.imaginary_freqs is None or tsg.check_imaginary_frequencies()) \
+                        and tsg.index not in self.species_dict[label].chosen_ts_list:
                     e_min = tsg.energy
-                    selected_i = tsg.conformer_index
+                    selected_i = tsg.index
             e_min = None
             for tsg in self.species_dict[label].ts_guesses:
                 # Reset e_min to the lowest value regardless of other criteria (imaginary frequencies, IRC, normal modes).
                 if tsg.energy is not None and (e_min is None or tsg.energy < e_min):
                     e_min = tsg.energy
             for tsg in self.species_dict[label].ts_guesses:
-                if tsg.conformer_index == selected_i:
-                    print(f'\n\n\nFound tsg {selected_i}')
+                if tsg.index == selected_i:
                     self.species_dict[label].chosen_ts = selected_i
                     self.species_dict[label].chosen_ts_list.append(selected_i)
                     self.species_dict[label].chosen_ts_method = tsg.method
                     self.species_dict[label].initial_xyz = tsg.opt_xyz
                     self.species_dict[label].final_xyz = None
                     self.species_dict[label].ts_guesses_exhausted = False
-                    print(self.species_dict[label].chosen_ts,
-                          self.species_dict[label].chosen_ts_list,
-                          self.species_dict[label].chosen_ts_method,
-                          )
                 if tsg.success and tsg.energy is not None:  # guess method and ts_level opt were both successful
                     tsg.energy -= e_min
                     im_freqs = f', imaginary frequencies {tsg.imaginary_freqs}' if tsg.imaginary_freqs is not None else ''
@@ -2312,9 +2315,7 @@ class Scheduler(object):
         Args:
             label (str): The TS species label.
         """
-        print(f'\n\n\n\nIn switch_ts! \n\n\n\n')
         previously_chosen_ts_list = self.species_dict[label].chosen_ts_list.copy()
-        print(f'previously_chosen_ts_list: {previously_chosen_ts_list}')
         self.determine_most_likely_ts_conformer(label=label)  # Look for a different TS guess.
         self.delete_all_species_jobs(label=label)  # Delete other currently running jobs for this TS.
         if not self.species_dict[label].ts_guesses_exhausted:
@@ -2336,12 +2337,10 @@ class Scheduler(object):
             label (str): The species label.
             job (JobAdapter): The single point job object.
         """
-        print(f'\n\n\n\nIn check_sp_job for {label}\n\n\n\n')
         if 'mrci' in self.sp_level.method and job.level is not None and 'mrci' not in job.level.method:
             # This is a CCSD job ran before MRCI. Spawn MRCI
             self.run_sp_job(label)
         elif job.job_status[1]['status'] == 'done':
-            print(f'\n\n\n\ncalling post_sp_actions for {label} from check_sp_job\n\n\n\n')
             self.post_sp_actions(label,
                                  sp_path=os.path.join(job.local_path, 'output.out'),
                                  level=job.level,
@@ -2370,7 +2369,6 @@ class Scheduler(object):
             sp_path (str): The path to 'output.out' for the single point job.
             level (Level, optional): The level of theory used for the sp job.
         """
-        print(f'\n\n\n\nIn post_sp_actions for {label}\n\n\n\n')
         original_sp_path = self.output[label]['paths']['sp'] if 'sp' in self.output[label]['paths'] else None
         self.output[label]['paths']['sp'] = sp_path
         if self.sp_level is not None and 'ccsd' in self.sp_level.method:
@@ -2407,12 +2405,9 @@ class Scheduler(object):
                 self.output[label]['paths']['sp'] = original_sp_path  # restore the original path
 
         if self.species_dict[label].is_ts:
-            print(f'\n\n\n\nthis is a TS\n\n\n\n')
             for rxn in self.rxn_dict.values():
                 if rxn.ts_label == label:
-                    print(f'\n\n\n\nchecking TS for {label}!!!!!!!!\n\n\n\n')
                     ts_e_elect_success = rxn.check_ts(verbose=True)
-                    print(f'\n\n\n\n\n success?? {ts_e_elect_success}')
                     if not ts_e_elect_success:
                         self.switch_ts(label=label)
                     break
@@ -3183,9 +3178,11 @@ class Scheduler(object):
                             break
                     else:
                         raise SchedulerError(f'Could not find species {spc_label} in the restart file')
-                    job_description['species'] = [self.species_dict[label] for label in job_description['species_labels']]
+                    job_description['species'] = [self.species_dict[label] for label in job_description['species_labels']] \
+                        if 'species_labels' in job_description else None
                     del job_description['species_labels']
-                    job_description['reactions'] = [self.rxn_dict[i] for i in job_description['reaction_indices']]
+                    job_description['reactions'] = [self.rxn_dict[i] for i in job_description['reaction_indices']] \
+                        if 'reaction_indices' in job_description else None
                     del job_description['reaction_indices']
                     job = job_factory(**job_description)
                     if spc_label not in self.job_dict:
@@ -3339,7 +3336,7 @@ class Scheduler(object):
         Determine whether self.output contains any information other than the initialized structure.
 
         Returns:
-            bool: Whether self.output contains any information, `True` if it does.
+            bool: Whether self.output contains any information, ``True`` if it does.
         """
         for species_output_dict in self.output.values():
             for key0, val0 in species_output_dict.items():
@@ -3351,6 +3348,53 @@ class Scheduler(object):
                     if val0:
                         return True
         return False
+
+    def generate_final_ts_guess_report(self):
+        """
+        Generate a TS report for this ARC project and saves it as a YAML file.
+        """
+        content = dict()
+        for species in self.species_dict.values():
+            if species.is_ts:
+                ts_dict = dict()
+                ts_dict['multiplicity'] = species.multiplicity
+                ts_dict['charge'] = species.charge
+                ts_dict['external_symmetry'] = species.external_symmetry
+                ts_dict['optical_isomers'] = species.optical_isomers
+                ts_dict['run_time'] = str(species.run_time)
+                ts_dict['successful_methods'] = species.successful_methods
+                ts_dict['unsuccessful_methods'] = species.unsuccessful_methods
+                ts_dict['chosen_ts'] = species.chosen_ts
+                ts_dict['chosen_ts_list'] = species.chosen_ts_list
+                ts_dict['ts_guesses_exhausted'] = species.ts_guesses_exhausted
+                ts_dict['ts_report'] = species.ts_report
+                ts_dict['rxn_label'] = species.rxn_label
+                for reaction in self.rxn_list:
+                    if reaction.ts_label == species.label:
+                        ts_dict['family'] = reaction.family
+                        break
+                else:
+                    ts_dict['family'] = None
+                ts_guesses = dict()
+                for tsg in species.ts_guesses:
+                    ts_guess = dict()
+                    ts_guess['initial_xyz'] = tsg.initial_xyz
+                    ts_guess['opt_xyz'] = tsg.opt_xyz
+                    ts_guess['method'] = tsg.method
+                    ts_guess['method_index'] = tsg.method_index
+                    ts_guess['method_direction'] = tsg.method_direction
+                    ts_guess['execution_time'] = tsg.execution_time
+                    ts_guess['success'] = tsg.success
+                    ts_guess['energy'] = tsg.energy
+                    ts_guess['imaginary_freqs'] = tsg.imaginary_freqs
+                    ts_guess['conformer_index'] = tsg.conformer_index
+                    ts_guess['successful_irc'] = tsg.successful_irc
+                    ts_guess['successful_normal_mode'] = tsg.successful_normal_mode
+                    ts_guesses[tsg.index] = ts_guess
+                ts_dict['ts_guesses'] = ts_guesses
+                content[species.label] = ts_dict
+        path = os.path.join(self.project_directory, 'output', 'rxns', 'TS_guess_report.yml')
+        save_yaml_file(path=path, content=content)
 
 
 def sum_time_delta(timedelta_list: List[datetime.timedelta]) -> datetime.timedelta:
