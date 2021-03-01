@@ -14,9 +14,8 @@ from rmgpy.species import Species
 import arc.rmgdb as rmgdb
 from arc.common import extermum_list, get_logger
 from arc.exceptions import ReactionError, InputError
-from arc.imports import settings
 from arc.species.converter import check_xyz_dict, str_to_xyz, xyz_to_str
-from arc.species.species import ARCSpecies, check_atom_balance
+from arc.species.species import ARCSpecies, check_atom_balance, check_label
 
 
 logger = get_logger()
@@ -36,8 +35,10 @@ class ARCReaction(object):
     Args:
         label (str, optional): The reaction's label in the format `r1 + r2 <=> p1 + p2`
                                (or unimolecular on either side, as appropriate).
-        reactants (list, optional): A list of reactants labels corresponding to an :ref:`ARCSpecies <species>`.
-        products (list, optional): A list of products labels corresponding to an :ref:`ARCSpecies <species>`.
+        reactants (list, optional): A list of reactant *labels* corresponding to an :ref:`ARCSpecies <species>`.
+        products (list, optional): A list of product *labels* corresponding to an :ref:`ARCSpecies <species>`.
+        r_species (list, optional): A list of reactants :ref:`ARCSpecies <species>` objects.
+        p_species (list, optional): A list of products :ref:`ARCSpecies <species>` objects.
         ts_label (str, optional): The :ref:`ARCSpecies <species>` label of the respective TS.
         rmg_reaction (Reaction, optional): An RMG Reaction class.
         ts_xyz_guess (list, optional): A list of TS XYZ user guesses, each in a string format.
@@ -51,7 +52,7 @@ class ARCReaction(object):
     Attributes:
         label (str): The reaction's label in the format `r1 + r2 <=> p1 + p2`
                      (or unimolecular on either side, as appropriate).
-        family (str): The RMG kinetic family, if applicable.
+        family (KineticsFamily): The RMG kinetic family, if applicable.
         family_own_reverse (bool): Whether the RMG family is its own reverse.
         reactants (list): A list of reactants labels corresponding to an :ref:`ARCSpecies <species>`.
         products (list): A list of products labels corresponding to an :ref:`ARCSpecies <species>`.
@@ -81,6 +82,8 @@ class ARCReaction(object):
                  label: str = '',
                  reactants: Optional[List[str]] = None,
                  products: Optional[List[str]] = None,
+                 r_species: Optional[List[ARCSpecies]] = None,
+                 p_species: Optional[List[ARCSpecies]] = None,
                  ts_label: Optional[str] = None,
                  rmg_reaction: Optional[Reaction] = None,
                  ts_xyz_guess: Optional[list] = None,
@@ -91,8 +94,8 @@ class ARCReaction(object):
                  ):
         self.arrow = ' <=> '
         self.plus = ' + '
-        self.r_species = list()
-        self.p_species = list()
+        self.r_species = r_species or list()
+        self.p_species = p_species or list()
         self.kinetics = None
         self.rmg_kinetics = None
         self.long_kinetic_description = ''
@@ -172,7 +175,8 @@ class ARCReaction(object):
     def multiplicity(self, value):
         """Allow setting the reaction multiplicity"""
         self._multiplicity = value
-        logger.info(f'Setting multiplicity of reaction {self.label} to {self._multiplicity}')
+        if value is not None:
+            logger.info(f'Setting multiplicity of reaction {self.label} to {self._multiplicity}')
 
     def __str__(self) -> str:
         """Return a string representation of the object"""
@@ -445,50 +449,76 @@ class ARCReaction(object):
         """A helper function for determining the surface charge"""
         return sum([r.charge for r in self.r_species])
 
-    def determine_family(self, rmg_database):
+    def determine_family(self,
+                         rmg_database,
+                         save_order: bool = False,
+                         ):
         """Determine the RMG family and saves the (family, own reverse) tuple in the ``family`` attribute"""
         if self.rmg_reaction is not None:
             self.family, self.family_own_reverse = rmgdb.determine_reaction_family(rmgdb=rmg_database,
-                                                                                   reaction=self.rmg_reaction)
+                                                                                   reaction=self.rmg_reaction.copy(),
+                                                                                   save_order=save_order,
+                                                                                   )
 
-    def check_ts(self, verbose: bool = True) -> bool:
+    def check_ts(self,
+                 verbose: bool = True,
+                 parameter: str = 'E0',
+                 ) -> bool:
         """
-        Check that the TS E0 is above both reactants and products wells.
+        Check that the TS E0 or electronic energy is above both reactant and product wells.
+        First, E0 is checked, if not available for all species and TS, the electronic energy is checked.
 
         Args:
             verbose (bool, optional): Whether to print logging messages.
+            parameter (str, optional): The energy parameter to consider ('E0' or 'e_elect').
 
         Returns:
-            bool: Whether the TS energy is above both reactants and products wells, ``True`` if it is.
+            bool: Whether the TS E0 or electronic energy is above both reactant and product wells, ``True`` if it is.
         """
+        if parameter not in ['E0', 'e_elect']:
+            raise ValueError(f"The energy parameter must be either 'E0' or 'e_elect', got: {parameter}")
         r_e0 = None if any([spc.e0 is None for spc in self.r_species]) \
-            else sum(spc.e0 for spc in self.r_species)
+            else sum(spc.e0 * self.get_species_count(species=spc, well=0) for spc in self.r_species)
         p_e0 = None if any([spc.e0 is None for spc in self.p_species]) \
-            else sum(spc.e0 for spc in self.p_species)
+            else sum(spc.e0 * self.get_species_count(species=spc, well=1) for spc in self.p_species)
         ts_e0 = self.ts_species.e0
-        min_e = extermum_list([r_e0, p_e0, ts_e0], return_min=True)
-        if any([val is None for val in [r_e0, p_e0, ts_e0]]):
+        r_e_elect = None if any([spc.e_elect is None for spc in self.r_species]) \
+            else sum(spc.e_elect * self.get_species_count(species=spc, well=0) for spc in self.r_species)
+        p_e_elect = None if any([spc.e_elect is None for spc in self.p_species]) \
+            else sum(spc.e_elect * self.get_species_count(species=spc, well=1) for spc in self.p_species)
+        ts_e_elect = self.ts_species.e_elect
+        r_e = r_e0 if parameter == 'E0' else r_e_elect
+        p_e = p_e0 if parameter == 'E0' else p_e_elect
+        ts_e = ts_e0 if parameter == 'E0' else ts_e_elect
+        min_e = extermum_list([r_e, p_e, ts_e], return_min=True)
+        e_str = 'E0' if parameter == 'E0' else 'electronic energy'
+        if any([val is None for val in [r_e, p_e, ts_e]]):
             if verbose:
-                logger.error(f"Could not get E0's of all species in reaction {self.label}. Cannot check TS E0.\n")
-                r_text = f'{r_e0:.2f} kJ/mol' if r_e0 is not None else 'None'
-                ts_text = f'{ts_e0:.2f} kJ/mol' if ts_e0 is not None else 'None'
-                p_text = f'{p_e0:.2f} kJ/mol' if p_e0 is not None else 'None'
-                logger.info(f"Reactants E0: {r_text}\n"
-                            f"TS E0: {ts_text}\n"
-                            f"Products E0: {p_text}")
+                if e_str != 'E0':
+                    logger.info('\n')
+                    logger.error(f"Could not get {e_str} of all species in reaction {self.label}. Cannot check TS.\n")
+                r_text = f'{r_e:.2f} kJ/mol' if r_e is not None else 'None'
+                ts_text = f'{ts_e:.2f} kJ/mol' if ts_e is not None else 'None'
+                p_text = f'{p_e:.2f} kJ/mol' if p_e is not None else 'None'
+                logger.info(f"Reactants {e_str}: {r_text}\n"
+                            f"TS {e_str}: {ts_text}\n"
+                            f"Products {e_str}: {p_text}")
+            if parameter == 'E0':
+                # Use e_elect instead:
+                return self.check_ts(verbose=verbose, parameter='e_elect')
             return True
-        if ts_e0 < r_e0 or ts_e0 < p_e0:
+        if ts_e < r_e or ts_e < p_e:
             if verbose:
-                logger.error(f'TS of reaction {self.label} has a lower E0 value than expected:\n')
-                logger.info(f'Reactants: {r_e0 - min_e:.2f} kJ/mol\n'
-                            f'TS: {ts_e0 - min_e:.2f} kJ/mol'
-                            f'\nProducts: {p_e0 - min_e:.2f} kJ/mol')
+                logger.error(f'\nTS of reaction {self.label} has a lower E0 value than expected:\n')
+                logger.info(f'Reactants: {r_e - min_e:.2f} kJ/mol\n'
+                            f'TS: {ts_e - min_e:.2f} kJ/mol'
+                            f'\nProducts: {p_e - min_e:.2f} kJ/mol')
             return False
         if verbose:
-            logger.info(f'Reaction {self.label} has the following path energies:\n'
-                        f'Reactants: {r_e0 - min_e:.2f} kJ/mol\n'
-                        f'TS: {ts_e0 - min_e:.2f} kJ/mol\n'
-                        f'Products: {p_e0 - min_e:.2f} kJ/mol')
+            logger.info(f'\nReaction {self.label} has the following path E0 energies:\n'
+                        f'Reactants: {r_e - min_e:.2f} kJ/mol\n'
+                        f'TS: {ts_e - min_e:.2f} kJ/mol\n'
+                        f'Products: {p_e - min_e:.2f} kJ/mol')
         return True
 
     def check_attributes(self):
@@ -505,6 +535,8 @@ class ARCReaction(object):
         species_labels = self.label.split(self.arrow)
         reactants = species_labels[0].split(self.plus)
         products = species_labels[1].split(self.plus)
+        reactants = [check_label(reactant) for reactant in reactants]
+        products = [check_label(product) for product in products]
         if self.reactants is not None:
             for reactant in reactants:
                 if reactant not in self.reactants:
@@ -631,24 +663,32 @@ class ARCReaction(object):
         return True
 
     def get_species_count(self,
-                          species: ARCSpecies,
+                          species: Optional[ARCSpecies] = None,
+                          label: Optional[str] = None,
                           well: int = 0,
                           ) -> int:
         """
         Get the number of times a species participates in the reactants or products well.
+        Either ``species`` or ``label`` must be given.
 
         Args:
             species (ARCSpecies): The species to check.
+            label (str, optional): The species label.
             well (int, optional): Either ``0`` or ``1`` for the reactants or products well, respectively.
 
         Returns:
             Union[int, None]: The number of times this species appears in the respective well.
         """
+        if species is None and label is None:
+            raise ValueError('Called get_species_count without a species nor its label.')
+        if well not in [0, 1]:
+            raise ValueError(f'Got well = {well}, expected either 0 or 1.')
+        label = species.label if species is not None else label
         well_str = self.label.split('<=>')[well]
-        count = well_str.startswith(f'{species.label} ') + \
-                well_str.count(f' {species.label} ') + \
-                well_str.endswith(f' {species.label}')
+        count = well_str.startswith(f'{label} ') + well_str.count(f' {label} ') + well_str.endswith(f' {label}')
         return count
+
+    # todo: sort the atom pap methods + tests
 
     def get_atom_map(self, verbose: int = 0) -> Optional[List[int]]:
         """
