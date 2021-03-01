@@ -19,7 +19,7 @@ pipe_submit = {
 #SBATCH -n {cpus}
 #SBATCH --time={t_max}
 #SBATCH --mem-per-cpu={memory}
-#SBATCH --array=1-{max_task_num}
+#SBATCH --array=1-{max_task_num}  # todo??
 #SBATCH -o out.txt
 #SBATCH -e err.txt
 
