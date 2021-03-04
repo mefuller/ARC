@@ -145,6 +145,13 @@ class TestARCReaction(unittest.TestCase):
                           ARCSpecies(label='H2O', smiles='O')]
         self.assertTrue(rxn3.check_atom_balance())
 
+        # Another reaction with the same species twice on one side
+        rxn4 = ARCReaction(reactants=['OH', 'OH'], products=['O', 'H2O'])
+        rxn4.r_species = [ARCSpecies(label='OH', smiles='[OH]')]
+        rxn4.p_species = [ARCSpecies(label='O', smiles='[O]'),
+                          ARCSpecies(label='H2O', smiles='O')]
+        self.assertTrue(rxn4.check_atom_balance())
+
     def test_get_species_count(self):
         """Test the get_species_count() method"""
         rxn1 = ARCReaction(reactants=['CH4', 'OH', 'H2O'], products=['CH3', 'H2O', 'H2O'])
