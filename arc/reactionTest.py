@@ -12,8 +12,7 @@ from rmgpy.species import Species
 
 import arc.rmgdb as rmgdb
 from arc.exceptions import ReactionError
-from arc.imports import settings
-from arc.reaction import ARCReaction
+from arc.reaction import ARCReaction, remove_dup_species
 from arc.species import ARCSpecies
 
 
@@ -78,6 +77,18 @@ class TestARCReaction(unittest.TestCase):
         rxn_dict = self.rxn1.as_dict()
         rxn = ARCReaction(reaction_dict=rxn_dict)
         self.assertEqual(rxn.label, 'CH4 + OH <=> CH3 + H2O')
+
+    def test_from_rmg_reaction(self):
+        """Test setting up an ARCReaction from an RMG Reaction"""
+        rmg_rxn_1 = Reaction(reactants=[Species(label='nC3H7', smiles='[CH2]CC')],
+                             products=[Species(label='iC3H7', smiles='C[CH]C')])
+        rxn_1 = ARCReaction(rmg_reaction=rmg_rxn_1)
+        self.assertEqual(rxn_1.label, 'nC3H7 <=> iC3H7')
+
+        rmg_rxn_2 = Reaction(reactants=[Species(label='OH', smiles='[OH]'), Species(label='OH', smiles='[OH]')],
+                             products=[Species(label='O', smiles='[O]'), Species(label='H2O', smiles='O')])
+        rxn_2 = ARCReaction(rmg_reaction=rmg_rxn_2)
+        self.assertEqual(rxn_2.label, 'OH + OH <=> O + H2O')
 
     def test_rmg_reaction_to_str(self):
         """Test the rmg_reaction_to_str() method and the reaction label generated"""
@@ -1370,6 +1381,17 @@ H       1.25408721   -0.86065907   -0.09003883"""
         self.assertEqual(rxn_1.atom_map, [2, 0, 1])
         self.assertTrue(check_atom_map(rxn_1))
         self.assertTrue(mapped_product.get_xyz(), h2o_xyz_1)
+
+    def test_remove_dup_species(self):
+        """Test the remove_dup_species function"""
+        species_list = [ARCSpecies(label='OH', smiles='[OH]'),
+                        ARCSpecies(label='OH', smiles='[OH]'),
+                        ARCSpecies(label='H', smiles='[H]'),
+                        ARCSpecies(label='H', smiles='[H]'),
+                        ARCSpecies(label='H2O', smiles='O'),
+                        ]
+        new_species_list = remove_dup_species(species_list=species_list)
+        self.assertEqual(len(new_species_list), 3)
 
 
 def check_atom_map(rxn: ARCReaction) -> bool:
