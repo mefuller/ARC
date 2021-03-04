@@ -1242,7 +1242,7 @@ class ARCSpecies(object):
                 else:
                     self.multiplicity = 1
                     logger.warning(f'\nMultiplicity not specified for {self.label}, assuming a value of 1')
-        if self.multiplicity is None:
+        if self.multiplicity is None and not self.is_ts:
             raise SpeciesError(f'Could not determine multiplicity for species {self.label}')
 
     def make_ts_report(self):
