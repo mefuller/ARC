@@ -163,6 +163,14 @@ class TestARCReaction(unittest.TestCase):
                           ARCSpecies(label='H2O', smiles='O')]
         self.assertTrue(rxn4.check_atom_balance())
 
+        # A legitimate reaction that previously failed in the atom balance test
+        rxn5 = ARCReaction(reactants=['NH', '[O-][N+](=N)N'], products=['NH2', '[N-]=[N+]([O])N'])
+        rxn5.r_species = [ARCSpecies(label='NH', smiles='[NH]'),
+                          ARCSpecies(label='[O-][N+](=N)N', smiles='[O-][N+](=N)N')]
+        rxn5.p_species = [ARCSpecies(label='NH2', smiles='[NH2]'),
+                          ARCSpecies(label='[N-]=[N+]([O])N', smiles='[N-]=[N+]([O])N')]
+        self.assertTrue(rxn5.check_atom_balance())
+
     def test_get_species_count(self):
         """Test the get_species_count() method"""
         rxn1 = ARCReaction(reactants=['CH4', 'OH', 'H2O'], products=['CH3', 'H2O', 'H2O'])
