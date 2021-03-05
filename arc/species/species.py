@@ -2199,12 +2199,15 @@ def are_coords_compliant_with_graph(xyz: dict,
     return True
 
 
-def check_label(label: str) -> Tuple[str, Optional[str]]:
+def check_label(label: str,
+                verbose: bool = True,
+                ) -> Tuple[str, Optional[str]]:
     """
     Check whether a species (or reaction) label is illegal, modify it if needed.
 
     Args:
         label (str): A label.
+        verbose (str, optional): Whether to log errors.
 
     Returns: Tuple[str, Optional[str]]
         - A legal label.
@@ -2225,16 +2228,18 @@ def check_label(label: str) -> Tuple[str, Optional[str]]:
     original_label = label
     for char in original_label:
         if char not in valid_chars:
-            logger.error(f'Label {label} contains an invalid character: "{char}"')
+            if verbose:
+                logger.error(f'Label {label} contains an invalid character: "{char}"')
             if char in char_replacement.keys():
                 label = label.replace(char, char_replacement[char])
             else:
                 label = label.replace(char, '_')
             modified = True
     if modified:
-        logger.warning(f'Replaced species label.\n'
-                       f'Original label was: "{original_label}".\n'
-                       f'New label is: "{label}"')
+        if verbose:
+            logger.warning(f'Replaced species label.\n'
+                           f'Original label was: "{original_label}".\n'
+                           f'New label is: "{label}"')
     else:
         original_label = None
     return label, original_label
