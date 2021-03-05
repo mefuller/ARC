@@ -135,6 +135,7 @@ class TestARCReaction(unittest.TestCase):
         self.assertEqual(self.rxn2.multiplicity, 1)
         self.assertEqual(self.rxn3.multiplicity, 2)
         self.assertEqual(self.rxn4.multiplicity, 3)
+        self.assertEqual(self.rxn5.multiplicity, 3)
 
     def test_check_atom_balance(self):
         """Test the Reaction check_atom_balance method"""
