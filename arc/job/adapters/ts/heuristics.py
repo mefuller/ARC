@@ -236,6 +236,7 @@ class HeuristicsAdapter(JobAdapter):
         """
         Execute a job incore.
         """
+        print('\n\n\nExcecuting Heuristics!!!!')
         self._log_job_execution()
         self.initial_time = self.initial_time if self.initial_time else datetime.datetime.now()
 
@@ -243,7 +244,9 @@ class HeuristicsAdapter(JobAdapter):
 
         self.reactions = [self.reactions] if not isinstance(self.reactions, list) else self.reactions
         for rxn in self.reactions:
+            print(rxn)
             family = rxn.family.label
+            print(family)
             if family not in supported_families:
                 logger.warning(f'The heuristics TS search adapter does not yet support the {family} reaction family.')
                 continue
@@ -539,6 +542,10 @@ def label_molecules(reactants: list,
     Returns:
         Reaction: An RMG Reaction instance with atom-labeled reactants and products.
     """
+    print('\n\nin heuristics label molecules')
+    print(reactants)
+    print(products)
+    print(family)
     reaction = Reaction(reactants=reactants, products=products)
     try:
         family.add_atom_labels_for_reaction(reaction=reaction, output_with_resonance=output_with_resonance)
