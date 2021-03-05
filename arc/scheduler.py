@@ -2004,7 +2004,7 @@ class Scheduler(object):
             message = f'\nAll TS guesses for {label} terminated.'
             if self.species_dict[label].successful_methods and not self.species_dict[label].unsuccessful_methods:
                 message += f'\n All methods were successful in generating guesses: ' \
-                           f'{self.species_dict[label].successful_methods}'
+                           f'{list(set(self.species_dict[label].successful_methods))}'
             elif self.species_dict[label].successful_methods:
                 message += f' Successful methods: {self.species_dict[label].successful_methods}'
             elif self.species_dict[label].yml_path is not None and self.species_dict[label].final_xyz is not None:
