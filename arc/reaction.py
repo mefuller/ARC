@@ -328,9 +328,14 @@ class ARCReaction(object):
         """
         A helper function for generating the ARC Species (.r_species and .p_species) from the RMG Reaction object
         """
+        print('in arc_species_from_rmg_reaction')
         if self.rmg_reaction is not None and not len(self.r_species) and not len(self.p_species):
-            self.r_species = [ARCSpecies(label=spc.label, mol=spc.molecule[0]) for spc in self.rmg_reaction.reactants]
-            self.p_species = [ARCSpecies(label=spc.label, mol=spc.molecule[0]) for spc in self.rmg_reaction.products]
+            print(len(self.rmg_reaction.reactants), self.rmg_reaction.reactants)
+            self.r_species = [ARCSpecies(label=check_label(spc.label)[0], mol=spc.molecule[0])
+                              for spc in self.rmg_reaction.reactants]
+            self.p_species = [ARCSpecies(label=check_label(spc.label)[0], mol=spc.molecule[0])
+                              for spc in self.rmg_reaction.products]
+            print(len(self.r_species), self.r_species)
 
     def get_rxn_multiplicity(self):
         """A helper function for determining the surface multiplicity"""
@@ -709,8 +714,12 @@ class ARCReaction(object):
         Returns:
             Tuple[List[ARCSpecies], List[ARCSpecies]]: The reactants and product lists.
         """
+        print(self.label)
+        print(self.r_species)
+        print(self.p_species)
         reactants, products = list(), list()
         for r_spc in self.r_species:
+            print(r_spc, self.get_species_count(species=r_spc, well=0))
             for i in range(self.get_species_count(species=r_spc, well=0)):
                 if arc:
                     reactants.append(r_spc)
@@ -719,7 +728,7 @@ class ARCReaction(object):
         for p_spc in self.p_species:
             for i in range(self.get_species_count(species=p_spc, well=1)):
                 if arc:
-                    reactants.append(p_spc)
+                    products.append(p_spc)
                 else:
                     products.append(Species(label=p_spc.label, molecule=[p_spc.mol]))
         return reactants, products
@@ -860,7 +869,7 @@ class ARCReaction(object):
 
 def remove_dup_species(species_list: List[ARCSpecies]) -> List[ARCSpecies]:
     """
-    Remove duplicate species for a a species list.
+    Remove duplicate species from a species list.
     Used when assigning r_species and p_species.
 
     Args:
@@ -869,10 +878,13 @@ def remove_dup_species(species_list: List[ARCSpecies]) -> List[ARCSpecies]:
     Returns:
         List[ARCSpecies]: A list of species without duplicates.
     """
+    print('in remove_dup_species')
     if species_list is None or not(len(species_list)):
         return list()
     new_species_list = list()
     for species in species_list:
+        print(species.label)
         if species.label not in [spc.label for spc in new_species_list]:
+            print('Adding!')
             new_species_list.append(species)
     return new_species_list
