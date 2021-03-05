@@ -1382,6 +1382,19 @@ H       1.25408721   -0.86065907   -0.09003883"""
         self.assertTrue(check_atom_map(rxn_1))
         self.assertTrue(mapped_product.get_xyz(), h2o_xyz_1)
 
+    def test_check_attributes(self):
+        """Test checking the reaction attributes"""
+        rxn_1 = ARCReaction(label='H + [O-][N+](=N)N=O <=> [N-]=[N+](N=O)[O] + H2',
+                            r_species=[ARCSpecies(label='H', smiles='[H]'),
+                                       ARCSpecies(label='[O-][N+](=N)N=O', smiles='[O-][N+](=N)N=O')],
+                            p_species=[ARCSpecies(label='H2', smiles='[H][H]'),
+                                       ARCSpecies(label='[N-]=[N+](N=O)[O]', smiles='[N-]=[N+](N=O)[O]')],
+                            )
+        rxn_1.check_attributes()
+        self.assertEqual(rxn_1.reactants, ['H', '[O-][N_][=N]N=O'])
+        self.assertEqual(rxn_1.products, ['H2', '[N-]=[N_][N=O][O]'])
+        self.assertEqual(rxn_1.r_species[1].label, '[O-][N_][=N]N=O')
+
     def test_remove_dup_species(self):
         """Test the remove_dup_species function"""
         species_list = [ARCSpecies(label='OH', smiles='[OH]'),
