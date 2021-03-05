@@ -619,7 +619,7 @@ class ARCSpecies(object):
         if self.most_stable_conformer is not None:
             species_dict['most_stable_conformer'] = self.most_stable_conformer
         if self.cheap_conformer is not None:
-            species_dict['cheap_conformer'] = self.cheap_conformer
+            species_dict['cheap_conformer'] = xyz_to_str(self.cheap_conformer)
         if self.recent_md_conformer is not None:
             species_dict['recent_md_conformer'] = xyz_to_str(self.recent_md_conformer)
         if self._radius is not None:
