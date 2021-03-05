@@ -167,7 +167,7 @@ orca_default_options_dict = {
                            'dlpno_threshold': 'normalPNO'}},
 }
 
-valid_chars = "-_[]=., %s%s" % (string.ascii_letters, string.digits)
+valid_chars = "-_[]=.,%s%s" % (string.ascii_letters, string.digits)
 
 # A scan with better resolution (lower number here) takes more time to compute,
 # but the automatically-derived rotor symmetry number is more likely to be correct.
