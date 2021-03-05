@@ -321,13 +321,7 @@ class ARCReaction(object):
         """
         if self.rmg_reaction is None and len(self.r_species) and len(self.p_species) and \
                 all([arc_spc.mol is not None for arc_spc in self.r_species + self.p_species]):
-            reactants, products = list(), list()
-            for r_spc in self.r_species:
-                for i in range(self.get_species_count(species=r_spc, well=0)):
-                    reactants.append(Species(label=r_spc.label, molecule=[r_spc.mol]))
-            for p_spc in self.p_species:
-                for i in range(self.get_species_count(species=p_spc, well=1)):
-                    products.append(Species(label=p_spc.label, molecule=[p_spc.mol]))
+            reactants, products = self.get_reactants_and_products()
             self.rmg_reaction = Reaction(reactants=reactants, products=products)
 
     def arc_species_from_rmg_reaction(self):
@@ -702,6 +696,22 @@ class ARCReaction(object):
         well_str = self.label.split('<=>')[well]
         count = well_str.startswith(f'{label} ') + well_str.count(f' {label} ') + well_str.endswith(f' {label}')
         return count
+
+    def get_reactants_and_products(self):
+        """
+        Get a list of reactant ARCSpecies and of product ARCSPecies including duplicate species.
+
+        Returns:
+            Tuple[List[ARCSpecies], List[ARCSpecies]]: The reactants and product lists.
+        """
+        reactants, products = list(), list()
+        for r_spc in self.r_species:
+            for i in range(self.get_species_count(species=r_spc, well=0)):
+                reactants.append(Species(label=r_spc.label, molecule=[r_spc.mol]))
+        for p_spc in self.p_species:
+            for i in range(self.get_species_count(species=p_spc, well=1)):
+                products.append(Species(label=p_spc.label, molecule=[p_spc.mol]))
+        return reactants, products
 
     # todo: sort the atom pap methods + tests
 
