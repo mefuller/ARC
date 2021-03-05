@@ -1416,6 +1416,11 @@ class Scheduler(object):
                 rxn.ts_species.tsg_spawned = True
                 tsg_index = 0
                 for method in ts_adapters:
+                    print(method)
+                    print(rxn.family)
+                    print(rxn.family is not None)
+                    print(rxn.family.label in [ts_adapters_by_rmg_family.keys()])
+                    print(method in ts_adapters_by_rmg_family[rxn.family.label])
                     if method in all_families_ts_adapters or \
                             (rxn.family is not None
                              and rxn.family.label in [ts_adapters_by_rmg_family.keys()]
