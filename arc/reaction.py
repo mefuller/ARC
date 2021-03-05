@@ -118,8 +118,8 @@ class ARCReaction(object):
             self.label = label
             self.index = None
             self.ts_species = None
-            self.reactants = reactants
-            self.products = products
+            self.reactants = [check_label(reactant)[0] for reactant in reactants] if reactants is not None else None
+            self.products = [check_label(product)[0] for product in products] if products is not None else None
             self.rmg_reaction = rmg_reaction
             if self.rmg_reaction is None and (self.reactants is None or self.products is None) and not self.label:
                 raise InputError(f'Cannot determine reactants and/or products labels for reaction {self.label}')
@@ -244,8 +244,8 @@ class ARCReaction(object):
                                  f'to respective Species in ARC). If an RMG Reaction object was passes, make '
                                  f'sure that all species in the reactants and products are correctly labeled. '
                                  f'Problematic reaction: {self.label}')
-            self.reactants = [spc.label for spc in self.rmg_reaction.reactants]
-            self.products = [spc.label for spc in self.rmg_reaction.products]
+            self.reactants = [check_label(spc.label)[0] for spc in self.rmg_reaction.reactants]
+            self.products = [check_label(spc.label)[0] for spc in self.rmg_reaction.products]
         self.set_label_reactants_products()
         if self.ts_label is None:
             self.ts_label = reaction_dict['ts_label'] if 'ts_label' in reaction_dict else None
@@ -539,8 +539,8 @@ class ARCReaction(object):
         species_labels = self.label.split(self.arrow)
         reactants = species_labels[0].split(self.plus)
         products = species_labels[1].split(self.plus)
-        reactants = [check_label(reactant) for reactant in reactants]
-        products = [check_label(product) for product in products]
+        reactants = [check_label(reactant)[0] for reactant in reactants]
+        products = [check_label(product)[0] for product in products]
         if self.reactants is not None:
             for reactant in reactants:
                 if reactant not in self.reactants:
