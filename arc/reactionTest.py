@@ -30,18 +30,19 @@ class TestARCReaction(unittest.TestCase):
         cls.rmgdb = rmgdb.make_rmg_database_object()
         rmgdb.load_families_only(cls.rmgdb)
         cls.rxn1 = ARCReaction(reactants=['CH4', 'OH'], products=['CH3', 'H2O'])
-        cls.rxn1.rmg_reaction = Reaction(reactants=[Species().from_smiles('C'), Species().from_smiles('[OH]')],
-                                         products=[Species().from_smiles('[CH3]'), Species().from_smiles('O')])
+        cls.rxn1.rmg_reaction = Reaction(reactants=[Species(label='CH4', smiles='C'), Species(label='OH', smiles='[OH]')],
+                                         products=[Species(label='CH3', smiles='[CH3]'), Species(label='H2O', smiles='O')])
         cls.rxn2 = ARCReaction(reactants=['C2H5', 'OH'], products=['C2H4', 'H2O'])
-        cls.rxn2.rmg_reaction = Reaction(reactants=[Species().from_smiles('C[CH2]'),
-                                                    Species().from_smiles('[OH]')],
-                                         products=[Species().from_smiles('C=C'), Species().from_smiles('O')])
+        cls.rxn2.rmg_reaction = Reaction(reactants=[Species(label='C2H5', smiles='C[CH2]'),
+                                                    Species(label='OH', smiles='[OH]')],
+                                         products=[Species(label='C2H4', smiles='C=C'), Species(label='H2O', smiles='O')])
         cls.rxn3 = ARCReaction(reactants=['CH3CH2NH'], products=['CH2CH2NH2'])
-        cls.rxn3.rmg_reaction = Reaction(reactants=[Species().from_smiles('CC[NH]')],
-                                         products=[Species().from_smiles('[CH2]CN')])
-        cls.rxn4 = ARCReaction(reactants=['[NH2]', 'N[NH]'], products=['N', 'N[N]'])
-        cls.rxn4.rmg_reaction = Reaction(reactants=[Species().from_smiles('[NH2]'), Species().from_smiles('N[NH]')],
-                                         products=[Species().from_smiles('N'), Species().from_smiles('N[N]')])
+        cls.rxn3.rmg_reaction = Reaction(reactants=[Species(label='CH3CH2NH', smiles='CC[NH]')],
+                                         products=[Species(label='CH2CH2NH2', smiles='[CH2]CN')])
+        cls.rxn4 = ARCReaction(reactants=['NH2', 'NH2NH'], products=['N', 'NH2N'])
+        cls.rxn4.rmg_reaction = Reaction(reactants=[Species(label='NH2', smiles='[NH2]'),
+                                                    Species(label='NH2NH', smiles='N[NH]')],
+                                         products=[Species(label='N', smiles='N'), Species(label='NH2N', smiles='N[N]')])
         cls.rxn5 = ARCReaction(reactants=['NH2', 'NH2'], products=['NH', 'NH3'],
                                r_species=[ARCSpecies(label='NH2', smiles='[NH2]')],
                                p_species=[ARCSpecies(label='NH', smiles='[NH]'), ARCSpecies(label='NH3', smiles='N')])
@@ -51,7 +52,7 @@ class TestARCReaction(unittest.TestCase):
         str_representation = str(self.rxn1)
         self.assertEqual(self.rxn1.charge, 0)
         expected_representation = 'ARCReaction(label="CH4 + OH <=> CH3 + H2O", ' \
-                                  'rmg_reaction="C + [OH] <=> [CH3] + O", ' \
+                                  'rmg_reaction="CH4 + OH <=> CH3 + H2O", ' \
                                   'multiplicity=2, charge=0)'
         self.assertEqual(str_representation, expected_representation)
 
@@ -193,6 +194,36 @@ class TestARCReaction(unittest.TestCase):
         self.assertEqual(rxn1.get_species_count(label=spc1.label, well=1), 0)
         self.assertEqual(rxn1.get_species_count(label=spc2.label, well=0), 1)
         self.assertEqual(rxn1.get_species_count(label=spc2.label, well=1), 2)
+
+    def test_get_reactants_and_products(self):
+        """Test getting reactants and products"""
+        self.rxn1.arc_species_from_rmg_reaction()
+        self.rxn1.remove_dup_species()
+        reactants, products = self.rxn1.get_reactants_and_products(arc=True)
+        for spc in reactants + products:
+            self.assertIsInstance(spc, ARCSpecies)
+        self.assertEqual(len(reactants), 2)
+        self.assertEqual(len(products), 2)
+
+        reactants, products = self.rxn1.get_reactants_and_products(arc=False)
+        for spc in reactants + products:
+            self.assertIsInstance(spc, Species)
+        self.assertEqual(len(reactants), 2)
+        self.assertEqual(len(products), 2)
+
+        reactants, products = self.rxn5.get_reactants_and_products(arc=True)
+        for spc in reactants + products:
+            self.assertIsInstance(spc, ARCSpecies)
+        self.assertEqual(len(reactants), 2)
+        self.assertEqual(len(products), 2)
+        self.assertEqual(reactants[0].label, reactants[1].label)
+
+        reactants, products = self.rxn5.get_reactants_and_products(arc=False)
+        for spc in reactants + products:
+            self.assertIsInstance(spc, Species)
+        self.assertEqual(len(reactants), 2)
+        self.assertEqual(len(products), 2)
+        self.assertNotEqual(products[0].label, products[1].label)
 
     def test_get_atom_map(self):
         """Test getting an atom map for a reaction"""
