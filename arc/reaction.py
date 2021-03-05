@@ -713,13 +713,13 @@ class ARCReaction(object):
         for r_spc in self.r_species:
             for i in range(self.get_species_count(species=r_spc, well=0)):
                 if arc:
-                    reactants.append(r_spc.copy())
+                    reactants.append(r_spc)
                 else:
                     reactants.append(Species(label=r_spc.label, molecule=[r_spc.mol]))
         for p_spc in self.p_species:
             for i in range(self.get_species_count(species=p_spc, well=1)):
                 if arc:
-                    reactants.append(p_spc.copy())
+                    reactants.append(p_spc)
                 else:
                     products.append(Species(label=p_spc.label, molecule=[p_spc.mol]))
         return reactants, products
