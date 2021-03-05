@@ -328,14 +328,11 @@ class ARCReaction(object):
         """
         A helper function for generating the ARC Species (.r_species and .p_species) from the RMG Reaction object
         """
-        print('in arc_species_from_rmg_reaction')
         if self.rmg_reaction is not None and not len(self.r_species) and not len(self.p_species):
-            print(len(self.rmg_reaction.reactants), self.rmg_reaction.reactants)
             self.r_species = [ARCSpecies(label=check_label(spc.label)[0], mol=spc.molecule[0])
                               for spc in self.rmg_reaction.reactants]
             self.p_species = [ARCSpecies(label=check_label(spc.label)[0], mol=spc.molecule[0])
                               for spc in self.rmg_reaction.products]
-            print(len(self.r_species), self.r_species)
 
     def get_rxn_multiplicity(self):
         """A helper function for determining the surface multiplicity"""
@@ -714,12 +711,8 @@ class ARCReaction(object):
         Returns:
             Tuple[List[ARCSpecies], List[ARCSpecies]]: The reactants and product lists.
         """
-        print(self.label)
-        print(self.r_species)
-        print(self.p_species)
         reactants, products = list(), list()
         for r_spc in self.r_species:
-            print(r_spc, self.get_species_count(species=r_spc, well=0))
             for i in range(self.get_species_count(species=r_spc, well=0)):
                 if arc:
                     reactants.append(r_spc)
@@ -878,13 +871,10 @@ def remove_dup_species(species_list: List[ARCSpecies]) -> List[ARCSpecies]:
     Returns:
         List[ARCSpecies]: A list of species without duplicates.
     """
-    print('in remove_dup_species')
     if species_list is None or not(len(species_list)):
         return list()
     new_species_list = list()
     for species in species_list:
-        print(species.label)
         if species.label not in [spc.label for spc in new_species_list]:
-            print('Adding!')
             new_species_list.append(species)
     return new_species_list
