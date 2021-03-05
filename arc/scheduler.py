@@ -1417,7 +1417,9 @@ class Scheduler(object):
                 tsg_index = 0
                 for method in ts_adapters:
                     if method in all_families_ts_adapters or \
-                            (rxn.family is not None and method in ts_adapters_by_rmg_family[rxn.family.label]):
+                            (rxn.family is not None
+                             and rxn.family.label in [ts_adapters_by_rmg_family.keys()]
+                             and method in ts_adapters_by_rmg_family[rxn.family.label]):
                         self.run_job(job_type='tsg',
                                      job_adapter=method,
                                      reactions=[rxn],
