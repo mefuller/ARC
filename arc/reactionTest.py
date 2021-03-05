@@ -42,6 +42,9 @@ class TestARCReaction(unittest.TestCase):
         cls.rxn4 = ARCReaction(reactants=['[NH2]', 'N[NH]'], products=['N', 'N[N]'])
         cls.rxn4.rmg_reaction = Reaction(reactants=[Species().from_smiles('[NH2]'), Species().from_smiles('N[NH]')],
                                          products=[Species().from_smiles('N'), Species().from_smiles('N[N]')])
+        cls.rxn5 = ARCReaction(reactants=['NH2', 'NH2'], products=['NH', 'NH3'],
+                               r_species=[ARCSpecies(label='NH2', smiles='[NH2]')],
+                               p_species=[ARCSpecies(label='NH', smiles='[NH]'), ARCSpecies(label='NH3', smiles='N')])
 
     def test_str(self):
         """Test the string representation of the object"""
@@ -113,6 +116,12 @@ class TestARCReaction(unittest.TestCase):
         self.rxn3.determine_family(rmg_database=self.rmgdb)
         self.assertEqual(self.rxn3.family.label, 'intra_H_migration')
         self.assertTrue(self.rxn3.family_own_reverse)
+        self.rxn4.determine_family(rmg_database=self.rmgdb)
+        self.assertEqual(self.rxn4.family.label, 'H_Abstraction')
+        self.rxn5.rmg_reaction_from_arc_species()
+        self.rxn5.check_attributes()
+        self.rxn5.determine_family(rmg_database=self.rmgdb)
+        self.assertEqual(self.rxn5.family.label, 'H_Abstraction')
 
     def test_charge_property(self):
         """Test determine charge"""
