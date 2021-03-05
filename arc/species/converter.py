@@ -490,7 +490,6 @@ def check_xyz_dict(xyz: Union[dict, str]) -> Optional[dict]:
     Returns: Optional[dict]
         The cartesian coordinates in a dictionary format.
     """
-    print(f'got:\n{xyz}')
     if xyz is None:
         return None
     xyz_dict = str_to_xyz(xyz) if isinstance(xyz, str) else xyz
