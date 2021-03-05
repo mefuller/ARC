@@ -297,6 +297,8 @@ class ARCReaction(object):
             self.rmg_reaction_from_arc_species()
         elif not self.label and (self.reactants is None or self.products is None):
             raise ReactionError('Either a label or reactants and products lists must be specified')
+        self.reactants = [check_label(reactant)[0] for reactant in self.reactants]
+        self.products = [check_label(product)[0] for product in self.products]
 
     def rmg_reaction_to_str(self) -> str:
         """A helper function for dumping the RMG Reaction object as a string for the YAML restart dictionary"""
