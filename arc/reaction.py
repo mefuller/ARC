@@ -321,12 +321,13 @@ class ARCReaction(object):
         """
         if self.rmg_reaction is None and len(self.r_species) and len(self.p_species) and \
                 all([arc_spc.mol is not None for arc_spc in self.r_species + self.p_species]):
-            reactants = [Species(molecule=[r.mol]) for r in self.r_species]
-            for i, reac in enumerate(self.r_species):
-                reactants[i].label = reac.label
-            products = [Species(molecule=[p.mol]) for p in self.p_species]
-            for i, prod in enumerate(self.p_species):
-                products[i].label = prod.label
+            reactants, products = list(), list()
+            for r_spc in self.r_species:
+                for i in range(self.get_species_count(species=r_spc, well=0)):
+                    reactants.append(Species(label=r_spc.label, molecule=[r_spc.mol]))
+            for p_spc in self.p_species:
+                for i in range(self.get_species_count(species=p_spc, well=1)):
+                    products.append(Species(label=p_spc.label, molecule=[p_spc.mol]))
             self.rmg_reaction = Reaction(reactants=reactants, products=products)
 
     def arc_species_from_rmg_reaction(self):
