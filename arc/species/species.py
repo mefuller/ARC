@@ -179,6 +179,7 @@ class ARCSpecies(object):
 
     Attributes:
         label (str): The species' label.
+        original_label (str): The species' label prior to modifications (removing fornidden characters).
         multiplicity (int): The species' electron spin multiplicity. Can be determined from the adjlist/smiles/xyz
                             (If unspecified, assumed to be either a singlet or a doublet).
         charge (int): The species' net charge. Assumed to be 0 if unspecified.
@@ -327,6 +328,7 @@ class ARCSpecies(object):
         self.transport_data = TransportData()
         self.yml_path = None
         self.fragments = fragments
+        self.original_label = None
 
         if species_dict is not None:
             # Reading from a dictionary (it's possible that the dict contain only a 'yml_path' argument, check first)
@@ -465,7 +467,7 @@ class ARCSpecies(object):
                                        f'{self.preserve_param_in_scan}')
                 if 0 in entry:
                     raise SpeciesError(f'preserve_param_in_scan must be 1-indexed, got:\n{self.preserve_param_in_scan}')
-        self.label = check_label(self.label)
+        self.label, self.original_label = check_label(self.label)
         allowed_keys = ['brute_force_sp', 'brute_force_opt', 'cont_opt', 'ess',
                         'brute_force_sp_diagonal', 'brute_force_opt_diagonal', 'cont_opt_diagonal']
         for key in self.directed_rotors.keys():
@@ -576,6 +578,8 @@ class ARCSpecies(object):
             species_dict['chosen_ts_method'] = self.chosen_ts_method
             species_dict['chosen_ts'] = self.chosen_ts
             species_dict['chosen_ts_list'] = self.chosen_ts_list
+        if self.original_label is not None:
+            species_dict['original_label'] = self.original_label
         if self.e_elect is not None:
             species_dict['e_elect'] = self.e_elect
         if self.fragments is not None:
@@ -664,6 +668,7 @@ class ARCSpecies(object):
         except KeyError:
             raise InputError('All species must have a label')
         self.run_time = datetime.timedelta(seconds=species_dict['run_time']) if 'run_time' in species_dict else None
+        self.original_label = species_dict['original_label'] if 'original_label' in species_dict else None
         self.t1 = species_dict['t1'] if 't1' in species_dict else None
         self.e_elect = species_dict['e_elect'] if 'e_elect' in species_dict else None
         self.e0 = species_dict['e0'] if 'e0' in species_dict else None
@@ -2194,15 +2199,16 @@ def are_coords_compliant_with_graph(xyz: dict,
     return True
 
 
-def check_label(label: str) -> str:
+def check_label(label: str) -> Tuple[str, Optional[str]]:
     """
     Check whether a species (or reaction) label is illegal, modify it if needed.
 
     Args:
         label (str): A label.
 
-    Returns:
-        str: a legal label.
+    Returns: Tuple[str, Optional[str]]
+        - A legal label.
+        - The original label if the label was modified, else ``None``.
     """
     char_replacement = {'#': 't',
                         '=': 'd',
@@ -2218,7 +2224,7 @@ def check_label(label: str) -> str:
     modified = False
     original_label = label
     for char in original_label:
-        if char not in valid_chars or char == ' ':
+        if char not in valid_chars:
             logger.error(f'Label {label} contains an invalid character: "{char}"')
             if char in char_replacement.keys():
                 label = label.replace(char, char_replacement[char])
@@ -2229,7 +2235,9 @@ def check_label(label: str) -> str:
         logger.warning(f'Replaced species label.\n'
                        f'Original label was: "{original_label}".\n'
                        f'New label is: "{label}"')
-    return label
+    else:
+        original_label = None
+    return label, original_label
 
 
 def check_atom_balance(entry_1: Union[dict, str, Molecule],
