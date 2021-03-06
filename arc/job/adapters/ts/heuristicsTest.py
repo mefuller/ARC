@@ -37,7 +37,6 @@ class TestHeuristicsAdapter(unittest.TestCase):
         """
         Test that ARC can generate TS guesses based on heuristics for H Abstraction reactions.
         """
-        rxn1 = ARCReaction(reactants=['CH4', 'H'], products=['CH3', 'H2'])
         ch4_xyz = """C 0.0000000 0.0000000 0.0000000
 H 0.6279670 0.6279670 0.6279670
 H -0.6279670 -0.6279670 0.6279670
@@ -54,10 +53,12 @@ H 0.0000000 0.0000000 -0.3714780"""
         h = ARCSpecies(label='H', smiles='[H]', xyz=h_xyz)
         ch3 = ARCSpecies(label='CH3', smiles='[CH3]', xyz=ch3_xyz)
         h2 = ARCSpecies(label='H2', smiles='[H][H]', xyz=h2_xyz)
-        rxn1.r_species = [ch4, h]
-        rxn1.p_species = [ch3, h2]
-        rxn1.rmg_reaction = Reaction(reactants=[Species().from_smiles('C'), Species().from_smiles('[H]')],
-                                     products=[Species().from_smiles('[CH3]'), Species().from_smiles('[H][H]')])
+        rxn1 = ARCReaction(reactants=['CH4', 'H'], products=['CH3', 'H2'],
+                           r_species=[ch4, h], p_species=[ch3, h2],
+                           rmg_reaction=Reaction(reactants=[Species().from_smiles('C'),
+                                                            Species().from_smiles('[H]')],
+                                                 products=[Species().from_smiles('[CH3]'),
+                                                           Species().from_smiles('[H][H]')]))
         rxn1.determine_family(rmg_database=self.rmgdb)
         self.assertEqual(rxn1.family.label, 'H_Abstraction')
         heuristics1 = HeuristicsAdapter(job_type='tsg',
@@ -75,7 +76,6 @@ H 0.0000000 0.0000000 -0.3714780"""
         self.assertEqual(len(rxn1.ts_species.ts_guesses[0].initial_xyz['coords']), 6)
         self.assertTrue(rxn1.ts_species.ts_guesses[0].success)
 
-        rxn2 = ARCReaction(reactants=['C3H8', 'HO2'], products=['C3H7', 'H2O2'])
         c3h8_xyz = """C	0.0000000 0.0000000 0.5949240
 C 0.0000000 1.2772010 -0.2630030
 C 0.0000000 -1.2772010 -0.2630030
@@ -108,10 +108,12 @@ H -0.7886440 -0.8942950 0.4695060"""
         ho2 = ARCSpecies(label='HO2', smiles='O[O]', xyz=ho2_xyz)
         c3h7 = ARCSpecies(label='C3H7', smiles='[CH2]CC', xyz=c3h7_xyz)
         h2o2 = ARCSpecies(label='H2O2', smiles='OO', xyz=h2o2_xyz)
-        rxn2.r_species = [c3h8, ho2]
-        rxn2.p_species = [c3h7, h2o2]
-        rxn2.rmg_reaction = Reaction(reactants=[Species().from_smiles('CCC'), Species().from_smiles('O[O]')],
-                                     products=[Species().from_smiles('[CH2]CC'), Species().from_smiles('OO')])
+        rxn2 = ARCReaction(reactants=['C3H8', 'HO2'], products=['C3H7', 'H2O2'],
+                           r_species=[c3h8, ho2], p_species=[c3h7, h2o2],
+                           rmg_reaction=Reaction(reactants=[Species().from_smiles('CCC'),
+                                                            Species().from_smiles('O[O]')],
+                                                 products=[Species().from_smiles('[CH2]CC'),
+                                                           Species().from_smiles('OO')]))
         rxn2.determine_family(rmg_database=self.rmgdb)
         self.assertEqual(rxn2.family.label, 'H_Abstraction')
         heuristics2 = HeuristicsAdapter(job_type='tsg',
@@ -149,7 +151,6 @@ H -0.7886440 -0.8942950 0.4695060"""
         self.assertTrue(rxn2.ts_species.ts_guesses[16].success)
         self.assertTrue(rxn2.ts_species.ts_guesses[17].success)
 
-        rxn3 = ARCReaction(reactants=['CCCOH', 'OH'], products=['CCCO', 'H2O'])
         cccoh_xyz = """C -1.4562640 1.2257490 0.0000000
 C 0.0000000 0.7433860 0.0000000
 C 0.1008890 -0.7771710 0.0000000
@@ -182,10 +183,12 @@ H       0.76363177   -0.19827735    0.00000000"""
         oh = ARCSpecies(label='OH', smiles='[OH]', xyz=oh_xyz)
         ccco = ARCSpecies(label='CCCO', smiles='CCC[O]', xyz=ccco_xyz)
         h2o = ARCSpecies(label='H2O', smiles='O', xyz=h2o_xyz)
-        rxn3.r_species = [cccoh, oh]
-        rxn3.p_species = [ccco, h2o]
-        rxn3.rmg_reaction = Reaction(reactants=[Species().from_smiles('CCCO'), Species().from_smiles('[OH]')],
-                                     products=[Species().from_smiles('CCC[O]'), Species().from_smiles('O')])
+        rxn3 = ARCReaction(reactants=['CCCOH', 'OH'], products=['CCCO', 'H2O'],
+                           r_species=[cccoh, oh], p_species=[ccco, h2o],
+                           rmg_reaction=Reaction(reactants=[Species().from_smiles('CCCO'),
+                                                            Species().from_smiles('[OH]')],
+                                                 products=[Species().from_smiles('CCC[O]'),
+                                                           Species().from_smiles('O')]))
         rxn3.determine_family(rmg_database=self.rmgdb)
         self.assertEqual(rxn3.family.label, 'H_Abstraction')
         heuristics3 = HeuristicsAdapter(job_type='tsg',
@@ -203,7 +206,6 @@ H       0.76363177   -0.19827735    0.00000000"""
                          ('C', 'C', 'C', 'O', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'O', 'H'))
         self.assertEqual(len(rxn3.ts_species.ts_guesses[1].initial_xyz['coords']), 14)
 
-        rxn4 = ARCReaction(reactants=['C=COH', 'H'], products=['C=CO', 'H2'])
         cdcoh_xyz = """C      -0.80601307   -0.11773769    0.32792128
 C       0.23096883    0.47536513   -0.26437348
 O       1.44620485   -0.11266560   -0.46339257
@@ -219,10 +221,12 @@ H      -1.17606821   -1.00974165   -0.10030145
 H       0.99232452    1.08896899    0.06242974"""
         cdcoh = ARCSpecies(label='C=COH', smiles='C=CO', xyz=cdcoh_xyz)
         cdco = ARCSpecies(label='C=CO', smiles='C=C[O]', xyz=cdco_xyz)
-        rxn4.r_species = [cdcoh, h]
-        rxn4.p_species = [cdco, h2]
-        rxn4.rmg_reaction = Reaction(reactants=[Species().from_smiles('C=CO'), Species().from_smiles('[H]')],
-                                     products=[Species().from_smiles('C=C[O]'), Species().from_smiles('[H][H]')])
+        rxn4 = ARCReaction(reactants=['C=COH', 'H'], products=['C=CO', 'H2'],
+                           r_species=[cdcoh, h], p_species=[cdco, h2],
+                           rmg_reaction=Reaction(reactants=[Species().from_smiles('C=CO'),
+                                                            Species().from_smiles('[H]')],
+                                                 products=[Species().from_smiles('C=C[O]'),
+                                                           Species().from_smiles('[H][H]')]))
         rxn4.determine_family(rmg_database=self.rmgdb)
         self.assertEqual(rxn4.family.label, 'H_Abstraction')
         heuristics4 = HeuristicsAdapter(job_type='tsg',
