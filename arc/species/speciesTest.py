@@ -18,7 +18,6 @@ from arc.common import almost_equal_coords_lists, arc_path
 from arc.exceptions import SpeciesError
 from arc.level import Level
 from arc.plotter import save_conformers_file
-from arc.reaction import ARCReaction
 from arc.species.converter import (check_isomorphism,
                                    molecules_from_xyz,
                                    str_to_xyz,
@@ -142,7 +141,7 @@ class TestARCSpecies(unittest.TestCase):
     def test_str(self):
         """Test the string representation of the object"""
         str_representation = str(self.spc9)
-        expected_representation = 'ARCSpecies(label=NH2(S), smiles=[NH], is_ts=False, multiplicity=1, charge=0)'
+        expected_representation = 'ARCSpecies(label=NH2[S], smiles=[NH], is_ts=False, multiplicity=1, charge=0)'
         self.assertEqual(str_representation, expected_representation)
 
     def test_set_mol_list(self):
@@ -1312,14 +1311,17 @@ H       1.11582953    0.94384729   -0.10134685"""
 
     def test_check_label(self):
         """Test the species check_label() method"""
-        label = check_label('HCN')
+        label, original_label = check_label('HCN')
         self.assertEqual(label, 'HCN')
+        self.assertIsNone(original_label)
 
-        label = check_label('C#N')
+        label, original_label = check_label('C#N')
         self.assertEqual(label, 'CtN')
+        self.assertEqual(original_label, 'C#N')
 
-        label = check_label('C?N')
+        label, original_label = check_label('C?N')
         self.assertEqual(label, 'C_N')
+        self.assertEqual(original_label, 'C?N')
 
     def test_check_atom_balance(self):
         """Test the check_atom_balance function"""
@@ -1401,11 +1403,17 @@ class TestTSGuess(unittest.TestCase):
         """Test TSGuess.as_dict()"""
         tsg_dict = self.tsg1.as_dict()
         expected_dict = {'method': 'autotst',
+                         'conformer_index': None,
+                         'imaginary_freqs': None,
+                         'successful_irc': None,
+                         'successful_normal_mode': None,
                          'energy': None,
                          'family': 'H_Abstraction',
                          'index': None,
                          'rmg_reaction': 'CON=O <=> [O-][N+](=O)C',
                          'success': None,
+                         'method_direction': None,
+                         'method_index': None,
                          't0': None,
                          'execution_time': None}
         self.assertEqual(tsg_dict, expected_dict)
@@ -1431,12 +1439,6 @@ class TestTSGuess(unittest.TestCase):
         mol_graph_1 = MolGraph(symbols=xyz_arb['symbols'], coords=xyz_arb['coords'])
         self.assertEqual(mol_graph_1.get_formula(), 'CH3NO2')
 
-    def test_gcn(self):
-        """
-        Test that ARC can call the GNN to make TS guesses for further optimization.
-        """
-        # create temporary project directory to delete afterwards
-        project_dir = os.path.join(arc_path, 'arc', 'testing', 'gcn_tst')
 
         r_xyz = """C  -1.3087    0.0068    0.0318
         C  0.1715   -0.0344    0.0210
