@@ -326,11 +326,9 @@ class GaussianAdapter(JobAdapter):
 
         elif self.job_type == 'scan':
             scans, scans_strings = list(), list()
-            if not self.species[0].rotors_dict \
-                     or (self.species[0].rotors_dict
-                         and self.species[0].rotors_dict[self.rotor_index]['directed_scan_type'] == 'ess'):
-                # In a pipe run, the species object is initialized with species.rotors_dict as an empty dict.
-                if self.species[0].rotors_dict and self.rotor_index is not None:
+            if self.rotor_index is not None:
+                if self.species[0].rotors_dict \
+                        and self.species[0].rotors_dict[self.rotor_index]['directed_scan_type'] == 'ess':
                     scans = self.species[0].rotors_dict[self.rotor_index]['scan']
                     scans = [scans] if not isinstance(scans[0], list) else scans
             elif len(self.torsions):
