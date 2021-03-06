@@ -18,7 +18,6 @@ from arc.common import almost_equal_coords_lists, arc_path
 from arc.exceptions import SpeciesError
 from arc.level import Level
 from arc.plotter import save_conformers_file
-from arc.reaction import ARCReaction
 from arc.species.converter import (check_isomorphism,
                                    molecules_from_xyz,
                                    str_to_xyz,
@@ -142,7 +141,7 @@ class TestARCSpecies(unittest.TestCase):
     def test_str(self):
         """Test the string representation of the object"""
         str_representation = str(self.spc9)
-        expected_representation = 'ARCSpecies(label=NH2(S), smiles=[NH], is_ts=False, multiplicity=1, charge=0)'
+        expected_representation = 'ARCSpecies(label=NH2[S], smiles=[NH], is_ts=False, multiplicity=1, charge=0)'
         self.assertEqual(str_representation, expected_representation)
 
     def test_set_mol_list(self):
@@ -359,8 +358,8 @@ H      -1.97060638    1.29922153   -0.25658392"""
         self.assertIn([[1, 2, 4, 12]], spc1.directed_rotors['cont_opt'])
         self.assertIn([3, 1, 2, 4], spc1.directed_rotors['brute_force_sp'][0])
         self.assertIn([[3, 1, 2, 4], [2, 1, 3, 9]], spc1.directed_rotors['brute_force_opt'])
-        self.assertEqual(len(spc1.rotors_dict.keys()), 9)
-        self.assertEqual(spc1.rotors_dict[3]['dimensions'], 3)
+        self.assertEqual(len(spc1.rotors_dict.keys()), 12)
+        self.assertEqual(spc1.rotors_dict[6]['dimensions'], 3)
         self.assertIn([1, 3], spc1.rotors_dict[3]['pivots'])
         self.assertIn([1, 2], spc1.rotors_dict[3]['pivots'])
         self.assertIn([2, 4], spc1.rotors_dict[3]['pivots'])
@@ -1309,14 +1308,17 @@ H       1.11582953    0.94384729   -0.10134685"""
 
     def test_check_label(self):
         """Test the species check_label() method"""
-        label = check_label('HCN')
+        label, original_label = check_label('HCN')
         self.assertEqual(label, 'HCN')
+        self.assertIsNone(original_label)
 
-        label = check_label('C#N')
+        label, original_label = check_label('C#N')
         self.assertEqual(label, 'CtN')
+        self.assertEqual(original_label, 'C#N')
 
-        label = check_label('C?N')
+        label, original_label = check_label('C?N')
         self.assertEqual(label, 'C_N')
+        self.assertEqual(original_label, 'C?N')
 
     def test_check_atom_balance(self):
         """Test the check_atom_balance function"""
@@ -1365,7 +1367,7 @@ H      -1.47626400   -0.10694600   -1.88883800"""
         projects = ['arc_project_for_testing_delete_after_usage4']
         for project in projects:
             project_directory = os.path.join(arc_path, 'Projects', project)
-            shutil.rmtree(project_directory)
+            shutil.rmtree(project_directory, ignore_errors=True)
 
 
 class TestTSGuess(unittest.TestCase):
@@ -1398,11 +1400,17 @@ class TestTSGuess(unittest.TestCase):
         """Test TSGuess.as_dict()"""
         tsg_dict = self.tsg1.as_dict()
         expected_dict = {'method': 'autotst',
+                         'conformer_index': None,
+                         'imaginary_freqs': None,
+                         'successful_irc': None,
+                         'successful_normal_mode': None,
                          'energy': None,
                          'family': 'H_Abstraction',
                          'index': None,
                          'rmg_reaction': 'CON=O <=> [O-][N+](=O)C',
                          'success': None,
+                         'method_direction': None,
+                         'method_index': None,
                          't0': None,
                          'execution_time': None}
         self.assertEqual(tsg_dict, expected_dict)
@@ -1427,49 +1435,6 @@ class TestTSGuess(unittest.TestCase):
                             (3.0, 0.0, 0.0),)}
         mol_graph_1 = MolGraph(symbols=xyz_arb['symbols'], coords=xyz_arb['coords'])
         self.assertEqual(mol_graph_1.get_formula(), 'CH3NO2')
-
-    def test_gcn(self):
-        """
-        Test that ARC can call the GNN to make TS guesses for further optimization.
-        """
-        # create temporary project directory to delete afterwards
-        project_dir = os.path.join(arc_path, 'arc', 'testing', 'gcn_tst')
-
-        r_xyz = """C  -1.3087    0.0068    0.0318
-        C  0.1715   -0.0344    0.0210
-        N  0.9054   -0.9001    0.6395
-        O  2.1683   -0.5483    0.3437
-        N  2.1499    0.5449   -0.4631
-        N  0.9613    0.8655   -0.6660
-        H  -1.6558    0.9505    0.4530
-        H  -1.6934   -0.0680   -0.9854
-        H  -1.6986   -0.8169    0.6255"""
-        reactant = ARCSpecies(label='reactant', smiles='C([C]1=[N]O[N]=[N]1)', xyz=r_xyz)
-
-        p_xyz = """C  -1.0108   -0.0114   -0.0610  
-        C  0.4780    0.0191    0.0139    
-        N  1.2974   -0.9930    0.4693    
-        O  0.6928   -1.9845    0.8337    
-        N  1.7456    1.9701   -0.6976    
-        N  1.1642    1.0763   -0.3716    
-        H  -1.4020    0.9134   -0.4821  
-        H  -1.3327   -0.8499   -0.6803   
-        H  -1.4329   -0.1554    0.9349"""
-        product = ARCSpecies(label='product', smiles='[N-]=[N+]=C(N=O)C', xyz=p_xyz)
-
-        rxn = ARCReaction(label='reactant <=> product', ts_methods=['gcn'], ts_label='TS0')
-        rxn.r_species = [reactant]
-        rxn.p_species = [product]
-        ts_guess = TSGuess(arc_reaction=rxn, method='gcn', project_dir=project_dir)
-        ts_guess.execute_ts_guess_method()
-
-        # verify that the method correctly create TS.xyz
-        ts_path = os.path.join(project_dir, 'calcs', 'TSs', rxn.ts_label, 'GCN', 'TS.xyz')
-        ts_xyz_dict = str_to_xyz(ts_path)
-        self.assertEqual(ts_xyz_dict['symbols'], ('C', 'C', 'N', 'O', 'N', 'N', 'H', 'H', 'H'))
-
-        if os.path.exists(project_dir):
-            shutil.rmtree(project_dir)
 
 
 if __name__ == '__main__':
