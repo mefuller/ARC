@@ -227,7 +227,13 @@ class TestARCReaction(unittest.TestCase):
         rxn_3 = ARCReaction(reactants=['H', 'OH'], products=['H2O'],
                             r_species=[ARCSpecies(label='H', smiles='[H]'), ARCSpecies(label='OH', smiles='[OH]')],
                             p_species=[ARCSpecies(label='H2O', smiles='O')])
-        self.assertEqual(rxn_2.multiplicity, 1)
+        self.assertEqual(rxn_3.multiplicity, 1)
+
+        # Reactions for which the multiplicity was wrongly determined before code fixes:
+        rxn_4 = ARCReaction(reactants=['H', 'HO2'], products=['OH', 'OH'],
+                            r_species=[ARCSpecies(label='H', smiles='[H]'), ARCSpecies(label='HO2', smiles='O[O]')],
+                            p_species=[ARCSpecies(label='OH', smiles='[OH]'), ARCSpecies(label='OH', smiles='[OH]')])
+        self.assertEqual(rxn_4.multiplicity, 1)
 
     def test_check_atom_balance(self):
         """Test the Reaction check_atom_balance method"""
