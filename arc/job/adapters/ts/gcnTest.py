@@ -60,9 +60,8 @@ class TestGCNAdapter(unittest.TestCase):
         H  -1.4329   -0.1554    0.9349"""
         product = ARCSpecies(label='product', smiles='[N-]=[N+]=C(N=O)C', xyz=product_xyz)
 
-        rxn1 = ARCReaction(label='reactant <=> product', ts_label='TS0')
-        rxn1.r_species = [reactant]
-        rxn1.p_species = [product]
+        rxn1 = ARCReaction(label='reactant <=> product', ts_label='TS0',
+                           r_species=[reactant], p_species=[product])
 
         gcn1 = GCNAdapter(job_type='tsg',
                           reactions=[rxn1],
@@ -98,9 +97,8 @@ H      -0.51702680    0.90828035   -0.29592912
 H      -0.53338088   -0.77135867   -0.54806440"""
         product = ARCSpecies(label='product', smiles='C[O]', xyz=product_xyz)
 
-        rxn1 = ARCReaction(label='reactant <=> product', ts_label='TS0')
-        rxn1.r_species = [reactant]
-        rxn1.p_species = [product]
+        rxn1 = ARCReaction(label='reactant <=> product', ts_label='TS0',
+                           r_species=[reactant], p_species=[product])
 
         gcn1 = GCNAdapter(job_type='tsg',
                           reactions=[rxn1],
@@ -138,9 +136,8 @@ H      -1.04996634   -0.37234114    0.91874740
 H       1.36260637    0.37153887   -0.86221771"""
         product = ARCSpecies(label='product', smiles='CC=O', xyz=product_xyz)
 
-        rxn1 = ARCReaction(label='reactant <=> product', ts_label='TS0')
-        rxn1.r_species = [reactant]
-        rxn1.p_species = [product]
+        rxn1 = ARCReaction(label='reactant <=> product', ts_label='TS0',
+                           r_species=[reactant], p_species=[product])
 
         gcn1 = GCNAdapter(job_type='tsg',
                           reactions=[rxn1],
