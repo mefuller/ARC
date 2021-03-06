@@ -335,6 +335,10 @@ class ARCReaction(object):
             self.p_species = [ARCSpecies(label=check_label(spc.label)[0], mol=spc.molecule[0])
                               for spc in self.rmg_reaction.products]
 
+    def get_rxn_charge(self):
+        """A helper function for determining the surface charge"""
+        return sum([r.charge for r in self.r_species])
+
     def get_rxn_multiplicity(self):
         """A helper function for determining the reaction multiplicity"""
         reactants, products = self.get_reactants_and_products(arc=True)
@@ -360,6 +364,9 @@ class ARCReaction(object):
                                (ordered_p_mult_list, ordered_r_mult_list)]:
             if all(m == 1 for m in list_1) and multiplicity is None:
                 multiplicity = 1  # S + S = S or T
+                break
+            if all(m == 2 for m in list_1) and len(list_1) == 2 and multiplicity is None:
+                multiplicity = 1  # D + D = S or T
                 break
             if 2 in list_1 and all(m == 1 for i, m in enumerate(list_1) if i != list_1.index(2)):
                 multiplicity = 2  # S + D = D
@@ -393,13 +400,10 @@ class ARCReaction(object):
                 logger.warning(f'ASSUMING a multiplicity of 2 (doublet) for reaction {self.label}')
 
         if multiplicity is None:
-            raise ReactionError(f'Could not determine multiplicity for reaction {self.label}')
+            logger.error(f'Could not determine multiplicity for reaction {self.label}')
+            return None
         logger.info(f'Setting multiplicity of reaction {self.label} to {multiplicity}')
         return multiplicity
-
-    def get_rxn_charge(self):
-        """A helper function for determining the surface charge"""
-        return sum([r.charge for r in self.r_species])
 
     def determine_family(self,
                          rmg_database,
