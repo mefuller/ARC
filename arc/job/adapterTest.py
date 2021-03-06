@@ -277,7 +277,7 @@ class TestJobAdapter(unittest.TestCase):
         self.job_1.add_to_args(val='val_tst_2')
         self.job_1.add_to_args(val='val_tst_3', separator='     ')
         self.job_1.add_to_args(val="""val_tst_4\nval_tst_5""", key1='block', key2='specific_key_2')
-        expected_args = {'keyword': {'general': 'val_tst_1 val_tst_2     val_tst_3'},
+        expected_args = {'keyword': {'general': 'scf=xqc val_tst_1 val_tst_2     val_tst_3'},
                          'block': {'specific_key_2': 'val_tst_4\nval_tst_5'},
                          'trsh': {}}
         self.assertEqual(self.job_1.args, expected_args)
