@@ -1409,23 +1409,28 @@ class Scheduler(object):
         """
         Check if any new reaction has all of its reactants and products optimized,
         and if so spawn the respective TSG jobs.
+        Don't spawn TS jobs if the multiplicity of the reaction could not be determined.
         """
         for rxn in self.rxn_list:
-            if not rxn.done_opt_r_n_p and all(spc.final_xyz is not None for spc in rxn.r_species + rxn.p_species):
-                rxn.done_opt_r_n_p = True
-                rxn.ts_species.tsg_spawned = True
-                tsg_index = 0
-                for method in ts_adapters:
-                    if method in all_families_ts_adapters or \
-                            (rxn.family is not None
-                             and rxn.family.label in list(ts_adapters_by_rmg_family.keys())
-                             and method in ts_adapters_by_rmg_family[rxn.family.label]):
-                        self.run_job(job_type='tsg',
-                                     job_adapter=method,
-                                     reactions=[rxn],
-                                     tsg=tsg_index,
-                                     )
-                        tsg_index += 1
+            if not rxn.done_opt_r_n_p \
+                    and all(spc.final_xyz is not None for spc in rxn.r_species + rxn.p_species):
+                if rxn.multiplicity is None:
+                    logger.info(f'Not spawning TS jobs for reaction {rxn} for which the multiplicity is unknown.')
+                else:
+                    rxn.done_opt_r_n_p = True
+                    rxn.ts_species.tsg_spawned = True
+                    tsg_index = 0
+                    for method in ts_adapters:
+                        if method in all_families_ts_adapters or \
+                                (rxn.family is not None
+                                 and rxn.family.label in list(ts_adapters_by_rmg_family.keys())
+                                 and method in ts_adapters_by_rmg_family[rxn.family.label]):
+                            self.run_job(job_type='tsg',
+                                         job_adapter=method,
+                                         reactions=[rxn],
+                                         tsg=tsg_index,
+                                         )
+                            tsg_index += 1
 
     def spawn_directed_scan_jobs(self,
                                  label: str,
