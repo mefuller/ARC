@@ -262,13 +262,19 @@ class TestARCReaction(unittest.TestCase):
                                       ARCSpecies(label='H2O', smiles='O')])
         self.assertTrue(rxn4.check_atom_balance())
 
-        # A legitimate reaction that previously failed in the atom balance test
+        # Legitimate reactions that previously failed in the atom balance test
         rxn5 = ARCReaction(reactants=['NH', '[O-][N+](=N)N'], products=['NH2', '[N-]=[N+]([O])N'],
                            r_species=[ARCSpecies(label='NH', smiles='[NH]'),
                                       ARCSpecies(label='[O-][N+](=N)N', smiles='[O-][N+](=N)N')],
                            p_species=[ARCSpecies(label='NH2', smiles='[NH2]'),
                                       ARCSpecies(label='[N-]=[N+]([O])N', smiles='[N-]=[N+]([O])N')])
         self.assertTrue(rxn5.check_atom_balance())
+        rxn6 = ARCReaction(reactants=['N3O2', 'HON'], products=['NO', 'HN3O2'],
+                           r_species=[ARCSpecies(label='N3O2', smiles='[N-]=[N+](N=O)[O]'),
+                                      ARCSpecies(label='HON', smiles='[OH+]=[N-]')],
+                           p_species=[ARCSpecies(label='NO', smiles='[N]=O'),
+                                      ARCSpecies(label='HN3O2', smiles='[O-][N+](=N)N=O')])
+        self.assertTrue(rxn6.check_atom_balance())
 
         # A *non*-balanced reaction
         with self.assertRaises(ReactionError):
