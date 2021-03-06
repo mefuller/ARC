@@ -365,7 +365,8 @@ class ARCReaction(object):
             if all(m == 1 for m in list_1) and multiplicity is None:
                 multiplicity = 1  # S + S = S or T
                 break
-            if all(m == 2 for m in list_1) and len(list_1) == 2 and multiplicity is None:
+            if all(m == 2 for m in list_1) and len(list_1) == 2 \
+                    and all(m == 2 for m in list_2) and len(list_2) == 2 and multiplicity is None:
                 multiplicity = 1  # D + D = S or T
                 break
             if 2 in list_1 and all(m == 1 for i, m in enumerate(list_1) if i != list_1.index(2)):
