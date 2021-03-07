@@ -106,10 +106,12 @@ def process_arc_project(thermo_adapter: str,
     # 1. Rates
     if compute_rates:
         for reaction in reactions:
+            print(f'processing {reaction}')
             species_converged = True
             considered_labels = list()  # species labels considered in this reaction
             if output_dict[reaction.ts_label]['convergence']:
                 for species in reaction.r_species + reaction.p_species:
+                    print(f'species {species.label}')
                     if species.label in considered_labels:
                         # consider cases where the same species appears in a reaction both as a reactant
                         # and as a product (e.g., H2O that catalyzes a reaction).
@@ -144,6 +146,7 @@ def process_arc_project(thermo_adapter: str,
                                                         T_count=T_count,
                                                         three_params=three_params,
                                                         )
+                    print('computing rate')
                     statmech_adapter.compute_high_p_rate_coefficient()
                     if reaction.kinetics is not None:
                         rxns_for_kinetics_lib.append(reaction)
