@@ -120,6 +120,7 @@ class ArkaneAdapter(StatmechAdapter):
                                             for a rate coefficient calculation.
             e0_only (bool, optional): Whether to only run statmech (w/o thermo) to compute E0.
         """
+        print('\n\n\nin compute_thermo')
         if not kinetics_flag:
             # initialize the Arkane species_dict so that species for which thermo is calculated won't interfere
             # with species used for a rate coefficient calculation.
@@ -134,6 +135,7 @@ class ArkaneAdapter(StatmechAdapter):
                                                                bac_type=self.bac_type)
 
         if arkane_output_path is not None:
+            print(f'trying {self.species.label}')
             try:
                 arkane_species = arkane_input_species(self.species.label, self.species.arkane_file)
             except ValueError:
@@ -168,7 +170,9 @@ class ArkaneAdapter(StatmechAdapter):
         Generate a high pressure rate coefficient for a reaction.
         Populates the reaction.kinetics attribute.
         """
+        print('\n\n\nin compute_high_p_rate_coefficient')
         ts_species = self.species_dict[self.reaction.ts_label]
+        print(f'ts species: {ts_species.label}')
         if self.output_dict[ts_species.label]['convergence']:
             success = True
             arkane_output_path = self.generate_arkane_species_file(species=ts_species,
