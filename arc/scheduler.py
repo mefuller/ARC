@@ -2039,6 +2039,9 @@ class Scheduler(object):
                     e_min = tsg.energy
                     selected_i = tsg.index
             e_min = None
+            if selected_i is None:
+                logger.warning(f'Could not determine a likely TS conformer for {label}')
+                return None
             for tsg in self.species_dict[label].ts_guesses:
                 # Reset e_min to the lowest value regardless of other criteria (imaginary frequencies, IRC, normal modes).
                 if tsg.energy is not None and (e_min is None or tsg.energy < e_min):
@@ -2343,7 +2346,6 @@ class Scheduler(object):
         Args:
             label (str): The TS species label.
         """
-        previously_chosen_ts_list = self.species_dict[label].chosen_ts_list.copy()
         self.determine_most_likely_ts_conformer(label=label)  # Look for a different TS guess.
         self.delete_all_species_jobs(label=label)  # Delete other currently running jobs for this TS.
         if not self.species_dict[label].ts_guesses_exhausted and self.species_dict[label].chosen_ts is not None:
