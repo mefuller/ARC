@@ -193,7 +193,8 @@
                         <span class="n">parse_dipole_moment</span><span class="p">,</span>
                         <span class="n">parse_polarizability</span><span class="p">,</span>
                         <span class="n">parse_xyz_from_file</span><span class="p">,</span>
-                        <span class="n">process_conformers_file</span><span class="p">)</span>
+                        <span class="n">process_conformers_file</span><span class="p">,</span>
+                        <span class="p">)</span>
 <span class="kn">from</span> <span class="nn">arc.species</span> <span class="kn">import</span> <span class="n">conformers</span>
 <span class="kn">from</span> <span class="nn">arc.species.converter</span> <span class="kn">import</span> <span class="p">(</span><span class="n">check_isomorphism</span><span class="p">,</span>
                                    <span class="n">check_xyz_dict</span><span class="p">,</span>
@@ -208,13 +209,12 @@
                                    <span class="n">str_to_xyz</span><span class="p">,</span>
                                    <span class="n">translate_to_center_of_mass</span><span class="p">,</span>
                                    <span class="n">xyz_from_data</span><span class="p">,</span>
-                                   <span class="n">xyz_to_str</span><span class="p">)</span>
+                                   <span class="n">xyz_to_str</span><span class="p">,</span>
+                                   <span class="p">)</span>
 <span class="kn">from</span> <span class="nn">arc.species.vectors</span> <span class="kn">import</span> <span class="n">calculate_distance</span>
 <span class="kn">from</span> <span class="nn">arc.ts</span> <span class="kn">import</span> <span class="n">atst</span><span class="p">,</span> <span class="n">gcn</span>
 
-
 <span class="n">logger</span> <span class="o">=</span> <span class="n">get_logger</span><span class="p">()</span>
-
 
 <span class="n">default_ts_methods</span><span class="p">,</span> <span class="n">valid_chars</span><span class="p">,</span> <span class="n">minimum_barrier</span> <span class="o">=</span> <span class="n">settings</span><span class="p">[</span><span class="s1">&#39;default_ts_methods&#39;</span><span class="p">],</span> \
                                                    <span class="n">settings</span><span class="p">[</span><span class="s1">&#39;valid_chars&#39;</span><span class="p">],</span> \
@@ -235,7 +235,7 @@
 <span class="sd">                              &#39;invalidation_reason&#39;: ``str``,</span>
 <span class="sd">                              &#39;times_dihedral_set&#39;: ``int``,</span>
 <span class="sd">                              &#39;scan_path&#39;: &lt;path to scan output file&gt;,</span>
-<span class="sd">                              &#39;max_e&#39;: ``float``,  # in kJ/mol,</span>
+<span class="sd">                              &#39;max_e&#39;: ``float``,  # relative to the minimum energy, in kJ/mol,</span>
 <span class="sd">                              &#39;symmetry&#39;: ``int``,</span>
 <span class="sd">                              &#39;dimensions&#39;: ``int``,</span>
 <span class="sd">                              &#39;original_dihedrals&#39;: ``list``,</span>
@@ -430,6 +430,7 @@
 <span class="sd">            Fragments represented by this species, i.e., as in a VdW well or a TS.</span>
 <span class="sd">            Entries are atom index lists of all atoms in a fragment, each list represents a different fragment.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                  <span class="n">adjlist</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
                  <span class="n">bdes</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">list</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -686,7 +687,7 @@
             <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_ts</span><span class="p">:</span>
                 <span class="k">for</span> <span class="n">ts_guess</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ts_guesses</span><span class="p">:</span>
                     <span class="k">if</span> <span class="n">ts_guess</span><span class="o">.</span><span class="n">xyz</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">_number_of_heavy_atoms</span> <span class="o">=</span>\
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_number_of_heavy_atoms</span> <span class="o">=</span> \
                             <span class="nb">len</span><span class="p">([</span><span class="n">line</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">ts_guess</span><span class="o">.</span><span class="n">xyz</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()</span> <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;H&#39;</span><span class="p">])</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_number_of_heavy_atoms</span>
 
@@ -1213,12 +1214,14 @@
 <span class="sd">            SpeciesError: If the pivots don&#39;t represent a dihedral in the species.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">directed_rotors</span><span class="p">:</span>
-            <span class="n">all_pivots</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">rotors_dict</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;pivots&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">number_of_rotors</span><span class="p">)]</span>
+            <span class="n">all_pivots</span> <span class="o">=</span> <span class="p">[</span><span class="n">rotor_dict</span><span class="p">[</span><span class="s1">&#39;pivots&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">rotor_dict</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">rotors_dict</span><span class="o">.</span><span class="n">values</span><span class="p">()]</span>
             <span class="n">directed_rotors</span><span class="p">,</span> <span class="n">directed_rotors_scans</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(),</span> <span class="nb">dict</span><span class="p">()</span>
             <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">vals</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">directed_rotors</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
                 <span class="c1"># reformat as nested lists</span>
                 <span class="n">directed_rotors</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
                 <span class="k">for</span> <span class="n">val1</span> <span class="ow">in</span> <span class="n">vals</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">val1</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span> <span class="ow">and</span> <span class="n">val1</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;all&#39;</span><span class="p">]]:</span>
+                        <span class="k">raise</span> <span class="n">SpeciesError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;directed_scan pivots must be lists of length 2, got </span><span class="si">{</span><span class="n">val1</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">)</span>
                     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val1</span><span class="p">,</span> <span class="p">(</span><span class="nb">tuple</span><span class="p">,</span> <span class="nb">list</span><span class="p">))</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val1</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">int</span><span class="p">):</span>
                         <span class="n">corrected_val</span> <span class="o">=</span> <span class="n">val1</span> <span class="k">if</span> <span class="nb">list</span><span class="p">(</span><span class="n">val1</span><span class="p">)</span> <span class="ow">in</span> <span class="n">all_pivots</span> <span class="k">else</span> <span class="p">[</span><span class="n">val1</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">val1</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
                         <span class="n">directed_rotors</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="nb">list</span><span class="p">(</span><span class="n">corrected_val</span><span class="p">)])</span>
@@ -1423,7 +1426,10 @@
         <span class="sd">&quot;&quot;&quot;A helper function to write content into the .ts_report attribute&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ts_report</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">chosen_ts_method</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">ts_report</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;TS method summary for </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="si">}</span><span class="s1"> in </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">rxn_label</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ts_report</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;TS method summary for </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="si">}</span><span class="s1">&#39;</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">rxn_label</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">ts_report</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39; in </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">rxn_label</span><span class="si">}</span><span class="s1">&#39;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ts_report</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;:</span><span class="se">\n</span><span class="s1">&#39;</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">successful_methods</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">ts_report</span> <span class="o">+=</span> <span class="s1">&#39;Methods that successfully generated a TS guess:</span><span class="se">\n</span><span class="s1">&#39;</span>
                 <span class="k">for</span> <span class="n">successful_method</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">successful_methods</span><span class="p">:</span>
@@ -1433,7 +1439,7 @@
                 <span class="k">for</span> <span class="n">unsuccessful_method</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">unsuccessful_methods</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">ts_report</span> <span class="o">+=</span> <span class="n">unsuccessful_method</span> <span class="o">+</span> <span class="s1">&#39;,&#39;</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">ts_report</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">The method that generated the best TS guess and its output used for the &#39;</span> \
-                              <span class="sa">f</span><span class="s1">&#39;optimization: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">chosen_ts_method</span><span class="si">}</span><span class="s1">&#39;</span></div>
+                              <span class="sa">f</span><span class="s1">&#39;optimization: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">chosen_ts_method</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span></div>
 
 <div class="viewcode-block" id="ARCSpecies.mol_from_xyz"><a class="viewcode-back" href="../../../api/species.html#arc.species.species.ARCSpecies.mol_from_xyz">[docs]</a>    <span class="k">def</span> <span class="nf">mol_from_xyz</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                      <span class="n">xyz</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -1824,7 +1830,7 @@
             <span class="k">for</span> <span class="n">atom</span> <span class="ow">in</span> <span class="n">mol</span><span class="o">.</span><span class="n">atoms</span><span class="p">:</span>
                 <span class="n">theoretical_charge</span> <span class="o">=</span> <span class="n">elements</span><span class="o">.</span><span class="n">PeriodicSystem</span><span class="o">.</span><span class="n">valence_electrons</span><span class="p">[</span><span class="n">atom</span><span class="o">.</span><span class="n">symbol</span><span class="p">]</span> \
                                      <span class="o">-</span> <span class="n">atom</span><span class="o">.</span><span class="n">get_total_bond_order</span><span class="p">()</span> \
-                                     <span class="o">-</span> <span class="n">atom</span><span class="o">.</span><span class="n">radical_electrons</span> <span class="o">-</span>\
+                                     <span class="o">-</span> <span class="n">atom</span><span class="o">.</span><span class="n">radical_electrons</span> <span class="o">-</span> \
                                      <span class="mi">2</span> <span class="o">*</span> <span class="n">atom</span><span class="o">.</span><span class="n">lone_pairs</span>
                 <span class="k">if</span> <span class="n">theoretical_charge</span> <span class="o">==</span> <span class="n">atom</span><span class="o">.</span><span class="n">charge</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:</span>
                     <span class="c1"># we&#39;re missing a radical electron on this atom</span>
@@ -2269,7 +2275,7 @@
     <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">energies</span><span class="p">):</span>
         <span class="c1"># identify peaks and valleys, and determine worst resolutions in the scan</span>
         <span class="n">ip1</span> <span class="o">=</span> <span class="n">cyclic_index_i_plus_1</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">energies</span><span class="p">))</span>  <span class="c1"># i Plus 1</span>
-        <span class="n">im1</span> <span class="o">=</span> <span class="n">cyclic_index_i_minus_1</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>                <span class="c1"># i Minus 1</span>
+        <span class="n">im1</span> <span class="o">=</span> <span class="n">cyclic_index_i_minus_1</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>  <span class="c1"># i Minus 1</span>
         <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">energies</span><span class="p">[</span><span class="n">im1</span><span class="p">]</span> <span class="o">==</span> <span class="n">e</span><span class="p">:</span>
             <span class="c1"># If the first and last scan points have same energy, change im1</span>
             <span class="n">im1</span> <span class="o">-=</span> <span class="mi">1</span>

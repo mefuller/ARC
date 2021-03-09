@@ -163,6 +163,7 @@
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
 
 <span class="kn">from</span> <span class="nn">rmgpy</span> <span class="kn">import</span> <span class="n">settings</span> <span class="k">as</span> <span class="n">rmg_settings</span>
 <span class="kn">from</span> <span class="nn">rmgpy.data.kinetics.common</span> <span class="kn">import</span> <span class="n">find_degenerate_reactions</span>
@@ -173,13 +174,16 @@
 <span class="kn">from</span> <span class="nn">arc.common</span> <span class="kn">import</span> <span class="n">get_logger</span>
 <span class="kn">from</span> <span class="nn">arc.exceptions</span> <span class="kn">import</span> <span class="n">InputError</span>
 
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">rmgpy.data.kinetics.family</span> <span class="kn">import</span> <span class="n">KineticsFamily</span>
+
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">get_logger</span><span class="p">()</span>
 
 <span class="n">db_path</span> <span class="o">=</span> <span class="n">rmg_settings</span><span class="p">[</span><span class="s1">&#39;database.directory&#39;</span><span class="p">]</span>
 
 
-<div class="viewcode-block" id="make_rmg_database_object"><a class="viewcode-back" href="../../api/rmgdb.html#arc.rmgdb.make_rmg_database_object">[docs]</a><span class="k">def</span> <span class="nf">make_rmg_database_object</span><span class="p">():</span>
+<div class="viewcode-block" id="make_rmg_database_object"><a class="viewcode-back" href="../../api/rmgdb.html#arc.rmgdb.make_rmg_database_object">[docs]</a><span class="k">def</span> <span class="nf">make_rmg_database_object</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">RMGDatabase</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Make a clean RMGDatabase object.</span>
 
@@ -190,18 +194,19 @@
     <span class="k">return</span> <span class="n">rmgdb</span></div>
 
 
-<div class="viewcode-block" id="load_families_only"><a class="viewcode-back" href="../../api/rmgdb.html#arc.rmgdb.load_families_only">[docs]</a><span class="k">def</span> <span class="nf">load_families_only</span><span class="p">(</span><span class="n">rmgdb</span><span class="p">,</span> <span class="n">kinetics_families</span><span class="o">=</span><span class="s1">&#39;default&#39;</span><span class="p">):</span>
+<div class="viewcode-block" id="load_families_only"><a class="viewcode-back" href="../../api/rmgdb.html#arc.rmgdb.load_families_only">[docs]</a><span class="k">def</span> <span class="nf">load_families_only</span><span class="p">(</span><span class="n">rmgdb</span><span class="p">:</span> <span class="n">RMGDatabase</span><span class="p">,</span>
+                       <span class="n">kinetics_families</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;default&#39;</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A helper function for loading kinetic families from RMG&#39;s database.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        rmgdb (RMGDatabase): The RMG database instance.</span>
-<span class="sd">        kinetics_families (str, optional): Specific kinetics families to load.</span>
+<span class="sd">        kinetics_families (str, list, optional): Specific kinetics families to load.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">kinetics_families</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;default&#39;</span><span class="p">,</span> <span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="s1">&#39;none&#39;</span><span class="p">):</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">kinetics_families</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="n">InputError</span><span class="p">(</span><span class="s2">&quot;kinetics families should be either &#39;default&#39;, &#39;all&#39;, &#39;none&#39;, or a list of names, e.g.,&quot;</span>
-                             <span class="s2">&quot; [&#39;H_Abstraction&#39;,&#39;R_Recombination&#39;] or [&#39;!Intra_Disproportionation&#39;].&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">kinetics_families</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;default&#39;</span><span class="p">,</span> <span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="s1">&#39;none&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">kinetics_families</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="n">InputError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;kinetics families should be either &#39;default&#39;, &#39;all&#39;, &#39;none&#39;, or a list of names, e.g.,&quot;</span>
+                         <span class="sa">f</span><span class="s2">&quot; [&#39;H_Abstraction&#39;,&#39;R_Recombination&#39;] or [&#39;!Intra_Disproportionation&#39;]. &quot;</span>
+                         <span class="sa">f</span><span class="s2">&quot;Got:</span><span class="se">\n</span><span class="si">{</span><span class="n">kinetics_families</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n\n</span><span class="s1">Loading only kinetic families from the RMG database...&#39;</span><span class="p">)</span>
     <span class="n">rmgdb</span><span class="o">.</span><span class="n">load</span><span class="p">(</span>
         <span class="n">path</span><span class="o">=</span><span class="n">db_path</span><span class="p">,</span>
@@ -215,8 +220,14 @@
     <span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="load_rmg_database"><a class="viewcode-back" href="../../api/rmgdb.html#arc.rmgdb.load_rmg_database">[docs]</a><span class="k">def</span> <span class="nf">load_rmg_database</span><span class="p">(</span><span class="n">rmgdb</span><span class="p">,</span> <span class="n">thermo_libraries</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">reaction_libraries</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">kinetics_families</span><span class="o">=</span><span class="s1">&#39;default&#39;</span><span class="p">,</span>
-                      <span class="n">load_thermo_libs</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">load_kinetic_libs</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">include_nist</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="load_rmg_database"><a class="viewcode-back" href="../../api/rmgdb.html#arc.rmgdb.load_rmg_database">[docs]</a><span class="k">def</span> <span class="nf">load_rmg_database</span><span class="p">(</span><span class="n">rmgdb</span><span class="p">:</span> <span class="n">RMGDatabase</span><span class="p">,</span>
+                      <span class="n">thermo_libraries</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                      <span class="n">reaction_libraries</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                      <span class="n">kinetics_families</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;default&#39;</span><span class="p">,</span>
+                      <span class="n">load_thermo_libs</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+                      <span class="n">load_kinetic_libs</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+                      <span class="n">include_nist</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                      <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A helper function for loading the RMG database.</span>
 
@@ -310,7 +321,9 @@
     <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n\n</span><span class="s1">&#39;</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="determine_reaction_family"><a class="viewcode-back" href="../../api/rmgdb.html#arc.rmgdb.determine_reaction_family">[docs]</a><span class="k">def</span> <span class="nf">determine_reaction_family</span><span class="p">(</span><span class="n">rmgdb</span><span class="p">,</span> <span class="n">reaction</span><span class="p">):</span>
+<div class="viewcode-block" id="determine_reaction_family"><a class="viewcode-back" href="../../api/rmgdb.html#arc.rmgdb.determine_reaction_family">[docs]</a><span class="k">def</span> <span class="nf">determine_reaction_family</span><span class="p">(</span><span class="n">rmgdb</span><span class="p">:</span> <span class="n">RMGDatabase</span><span class="p">,</span>
+                              <span class="n">reaction</span><span class="p">:</span><span class="n">Reaction</span><span class="p">,</span>
+                              <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="s1">&#39;KineticsFamily&#39;</span><span class="p">],</span> <span class="nb">bool</span><span class="p">]:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Determine the RMG kinetic family for a given ARCReaction object.</span>
 <span class="sd">    Returns None if no family found or more than one family found.</span>
@@ -319,9 +332,9 @@
 <span class="sd">        rmgdb (RMGDatabase): The RMG database instance.</span>
 <span class="sd">        reaction (Reaction): The RMG Reaction object.</span>
 
-<span class="sd">    Returns: Tuple[str, bool]</span>
-<span class="sd">        - The corresponding RMG reaction&#39;s family. None if no family was found or more than one family were found.</span>
-<span class="sd">        - Whether the family is its own reverse.</span>
+<span class="sd">    Returns: Tuple[Optional[KineticsFamily], bool]</span>
+<span class="sd">        - The corresponding RMG reaction&#39;s family. ``None`` if no family was found or more than one family were found.</span>
+<span class="sd">        - Whether the family is its own reverse. ``True`` if it is.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">fam_list</span> <span class="o">=</span> <span class="n">loop_families</span><span class="p">(</span><span class="n">rmgdb</span><span class="o">=</span><span class="n">rmgdb</span><span class="p">,</span> <span class="n">reaction</span><span class="o">=</span><span class="n">reaction</span><span class="p">)</span>
     <span class="n">families</span> <span class="o">=</span> <span class="p">[</span><span class="n">fam_l</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">fam_l</span> <span class="ow">in</span> <span class="n">fam_list</span><span class="p">]</span>
@@ -331,7 +344,9 @@
         <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">False</span></div>
 
 
-<div class="viewcode-block" id="loop_families"><a class="viewcode-back" href="../../api/rmgdb.html#arc.rmgdb.loop_families">[docs]</a><span class="k">def</span> <span class="nf">loop_families</span><span class="p">(</span><span class="n">rmgdb</span><span class="p">,</span> <span class="n">reaction</span><span class="p">):</span>
+<div class="viewcode-block" id="loop_families"><a class="viewcode-back" href="../../api/rmgdb.html#arc.rmgdb.loop_families">[docs]</a><span class="k">def</span> <span class="nf">loop_families</span><span class="p">(</span><span class="n">rmgdb</span><span class="p">:</span> <span class="n">RMGDatabase</span><span class="p">,</span>
+                  <span class="n">reaction</span><span class="p">:</span> <span class="n">Reaction</span><span class="p">,</span>
+                  <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="s1">&#39;KineticsFamily&#39;</span><span class="p">]:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Loop through kinetic families and return a list of tuples of (family, degenerate_reactions)</span>
 <span class="sd">    `reaction` is an RMG Reaction object.</span>
@@ -341,8 +356,8 @@
 <span class="sd">        rmgdb (RMGDatabase): The RMG database instance.</span>
 <span class="sd">        reaction (Reaction): The RMG Reaction object.</span>
 
-<span class="sd">    Returns: list</span>
-<span class="sd">        Entries are corresponding RMG reaction families.</span>
+<span class="sd">    Returns: List[KineticsFamily]</span>
+<span class="sd">        Entries are corresponding RMG KineticsFamily instances.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">reaction</span> <span class="o">=</span> <span class="n">reaction</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>  <span class="c1"># use a copy to avoid changing atom order in the molecules by RMG</span>
     <span class="n">fam_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
@@ -405,14 +420,21 @@
     <span class="k">return</span> <span class="n">fam_list</span></div>
 
 
-<div class="viewcode-block" id="determine_rmg_kinetics"><a class="viewcode-back" href="../../api/rmgdb.html#arc.rmgdb.determine_rmg_kinetics">[docs]</a><span class="k">def</span> <span class="nf">determine_rmg_kinetics</span><span class="p">(</span><span class="n">rmgdb</span><span class="p">,</span> <span class="n">reaction</span><span class="p">,</span> <span class="n">dh_rxn298</span><span class="p">):</span>
+<div class="viewcode-block" id="determine_rmg_kinetics"><a class="viewcode-back" href="../../api/rmgdb.html#arc.rmgdb.determine_rmg_kinetics">[docs]</a><span class="k">def</span> <span class="nf">determine_rmg_kinetics</span><span class="p">(</span><span class="n">rmgdb</span><span class="p">:</span> <span class="n">RMGDatabase</span><span class="p">,</span>
+                           <span class="n">reaction</span><span class="p">:</span> <span class="n">Reaction</span><span class="p">,</span>
+                           <span class="n">dh_rxn298</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+                           <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Reaction</span><span class="p">]:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Determine kinetics for `reaction` (an RMG Reaction object) from RMG&#39;s database, if possible.</span>
 <span class="sd">    Assigns a list of all matching entries from both libraries and families.</span>
-<span class="sd">    Returns a list of all matching RMG reactions (both libraries and families) with a populated .kinetics attribute</span>
-<span class="sd">    `rmgdb` is the RMG database instance</span>
-<span class="sd">    `reaction` is an RMG Reaction object</span>
-<span class="sd">    `dh_rxn298` is the heat of reaction at 298 K in J / mol</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        rmgdb (RMGDatabase): The RMG database instance.</span>
+<span class="sd">        reaction (Reaction): The RMG Reaction object.</span>
+<span class="sd">        dh_rxn298 (float): The heat of reaction at 298 K in J/mol.</span>
+
+<span class="sd">    Returns: List[Reaction]</span>
+<span class="sd">        All matching RMG reactions (both libraries and families) with a populated ``.kinetics`` attribute.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">reaction</span> <span class="o">=</span> <span class="n">reaction</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>  <span class="c1"># use a copy to avoid changing atom order in the molecules by RMG</span>
     <span class="n">rmg_reactions</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>

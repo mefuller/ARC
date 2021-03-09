@@ -1888,12 +1888,12 @@
 <span class="sd">        xyz_indexed (bool, optional): Whether the atom indices relate to the xyz (and the zmat map will be used)</span>
 <span class="sd">                                      or they already relate to the zmat. Default is ``True`` (relate to xyz).</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        str or list: The corresponding zmat parameter.</span>
-
 <span class="sd">    Raises:</span>
 <span class="sd">        TypeError: If ``indices`` are of wrong type.</span>
 <span class="sd">        ZMatError: If ``indices`` has a wrong length, or not all indices are in the zmat map.</span>
+
+<span class="sd">    Returns: Union[str, list]</span>
+<span class="sd">        The corresponding zmat parameter.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">indices</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
         <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;indices must be a list, got </span><span class="si">{</span><span class="n">indices</span><span class="si">}</span><span class="s1"> which is a </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">indices</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>

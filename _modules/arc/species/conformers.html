@@ -201,7 +201,7 @@
 <span class="kn">import</span> <span class="nn">sys</span>
 <span class="kn">import</span> <span class="nn">time</span>
 <span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">product</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
 
 <span class="kn">import</span> <span class="nn">openbabel</span> <span class="k">as</span> <span class="nn">ob</span>
 <span class="kn">import</span> <span class="nn">pybel</span> <span class="k">as</span> <span class="nn">pyb</span>
@@ -259,7 +259,7 @@
 <span class="n">CONSOLIDATION_TOLS</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;R&#39;</span><span class="p">:</span> <span class="mf">1e-2</span><span class="p">,</span> <span class="s1">&#39;A&#39;</span><span class="p">:</span> <span class="mf">1e-2</span><span class="p">,</span> <span class="s1">&#39;D&#39;</span><span class="p">:</span> <span class="mf">1e-2</span><span class="p">}</span>
 
 
-<div class="viewcode-block" id="generate_conformers"><a class="viewcode-back" href="../../../api/conformers.html#arc.species.conformers.generate_conformers">[docs]</a><span class="k">def</span> <span class="nf">generate_conformers</span><span class="p">(</span><span class="n">mol_list</span><span class="p">,</span>
+<div class="viewcode-block" id="generate_conformers"><a class="viewcode-back" href="../../../api/conformers.html#arc.species.conformers.generate_conformers">[docs]</a><span class="k">def</span> <span class="nf">generate_conformers</span><span class="p">(</span><span class="n">mol_list</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Molecule</span><span class="p">],</span> <span class="n">Molecule</span><span class="p">],</span>
                         <span class="n">label</span><span class="p">,</span>
                         <span class="n">xyzs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                         <span class="n">torsions</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -284,7 +284,7 @@
 <span class="sd">    (resonance structures are assumed to have already been generated and included in the molecule list)</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        mol_list (list or Molecule): Molecule objects to consider (or Molecule, resonance structures will be generated).</span>
+<span class="sd">        mol_list (Union[List[Molecule], Molecule]): Molecule objects to consider (or Molecule, resonance structures will be generated).</span>
 <span class="sd">        label (str): The species&#39; label.</span>
 <span class="sd">        xyzs (list), optional: A list of user guess xyzs that will also be taken into account, each in a dict format.</span>
 <span class="sd">        torsions (list, optional): A list of all possible torsions in the molecule. Will be determined if not given.</span>
@@ -1099,7 +1099,7 @@
 
 
 <div class="viewcode-block" id="get_lowest_confs"><a class="viewcode-back" href="../../../api/conformers.html#arc.species.conformers.get_lowest_confs">[docs]</a><span class="k">def</span> <span class="nf">get_lowest_confs</span><span class="p">(</span><span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-                     <span class="n">confs</span><span class="p">:</span> <span class="nb">dict</span> <span class="ow">or</span> <span class="nb">list</span><span class="p">,</span>
+                     <span class="n">confs</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="nb">list</span><span class="p">],</span>
                      <span class="n">n</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
                      <span class="n">e</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">5.0</span><span class="p">,</span>
                      <span class="n">energy</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;FF energy&#39;</span><span class="p">,</span>
@@ -1664,7 +1664,7 @@
                         <span class="n">rotor</span><span class="p">[</span><span class="s1">&#39;times_dihedral_set&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
                         <span class="n">rotor</span><span class="p">[</span><span class="s1">&#39;trsh_methods&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
                         <span class="n">rotor</span><span class="p">[</span><span class="s1">&#39;scan_path&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
-                        <span class="n">rotor</span><span class="p">[</span><span class="s1">&#39;directed_scan_type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+                        <span class="n">rotor</span><span class="p">[</span><span class="s1">&#39;directed_scan_type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;ess&#39;</span>  <span class="c1"># default to &#39;ess&#39;, changed in initialize_directed_rotors()</span>
                         <span class="n">rotor</span><span class="p">[</span><span class="s1">&#39;directed_scan&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
                         <span class="n">rotor</span><span class="p">[</span><span class="s1">&#39;dimensions&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
                         <span class="n">rotor</span><span class="p">[</span><span class="s1">&#39;original_dihedrals&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>

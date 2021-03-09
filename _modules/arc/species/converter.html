@@ -194,7 +194,7 @@
 <span class="n">logger</span> <span class="o">=</span> <span class="n">get_logger</span><span class="p">()</span>
 
 
-<div class="viewcode-block" id="str_to_xyz"><a class="viewcode-back" href="../../../api/converter.html#arc.species.converter.str_to_xyz">[docs]</a><span class="k">def</span> <span class="nf">str_to_xyz</span><span class="p">(</span><span class="n">xyz_str</span><span class="p">):</span>
+<div class="viewcode-block" id="str_to_xyz"><a class="viewcode-back" href="../../../api/converter.html#arc.species.converter.str_to_xyz">[docs]</a><span class="k">def</span> <span class="nf">str_to_xyz</span><span class="p">(</span><span class="n">xyz_str</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Convert a string xyz format to the ARC dict xyz style.</span>
 <span class="sd">    Note: The ``xyz_str`` argument could also direct to a file path to parse the data from.</span>
@@ -221,11 +221,11 @@
 <span class="sd">    Args:</span>
 <span class="sd">        xyz_str (str): The string xyz format to be converted.</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        dict: The ARC xyz format.</span>
-
 <span class="sd">    Raises:</span>
 <span class="sd">        ConverterError: If xyz_str is not a string or does not have four space-separated entries per non empty line.</span>
+
+<span class="sd">    Returns: dict</span>
+<span class="sd">        The ARC xyz format.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">xyz_str</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
         <span class="k">raise</span> <span class="n">ConverterError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Expected a string input, got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">xyz_str</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
@@ -270,7 +270,9 @@
     <span class="k">return</span> <span class="n">xyz_dict</span></div>
 
 
-<div class="viewcode-block" id="xyz_to_str"><a class="viewcode-back" href="../../../api/converter.html#arc.species.converter.xyz_to_str">[docs]</a><span class="k">def</span> <span class="nf">xyz_to_str</span><span class="p">(</span><span class="n">xyz_dict</span><span class="p">,</span> <span class="n">isotope_format</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="xyz_to_str"><a class="viewcode-back" href="../../../api/converter.html#arc.species.converter.xyz_to_str">[docs]</a><span class="k">def</span> <span class="nf">xyz_to_str</span><span class="p">(</span><span class="n">xyz_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
+               <span class="n">isotope_format</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+               <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Convert an ARC xyz dictionary format, e.g.::</span>
 
@@ -298,11 +300,11 @@
 <span class="sd">                                        By default, isotopes will not be specified. Currently the only supported</span>
 <span class="sd">                                        option is &#39;gaussian&#39;.</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        str: The string xyz format.</span>
-
 <span class="sd">    Raises:</span>
 <span class="sd">        ConverterError: If input is not a dict or does not have all attributes.</span>
+
+<span class="sd">    Returns: str</span>
+<span class="sd">        The string xyz format.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">xyz_dict</span> <span class="o">=</span> <span class="n">check_xyz_dict</span><span class="p">(</span><span class="n">xyz_dict</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">xyz_dict</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -338,15 +340,15 @@
     <span class="k">return</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">xyz_list</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="xyz_to_x_y_z"><a class="viewcode-back" href="../../../api/converter.html#arc.species.converter.xyz_to_x_y_z">[docs]</a><span class="k">def</span> <span class="nf">xyz_to_x_y_z</span><span class="p">(</span><span class="n">xyz_dict</span><span class="p">):</span>
+<div class="viewcode-block" id="xyz_to_x_y_z"><a class="viewcode-back" href="../../../api/converter.html#arc.species.converter.xyz_to_x_y_z">[docs]</a><span class="k">def</span> <span class="nf">xyz_to_x_y_z</span><span class="p">(</span><span class="n">xyz_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">]:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Get the X, Y, and Z coordinates separately from the ARC xyz dictionary format.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        xyz_dict (dict): The ARC xyz format.</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        Tuple[tuple, tuple, tuple]: The X coordinates, the Y coordinates, the Z coordinates.</span>
+<span class="sd">    Returns: Tuple[tuple, tuple, tuple]</span>
+<span class="sd">        The X coordinates, the Y coordinates, the Z coordinates.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">xyz_dict</span> <span class="o">=</span> <span class="n">check_xyz_dict</span><span class="p">(</span><span class="n">xyz_dict</span><span class="p">)</span>
     <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(),</span> <span class="nb">tuple</span><span class="p">(),</span> <span class="nb">tuple</span><span class="p">()</span>
@@ -357,15 +359,15 @@
     <span class="k">return</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span></div>
 
 
-<div class="viewcode-block" id="xyz_to_coords_list"><a class="viewcode-back" href="../../../api/converter.html#arc.species.converter.xyz_to_coords_list">[docs]</a><span class="k">def</span> <span class="nf">xyz_to_coords_list</span><span class="p">(</span><span class="n">xyz_dict</span><span class="p">):</span>
+<div class="viewcode-block" id="xyz_to_coords_list"><a class="viewcode-back" href="../../../api/converter.html#arc.species.converter.xyz_to_coords_list">[docs]</a><span class="k">def</span> <span class="nf">xyz_to_coords_list</span><span class="p">(</span><span class="n">xyz_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]]:</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Get the coords part of an xyz dict as a (mutable) list of lists (rather than a tuple of tuples)</span>
+<span class="sd">    Get the coords part of an xyz dict as a (mutable) list of lists (rather than a tuple of tuples).</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        xyz_dict (dict): The ARC xyz format.</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        list: The coordinates.</span>
+<span class="sd">    Returns: List[List[float]]</span>
+<span class="sd">        The coordinates.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">xyz_dict</span> <span class="o">=</span> <span class="n">check_xyz_dict</span><span class="p">(</span><span class="n">xyz_dict</span><span class="p">)</span>
     <span class="n">coords_tuple</span> <span class="o">=</span> <span class="n">xyz_dict</span><span class="p">[</span><span class="s1">&#39;coords&#39;</span><span class="p">]</span>
@@ -375,7 +377,9 @@
     <span class="k">return</span> <span class="n">coords_list</span></div>
 
 
-<div class="viewcode-block" id="xyz_to_xyz_file_format"><a class="viewcode-back" href="../../../api/converter.html#arc.species.converter.xyz_to_xyz_file_format">[docs]</a><span class="k">def</span> <span class="nf">xyz_to_xyz_file_format</span><span class="p">(</span><span class="n">xyz_dict</span><span class="p">,</span> <span class="n">comment</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+<div class="viewcode-block" id="xyz_to_xyz_file_format"><a class="viewcode-back" href="../../../api/converter.html#arc.species.converter.xyz_to_xyz_file_format">[docs]</a><span class="k">def</span> <span class="nf">xyz_to_xyz_file_format</span><span class="p">(</span><span class="n">xyz_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
+                           <span class="n">comment</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                           <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Get the `XYZ file format &lt;https://en.wikipedia.org/wiki/XYZ_file_format&gt;`_ representation</span>
 <span class="sd">    from the ARC xyz dictionary format.</span>
@@ -385,8 +389,8 @@
 <span class="sd">        xyz_dict (dict): The ARC xyz format.</span>
 <span class="sd">        comment (str, optional): A comment to be shown in the output&#39;s 2nd line.</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        str: The XYZ file format.</span>
+<span class="sd">    Returns: str</span>
+<span class="sd">        The XYZ file format.</span>
 
 <span class="sd">    Raises:</span>
 <span class="sd">        ConverterError: If ``xyz_dict`` is of wrong format or ``comment`` is a multiline string.</span>
@@ -413,7 +417,7 @@
     <span class="k">return</span> <span class="n">dmat</span></div>
 
 
-<div class="viewcode-block" id="xyz_file_format_to_xyz"><a class="viewcode-back" href="../../../api/converter.html#arc.species.converter.xyz_file_format_to_xyz">[docs]</a><span class="k">def</span> <span class="nf">xyz_file_format_to_xyz</span><span class="p">(</span><span class="n">xyz_file</span><span class="p">):</span>
+<div class="viewcode-block" id="xyz_file_format_to_xyz"><a class="viewcode-back" href="../../../api/converter.html#arc.species.converter.xyz_file_format_to_xyz">[docs]</a><span class="k">def</span> <span class="nf">xyz_file_format_to_xyz</span><span class="p">(</span><span class="n">xyz_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Get the ARC xyz dictionary format from an</span>
 <span class="sd">    `XYZ file format &lt;https://en.wikipedia.org/wiki/XYZ_file_format&gt;`_ representation.</span>
@@ -421,11 +425,11 @@
 <span class="sd">    Args:</span>
 <span class="sd">        xyz_file (str): The content of an XYZ file</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        dict: The ARC dictionary xyz format.</span>
-
 <span class="sd">    Raises:</span>
 <span class="sd">        ConverterError: If cannot identify the number of atoms entry, of if it is different that the actual number.</span>
+
+<span class="sd">    Returns: dict</span>
+<span class="sd">        The ARC dictionary xyz format.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">lines</span> <span class="o">=</span> <span class="n">xyz_file</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">lines</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">isdigit</span><span class="p">():</span>
@@ -584,10 +588,13 @@
 <span class="sd">    If isotopes are not in xyz_dict, common values will be added.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        xyz (dict, str): The xyz dictionary.</span>
+<span class="sd">         xyz (Union[dict, str]): The xyz dictionary.</span>
 
 <span class="sd">    Raises:</span>
 <span class="sd">        ConverterError: If ``xyz`` is of wrong type or is missing symbols or coords.</span>
+
+<span class="sd">    Returns: dict</span>
+<span class="sd">        The cartesian coordinates in a dictionary format.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">xyz_dict</span> <span class="o">=</span> <span class="n">str_to_xyz</span><span class="p">(</span><span class="n">xyz</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">xyz</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="n">xyz</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">xyz_dict</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
@@ -1877,6 +1884,7 @@
     <span class="k">else</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">almost_equal_lists</span><span class="p">(</span><span class="n">dmat1</span><span class="p">,</span> <span class="n">dmat2</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="n">rtol</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="n">atol</span><span class="p">)</span></div>
 
+
 <div class="viewcode-block" id="calc_rmsd"><a class="viewcode-back" href="../../../api/converter.html#arc.species.converter.calc_rmsd">[docs]</a><span class="k">def</span> <span class="nf">calc_rmsd</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
               <span class="n">y</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
               <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
@@ -1924,6 +1932,7 @@
         <span class="k">if</span> <span class="nb">all</span><span class="p">([</span><span class="n">rmsd</span> <span class="o">&gt;</span> <span class="n">rmsd_threshold</span> <span class="k">for</span> <span class="n">rmsd</span> <span class="ow">in</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">rmsd_list</span><span class="p">)]):</span>
             <span class="n">distinct_xyzs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">xyz</span><span class="p">)</span>
     <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">distinct_xyzs</span><span class="p">)</span></div>
+
 
 <div class="viewcode-block" id="ics_to_scan_constraints"><a class="viewcode-back" href="../../../api/converter.html#arc.species.converter.ics_to_scan_constraints">[docs]</a><span class="k">def</span> <span class="nf">ics_to_scan_constraints</span><span class="p">(</span><span class="n">ics</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
                             <span class="n">software</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;gaussian&#39;</span><span class="p">,</span>

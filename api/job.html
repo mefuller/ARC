@@ -189,7 +189,7 @@
 <p>The ARC Job module</p>
 <dl class="py class">
 <dt id="arc.job.job.Job">
-<em class="property">class </em><code class="sig-prename descclassname">arc.job.job.</code><code class="sig-name descname">Job</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">project</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">project_directory</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">species_name</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">multiplicity</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">job_type</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">level</span><span class="p">:</span> <span class="n">Union<span class="p">[</span><a class="reference internal" href="level.html#arc.level.Level" title="arc.level.Level">arc.level.Level</a><span class="p">, </span>dict<span class="p">, </span>str<span class="p">]</span></span></em>, <em class="sig-param"><span class="n">ess_settings</span><span class="p">:</span> <span class="n">dict</span></em>, <em class="sig-param"><span class="n">xyz</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>dict<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">charge</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">0</span></em>, <em class="sig-param"><span class="n">conformer</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">- 1</span></em>, <em class="sig-param"><span class="n">fine</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">shift</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">''</span></em>, <em class="sig-param"><span class="n">software</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">is_ts</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">scan</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>list<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">pivots</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>list<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">total_job_memory_gb</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>int<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">comments</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">''</span></em>, <em class="sig-param"><span class="n">args</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>Union<span class="p">[</span>Dict<span class="p">[</span>str<span class="p">, </span>Dict<span class="p">[</span>str<span class="p">, </span>str<span class="p">]</span><span class="p">]</span><span class="p">, </span>str<span class="p">]</span><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">scan_trsh</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">''</span></em>, <em class="sig-param"><span class="n">ess_trsh_methods</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>list<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">bath_gas</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">job_num</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>int<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">job_server_name</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">job_name</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">job_id</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>int<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">job_status</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>list<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">server</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">server_nodes</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>list<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">initial_time</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>Union<span class="p">[</span>datetime.datetime<span class="p">, </span>str<span class="p">]</span><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">final_time</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>Union<span class="p">[</span>datetime.datetime<span class="p">, </span>str<span class="p">]</span><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">occ</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>int<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">max_job_time</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>float<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">scan_res</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>int<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">checkfile</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">number_of_radicals</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>int<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">conformers</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">radius</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>float<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">directed_scan_type</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">directed_scans</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>list<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">directed_dihedrals</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>list<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">rotor_index</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>int<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">testing</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">cpu_cores</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>int<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">irc_direction</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/job/job.html#Job"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.job.job.Job" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">arc.job.job.</span></code><code class="sig-name descname"><span class="pre">Job</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">project</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project_directory</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">species_name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multiplicity</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">job_type</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">level</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="level.html#arc.level.Level" title="arc.level.Level"><span class="pre">arc.level.Level</span></a><span class="p"><span class="pre">,</span> </span><span class="pre">dict</span><span class="p"><span class="pre">,</span> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ess_settings</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xyz</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">charge</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conformer</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">-</span> <span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fine</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shift</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">software</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_ts</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scan</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pivots</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">total_job_memory_gb</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">comments</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scan_trsh</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ess_trsh_methods</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bath_gas</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">job_num</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">job_server_name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">job_name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">job_id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">job_status</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">server</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">server_nodes</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_time</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">datetime.datetime</span><span class="p"><span class="pre">,</span> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">final_time</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">datetime.datetime</span><span class="p"><span class="pre">,</span> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">occ</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_job_time</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scan_res</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">checkfile</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_radicals</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conformers</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">radius</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">directed_scan_type</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">directed_scans</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">directed_dihedrals</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotor_index</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">testing</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cpu_cores</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">irc_direction</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/job/job.html#Job"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arc.job.job.Job" title="Permalink to this definition">¶</a></dt>
 <dd><p>ARC’s Job class.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -251,7 +251,7 @@ multiplicity = 1.</p></li>
 </dl>
 <dl class="py attribute">
 <dt id="arc.job.job.Job.project">
-<code class="sig-name descname">project</code><a class="headerlink" href="#arc.job.job.Job.project" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">project</span></code><a class="headerlink" href="#arc.job.job.Job.project" title="Permalink to this definition">¶</a></dt>
 <dd><p>The project’s name. Used for naming the directory.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -262,7 +262,7 @@ multiplicity = 1.</p></li>
 
 <dl class="py attribute">
 <dt id="arc.job.job.Job.ess_settings">
-<code class="sig-name descname">ess_settings</code><a class="headerlink" href="#arc.job.job.Job.ess_settings" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">ess_settings</span></code><a class="headerlink" href="#arc.job.job.Job.ess_settings" title="Permalink to this definition">¶</a></dt>
 <dd><p>A dictionary of available ESS and a corresponding server list.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -273,7 +273,7 @@ multiplicity = 1.</p></li>
 
 <dl class="py attribute">
 <dt id="arc.job.job.Job.species_name">
-<code class="sig-name descname">species_name</code><a class="headerlink" href="#arc.job.job.Job.species_name" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">species_name</span></code><a class="headerlink" href="#arc.job.job.Job.species_name" title="Permalink to this definition">¶</a></dt>
 <dd><p>The species/TS name. Used for naming the directory.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -284,7 +284,7 @@ multiplicity = 1.</p></li>
 
 <dl class="py attribute">
 <dt id="arc.job.job.Job.charge">
-<code class="sig-name descname">charge</code><a class="headerlink" href="#arc.job.job.Job.charge" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">charge</span></code><a class="headerlink" href="#arc.job.job.Job.charge" title="Permalink to this definition">¶</a></dt>
 <dd><p>The species net charge. Default is 0.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -295,7 +295,7 @@ multiplicity = 1.</p></li>
 
 <dl class="py attribute">
 <dt id="arc.job.job.Job.multiplicity">
-<code class="sig-name descname">multiplicity</code><a class="headerlink" href="#arc.job.job.Job.multiplicity" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">multiplicity</span></code><a class="headerlink" href="#arc.job.job.Job.multiplicity" title="Permalink to this definition">¶</a></dt>
 <dd><p>The species multiplicity.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -306,7 +306,7 @@ multiplicity = 1.</p></li>
 
 <dl class="py attribute">
 <dt id="arc.job.job.Job.number_of_radicals">
-<code class="sig-name descname">number_of_radicals</code><a class="headerlink" href="#arc.job.job.Job.number_of_radicals" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">number_of_radicals</span></code><a class="headerlink" href="#arc.job.job.Job.number_of_radicals" title="Permalink to this definition">¶</a></dt>
 <dd><p>The number of radicals (inputted by the user, ARC won’t attempt to determine it).
 Defaults to None. Important, e.g., if a Species is a bi-rad singlet, in which case
 the job should be unrestricted with multiplicity = 1.</p>
@@ -319,7 +319,7 @@ the job should be unrestricted with multiplicity = 1.</p>
 
 <dl class="py attribute">
 <dt id="arc.job.job.Job.spin">
-<code class="sig-name descname">spin</code><a class="headerlink" href="#arc.job.job.Job.spin" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">spin</span></code><a class="headerlink" href="#arc.job.job.Job.spin" title="Permalink to this definition">¶</a></dt>
 <dd><p>The spin. automatically derived from the multiplicity.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -330,7 +330,7 @@ the job should be unrestricted with multiplicity = 1.</p>
 
 <dl class="py attribute">
 <dt id="arc.job.job.Job.xyz">
-<code class="sig-name descname">xyz</code><a class="headerlink" href="#arc.job.job.Job.xyz" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">xyz</span></code><a class="headerlink" href="#arc.job.job.Job.xyz" title="Permalink to this definition">¶</a></dt>
 <dd><p>The xyz geometry. Used for the calculation.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -341,7 +341,7 @@ the job should be unrestricted with multiplicity = 1.</p>
 
 <dl class="py attribute">
 <dt id="arc.job.job.Job.radius">
-<code class="sig-name descname">radius</code><a class="headerlink" href="#arc.job.job.Job.radius" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">radius</span></code><a class="headerlink" href="#arc.job.job.Job.radius" title="Permalink to this definition">¶</a></dt>
 <dd><p>The species radius in Angstrom.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -352,7 +352,7 @@ the job should be unrestricted with multiplicity = 1.</p>
 
 <dl class="py attribute">
 <dt id="arc.job.job.Job.n_atoms">
-<code class="sig-name descname">n_atoms</code><a class="headerlink" href="#arc.job.job.Job.n_atoms" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">n_atoms</span></code><a class="headerlink" href="#arc.job.job.Job.n_atoms" title="Permalink to this definition">¶</a></dt>
 <dd><p>The number of atoms in self.xyz.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -363,7 +363,7 @@ the job should be unrestricted with multiplicity = 1.</p>
 
 <dl class="py attribute">
 <dt id="arc.job.job.Job.conformer">
-<code class="sig-name descname">conformer</code><a class="headerlink" href="#arc.job.job.Job.conformer" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">conformer</span></code><a class="headerlink" href="#arc.job.job.Job.conformer" title="Permalink to this definition">¶</a></dt>
 <dd><p>Conformer number if optimizing conformers.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -374,7 +374,7 @@ the job should be unrestricted with multiplicity = 1.</p>
 
 <dl class="py attribute">
 <dt id="arc.job.job.Job.conformers">
-<code class="sig-name descname">conformers</code><a class="headerlink" href="#arc.job.job.Job.conformers" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">conformers</span></code><a class="headerlink" href="#arc.job.job.Job.conformers" title="Permalink to this definition">¶</a></dt>
 <dd><p>A path to the YAML file conformer coordinates for a Gromacs MD job.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -385,7 +385,7 @@ the job should be unrestricted with multiplicity = 1.</p>
 
 <dl class="py attribute">
 <dt id="arc.job.job.Job.is_ts">
-<code class="sig-name descname">is_ts</code><a class="headerlink" href="#arc.job.job.Job.is_ts" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">is_ts</span></code><a class="headerlink" href="#arc.job.job.Job.is_ts" title="Permalink to this definition">¶</a></dt>
 <dd><p>Whether this species represents a transition structure.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -396,7 +396,7 @@ the job should be unrestricted with multiplicity = 1.</p>
 
 <dl class="py attribute">
 <dt id="arc.job.job.Job.level">
-<code class="sig-name descname">level</code><a class="headerlink" href="#arc.job.job.Job.level" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">level</span></code><a class="headerlink" href="#arc.job.job.Job.level" title="Permalink to this definition">¶</a></dt>
 <dd><p>The level of theory to use.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -407,7 +407,7 @@ the job should be unrestricted with multiplicity = 1.</p>
 
 <dl class="py attribute">
 <dt id="arc.job.job.Job.job_type">
-<code class="sig-name descname">job_type</code><a class="headerlink" href="#arc.job.job.Job.job_type" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">job_type</span></code><a class="headerlink" href="#arc.job.job.Job.job_type" title="Permalink to this definition">¶</a></dt>
 <dd><p>The job’s type.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -418,7 +418,7 @@ the job should be unrestricted with multiplicity = 1.</p>
 
 <dl class="py attribute">
 <dt id="arc.job.job.Job.scan">
-<code class="sig-name descname">scan</code><a class="headerlink" href="#arc.job.job.Job.scan" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">scan</span></code><a class="headerlink" href="#arc.job.job.Job.scan" title="Permalink to this definition">¶</a></dt>
 <dd><p>A list representing atom labels for the dihedral scan (e.g., [2, 1, 3, 5]).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -429,7 +429,7 @@ the job should be unrestricted with multiplicity = 1.</p>
 
 <dl class="py attribute">
 <dt id="arc.job.job.Job.pivots">
-<code class="sig-name descname">pivots</code><a class="headerlink" href="#arc.job.job.Job.pivots" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">pivots</span></code><a class="headerlink" href="#arc.job.job.Job.pivots" title="Permalink to this definition">¶</a></dt>
 <dd><p>The rotor scan pivots, if the job type is scan. Not used directly in these methods,
 but used to identify the rotor.</p>
 <dl class="field-list simple">
@@ -441,7 +441,7 @@ but used to identify the rotor.</p>
 
 <dl class="py attribute">
 <dt id="arc.job.job.Job.scan_res">
-<code class="sig-name descname">scan_res</code><a class="headerlink" href="#arc.job.job.Job.scan_res" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">scan_res</span></code><a class="headerlink" href="#arc.job.job.Job.scan_res" title="Permalink to this definition">¶</a></dt>
 <dd><p>The rotor scan resolution in degrees.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -452,7 +452,7 @@ but used to identify the rotor.</p>
 
 <dl class="py attribute">
 <dt id="arc.job.job.Job.software">
-<code class="sig-name descname">software</code><a class="headerlink" href="#arc.job.job.Job.software" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">software</span></code><a class="headerlink" href="#arc.job.job.Job.software" title="Permalink to this definition">¶</a></dt>
 <dd><p>The electronic structure software to be used.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -463,7 +463,7 @@ but used to identify the rotor.</p>
 
 <dl class="py attribute">
 <dt id="arc.job.job.Job.server_nodes">
-<code class="sig-name descname">server_nodes</code><a class="headerlink" href="#arc.job.job.Job.server_nodes" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">server_nodes</span></code><a class="headerlink" href="#arc.job.job.Job.server_nodes" title="Permalink to this definition">¶</a></dt>
 <dd><p>A list of nodes this job was submitted to (for troubleshooting).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -474,7 +474,7 @@ but used to identify the rotor.</p>
 
 <dl class="py attribute">
 <dt id="arc.job.job.Job.cpu_cores">
-<code class="sig-name descname">cpu_cores</code><a class="headerlink" href="#arc.job.job.Job.cpu_cores" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">cpu_cores</span></code><a class="headerlink" href="#arc.job.job.Job.cpu_cores" title="Permalink to this definition">¶</a></dt>
 <dd><p>The total number of cpu cores requested for a job.
 ARC adopts the following naming system to describe computing hardware hierarchy
 node &gt; cpu &gt; cpu_cores &gt; cpu_threads</p>
@@ -487,7 +487,7 @@ node &gt; cpu &gt; cpu_cores &gt; cpu_threads</p>
 
 <dl class="py attribute">
 <dt id="arc.job.job.Job.input_file_memory">
-<code class="sig-name descname">input_file_memory</code><a class="headerlink" href="#arc.job.job.Job.input_file_memory" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">input_file_memory</span></code><a class="headerlink" href="#arc.job.job.Job.input_file_memory" title="Permalink to this definition">¶</a></dt>
 <dd><p>The memory ARC writes to job input files in appropriate formats per ESS.
 In software like Gaussian, this variable is total memory for all cpu cores.
 In software like Orca, this variable is memory per cpu core.</p>
@@ -500,7 +500,7 @@ In software like Orca, this variable is memory per cpu core.</p>
 
 <dl class="py attribute">
 <dt id="arc.job.job.Job.submit_script_memory">
-<code class="sig-name descname">submit_script_memory</code><a class="headerlink" href="#arc.job.job.Job.submit_script_memory" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">submit_script_memory</span></code><a class="headerlink" href="#arc.job.job.Job.submit_script_memory" title="Permalink to this definition">¶</a></dt>
 <dd><p>The memory ARC writes to submit script in appropriate formats per cluster system.
 In system like Sun Grid Engine, this variable is total memory for all cpu cores.
 In system like Slurm, this variable is memory per cpu core.
@@ -515,7 +515,7 @@ needed to execute a job on server properly</p>
 
 <dl class="py attribute">
 <dt id="arc.job.job.Job.total_job_memory_gb">
-<code class="sig-name descname">total_job_memory_gb</code><a class="headerlink" href="#arc.job.job.Job.total_job_memory_gb" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">total_job_memory_gb</span></code><a class="headerlink" href="#arc.job.job.Job.total_job_memory_gb" title="Permalink to this definition">¶</a></dt>
 <dd><p>The total memory ARC specifies for a job in GB.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -526,7 +526,7 @@ needed to execute a job on server properly</p>
 
 <dl class="py attribute">
 <dt id="arc.job.job.Job.fine">
-<code class="sig-name descname">fine</code><a class="headerlink" href="#arc.job.job.Job.fine" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">fine</span></code><a class="headerlink" href="#arc.job.job.Job.fine" title="Permalink to this definition">¶</a></dt>
 <dd><p>Whether to use fine geometry optimization parameters.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -537,7 +537,7 @@ needed to execute a job on server properly</p>
 
 <dl class="py attribute">
 <dt id="arc.job.job.Job.shift">
-<code class="sig-name descname">shift</code><a class="headerlink" href="#arc.job.job.Job.shift" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">shift</span></code><a class="headerlink" href="#arc.job.job.Job.shift" title="Permalink to this definition">¶</a></dt>
 <dd><p>A string representation alpha- and beta-spin orbitals shifts (molpro only).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -548,7 +548,7 @@ needed to execute a job on server properly</p>
 
 <dl class="py attribute">
 <dt id="arc.job.job.Job.comments">
-<code class="sig-name descname">comments</code><a class="headerlink" href="#arc.job.job.Job.comments" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">comments</span></code><a class="headerlink" href="#arc.job.job.Job.comments" title="Permalink to this definition">¶</a></dt>
 <dd><p>Job comments (archived, not used).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -559,7 +559,7 @@ needed to execute a job on server properly</p>
 
 <dl class="py attribute">
 <dt id="arc.job.job.Job.initial_time">
-<code class="sig-name descname">initial_time</code><a class="headerlink" href="#arc.job.job.Job.initial_time" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">initial_time</span></code><a class="headerlink" href="#arc.job.job.Job.initial_time" title="Permalink to this definition">¶</a></dt>
 <dd><p>The date-time this job was initiated.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -570,7 +570,7 @@ needed to execute a job on server properly</p>
 
 <dl class="py attribute">
 <dt id="arc.job.job.Job.final_time">
-<code class="sig-name descname">final_time</code><a class="headerlink" href="#arc.job.job.Job.final_time" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">final_time</span></code><a class="headerlink" href="#arc.job.job.Job.final_time" title="Permalink to this definition">¶</a></dt>
 <dd><p>The date-time this job was initiated.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -581,7 +581,7 @@ needed to execute a job on server properly</p>
 
 <dl class="py attribute">
 <dt id="arc.job.job.Job.run_time">
-<code class="sig-name descname">run_time</code><a class="headerlink" href="#arc.job.job.Job.run_time" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">run_time</span></code><a class="headerlink" href="#arc.job.job.Job.run_time" title="Permalink to this definition">¶</a></dt>
 <dd><p>Job execution time.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -592,7 +592,7 @@ needed to execute a job on server properly</p>
 
 <dl class="py attribute">
 <dt id="arc.job.job.Job.job_status">
-<code class="sig-name descname">job_status</code><a class="headerlink" href="#arc.job.job.Job.job_status" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">job_status</span></code><a class="headerlink" href="#arc.job.job.Job.job_status" title="Permalink to this definition">¶</a></dt>
 <dd><p>The job’s server and ESS statuses.
 The job server status is in job.job_status[0] and can be either ‘initializing’ / ‘running’
 / ‘errored’ / ‘done’. The job ESS status is in job.job_status[1] is a dictionary of
@@ -609,7 +609,7 @@ description and the identified error line from the ESS log file will be given as
 
 <dl class="py attribute">
 <dt id="arc.job.job.Job.job_server_name">
-<code class="sig-name descname">job_server_name</code><a class="headerlink" href="#arc.job.job.Job.job_server_name" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">job_server_name</span></code><a class="headerlink" href="#arc.job.job.Job.job_server_name" title="Permalink to this definition">¶</a></dt>
 <dd><p>Job’s name on the server (e.g., ‘a103’).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -620,7 +620,7 @@ description and the identified error line from the ESS log file will be given as
 
 <dl class="py attribute">
 <dt id="arc.job.job.Job.job_name">
-<code class="sig-name descname">job_name</code><a class="headerlink" href="#arc.job.job.Job.job_name" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">job_name</span></code><a class="headerlink" href="#arc.job.job.Job.job_name" title="Permalink to this definition">¶</a></dt>
 <dd><p>Job’s name for internal usage (e.g., ‘opt_a103’).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -631,7 +631,7 @@ description and the identified error line from the ESS log file will be given as
 
 <dl class="py attribute">
 <dt id="arc.job.job.Job.job_id">
-<code class="sig-name descname">job_id</code><a class="headerlink" href="#arc.job.job.Job.job_id" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">job_id</span></code><a class="headerlink" href="#arc.job.job.Job.job_id" title="Permalink to this definition">¶</a></dt>
 <dd><p>The job’s ID determined by the server.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -642,7 +642,7 @@ description and the identified error line from the ESS log file will be given as
 
 <dl class="py attribute">
 <dt id="arc.job.job.Job.job_num">
-<code class="sig-name descname">job_num</code><a class="headerlink" href="#arc.job.job.Job.job_num" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">job_num</span></code><a class="headerlink" href="#arc.job.job.Job.job_num" title="Permalink to this definition">¶</a></dt>
 <dd><p>Used as the entry number in the database, as well as the job name on the server.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -653,7 +653,7 @@ description and the identified error line from the ESS log file will be given as
 
 <dl class="py attribute">
 <dt id="arc.job.job.Job.local_path">
-<code class="sig-name descname">local_path</code><a class="headerlink" href="#arc.job.job.Job.local_path" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">local_path</span></code><a class="headerlink" href="#arc.job.job.Job.local_path" title="Permalink to this definition">¶</a></dt>
 <dd><p>Local path to job’s folder.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -664,7 +664,7 @@ description and the identified error line from the ESS log file will be given as
 
 <dl class="py attribute">
 <dt id="arc.job.job.Job.local_path_to_output_file">
-<code class="sig-name descname">local_path_to_output_file</code><a class="headerlink" href="#arc.job.job.Job.local_path_to_output_file" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">local_path_to_output_file</span></code><a class="headerlink" href="#arc.job.job.Job.local_path_to_output_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>The local path to the output.out file.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -675,7 +675,7 @@ description and the identified error line from the ESS log file will be given as
 
 <dl class="py attribute">
 <dt id="arc.job.job.Job.local_path_to_orbitals_file">
-<code class="sig-name descname">local_path_to_orbitals_file</code><a class="headerlink" href="#arc.job.job.Job.local_path_to_orbitals_file" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">local_path_to_orbitals_file</span></code><a class="headerlink" href="#arc.job.job.Job.local_path_to_orbitals_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>The local path to the orbitals.fchk file (only for orbitals jobs).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -686,7 +686,7 @@ description and the identified error line from the ESS log file will be given as
 
 <dl class="py attribute">
 <dt id="arc.job.job.Job.local_path_to_check_file">
-<code class="sig-name descname">local_path_to_check_file</code><a class="headerlink" href="#arc.job.job.Job.local_path_to_check_file" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">local_path_to_check_file</span></code><a class="headerlink" href="#arc.job.job.Job.local_path_to_check_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>The local path to the Gaussian check file of the current job (downloaded).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -697,7 +697,7 @@ description and the identified error line from the ESS log file will be given as
 
 <dl class="py attribute">
 <dt id="arc.job.job.Job.local_path_to_lj_file">
-<code class="sig-name descname">local_path_to_lj_file</code><a class="headerlink" href="#arc.job.job.Job.local_path_to_lj_file" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">local_path_to_lj_file</span></code><a class="headerlink" href="#arc.job.job.Job.local_path_to_lj_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>The local path to the lennard_jones data file (from OneDMin).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -708,7 +708,7 @@ description and the identified error line from the ESS log file will be given as
 
 <dl class="py attribute">
 <dt id="arc.job.job.Job.local_path_to_xyz">
-<code class="sig-name descname">local_path_to_xyz</code><a class="headerlink" href="#arc.job.job.Job.local_path_to_xyz" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">local_path_to_xyz</span></code><a class="headerlink" href="#arc.job.job.Job.local_path_to_xyz" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>str</p>
@@ -718,7 +718,7 @@ description and the identified error line from the ESS log file will be given as
 
 <dl class="py attribute">
 <dt id="arc.job.job.Job.checkfile">
-<code class="sig-name descname">checkfile</code><a class="headerlink" href="#arc.job.job.Job.checkfile" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">checkfile</span></code><a class="headerlink" href="#arc.job.job.Job.checkfile" title="Permalink to this definition">¶</a></dt>
 <dd><p>The path to a previous Gaussian checkfile to be used in the current job.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -729,7 +729,7 @@ description and the identified error line from the ESS log file will be given as
 
 <dl class="py attribute">
 <dt id="arc.job.job.Job.remote_path">
-<code class="sig-name descname">remote_path</code><a class="headerlink" href="#arc.job.job.Job.remote_path" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">remote_path</span></code><a class="headerlink" href="#arc.job.job.Job.remote_path" title="Permalink to this definition">¶</a></dt>
 <dd><p>Remote path to job’s folder.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -740,7 +740,7 @@ description and the identified error line from the ESS log file will be given as
 
 <dl class="py attribute">
 <dt id="arc.job.job.Job.submit">
-<code class="sig-name descname">submit</code><a class="headerlink" href="#arc.job.job.Job.submit" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">submit</span></code><a class="headerlink" href="#arc.job.job.Job.submit" title="Permalink to this definition">¶</a></dt>
 <dd><p>The submit script. Created automatically.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -751,7 +751,7 @@ description and the identified error line from the ESS log file will be given as
 
 <dl class="py attribute">
 <dt id="arc.job.job.Job.input">
-<code class="sig-name descname">input</code><a class="headerlink" href="#arc.job.job.Job.input" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">input</span></code><a class="headerlink" href="#arc.job.job.Job.input" title="Permalink to this definition">¶</a></dt>
 <dd><p>The input file. Created automatically.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -762,7 +762,7 @@ description and the identified error line from the ESS log file will be given as
 
 <dl class="py attribute">
 <dt id="arc.job.job.Job.server">
-<code class="sig-name descname">server</code><a class="headerlink" href="#arc.job.job.Job.server" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">server</span></code><a class="headerlink" href="#arc.job.job.Job.server" title="Permalink to this definition">¶</a></dt>
 <dd><p>Server’s name.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -773,7 +773,7 @@ description and the identified error line from the ESS log file will be given as
 
 <dl class="py attribute">
 <dt id="arc.job.job.Job.args">
-<code class="sig-name descname">args</code><a class="headerlink" href="#arc.job.job.Job.args" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">args</span></code><a class="headerlink" href="#arc.job.job.Job.args" title="Permalink to this definition">¶</a></dt>
 <dd><p>Methods (including troubleshooting) to be used in input files. Keys are either ‘keyword’ or
 ‘block’, values are dictionaries with values to be used either as keywords or as blocks in the
 respective software input file.</p>
@@ -786,7 +786,7 @@ respective software input file.</p>
 
 <dl class="py attribute">
 <dt id="arc.job.job.Job.ess_trsh_methods">
-<code class="sig-name descname">ess_trsh_methods</code><a class="headerlink" href="#arc.job.job.Job.ess_trsh_methods" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">ess_trsh_methods</span></code><a class="headerlink" href="#arc.job.job.Job.ess_trsh_methods" title="Permalink to this definition">¶</a></dt>
 <dd><p>A list of troubleshooting methods already tried out for ESS convergence.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -797,7 +797,7 @@ respective software input file.</p>
 
 <dl class="py attribute">
 <dt id="arc.job.job.Job.scan_trsh">
-<code class="sig-name descname">scan_trsh</code><a class="headerlink" href="#arc.job.job.Job.scan_trsh" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">scan_trsh</span></code><a class="headerlink" href="#arc.job.job.Job.scan_trsh" title="Permalink to this definition">¶</a></dt>
 <dd><p>A troubleshooting method for rotor scans.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -808,7 +808,7 @@ respective software input file.</p>
 
 <dl class="py attribute">
 <dt id="arc.job.job.Job.occ">
-<code class="sig-name descname">occ</code><a class="headerlink" href="#arc.job.job.Job.occ" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">occ</span></code><a class="headerlink" href="#arc.job.job.Job.occ" title="Permalink to this definition">¶</a></dt>
 <dd><p>The number of occupied orbitals (core + val) from a molpro CCSD sp calc.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -819,7 +819,7 @@ respective software input file.</p>
 
 <dl class="py attribute">
 <dt id="arc.job.job.Job.project_directory">
-<code class="sig-name descname">project_directory</code><a class="headerlink" href="#arc.job.job.Job.project_directory" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">project_directory</span></code><a class="headerlink" href="#arc.job.job.Job.project_directory" title="Permalink to this definition">¶</a></dt>
 <dd><p>The path to the project directory.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -830,7 +830,7 @@ respective software input file.</p>
 
 <dl class="py attribute">
 <dt id="arc.job.job.Job.max_job_time">
-<code class="sig-name descname">max_job_time</code><a class="headerlink" href="#arc.job.job.Job.max_job_time" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">max_job_time</span></code><a class="headerlink" href="#arc.job.job.Job.max_job_time" title="Permalink to this definition">¶</a></dt>
 <dd><p>The maximal allowed job time on the server in hours (can be fractional).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -841,7 +841,7 @@ respective software input file.</p>
 
 <dl class="py attribute">
 <dt id="arc.job.job.Job.bath_gas">
-<code class="sig-name descname">bath_gas</code><a class="headerlink" href="#arc.job.job.Job.bath_gas" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">bath_gas</span></code><a class="headerlink" href="#arc.job.job.Job.bath_gas" title="Permalink to this definition">¶</a></dt>
 <dd><p>A bath gas. Currently used in OneDMin to calc L-J parameters.
 Allowed values are He, Ne, Ar, Kr, H2, N2, O2.</p>
 <dl class="field-list simple">
@@ -853,7 +853,7 @@ Allowed values are He, Ne, Ar, Kr, H2, N2, O2.</p>
 
 <dl class="py attribute">
 <dt id="arc.job.job.Job.directed_scans">
-<code class="sig-name descname">directed_scans</code><a class="headerlink" href="#arc.job.job.Job.directed_scans" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">directed_scans</span></code><a class="headerlink" href="#arc.job.job.Job.directed_scans" title="Permalink to this definition">¶</a></dt>
 <dd><p>Entries are lists of four-atom dihedral scan indices to constrain during a directed scan.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -864,7 +864,7 @@ Allowed values are He, Ne, Ar, Kr, H2, N2, O2.</p>
 
 <dl class="py attribute">
 <dt id="arc.job.job.Job.directed_dihedrals">
-<code class="sig-name descname">directed_dihedrals</code><a class="headerlink" href="#arc.job.job.Job.directed_dihedrals" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">directed_dihedrals</span></code><a class="headerlink" href="#arc.job.job.Job.directed_dihedrals" title="Permalink to this definition">¶</a></dt>
 <dd><p>The dihedral angles of a directed scan job corresponding to <code class="docutils literal notranslate"><span class="pre">directed_scans</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -875,7 +875,7 @@ Allowed values are He, Ne, Ar, Kr, H2, N2, O2.</p>
 
 <dl class="py attribute">
 <dt id="arc.job.job.Job.directed_scan_type">
-<code class="sig-name descname">directed_scan_type</code><a class="headerlink" href="#arc.job.job.Job.directed_scan_type" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">directed_scan_type</span></code><a class="headerlink" href="#arc.job.job.Job.directed_scan_type" title="Permalink to this definition">¶</a></dt>
 <dd><p>The type of the directed scan.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -886,7 +886,7 @@ Allowed values are He, Ne, Ar, Kr, H2, N2, O2.</p>
 
 <dl class="py attribute">
 <dt id="arc.job.job.Job.rotor_index">
-<code class="sig-name descname">rotor_index</code><a class="headerlink" href="#arc.job.job.Job.rotor_index" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">rotor_index</span></code><a class="headerlink" href="#arc.job.job.Job.rotor_index" title="Permalink to this definition">¶</a></dt>
 <dd><p>The 0-indexed rotor number (key) in the species.rotors_dict dictionary.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -897,7 +897,7 @@ Allowed values are He, Ne, Ar, Kr, H2, N2, O2.</p>
 
 <dl class="py attribute">
 <dt id="arc.job.job.Job.irc_direction">
-<code class="sig-name descname">irc_direction</code><a class="headerlink" href="#arc.job.job.Job.irc_direction" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">irc_direction</span></code><a class="headerlink" href="#arc.job.job.Job.irc_direction" title="Permalink to this definition">¶</a></dt>
 <dd><p>The direction of the IRC job (<cite>forward</cite> or <cite>reverse</cite>).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -908,7 +908,7 @@ Allowed values are He, Ne, Ar, Kr, H2, N2, O2.</p>
 
 <dl class="py method">
 <dt id="arc.job.job.Job.add_to_args">
-<code class="sig-name descname">add_to_args</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">val</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">key1</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">'keyword'</span></em>, <em class="sig-param"><span class="n">key2</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">'general'</span></em>, <em class="sig-param"><span class="n">separator</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">check_val</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/job/job.html#Job.add_to_args"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.job.job.Job.add_to_args" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">add_to_args</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">val</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key1</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'keyword'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key2</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'general'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">separator</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_val</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/job/job.html#Job.add_to_args"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arc.job.job.Job.add_to_args" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add arguments to self.args in a nested dictionary under self.args[key1][key2].</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -926,13 +926,13 @@ to apply between existing values and new values.</p></li>
 
 <dl class="py method">
 <dt id="arc.job.job.Job.as_dict">
-<code class="sig-name descname">as_dict</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; dict<a class="reference internal" href="../_modules/arc/job/job.html#Job.as_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.job.job.Job.as_dict" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">as_dict</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">dict</span><a class="reference internal" href="../_modules/arc/job/job.html#Job.as_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arc.job.job.Job.as_dict" title="Permalink to this definition">¶</a></dt>
 <dd><p>A helper function for dumping this object as a dictionary in a YAML file for restarting ARC.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="arc.job.job.Job.deduce_software">
-<code class="sig-name descname">deduce_software</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/job/job.html#Job.deduce_software"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.job.job.Job.deduce_software" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">deduce_software</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/job/job.html#Job.deduce_software"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arc.job.job.Job.deduce_software" title="Permalink to this definition">¶</a></dt>
 <dd><p>Deduce the software to be used.</p>
 <dl class="simple">
 <dt>Returns: str</dt><dd><p>The deduced software.</p>
@@ -942,13 +942,13 @@ to apply between existing values and new values.</p></li>
 
 <dl class="py method">
 <dt id="arc.job.job.Job.delete">
-<code class="sig-name descname">delete</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/job/job.html#Job.delete"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.job.job.Job.delete" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">delete</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/job/job.html#Job.delete"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arc.job.job.Job.delete" title="Permalink to this definition">¶</a></dt>
 <dd><p>Delete a running Job.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="arc.job.job.Job.determine_job_status">
-<code class="sig-name descname">determine_job_status</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/job/job.html#Job.determine_job_status"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.job.job.Job.determine_job_status" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">determine_job_status</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/job/job.html#Job.determine_job_status"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arc.job.job.Job.determine_job_status" title="Permalink to this definition">¶</a></dt>
 <dd><p>Determine the Job’s status. Updates self.job_status.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Raises</dt>
@@ -959,13 +959,13 @@ to apply between existing values and new values.</p></li>
 
 <dl class="py method">
 <dt id="arc.job.job.Job.determine_run_time">
-<code class="sig-name descname">determine_run_time</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/job/job.html#Job.determine_run_time"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.job.job.Job.determine_run_time" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">determine_run_time</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/job/job.html#Job.determine_run_time"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arc.job.job.Job.determine_run_time" title="Permalink to this definition">¶</a></dt>
 <dd><p>Determine the run time. Update self.run_time and round to seconds.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="arc.job.job.Job.format_max_job_time">
-<code class="sig-name descname">format_max_job_time</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">time_format</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/job/job.html#Job.format_max_job_time"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.job.job.Job.format_max_job_time" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">format_max_job_time</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time_format</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/job/job.html#Job.format_max_job_time"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arc.job.job.Job.format_max_job_time" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert the max_job_time attribute into the format supported by the server submission script</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -980,44 +980,44 @@ to apply between existing values and new values.</p></li>
 
 <dl class="py method">
 <dt id="arc.job.job.Job.run">
-<code class="sig-name descname">run</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/job/job.html#Job.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.job.job.Job.run" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">run</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/job/job.html#Job.run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arc.job.job.Job.run" title="Permalink to this definition">¶</a></dt>
 <dd><p>Execute the Job.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="arc.job.job.Job.set_cpu_and_mem">
-<code class="sig-name descname">set_cpu_and_mem</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/job/job.html#Job.set_cpu_and_mem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.job.job.Job.set_cpu_and_mem" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">set_cpu_and_mem</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/job/job.html#Job.set_cpu_and_mem"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arc.job.job.Job.set_cpu_and_mem" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set the amount of cpus and memory based on ESS and cluster software.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="arc.job.job.Job.set_file_paths">
-<code class="sig-name descname">set_file_paths</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/job/job.html#Job.set_file_paths"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.job.job.Job.set_file_paths" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">set_file_paths</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/job/job.html#Job.set_file_paths"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arc.job.job.Job.set_file_paths" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set local and remote job file paths.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="arc.job.job.Job.troubleshoot_server">
-<code class="sig-name descname">troubleshoot_server</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/job/job.html#Job.troubleshoot_server"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.job.job.Job.troubleshoot_server" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">troubleshoot_server</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/job/job.html#Job.troubleshoot_server"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arc.job.job.Job.troubleshoot_server" title="Permalink to this definition">¶</a></dt>
 <dd><p>Troubleshoot server errors.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="arc.job.job.Job.write_completed_job_to_csv_file">
-<code class="sig-name descname">write_completed_job_to_csv_file</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/job/job.html#Job.write_completed_job_to_csv_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.job.job.Job.write_completed_job_to_csv_file" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">write_completed_job_to_csv_file</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/job/job.html#Job.write_completed_job_to_csv_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arc.job.job.Job.write_completed_job_to_csv_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>Write a completed ARCJob into the completed_jobs.csv file.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="arc.job.job.Job.write_input_file">
-<code class="sig-name descname">write_input_file</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/job/job.html#Job.write_input_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.job.job.Job.write_input_file" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">write_input_file</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/job/job.html#Job.write_input_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arc.job.job.Job.write_input_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>Write a software-specific, job-specific input file.
 Save the file locally and also upload it to the server.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="arc.job.job.Job.write_submit_script">
-<code class="sig-name descname">write_submit_script</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/job/job.html#Job.write_submit_script"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.job.job.Job.write_submit_script" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">write_submit_script</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/job/job.html#Job.write_submit_script"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arc.job.job.Job.write_submit_script" title="Permalink to this definition">¶</a></dt>
 <dd><p>Write the Job’s submit script.</p>
 </dd></dl>
 

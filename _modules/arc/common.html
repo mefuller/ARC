@@ -894,8 +894,8 @@
     <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Could not find value </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s1"> in the dictionary</span><span class="se">\n</span><span class="si">{</span><span class="n">dictionary</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="almost_equal_lists"><a class="viewcode-back" href="../../api/common.html#arc.common.almost_equal_lists">[docs]</a><span class="k">def</span> <span class="nf">almost_equal_lists</span><span class="p">(</span><span class="n">iter1</span><span class="p">:</span> <span class="nb">list</span> <span class="ow">or</span> <span class="nb">tuple</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
-                       <span class="n">iter2</span><span class="p">:</span> <span class="nb">list</span> <span class="ow">or</span> <span class="nb">tuple</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+<div class="viewcode-block" id="almost_equal_lists"><a class="viewcode-back" href="../../api/common.html#arc.common.almost_equal_lists">[docs]</a><span class="k">def</span> <span class="nf">almost_equal_lists</span><span class="p">(</span><span class="n">iter1</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span>
+                       <span class="n">iter2</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span>
                        <span class="n">rtol</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-05</span><span class="p">,</span>
                        <span class="n">atol</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-08</span><span class="p">,</span>
                        <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
@@ -1118,7 +1118,7 @@
 <span class="sd">                                   differences are equal to the scan resolution.</span>
 
 <span class="sd">    Returns: pd.DataFrame</span>
-<span class="sd">        a DataFrame consisting of ``True``/``False``, indicating</span>
+<span class="sd">        A DataFrame consisting of ``True``/``False``, indicating</span>
 <span class="sd">        which torsions changed significantly. ``True`` for significant change.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># First iteration without 180/-180 adjustment</span>
