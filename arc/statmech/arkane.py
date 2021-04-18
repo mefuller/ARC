@@ -433,7 +433,9 @@ class ArkaneAdapter(StatmechAdapter):
                                            freq_path=freq_path,
                                            rotors=rotors)
 
+        print(f'\n\n{species.label} {freq_path}')
         if freq_path:
+            print(f'Saving Arkane YAML file in {input_file_path}')
             with open(input_file_path, 'w') as f:
                 f.write(input_file)
             species.arkane_file = input_file_path

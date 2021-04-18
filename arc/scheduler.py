@@ -743,6 +743,7 @@ class Scheduler(object):
             tsg (int, optional): TSGuess number if optimizing TS guesses.
             xyz (dict, optional): The 3D coordinates for the species.
         """
+        None
         max_job_time = max_job_time or self.max_job_time  # if it's None, set to default
         ess_trsh_methods = ess_trsh_methods if ess_trsh_methods is not None else list()
         species = self.species_dict[label] if label is not None else None
