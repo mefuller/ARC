@@ -5,6 +5,7 @@ channels:
   - anaconda
   - omnia
   - conda-forge
+  - psi4
 dependencies:
   - cairo
   - cairocffi
@@ -17,16 +18,19 @@ dependencies:
   - cython >=0.25.2
   - ffmpeg
   - rmg::gprof2dot
-  - graphviz
+  - anaconda:graphviz
   - h5py
   - jinja2
   - jupyter
   - rmg::lpsolve55
+  - lpsolve55
+  - mako
   - markupsafe
   - matplotlib >=2.2.2
   - mock
   - rmg::mopac
   - mpmath
+  - more-itertools
   - networkx
   - nose
   - rmg::numdifftools
@@ -34,12 +38,14 @@ dependencies:
   - openbabel
   - pandas >=1.0.1
   - psutil
-  - rmg::pydas >=1.0.2
+  - psi4
+  - pydas >=1.0.1
   - pydot
   - rmg::pydqed >=1.0.1
   - pymongo
   - pyparsing
   - rmg::pyrdl
+  - pytables
   - python >=3.7
   - pyyaml
   - rmg::quantities
