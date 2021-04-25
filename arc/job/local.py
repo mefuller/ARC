@@ -12,7 +12,7 @@ import subprocess
 import time
 from typing import List, Optional, Union
 
-from arc.common import get_logger
+from arc.common import get_logger, is_str_int
 from arc.exceptions import SettingsError
 from arc.imports import settings
 from arc.job.ssh import check_job_status_in_stdout
@@ -121,15 +121,19 @@ def check_job_status(job_id):
         14428     debug xq1371m2   user_name  R 50-04:04:46      1 node06
 
     PBS (taken from zeldo.dow.com)::
-
                                                                                           Req'd       Req'd       Elap
         Job ID                  Username    Queue    Jobname          SessID  NDS   TSK   Memory      Time    S   Time
         ----------------------- ----------- -------- ---------------- ------ ----- ------ --------- --------- - ---------
         2016614.zeldo.local     u780444     workq    scan.pbs          75380     1     10       --  730:00:00 R  00:00:20
         2016616.zeldo.local     u780444     workq    scan.pbs          75380     1     10       --  730:00:00 R  00:00:20
+
+    HTCondor::
+
+    443671.0 <username> a1001
+    443672.0 <username> a1002
     """
     server = 'local'
-    cmd = check_status_command[servers[server]['cluster_soft']] + ' -u $USER'
+    cmd = check_status_command[servers[server]['cluster_soft']]
     stdout = execute_command(cmd)[0]
     return check_job_status_in_stdout(job_id=job_id, stdout=stdout, server=server)
 
@@ -138,7 +142,7 @@ def delete_job(job_id):
     """
     Deletes a running job
     """
-    cmd = delete_command[servers['local']['cluster_soft']] + ' ' + str(job_id)
+    cmd = f"{delete_command[servers['local']['cluster_soft']]} {job_id}"
     success = bool(execute_command(cmd, no_fail=True))
     if not success:  # Check if the job is still running. If not then this failure does not matter
         logger.warning(f'Detected possible error when trying to delete job {job_id}. Checking to see if the job is '
@@ -159,37 +163,15 @@ def check_running_jobs_ids() -> list:
     if servers['local']['cluster_soft'].lower() not in ['slurm', 'oge', 'sge', 'pbs']:
         raise ValueError(f"Server cluster software {servers['local']['cluster_soft']} is not supported.")
     running_job_ids = list()
-    cmd = check_status_command[servers['local']['cluster_soft']] + ' -u $USER'
+    cmd = check_status_command[servers['local']['cluster_soft']]
     stdout = execute_command(cmd)[0]
+    i_dict = {'slurm': 0, 'oge': 1, 'sge': 1, 'pbs': 4, 'htcondor': -1}
+    split_by_dict = {'slurm': ' ', 'oge': ' ', 'sge': ' ', 'pbs': '.', 'htcondor': ' '}
+    cluster_soft = servers['local']['cluster_soft'].lower()
     for i, status_line in enumerate(stdout):
-        if servers['local']['cluster_soft'].lower() == 'slurm' and i > 0:
-            running_job_ids = append_job_id_to_running_job_ids(status_line.split()[0], running_job_ids)
-        elif servers['local']['cluster_soft'].lower() == 'oge' and i > 1:
-            running_job_ids = append_job_id_to_running_job_ids(status_line.split()[0], running_job_ids)
-        elif servers['local']['cluster_soft'].lower() == 'pbs' and i > 4:
-            running_job_ids = append_job_id_to_running_job_ids(status_line.split('.')[0], running_job_ids)
-    return running_job_ids
-
-
-def append_job_id_to_running_job_ids(job_id: str,
-                                     running_job_ids: list,
-                                     ) -> list:
-    """
-    Append ``job_id`` to ``running_job_ids``.
-    Try converting to int if possible.
-
-    Args:
-        job_id (str): The job ID on the server.
-        running_job_ids (list): Already identified job IDs.
-
-    Returns:
-         list: The updated running_job_ids list.
-    """
-    try:
-        job_id = int(job_id)
-    except ValueError:
-        pass
-    running_job_ids.append(job_id)
+        if i > i_dict[cluster_soft]:
+            job_id = status_line.split(split_by_dict[cluster_soft])[0]
+            running_job_ids.append(job_id)
     return running_job_ids
 
 
@@ -200,20 +182,26 @@ def submit_job(path):
     """
     job_status = ''
     job_id = 0
-    cmd = 'cd ' + path + '; ' + submit_command[servers['local']['cluster_soft']] + ' '\
-        + submit_filenames[servers['local']['cluster_soft']]
+    cluster_soft = servers['local']['cluster_soft'].lower()
+    cmd = f"cd {path}; {submit_command[servers['local']['cluster_soft']]} " \
+          f"{submit_filenames[servers['local']['cluster_soft']]}"
     stdout = execute_command(cmd)[0]
-    if servers['local']['cluster_soft'].lower() in ['oge', 'sge'] and 'submitted' in stdout[0].lower():
-        job_id = int(stdout[0].split()[2])
-        job_status = 'running'
-    elif servers['local']['cluster_soft'].lower() == 'slurm' and 'submitted' in stdout[0].lower():
-        job_id = int(stdout[0].split()[3])
-        job_status = 'running'
-    elif servers['local']['cluster_soft'].lower() == 'pbs':
-        job_id = int(stdout[0].split('.')[0])
-        job_status = 'running'
+    if len(stdout) == 0:
+        logger.warning(f'Got an error when trying to submit job.')
+        job_status = 'errored'
+    elif cluster_soft in ['oge', 'sge'] and 'submitted' in stdout[0].lower():
+        job_id = stdout[0].split()[2]
+    elif cluster_soft == 'slurm' and 'submitted' in stdout[0].lower():
+        job_id = stdout[0].split()[3]
+    elif cluster_soft == 'pbs':
+        job_id = stdout[0].split('.')[0]
+    elif cluster_soft == 'htcondor' and 'submitting' in stdout[0].lower():
+        # Submitting job(s).
+        # 1 job(s) submitted to cluster 443069.
+        job_id = stdout[0].split()[-1][:-1]
     else:
-        raise ValueError('Unrecognized cluster software {0}'.format(servers['local']['cluster_soft']))
+        raise ValueError(f'Unrecognized cluster software: {cluster_soft}')
+    job_status = 'running' if job_id else job_status
     return job_status, job_id
 
 
@@ -257,7 +245,7 @@ def delete_all_local_arc_jobs(jobs: Optional[List[Union[str, int]]] = None):
     server = 'local'
     if server in servers:
         print('\nDeleting all ARC jobs from local server...')
-        cmd = check_status_command[servers[server]['cluster_soft']] + ' -u $USER'
+        cmd = check_status_command[servers[server]['cluster_soft']]
         stdout = execute_command(cmd, no_fail=True)[0]
         for status_line in stdout:
             s = re.search(r' a\d+', status_line)
@@ -272,7 +260,7 @@ def delete_all_local_arc_jobs(jobs: Optional[List[Union[str, int]]] = None):
                         server_job_id = status_line.split()[0]
                         delete_job(server_job_id)
                         print(f'deleted job {job_id} ({server_job_id} on server)')
-                    elif servers[server]['cluster_soft'].lower() in ['oge', 'sge']:
+                    elif servers[server]['cluster_soft'].lower() in ['oge', 'sge', 'htcondor']:
                         delete_job(job_id)
                         print(f'deleted job {job_id}')
         print('\ndone.')
