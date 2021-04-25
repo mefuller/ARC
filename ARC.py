@@ -34,6 +34,7 @@ def parse_command_line_arguments(command_line_args=None):
     group = parser.add_mutually_exclusive_group()
     group.add_argument('-d', '--debug', action='store_true', help='print debug information')
     group.add_argument('-q', '--quiet', action='store_true', help='only print warnings and errors')
+    # group.add_argument('-p', '--profiling', action='store_true', help='generate a visualization of time profiling')
 
     args = parser.parse_args(command_line_args)
     args.file = args.file[0]

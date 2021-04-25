@@ -30,24 +30,17 @@ import sys
 #    },
 # }
 servers = {
-    'server1': {
-        'cluster_soft': 'OGE',
-        'address': 'server1.host.edu',
-        'un': '<username>',
-        'key': 'path_to_rsa_key',
-    },
-    'server2': {
-        'cluster_soft': 'Slurm',
-        'address': 'server2.host.edu',
-        'un': '<username>',
-        'key': 'path_to_rsa_key',
-        'cpus': 24,  # number of cpu's per node, optional (default: 8)
-        'memory': 256,  # amount of memory per node in GB, optional (default: 16)
+    'atlas': {
+        'cluster_soft': 'HTCondor',
+        'address': 'tech-ui01.hep.technion.ac.il',
+        'un': 'alongd',
+        'key': '/home/alon/.ssh/id_rsa',
+        'cpus': 8,
     },
     'local': {
-        'cluster_soft': 'Slurm',
-        'un': '<username>',
-        'cpus': 48,
+        'cluster_soft': 'HTCondor',
+        'un': 'alongd',
+        'cpus': 8,
     },
 }
 
@@ -55,12 +48,8 @@ servers = {
 # An ordered list of servers indicates priority
 # Keeping this dictionary empty will cause ARC to scan for software on the servers defined above
 global_ess_settings = {
-    'gaussian': ['local', 'server2'],
-    'molpro': ['local', 'server2'],
-    'onedmin': 'server1',
-    'orca': 'local',
-    'qchem': 'server1',
-    'terachem': 'server1',
+    'gaussian': 'atlas',
+    'orca': 'atlas',
 }
 
 # Electronic structure software ARC may access (use lowercase):
@@ -204,6 +193,7 @@ preserve_params_in_scan = {
 # If the number of processes is greater than 'max_one' but equal or lower than 'max_two',
 # only two tasks will be spawned.
 tasks_coeff = {'A': 1.7, 'b': 0.35, 'cap': 100, 'max_one': 2, 'max_two': 9}
+# Todo: add min tasks for fast jobs such as GCN
 
 # Default job memory, cpu, time settings
 default_job_settings = {
