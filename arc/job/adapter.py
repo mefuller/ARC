@@ -281,6 +281,26 @@ class JobAdapter(ABC):
         """
         pass
 
+    def set_job_shell_file_to_upload(self) -> dict:
+        """
+        The HTCondor cluster software does not allow, to the best of our understanding,
+        the inclusion of sell commands in its submit script. As a result, often an additional
+        ``job.sh`` file is required. This method generalizes such cases for all cluster software
+        and will search within the submit_scripts dictionary for the respective server and the
+        respective ESS whether an additional ``<ess>_job`` key is available, where ``<ess>`` is
+        the actual ESS name, e.g., ``gaussian_job``. THis file will be uploaded as ``job.sh``.
+
+        Returns:
+            dict: A file representation.
+        """
+        file_name = 'job.sh'
+        script_key = f'{self.job_adapter}_job'
+        if self.server in submit_scripts.keys() and script_key in submit_scripts[self.server].keys():
+            file_content = submit_scripts[self.server][script_key]
+            with open(os.path.join(self.local_path, file_name), 'w') as f:
+                f.write(file_content)
+            return self.get_file_property_dictionary(file_name=file_name, make_x=True)
+
     def execute(self):
         """
         Execute a job.
@@ -313,7 +333,6 @@ class JobAdapter(ABC):
             # Todo: check that HDF5 is available, else raise error
             # Todo: submit ARC workers with a HDF5 file
             pass
-        self.download_files()
 
     def determine_job_array_parameters(self):
         """
@@ -471,6 +490,7 @@ class JobAdapter(ABC):
         self.local_path_to_output_file = os.path.join(self.local_path, 'output.out')
 
         self.local_path_to_orbitals_file = os.path.join(self.local_path, 'orbitals.fchk')  # todo: qchem
+        self.local_path_to_check_file = os.path.join(self.local_path, 'check.chk')
         self.local_path_to_lj_file = os.path.join(self.local_path, 'lj.dat')  # Todo: onedmin
         self.local_path_to_hess_file = os.path.join(self.local_path, 'input.hess')
         self.local_path_to_xyz = None
@@ -480,7 +500,9 @@ class JobAdapter(ABC):
 
         # parentheses don't play well in folder names:
         species_name_remote = self.species_label.replace('(', '_').replace(')', '_')  # todo: why only remote?
-        self.remote_path = os.path.join('runs', 'ARC_Projects', self.project, species_name_remote, self.job_name)
+        atlas = f"/storage/ce_dana/{servers[self.server]['un']}/" \
+            if servers[self.server]['cluster_soft'].lower() == 'htcondor' else ''
+        self.remote_path = os.path.join(f'{atlas}runs', 'ARC_Projects', self.project, species_name_remote, self.job_name)
 
         self.set_additional_file_paths()
 
@@ -686,7 +708,7 @@ class JobAdapter(ABC):
             total_submit_script_memory = self.job_memory_gb * 1024 * 1.1  # MB
         # Determine amount of memory in submit script based on cluster job scheduling system.
         cluster_software = servers[self.server].get('cluster_soft').lower()
-        if cluster_software in ['oge', 'sge', 'pbs']:
+        if cluster_software in ['oge', 'sge', 'pbs', 'htcondor']:
             # In SGE, "-l h_vmem=5000M" specifies the amount of maximum memory required for all cores to be 5000 MB.
             self.submit_script_memory = math.ceil(total_submit_script_memory)  # in MB
         elif cluster_software in ['slurm']:
@@ -798,30 +820,30 @@ class JobAdapter(ABC):
         if self.job_status[0] == 'errored':
             return
         self.job_status[0] = self._check_job_server_status() if self.execution_type != 'incore' else 'done'
-        try:
-            self._check_job_ess_status()  # populates self.job_status[1], and downloads the output file
-        except IOError:
-            logger.error(f'Got an IOError when trying to download output file for job {self.job_name}.')
-            content = self._get_additional_job_info()
-            if content:
-                logger.info('Got the following information from the server:')
-                logger.info(content)
-                for line in content.splitlines():
-                    # example:
-                    # slurmstepd: *** JOB 7752164 CANCELLED AT 2019-03-27T00:30:50 DUE TO TIME LIMIT on node096 ***
-                    if 'cancelled' in line.lower() and 'due to time limit' in line.lower():
-                        logger.warning(f'Looks like the job was cancelled on {self.server} due to time limit. '
-                                       f'Got: {line}')
-                        new_max_job_time = self.max_job_time - 24 if self.max_job_time > 25 else 1
-                        logger.warning(f'Setting max job time to {new_max_job_time} (was {self.max_job_time})')
-                        self.max_job_time = new_max_job_time
-                        self.job_status[1]['status'] = 'errored'
-                        self.job_status[1]['keywords'] = ['ServerTimeLimit']
-                        self.job_status[1]['error'] = 'Job cancelled by the server since it reached the maximal ' \
-                                                      'time limit.'
-                        self.job_status[1]['line'] = ''
-            raise
-        if self.job_status[0] == 'running':
+        if self.job_status[0] == 'done':
+            try:
+                self._check_job_ess_status()  # populates self.job_status[1], and downloads the output file
+            except IOError:
+                logger.error(f'Got an IOError when trying to download output file for job {self.job_name}.')
+                content = self._get_additional_job_info()
+                if content:
+                    logger.info('Got the following information from the server:')
+                    logger.info(content)
+                    for line in content.splitlines():
+                        # example:
+                        # slurmstepd: *** JOB 7752164 CANCELLED AT 2019-03-27T00:30:50 DUE TO TIME LIMIT on node096 ***
+                        if 'cancelled' in line.lower() and 'due to time limit' in line.lower():
+                            logger.warning(f'Looks like the job was cancelled on {self.server} due to time limit. '
+                                           f'Got: {line}')
+                            new_max_job_time = self.max_job_time - 24 if self.max_job_time > 25 else 1
+                            logger.warning(f'Setting max job time to {new_max_job_time} (was {self.max_job_time})')
+                            self.max_job_time = new_max_job_time
+                            self.job_status[1]['status'] = 'errored'
+                            self.job_status[1]['keywords'] = ['ServerTimeLimit']
+                            self.job_status[1]['error'] = 'Job cancelled by the server since it reached the maximal ' \
+                                                          'time limit.'
+                            self.job_status[1]['line'] = ''
+        elif self.job_status[0] == 'running':
             self.job_status[1]['status'] = 'running'
 
     def _get_additional_job_info(self):
@@ -833,7 +855,7 @@ class JobAdapter(ABC):
         lines1, lines2 = list(), list()
         content = ''
         cluster_soft = servers[self.server]['cluster_soft'].lower()
-        if cluster_soft in ['oge', 'sge', 'slurm', 'pbs']:
+        if cluster_soft in ['oge', 'sge', 'slurm', 'pbs', 'htcondor']:
             local_file_path1 = os.path.join(self.local_path, 'out.txt')
             local_file_path2 = os.path.join(self.local_path, 'err.txt')
             if self.server != 'local':
@@ -890,17 +912,17 @@ class JobAdapter(ABC):
                 os.remove(self.local_path_to_orbitals_file)
             if os.path.exists(self.local_path_to_check_file):
                 os.remove(self.local_path_to_check_file)
-            self._download_output_file()  # Also downloads the check file and orbital file if they exist.
+            self.download_files()  # Also downloads the check file and orbital file if they exist.
         else:
             # If running locally (local queue or incore),
             # just rename the output file to "output.out" for consistency between software.
             if self.final_time is None:
                 self.final_time = get_last_modified_time(
                     file_path=os.path.join(self.local_path, output_filenames[self.job_adapter]))
-            rename_output(local_file_path=self.local_path_to_output_file, software=self.job_adapter)
-            xyz_path = os.path.join(self.local_path, 'scr', 'optim.xyz')
-            if os.path.isfile(xyz_path):
-                self.local_path_to_xyz = xyz_path
+        rename_output(local_file_path=self.local_path_to_output_file, software=self.job_adapter)
+        xyz_path = os.path.join(self.local_path, 'scr', 'optim.xyz')
+        if os.path.isfile(xyz_path):
+            self.local_path_to_xyz = xyz_path
         self.determine_run_time()
         if os.path.isfile(self.local_path_to_output_file):
             status, keywords, error, line = determine_ess_status(output_path=self.local_path_to_output_file,
@@ -973,7 +995,7 @@ class JobAdapter(ABC):
                                      remote: str = '',
                                      source: str = 'path',
                                      make_x: bool = False,
-                                     ):
+                                     ) -> dict:
         """
         Get a dictionary that represents a file to be uploaded or downloaded to/from a server via SSH.
 
@@ -984,6 +1006,9 @@ class JobAdapter(ABC):
             source (str, optional): Either ``'path'`` to treat the ``'local'`` attribute as a file path,
                                     or ``'input_files'`` to take the respective entry from inputs.py.
             make_x (bool, optional): Whether to make the file executable, default: ``False``.
+
+        Returns:
+            dict: A file representation.
         """
         if not file_name:
             raise ValueError('file_name cannot be empty')
