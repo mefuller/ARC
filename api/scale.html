@@ -5,7 +5,8 @@
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  
+  <meta name="generator" content="Docutils 0.17: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
   <title>arc.utils.scale &mdash; ARC 1.1.0 Documentation</title>
@@ -24,6 +25,7 @@
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
         <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
     
     <script type="text/javascript" src="../_static/js/theme.js"></script>
 
@@ -184,14 +186,14 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="module-arc.utils.scale">
+  <section id="module-arc.utils.scale">
 <span id="arc-utils-scale"></span><span id="scale"></span><h1>arc.utils.scale<a class="headerlink" href="#module-arc.utils.scale" title="Permalink to this headline">¶</a></h1>
 <p>Determine scaling factors for a given list of levels of theory</p>
 <p>Based on DOI: 10.1016/j.cpc.2016.09.004
 Adapted by Duminda Ranasinghe and Alon Grinberg Dana</p>
 <dl class="py function">
 <dt id="arc.utils.scale.calculate_truhlar_scaling_factors">
-<code class="sig-prename descclassname"><span class="pre">arc.utils.scale.</span></code><code class="sig-name descname"><span class="pre">calculate_truhlar_scaling_factors</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">zpe_dict</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">level</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">float</span><a class="reference internal" href="../_modules/arc/utils/scale.html#calculate_truhlar_scaling_factors"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arc.utils.scale.calculate_truhlar_scaling_factors" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">arc.utils.scale.</code><code class="sig-name descname">calculate_truhlar_scaling_factors</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">zpe_dict</span><span class="p">:</span> <span class="n">dict</span></em>, <em class="sig-param"><span class="n">level</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span> &#x2192; float<a class="reference internal" href="../_modules/arc/utils/scale.html#calculate_truhlar_scaling_factors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.utils.scale.calculate_truhlar_scaling_factors" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the scaling factors using Truhlar’s method:</p>
 <p>FREQ: A PROGRAM FOR OPTIMIZING SCALE FACTORS (Version 1)
 written by Haoyu S. Yu, Lucas J. Fiedler, I.M. Alecu, and Donald G. Truhlar
@@ -225,7 +227,7 @@ Keys are species labels, values are floats representing the ZPE in J/mol.</p></l
 
 <dl class="py function">
 <dt id="arc.utils.scale.determine_scaling_factors">
-<code class="sig-prename descclassname"><span class="pre">arc.utils.scale.</span></code><code class="sig-name descname"><span class="pre">determine_scaling_factors</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">levels</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="level.html#arc.level.Level" title="arc.level.Level"><span class="pre">arc.level.Level</span></a><span class="p"><span class="pre">,</span> </span><span class="pre">dict</span><span class="p"><span class="pre">,</span> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ess_settings</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_log</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">list</span><a class="reference internal" href="../_modules/arc/utils/scale.html#determine_scaling_factors"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arc.utils.scale.determine_scaling_factors" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">arc.utils.scale.</code><code class="sig-name descname">determine_scaling_factors</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">levels</span><span class="p">:</span> <span class="n">List<span class="p">[</span>Union<span class="p">[</span><a class="reference internal" href="level.html#arc.level.Level" title="arc.level.Level">arc.level.Level</a><span class="p">, </span>dict<span class="p">, </span>str<span class="p">]</span><span class="p">]</span></span></em>, <em class="sig-param"><span class="n">ess_settings</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>dict<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">init_log</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>bool<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">True</span></em><span class="sig-paren">)</span> &#x2192; list<a class="reference internal" href="../_modules/arc/utils/scale.html#determine_scaling_factors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.utils.scale.determine_scaling_factors" title="Permalink to this definition">¶</a></dt>
 <dd><p>Determine the zero-point energy, harmonic frequencies, and fundamental frequencies scaling factors
 for a given frequencies level of theory.</p>
 <dl class="field-list simple">
@@ -250,7 +252,7 @@ Should be <code class="docutils literal notranslate"><span class="pre">True</spa
 
 <dl class="py function">
 <dt id="arc.utils.scale.get_species_list">
-<code class="sig-prename descclassname"><span class="pre">arc.utils.scale.</span></code><code class="sig-name descname"><span class="pre">get_species_list</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">list</span><a class="reference internal" href="../_modules/arc/utils/scale.html#get_species_list"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arc.utils.scale.get_species_list" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">arc.utils.scale.</code><code class="sig-name descname">get_species_list</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; list<a class="reference internal" href="../_modules/arc/utils/scale.html#get_species_list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.utils.scale.get_species_list" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generates the standardized species list.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -264,7 +266,7 @@ Should be <code class="docutils literal notranslate"><span class="pre">True</spa
 
 <dl class="py function">
 <dt id="arc.utils.scale.rename_level">
-<code class="sig-prename descclassname"><span class="pre">arc.utils.scale.</span></code><code class="sig-name descname"><span class="pre">rename_level</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">level</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">str</span><a class="reference internal" href="../_modules/arc/utils/scale.html#rename_level"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arc.utils.scale.rename_level" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">arc.utils.scale.</code><code class="sig-name descname">rename_level</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">level</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span> &#x2192; str<a class="reference internal" href="../_modules/arc/utils/scale.html#rename_level"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.utils.scale.rename_level" title="Permalink to this definition">¶</a></dt>
 <dd><p>Rename the level of theory so it can be used for folder names.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -281,7 +283,7 @@ Should be <code class="docutils literal notranslate"><span class="pre">True</spa
 
 <dl class="py function">
 <dt id="arc.utils.scale.summarize_results">
-<code class="sig-prename descclassname"><span class="pre">arc.utils.scale.</span></code><code class="sig-name descname"><span class="pre">summarize_results</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lambda_zpes</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">levels</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zpe_dicts</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">times</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overall_time</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_path</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">None</span><a class="reference internal" href="../_modules/arc/utils/scale.html#summarize_results"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#arc.utils.scale.summarize_results" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">arc.utils.scale.</code><code class="sig-name descname">summarize_results</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">lambda_zpes</span><span class="p">:</span> <span class="n">list</span></em>, <em class="sig-param"><span class="n">levels</span><span class="p">:</span> <span class="n">List<span class="p">[</span>str<span class="p">]</span></span></em>, <em class="sig-param"><span class="n">zpe_dicts</span><span class="p">:</span> <span class="n">list</span></em>, <em class="sig-param"><span class="n">times</span><span class="p">:</span> <span class="n">list</span></em>, <em class="sig-param"><span class="n">overall_time</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">base_path</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="../_modules/arc/utils/scale.html#summarize_results"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.utils.scale.summarize_results" title="Permalink to this definition">¶</a></dt>
 <dd><p>Print and save the results to file.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -298,7 +300,7 @@ Keys are species labels, values are floats representing the ZPE in J/mol.</p></l
 </dl>
 </dd></dl>
 
-</div>
+</section>
 
 
            </div>
