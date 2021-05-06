@@ -3,7 +3,6 @@ channels:
   - defaults
   - rmg
   - conda-forge
-  - psi4
 dependencies:
   - cairo
   - cairocffi
@@ -15,7 +14,7 @@ dependencies:
   - cython >=0.25.2
   - ffmpeg
   - rmg::gprof2dot
-  - anaconda::graphviz
+  - graphviz
   - h5py
   - jinja2
   - jupyter
@@ -47,14 +46,12 @@ dependencies:
   - rmg::symmetry
   - xlrd
   - xlwt
-  - conda-forge::ase >=3.15.0
-  - anaconda::ipython
-  - mako
-  - more-itertools
+  - anaconda::sphinx_rtd_theme
   - anaconda::paramiko >=2.6.0
   - conda-forge::py3dmol >= 0.8.0
-  - pytables
-  - psi4::psi4
+  - conda-forge::ase >=3.15.0
+  - anaconda::ipython
   - anaconda::sphinx
-  - anaconda::sphinx_rtd_theme
   - conda-forge::qcelemental
+  - psi4::psi4
+  - mako
