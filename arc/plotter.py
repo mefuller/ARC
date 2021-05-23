@@ -980,7 +980,7 @@ def plot_torsion_angles(torsion_angles, torsions_sampling_points=None, wells_dic
         axs.frameon = False
         axs.set_ylabel(str(torsion), labelpad=10)
         axs.set_yticks(axs.get_yticks().tolist())
-        axs.set_yticklabels(['' for _ in range(len(torsions))])
+        axs.set_yticklabels(['' for _ in axs.get_yticklabels()])
         axs.tick_params(axis='y',  # changes apply to the x-axis
                         which='both',  # both major and minor ticks are affected
                         left=False,  # ticks along the bottom edge are off
@@ -1033,7 +1033,7 @@ def plot_torsion_angles(torsion_angles, torsions_sampling_points=None, wells_dic
             # axs[i].yaxis.label.set_rotation(0)
             if e_conformers is None:
                 axs[i].set_yticks(axs[i].get_yticks().tolist())
-                axs[i].set_yticklabels(['' for _ in range(len(torsions))])
+                axs[i].set_yticklabels(['' for _ in axs[i].get_yticklabels()])
                 axs[i].tick_params(axis='y',  # changes apply to the x-axis
                                    which='both',  # both major and minor ticks are affected
                                    left=False,  # ticks along the bottom edge are off
