@@ -24,7 +24,8 @@ import pandas as pd
 from arc.common import arc_path, get_logger
 from arc.exceptions import JobError
 from arc.imports import pipe_submit, settings, submit_scripts
-from arc.job.local import (check_job_status,
+from arc.job.local import (change_mode,
+                           check_job_status,
                            delete_job,
                            get_last_modified_time,
                            rename_output,
@@ -299,6 +300,8 @@ class JobAdapter(ABC):
             file_content = submit_scripts[self.server][script_key]
             with open(os.path.join(self.local_path, file_name), 'w') as f:
                 f.write(file_content)
+                if self.server == 'local':
+                    change_mode(mode='+x', file_name=file_name, path=self.local_path)
             return self.get_file_property_dictionary(file_name=file_name, make_x=True)
 
     def execute(self):
