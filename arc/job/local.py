@@ -233,6 +233,28 @@ def rename_output(local_file_path, software):
         shutil.move(src=os.path.join(os.path.dirname(local_file_path), output_filenames[software]), dst=local_file_path)
 
 
+def change_mode(mode: str,
+                file_name: str,
+                recursive: bool = False,
+                path: str = '',
+                ) -> None:
+    """
+    Change the mode of a file or a directory.
+
+    Args:
+        mode (str): The mode change to be applied, can be either octal or symbolic.
+        file_name (str): The path to the file or the directory to be changed.
+        recursive (bool, optional): Whether to recursively change the mode to all files
+                                    under a directory.``True`` for recursively change.
+        path (str, optional): The directory path at which the command will be executed.
+    """
+    if os.path.isfile(path):
+        path = os.path.dirname(path)
+    recursive = '-R' if recursive else ''
+    command = [f'cd "{path}"', f'chmod {recursive} {mode} {file_name}']
+    execute_command(command=command)
+
+
 def delete_all_local_arc_jobs(jobs: Optional[List[Union[str, int]]] = None):
     """
     Delete all ARC-spawned jobs (with job name starting with `a` and a digit) from the local server.
