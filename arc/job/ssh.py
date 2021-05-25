@@ -270,6 +270,8 @@ class SSHClient(object):
         Returns: list
             A list of job IDs.
         """
+        if servers[self.server]['cluster_soft'].lower() not in ['slurm', 'oge', 'sge', 'pbs', 'htcondor']:
+            raise ValueError(f"Server cluster software {servers['local']['cluster_soft']} is not supported.")
         running_job_ids = list()
         cmd = check_status_command[servers[self.server]['cluster_soft']]
         stdout = self._send_command_to_server(cmd)[0]
@@ -453,7 +455,7 @@ class SSHClient(object):
                     remote_path: str = '',
                     ) -> None:
         """
-        Change the mode to a file or a directory.
+        Change the mode of a file or a directory.
 
         Args:
             mode (str): The mode change to be applied, can be either octal or symbolic.
@@ -464,8 +466,8 @@ class SSHClient(object):
         """
         if os.path.isfile(remote_path):
             remote_path = os.path.dirname(remote_path)
-        recursive = '-R' if recursive else ''
-        command = f'chmod {recursive} {mode} {file_name}'
+        recursive = ' -R' if recursive else ''
+        command = f'chmod{recursive} {mode} {file_name}'
         self._send_command_to_server(command, remote_path)
 
     def _check_file_exists(self, 
