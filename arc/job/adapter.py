@@ -506,14 +506,9 @@ class JobAdapter(ABC):
 
         # parentheses don't play well in folder names:
         species_name_remote = self.species_label.replace('(', '_').replace(')', '_')  # todo: why only remote?
-        # hardcode for Atlas:
-        print(self.server)
-        print(servers)
-        print(servers[self.server])
-        print(servers[self.server]['cluster_soft'])
-        atlas = f"/storage/ce_dana/{servers[self.server]['un']}/" \
-            if servers[self.server]['cluster_soft'].lower() == 'htcondor' else ''
-        self.remote_path = os.path.join(f'{atlas}runs', 'ARC_Projects', self.project, species_name_remote, self.job_name)
+        path = servers[self.server].get('path', '').lower()
+        path = os.path.join(path, servers[self.server]['un']) if path else ''
+        self.remote_path = os.path.join(f'{path}runs', 'ARC_Projects', self.project, species_name_remote, self.job_name)
 
         self.set_additional_file_paths()
 
