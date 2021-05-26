@@ -89,7 +89,7 @@ class QChemAdapter(JobAdapter):
         job_name (str, optional): The job's name (e.g., 'opt_a103').
         job_num (int, optional): Used as the entry number in the database, as well as in ``job_name``.
         job_server_name (str, optional): Job's name on the server (e.g., 'a103').
-        job_status (int, optional): The job's server and ESS statuses.
+        job_status (list, optional): The job's server and ESS statuses.
         level (Level, optional): The level of theory to use.
         max_job_time (float, optional): The maximal allowed job time on the server in hours (can be fractional).
         reactions (List[ARCReaction], optional): Entries are ARCReaction instances, used for TS search methods.
