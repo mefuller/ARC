@@ -53,8 +53,7 @@ def execute_command(command, shell=True, no_fail=False):
     while i < max_times_to_try:
         try:
             completed_process = subprocess.run(command, shell=shell, capture_output=True)
-            return [str(line) for line in completed_process.stdout.splitlines()], \
-                   [str(line) for line in completed_process.stderr.splitlines()]
+            return _format_stdout(completed_process.stdout), _format_stdout(completed_process.stderr)
         except subprocess.CalledProcessError as e:
             error = e  # Store the error so we can raise the SettingsError if need be
             if no_fail:
@@ -97,6 +96,22 @@ def _output_command_error_message(command, error, logging_func):
     logging_func(error.output)
     logger.info('\n')
     logging_func(error.returncode)
+
+
+def _format_stdout(stdout):
+    """
+    Format the stdout as a list of unicode strings
+
+    Args:
+        stdout (bytes): The standard output.
+
+    Returns:
+        List(str): The decoded lines from stdout.
+    """
+    lines, list_of_strs = stdout.splitlines(), list()
+    for line in lines:
+        list_of_strs.append(line.decode())
+    return list_of_strs
 
 
 def check_job_status(job_id):
@@ -166,9 +181,9 @@ def check_running_jobs_ids() -> list:
     for i, status_line in enumerate(stdout):
         if i > i_dict[cluster_soft]:
             job_id = status_line.split(split_by_dict[cluster_soft])[0]
-            job_id = f'{job_id}'  # job_id is sometimes a byte, this transforms b'bytes' into "b'bytes'"
-            if "b'" in job_id:
-                job_id = job_id.split("b'")[1].split("'")[0]
+            # job_id = f'{job_id}'  # job_id is sometimes a byte, this transforms b'bytes' into "b'bytes'"
+            # if "b'" in job_id:
+            #     job_id = job_id.split("b'")[1].split("'")[0]
             running_job_ids.append(job_id)
     return running_job_ids
 
