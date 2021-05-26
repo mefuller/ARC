@@ -30,28 +30,31 @@ def execute_command(command, shell=True, no_fail=False):
     Execute a command.
 
     Notes:
-        If `no_fail` == True, then a warning is logged and `False` is returned so that the calling function can debug
-        the situation.
+        If ``no_fail`` is ``True``, then a warning is logged and ``False`` is returned
+        so that the calling function can debug the situation.
 
     Args:
         command: An array of string commands to send.
         shell (bool): Specifies whether the command should be executed using bash instead of Python
         no_fail (bool): If `True` then ARC will not crash if an error is encountered.
 
-    Returns: list
-        lists of stdin, stdout, stderr corresponding to the commands sent
+    Returns: Tuple[list, list]:
+        - A list of lines of standard output stream.
+        - A list of lines of the standard error stream.
     """
     # Initialize variables
     error = None
 
-    if not isinstance(command, list) and not shell:
+    if not isinstance(command, list):
         command = [command]
+    command = [' && '.join(command)]
     i, max_times_to_try = 1, 30
     sleep_time = 60  # seconds
     while i < max_times_to_try:
         try:
-            stdout = subprocess.check_output(command, shell=shell)
-            return _format_command_stdout(stdout), ''
+            completed_process = subprocess.run(command, shell=shell, capture_output=True)
+            return [str(line) for line in completed_process.stdout.splitlines()], \
+                   [str(line) for line in completed_process.stderr.splitlines()]
         except subprocess.CalledProcessError as e:
             error = e  # Store the error so we can raise the SettingsError if need be
             if no_fail:
@@ -65,7 +68,7 @@ def execute_command(command, shell=True, no_fail=False):
                 time.sleep(sleep_time * i)  # in seconds
                 i += 1
 
-    # If not success
+    # If not successful
     raise SettingsError(f'The command "{command}" is erroneous, got: \n{error}'
                         f'\nThis maybe either a server issue or the command is wrong.'
                         f'\nTo check if this is a server issue, please run the command on server and restart ARC.'
@@ -94,17 +97,6 @@ def _output_command_error_message(command, error, logging_func):
     logging_func(error.output)
     logger.info('\n')
     logging_func(error.returncode)
-
-
-def _format_command_stdout(stdout):
-    """
-    Formats the output from stdout returned from subprocess
-    """
-    lines, list_of_strs = stdout.splitlines(), list()
-    for line in lines:
-        list_of_strs.append(line.decode())
-
-    return list_of_strs
 
 
 def check_job_status(job_id):
@@ -143,7 +135,7 @@ def delete_job(job_id):
     Deletes a running job
     """
     cmd = f"{delete_command[servers['local']['cluster_soft']]} {job_id}"
-    success = bool(execute_command(cmd, no_fail=True))
+    success = bool(execute_command(cmd, no_fail=True)[0])
     if not success:  # Check if the job is still running. If not then this failure does not matter
         logger.warning(f'Detected possible error when trying to delete job {job_id}. Checking to see if the job is '
                        f'still running...')
@@ -158,19 +150,25 @@ def delete_job(job_id):
 
 def check_running_jobs_ids() -> list:
     """
-    Return a list of ``int`` representing job IDs of all jobs submitted by the user on a server
+    Check which jobs are still running on the server for this user.
+
+    Returns:
+        List(str): List of job IDs.
     """
-    if servers['local']['cluster_soft'].lower() not in ['slurm', 'oge', 'sge', 'pbs']:
+    cluster_soft = servers['local']['cluster_soft'].lower()
+    if cluster_soft not in ['slurm', 'oge', 'sge', 'pbs', 'htcondor']:
         raise ValueError(f"Server cluster software {servers['local']['cluster_soft']} is not supported.")
     running_job_ids = list()
     cmd = check_status_command[servers['local']['cluster_soft']]
     stdout = execute_command(cmd)[0]
     i_dict = {'slurm': 0, 'oge': 1, 'sge': 1, 'pbs': 4, 'htcondor': -1}
-    split_by_dict = {'slurm': ' ', 'oge': ' ', 'sge': ' ', 'pbs': '.', 'htcondor': ' '}
-    cluster_soft = servers['local']['cluster_soft'].lower()
+    split_by_dict = {'slurm': ' ', 'oge': ' ', 'sge': ' ', 'pbs': '.', 'htcondor': '.'}
     for i, status_line in enumerate(stdout):
         if i > i_dict[cluster_soft]:
             job_id = status_line.split(split_by_dict[cluster_soft])[0]
+            job_id = f'{job_id}'  # job_id is sometimes a byte, this transforms b'bytes' into "b'bytes'"
+            if "b'" in job_id:
+                job_id = job_id.split("b'")[1].split("'")[0]
             running_job_ids.append(job_id)
     return running_job_ids
 
@@ -185,9 +183,9 @@ def submit_job(path):
     cluster_soft = servers['local']['cluster_soft'].lower()
     cmd = f"cd {path}; {submit_command[servers['local']['cluster_soft']]} " \
           f"{submit_filenames[servers['local']['cluster_soft']]}"
-    stdout = execute_command(cmd)[0]
-    if len(stdout) == 0:
-        logger.warning(f'Got an error when trying to submit job.')
+    stdout, stderr = execute_command(cmd)
+    if stderr == 0:
+        logger.warning(f'Got the following error when trying to submit job:\n{stderr}.')
         job_status = 'errored'
     elif cluster_soft in ['oge', 'sge'] and 'submitted' in stdout[0].lower():
         job_id = stdout[0].split()[2]
@@ -198,7 +196,7 @@ def submit_job(path):
     elif cluster_soft == 'htcondor' and 'submitting' in stdout[0].lower():
         # Submitting job(s).
         # 1 job(s) submitted to cluster 443069.
-        job_id = stdout[0].split()[-1][:-1]
+        job_id = stdout[1].split()[-1].split('.')[0]
     else:
         raise ValueError(f'Unrecognized cluster software: {cluster_soft}')
     job_status = 'running' if job_id else job_status
@@ -206,7 +204,15 @@ def submit_job(path):
 
 
 def get_last_modified_time(file_path):
-    """returns the last modified time of `file_path` in a datetime format"""
+    """
+    Returns the last modified time of `file_path` in a datetime format.
+
+    Args:
+        file_path (str): THe file path.
+
+    Returns:
+        datetime.datetime: The last modified time of the file.
+    """
     try:
         timestamp = os.stat(file_path).st_mtime
     except (IOError, OSError):
@@ -216,7 +222,7 @@ def get_last_modified_time(file_path):
 
 def write_file(file_path, file_string):
     """
-    Write `file_string` as the file's content in `file_path`
+    Write ``file_string`` as the file's content in ``file_path``.
     """
     with open(file_path, 'w') as f:
         f.write(file_string)
@@ -225,8 +231,8 @@ def write_file(file_path, file_string):
 def rename_output(local_file_path, software):
     """
     Rename the output file to "output.out" for consistency between software
-    `local_file_path` is the full path to the output.out file,
-    `software` is the software used for the job by which the original output file name is determined
+    ``local_file_path`` is the full path to the output.out file,
+    ``software`` is the software used for the job by which the original output file name is determined
     """
     software = software.lower()
     if os.path.isfile(os.path.join(os.path.dirname(local_file_path), output_filenames[software])):
@@ -250,8 +256,9 @@ def change_mode(mode: str,
     """
     if os.path.isfile(path):
         path = os.path.dirname(path)
-    recursive = '-R' if recursive else ''
-    command = [f'cd "{path}"', f'chmod {recursive} {mode} {file_name}']
+    recursive = ' -R' if recursive else ''
+    command = [f'cd {path}'] if path else []
+    command.append(f'chmod{recursive} {mode} {file_name}')
     execute_command(command=command)
 
 
