@@ -31,6 +31,7 @@ import sys
 # }
 servers = {
     'atlas': {
+        'path': '/storage/ce_dana/',
         'cluster_soft': 'HTCondor',
         'address': 'tech-ui01.hep.technion.ac.il',
         'un': 'alongd',
@@ -38,6 +39,7 @@ servers = {
         'cpus': 8,
     },
     'local': {
+        'path': '/storage/ce_dana/',
         'cluster_soft': 'HTCondor',
         'un': 'alongd',
         'cpus': 8,
@@ -48,8 +50,8 @@ servers = {
 # An ordered list of servers indicates priority
 # Keeping this dictionary empty will cause ARC to scan for software on the servers defined above
 global_ess_settings = {
-    'gaussian': 'atlas',
-    'orca': 'atlas',
+    'gaussian': ['atlas', 'local'],
+    'orca': ['atlas', 'local'],
 }
 
 # Electronic structure software ARC may access (use lowercase):
