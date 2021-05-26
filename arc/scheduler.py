@@ -899,7 +899,7 @@ class Scheduler(object):
         if not os.path.exists(job.local_path_to_output_file) and not job.execution_type == 'incore':
             if 'restart_due_to_file_not_found' in job.ess_trsh_methods:
                 job.job_status[0] = 'errored'
-                job.job_status[1] = 'errored'
+                job.job_status[1]['status'] = 'errored'
                 logger.warning(f'Job {job.job_name} errored because for the second time ARC did not find the output '
                                f'file path {job.local_path_to_output_file}.')
             elif job.job_type not in ['orbitals']:
@@ -3050,12 +3050,16 @@ class Scheduler(object):
         """
         level_of_theory = Level(repr=level_of_theory)
         logger.info('\n')
-        logger.warning(f'Troubleshooting {label} job {job.job_name} which failed with status: '
-                       f'"{job.job_status[1]["status"]},"\n'
-                       f'with keywords: {job.job_status[1]["keywords"]}\n'
-                       f'in {job.job_adapter}.\n'
-                       f'The error "{job.job_status[1]["error"]}" was derived from the following line in the log '
-                       f'file:\n"{job.job_status[1]["line"]}".')
+        warning_message = f'Troubleshooting {label} job {job.job_name} which failed'
+        if job.job_status[1]["status"]:
+            warning_message += f' with status: "{job.job_status[1]["status"]},"'
+        if job.job_status[1]["keywords"]:
+            warning_message += f'\nwith keywords: {job.job_status[1]["keywords"]}'
+        warning_message += f' in {job.job_adapter}.'
+        if {job.job_status[1]["error"]}:
+            warning_message += f'The error "{job.job_status[1]["error"]}" was derived from the following line in the ' \
+                               f'log file:\n"{job.job_status[1]["line"]}".'
+        logger.warning(warning_message)
         if conformer is not None:
             xyz = self.species_dict[label].conformers[conformer]
         else:
