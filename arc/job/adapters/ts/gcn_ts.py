@@ -329,7 +329,7 @@ class GCNAdapter(JobAdapter):
                 unique = True
                 if ts_xyz_fwd is not None:
                     for other_tsg in rxn.ts_species.ts_guesses:
-                        if almost_equal_coords(ts_xyz_fwd, other_tsg.initial_xyz):
+                        if other_tsg.success and almost_equal_coords(ts_xyz_fwd, other_tsg.initial_xyz):
                             if 'gcn' not in other_tsg.method.lower():
                                 other_tsg.method += ' and GCN'
                             unique = False
@@ -376,7 +376,7 @@ class GCNAdapter(JobAdapter):
                 unique = True
                 if ts_xyz_fwd is not None:
                     for other_tsg in rxn.ts_species.ts_guesses:
-                        if almost_equal_coords(ts_xyz_fwd, other_tsg.initial_xyz):
+                        if other_tsg.success and almost_equal_coords(ts_xyz_fwd, other_tsg.initial_xyz):
                             if 'gcn' not in other_tsg.method.lower():
                                 other_tsg.method += ' and GCN'
                             unique = False
