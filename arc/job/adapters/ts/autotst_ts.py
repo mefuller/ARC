@@ -296,7 +296,7 @@ class AutoTSTAdapter(JobAdapter):
                                 xyz = xyz_from_data(coords=result['coords'], numbers=result['numbers'])
                                 unique = True
                                 for other_tsg in rxn.ts_species.ts_guesses:
-                                    if almost_equal_coords(xyz, other_tsg.initial_xyz):
+                                    if other_tsg.success and almost_equal_coords(xyz, other_tsg.initial_xyz):
                                         if 'autotst' not in other_tsg.method.lower():
                                             other_tsg.method += ' and AutoTST'
                                         unique = False
