@@ -19,6 +19,9 @@ echo 'export PYTHONPATH=$PYTHONPATH:'"$(pwd)" >> ~/.bashrc
 echo "Creating the GCN environment..."
 conda deactivate
 make conda_env
+conda activate ts_gcn
+conda install -y -c ostrokach-forge torch-sparse
+conda deactivate
 
 # Restore the original directory
 echo "Done installing GCN."

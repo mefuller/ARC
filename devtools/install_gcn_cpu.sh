@@ -20,6 +20,9 @@ echo "Creating the GCN-cpu environment..."
 cd devtools || exit
 conda deactivate
 bash create_env_cpu.sh
+conda activate ts_gcn
+conda install -y -c ostrokach-forge torch-sparse
+conda deactivate
 
 # Restore the original directory
 echo "Done installing GCN-cpu."
