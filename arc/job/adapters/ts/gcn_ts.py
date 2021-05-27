@@ -316,8 +316,8 @@ class GCNAdapter(JobAdapter):
                 command = '; '.join(commands)
                 output = subprocess.run(command, shell=True, executable='/bin/bash')
                 if output.returncode:
-                    logger.warning(f'GCN subprocess ran in the forward direction did not give a successful return code '
-                                   f'for {rxn} in the forward direction.\n'
+                    logger.warning(f'GCN subprocess ran in the forward direction did not '
+                                   f'give a successful return code for {rxn}.\n'
                                    f'Got return code: {output.returncode}\n'
                                    f'stdout: {output.stdout}\n'
                                    f'stderr: {output.stderr}')
@@ -363,8 +363,8 @@ class GCNAdapter(JobAdapter):
                 command = '; '.join(commands)
                 output = subprocess.run(command, shell=True, executable='/bin/bash')
                 if output.returncode:
-                    logger.warning(f'GCN subprocess ran in the reverse direction did not give a successful return code '
-                                   f'for {rxn} in the reverse direction.\n'
+                    logger.warning(f'GCN subprocess ran in the reverse direction did not '
+                                   f'give a successful return code for {rxn}.\n'
                                    f'Got return code: {output.returncode}\n'
                                    f'stdout: {output.stdout}\n'
                                    f'stderr: {output.stderr}')
