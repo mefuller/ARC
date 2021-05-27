@@ -25,6 +25,7 @@ import sys
 #         'key': '/home/<username>/.ssh/id_rsa',
 #     },
 #    'local': {
+#        'path': '/storage/group_name/',  # an absolute path on the server, under which the ARC runs will be executed ('/storage/group_name/$USER/runs/ARC_Projects/project/')
 #        'cluster_soft': 'OGE',
 #        'un': '<username>',
 #    },
