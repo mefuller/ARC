@@ -358,7 +358,7 @@ class KinBotAdapter(JobAdapter):
                                                  )
                             if not success:
                                 ts_guess.success = False
-                            if unique:
+                            if ts_guess is not None and unique:
                                 rxn.ts_species.ts_guesses.append(ts_guess)
                                 method_index += 1
 
