@@ -45,6 +45,8 @@ class ARCReaction(object):
         multiplicity (int, optional): The reaction surface multiplicity. A trivial guess will be made unless provided.
         charge (int, optional): The reaction surface charge.
         reaction_dict (dict, optional): A dictionary to create this object from (used when restarting ARC).
+        species_list (list, optional): A list of ARCSpecies entries for matching reactants and products
+                                       to existing species.
         preserve_param_in_scan (list, optional): Entries are length two iterables of atom indices (1-indexed)
                                                  between which distances and dihedrals of these pivots must be
                                                  preserved. Used for identification of rotors which break a TS.
@@ -90,6 +92,7 @@ class ARCReaction(object):
                  multiplicity: Optional[int] = None,
                  charge: Optional[int] = None,
                  reaction_dict: Optional[dict] = None,
+                 species_list: Optional[List[ARCSpecies]] = None,
                  preserve_param_in_scan: Optional[list] = None,
                  ):
         self.arrow = ' <=> '
@@ -112,7 +115,7 @@ class ARCReaction(object):
         self.done_opt_r_n_p = False
         if reaction_dict is not None:
             # Reading from a dictionary
-            self.from_dict(reaction_dict=reaction_dict)
+            self.from_dict(reaction_dict=reaction_dict, species_list=species_list)
         else:
             # Not reading from a dictionary
             self.label = label
@@ -169,7 +172,7 @@ class ARCReaction(object):
 
     @property
     def multiplicity(self):
-        """The electric spin multiplicity of the reaction PES"""
+        """The electron spin multiplicity of the reaction PES"""
         if self._multiplicity is None:
             self._multiplicity = self.get_rxn_multiplicity()
         return self._multiplicity
@@ -220,13 +223,16 @@ class ARCReaction(object):
         reaction_dict['done_opt_r_n_p'] = self.done_opt_r_n_p
         return reaction_dict
 
-    def from_dict(self, reaction_dict: dict):
+    def from_dict(self,
+                  reaction_dict: dict,
+                  species_list: Optional[list] = None,
+                  ):
         """
         A helper function for loading this object from a dictionary in a YAML file for restarting ARC.
         """
         self.index = reaction_dict['index'] if 'index' in reaction_dict else None
         self.label = reaction_dict['label'] if 'label' in reaction_dict else ''
-        self.multiplicity = reaction_dict['multiplicity'] if 'multiplicity' in reaction_dict else None
+        self._multiplicity = reaction_dict['multiplicity'] if 'multiplicity' in reaction_dict else None
         self.charge = reaction_dict['charge'] if 'charge' in reaction_dict else 0
         self.reactants = reaction_dict['reactants'] if 'reactants' in reaction_dict else None
         self.products = reaction_dict['products'] if 'products' in reaction_dict else None
@@ -236,7 +242,7 @@ class ARCReaction(object):
             self.rmg_reaction_from_str(reaction_string=reaction_dict['rmg_reaction'])
         else:
             self.rmg_reaction = None
-        self.set_label_reactants_products()
+        self.set_label_reactants_products(species_list)
         if self.rmg_reaction is None and (self.reactants is None or self.products is None):
             raise InputError(f'Cannot determine reactants and/or products labels for reaction {self.label}')
         if self.reactants is None or self.products is None:
@@ -264,7 +270,7 @@ class ARCReaction(object):
         self.atom_map = reaction_dict['atom_map'] if 'atom_map' in reaction_dict else None
         self.done_opt_r_n_p = reaction_dict['done_opt_r_n_p'] if 'done_opt_r_n_p' in reaction_dict else False
 
-    def set_label_reactants_products(self):
+    def set_label_reactants_products(self, species_list: Optional[List[ARCSpecies]] = None):
         """A helper function for settings the label, reactants, and products attributes for a Reaction"""
         # first make sure that reactants and products labels are defines (most often used)
         if self.reactants is None or self.products is None:
@@ -280,6 +286,10 @@ class ARCReaction(object):
                     self.products = products.split(self.plus)
                 else:
                     self.products = [products]
+                if not self.r_species and self.reactants is not None:
+                    self.r_species = [spc for spc in species_list if spc.label in self.reactants]
+                if not self.p_species and self.products is not None:
+                    self.p_species = [spc for spc in species_list if spc.label in self.products]
             elif self.rmg_reaction is not None:
                 self.reactants = [r.label for r in self.rmg_reaction.reactants]
                 self.products = [p.label for p in self.rmg_reaction.products]
