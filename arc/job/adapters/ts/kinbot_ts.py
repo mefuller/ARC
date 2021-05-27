@@ -343,15 +343,7 @@ class KinBotAdapter(JobAdapter):
                                     success = False
                                 else:
                                     for other_tsg in rxn.ts_species.ts_guesses:
-                                        print('\n\n\n')
-                                        print(f'in kinbot')
-                                        print(f'initial_xyz: {other_tsg.initial_xyz}')
-                                        print(f'opt_xyz: {other_tsg.opt_xyz}')
-                                        print(f'method: {other_tsg.method}')
-                                        print(f'execution_time: {other_tsg.execution_time}')
-                                        print(f'success: {other_tsg.success}')
-                                        print('\n\n\n')
-                                        if almost_equal_coords(xyz, other_tsg.initial_xyz):
+                                        if other_tsg.success and almost_equal_coords(xyz, other_tsg.initial_xyz):
                                             if 'kinbot' not in other_tsg.method.lower():
                                                 other_tsg.method += ' and KinBot'
                                             unique = False
@@ -366,7 +358,7 @@ class KinBotAdapter(JobAdapter):
                                                  )
                             if not success:
                                 ts_guess.success = False
-                            if ts_guess is not None and unique:
+                            if unique:
                                 rxn.ts_species.ts_guesses.append(ts_guess)
                                 method_index += 1
 
