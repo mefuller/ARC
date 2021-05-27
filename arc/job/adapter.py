@@ -504,11 +504,13 @@ class JobAdapter(ABC):
         if not os.path.isdir(self.local_path):
             os.makedirs(self.local_path)
 
-        # parentheses don't play well in folder names:
-        species_name_remote = self.species_label.replace('(', '_').replace(')', '_')  # todo: why only remote?
-        path = servers[self.server].get('path', '').lower()
-        path = os.path.join(path, servers[self.server]['un']) if path else ''
-        self.remote_path = os.path.join(f'{path}runs', 'ARC_Projects', self.project, species_name_remote, self.job_name)
+        if self.server is not None:
+            # parentheses don't play well in folder names:
+            species_name_remote = self.species_label.replace('(', '_').replace(')', '_')  # todo: why only remote?
+            path = servers[self.server].get('path', '').lower()
+            path = os.path.join(path, servers[self.server]['un']) if path else ''
+            self.remote_path = os.path.join(f'{path}runs', 'ARC_Projects', self.project,
+                                            species_name_remote, self.job_name)
 
         self.set_additional_file_paths()
 
