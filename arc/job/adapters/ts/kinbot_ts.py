@@ -339,21 +339,24 @@ class KinBotAdapter(JobAdapter):
                             if success:
                                 ts_guess.success = True
                                 xyz = xyz_from_data(coords=coords, symbols=symbols)
-                                for other_tsg in rxn.ts_species.ts_guesses:
-                                    if almost_equal_coords(xyz, other_tsg.initial_xyz):
-                                        if 'kinbot' not in other_tsg.method.lower():
-                                            other_tsg.method += ' and KinBot'
-                                        unique = False
-                                        break
-                                if unique:
-                                    ts_guess.process_xyz(xyz)
-                                    save_geo(xyz=xyz,
-                                             path=self.local_path,
-                                             filename=f'KinBot {method_direction} {method_index}',
-                                             format_='xyz',
-                                             comment=f'KinBot {method_direction} {method_index}'
-                                             )
-                            else:
+                                if xyz is None:
+                                    success = False
+                                else:
+                                    for other_tsg in rxn.ts_species.ts_guesses:
+                                        if almost_equal_coords(xyz, other_tsg.initial_xyz):
+                                            if 'kinbot' not in other_tsg.method.lower():
+                                                other_tsg.method += ' and KinBot'
+                                            unique = False
+                                            break
+                                    if unique:
+                                        ts_guess.process_xyz(xyz)
+                                        save_geo(xyz=xyz,
+                                                 path=self.local_path,
+                                                 filename=f'KinBot {method_direction} {method_index}',
+                                                 format_='xyz',
+                                                 comment=f'KinBot {method_direction} {method_index}'
+                                                 )
+                            if not success:
                                 ts_guess.success = False
                             if unique:
                                 rxn.ts_species.ts_guesses.append(ts_guess)
