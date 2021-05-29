@@ -485,6 +485,7 @@ class Scheduler(object):
                     else:
                         self.run_opt_job(species.label, fine=self.fine_only)
         self.run_conformer_jobs()
+        self.spawn_ts_jobs()  # if all reactants/products are already known (Arkane yml or restart), spawn TS searches
         while self.running_jobs != {}:  # loop while jobs are still running
             logger.debug(f'Currently running jobs:\n{pprint.pformat(self.running_jobs)}')
             self.timer = True
