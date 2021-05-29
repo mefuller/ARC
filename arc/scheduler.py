@@ -2438,7 +2438,6 @@ class Scheduler(object):
                         self.switch_ts(label=label)
                     break
 
-
         # set *at the end* to differentiate between sp jobs when using complex solvation corrections
         self.output[label]['job_types']['sp'] = True
 
