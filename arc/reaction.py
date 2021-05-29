@@ -546,6 +546,14 @@ class ARCReaction(object):
                     raise ReactionError(f'Product {product} is not in '
                                         f'self.p_species ({[p.label for p in self.p_species]})')
 
+    def check_done_opt_r_n_p(self):
+        """
+        Check whether the ``final_xyz`` attributes of all ``r_species`` and ``p_species``
+        are populated, and flag ``self.done_opt_r_n_p`` as ``True`` if they are.
+        """
+        if not self.done_opt_r_n_p and all(spc.final_xyz is not None for spc in self.r_species + self.p_species):
+            self.done_opt_r_n_p = True
+
     def remove_dup_species(self):
         """
         Make sure each species is consider only once in reactants, products, r_species, and p_species.
