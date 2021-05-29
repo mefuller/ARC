@@ -2007,14 +2007,14 @@ class Scheduler(object):
                 message += f'\n All methods were successful in generating guesses: ' \
                            f'{list(set(self.species_dict[label].successful_methods))}'
             elif self.species_dict[label].successful_methods:
-                message += f' Successful methods: {self.species_dict[label].successful_methods}'
+                message += f'\nSuccessful methods: {self.species_dict[label].successful_methods}'
             elif self.species_dict[label].yml_path is not None and self.species_dict[label].final_xyz is not None:
                 message += ' Geometry parsed from YAML file.'
             else:
                 message += ' No method has converged!'
                 logger.error(f'No TS methods for {label} have converged!')
             if self.species_dict[label].unsuccessful_methods:
-                message += f' Unsuccessful methods: {self.species_dict[label].unsuccessful_methods}'
+                message += f'\nUnsuccessful methods: {self.species_dict[label].unsuccessful_methods}'
             logger.info(message)
             logger.info('\n')
 
