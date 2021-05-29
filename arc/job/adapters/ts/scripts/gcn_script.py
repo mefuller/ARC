@@ -2,8 +2,8 @@
 # encoding: utf-8
 
 """
-A standalone script to retrieve xyz data from AutoTST,
-should be run under the tst_env.
+A standalone script to retrieve xyz data from GCN,
+should be run under the ts_gcn environment.
 """
 
 import argparse
