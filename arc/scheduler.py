@@ -363,9 +363,7 @@ class Scheduler(object):
                                 )
                     )
                 rxn.check_atom_balance()
-                if not rxn.done_opt_r_n_p:
-                    if all(xyz is not None for xyz in [spc.final_xyz for spc in rxn.r_species + rxn.p_species]):
-                        rxn.done_opt_r_n_p = True
+                rxn.check_done_opt_r_n_p()
 
         for species in self.species_list:
             if not isinstance(species, ARCSpecies):
@@ -1414,12 +1412,11 @@ class Scheduler(object):
         Don't spawn TS jobs if the multiplicity of the reaction could not be determined.
         """
         for rxn in self.rxn_list:
-            if not rxn.done_opt_r_n_p \
-                    and all(spc.final_xyz is not None for spc in rxn.r_species + rxn.p_species):
+            rxn.check_done_opt_r_n_p()
+            if rxn.done_opt_r_n_p:
                 if rxn.multiplicity is None:
                     logger.info(f'Not spawning TS jobs for reaction {rxn} for which the multiplicity is unknown.')
                 else:
-                    rxn.done_opt_r_n_p = True
                     rxn.ts_species.tsg_spawned = True
                     tsg_index = 0
                     for method in ts_adapters:
