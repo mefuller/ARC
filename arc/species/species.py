@@ -2026,7 +2026,7 @@ def determine_rotor_symmetry(label: str,
 
     Args:
         label (str): The species label (used for error messages).
-        torsion (list): A list of two atom indices representing the torsion.
+        torsion (list): A list of four atom indices representing the torsion.
         rotor_path (str): The path to an ESS output rotor scan file.
         energies (list, optional): The list of energies in the scan in kJ/mol.
         return_num_wells (bool, optional): Whether to also return the number of wells, ``True`` to return,
