@@ -1440,55 +1440,19 @@ class TestTSGuess(unittest.TestCase):
         self.assertEqual(tsg.method, 'autotst')
         self.assertTrue(isinstance(tsg.rmg_reaction, Reaction))
 
-    def test_xyz_to_2d_get_formula(self):
+    def test_xyz_perception(self):
+        """Test MolGraph.get_formula()"""
         xyz_arb = {'symbols': ('H', 'C', 'H', 'H', 'O', 'N', 'O'),
-                 'isotopes': (1, 13, 1, 1, 16, 14, 16),
-                 'coords': ((-1.0, 0.0, 0.0),
-                            (0.0, 0.0, 0.0),
-                            (0.0, -1.0, 0.0),
-                            (0.0, 1.0, 0.0),
-                            (1.0, 0.0, 0.0),
-                            (2.0, 0.0, 0.0),
-                            (3.0, 0.0, 0.0),)}
+                   'isotopes': (1, 13, 1, 1, 16, 14, 16),
+                   'coords': ((-1.0, 0.0, 0.0),
+                              (0.0, 0.0, 0.0),
+                              (0.0, -1.0, 0.0),
+                              (0.0, 1.0, 0.0),
+                              (1.0, 0.0, 0.0),
+                              (2.0, 0.0, 0.0),
+                              (3.0, 0.0, 0.0),)}
         mol_graph_1 = MolGraph(symbols=xyz_arb['symbols'], coords=xyz_arb['coords'])
         self.assertEqual(mol_graph_1.get_formula(), 'CH3NO2')
-
-
-        r_xyz = """C  -1.3087    0.0068    0.0318
-        C  0.1715   -0.0344    0.0210
-        N  0.9054   -0.9001    0.6395
-        O  2.1683   -0.5483    0.3437
-        N  2.1499    0.5449   -0.4631
-        N  0.9613    0.8655   -0.6660
-        H  -1.6558    0.9505    0.4530
-        H  -1.6934   -0.0680   -0.9854
-        H  -1.6986   -0.8169    0.6255"""
-        reactant = ARCSpecies(label='reactant', smiles='C([C]1=[N]O[N]=[N]1)', xyz=r_xyz)
-
-        p_xyz = """C  -1.0108   -0.0114   -0.0610  
-        C  0.4780    0.0191    0.0139    
-        N  1.2974   -0.9930    0.4693    
-        O  0.6928   -1.9845    0.8337    
-        N  1.7456    1.9701   -0.6976    
-        N  1.1642    1.0763   -0.3716    
-        H  -1.4020    0.9134   -0.4821  
-        H  -1.3327   -0.8499   -0.6803   
-        H  -1.4329   -0.1554    0.9349"""
-        product = ARCSpecies(label='product', smiles='[N-]=[N+]=C(N=O)C', xyz=p_xyz)
-
-        rxn = ARCReaction(label='reactant <=> product', ts_methods=['gcn'], ts_label='TS0')
-        rxn.r_species = [reactant]
-        rxn.p_species = [product]
-        ts_guess = TSGuess(arc_reaction=rxn, method='gcn', project_dir=project_dir)
-        ts_guess.execute_ts_guess_method()
-
-        # verify that the method correctly create TS.xyz
-        ts_path = os.path.join(project_dir, 'calcs', 'TSs', rxn.ts_label, 'GCN', 'TS.xyz')
-        ts_xyz_dict = str_to_xyz(ts_path)
-        self.assertEqual(ts_xyz_dict['symbols'], ('C', 'C', 'N', 'O', 'N', 'N', 'H', 'H', 'H'))
-
-        if os.path.exists(project_dir):
-            shutil.rmtree(project_dir, ignore_errors=True)
 
 
 if __name__ == '__main__':
