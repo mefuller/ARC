@@ -577,11 +577,11 @@ H      -1.67091600   -1.35164600   -0.93286400"""
         path4 = os.path.join(arc_path, 'arc', 'testing', 'rotor_scans', 'sBuOH.out')  # symmetry = 3
         path5 = os.path.join(arc_path, 'arc', 'testing', 'rotor_scans', 'CH3C(O)O_FreeRotor.out')  # symmetry = 6
 
-        sym1, e1, _ = determine_rotor_symmetry(label='label', pivots=[3, 4], rotor_path=path1)
-        sym2, e2, _ = determine_rotor_symmetry(label='label', pivots=[3, 4], rotor_path=path2)
-        sym3, e3, n3 = determine_rotor_symmetry(label='label', pivots=[3, 4], rotor_path=path3, return_num_wells=True)
-        sym4, e4, _ = determine_rotor_symmetry(label='label', pivots=[3, 4], rotor_path=path4)
-        sym5, e5, n5 = determine_rotor_symmetry(label='label', pivots=[3, 4], rotor_path=path5, return_num_wells=True)
+        sym1, e1, _ = determine_rotor_symmetry(label='label', torsion=[3, 4], rotor_path=path1)
+        sym2, e2, _ = determine_rotor_symmetry(label='label', torsion=[3, 4], rotor_path=path2)
+        sym3, e3, n3 = determine_rotor_symmetry(label='label', torsion=[3, 4], rotor_path=path3, return_num_wells=True)
+        sym4, e4, _ = determine_rotor_symmetry(label='label', torsion=[3, 4], rotor_path=path4)
+        sym5, e5, n5 = determine_rotor_symmetry(label='label', torsion=[3, 4], rotor_path=path5, return_num_wells=True)
 
         self.assertEqual(sym1, 1)
         self.assertAlmostEqual(e1, 20.87723711)
