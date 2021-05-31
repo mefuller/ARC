@@ -466,6 +466,7 @@ class JobAdapter(ABC):
                 max_task_num=self.tasks,
                 arc_path=arc_path,
                 hdf5_path=os.path.join(self.remote_path, 'data.hdf5'),
+                pwd=self.remote_path,
             )
         except KeyError:
             if self.tasks is None:
