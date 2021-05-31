@@ -137,6 +137,14 @@ class TestARCSpecies(unittest.TestCase):
         self.assertEqual(n4h6.mol.to_smiles(), 'NNNN')
         self.assertEqual(n4h6.optical_isomers, 2)
         self.assertEqual(n4h6.get_xyz(), n4h6_xyz)
+        self.assertAlmostEqual(n4h6.e0, 273.2465365710362)
+
+        c3_1_yml_path = os.path.join(arc_path, 'arc', 'testing', 'yml_testing', 'C3_1.yml')
+        c3_1 = ARCSpecies(yml_path=c3_1_yml_path)
+        self.assertAlmostEqual(c3_1.e0, 86.34867237178679)
+        c3_2_yml_path = os.path.join(arc_path, 'arc', 'testing', 'yml_testing', 'C3_2.yml')
+        c3_2 = ARCSpecies(yml_path=c3_2_yml_path)
+        self.assertAlmostEqual(c3_2.e0, 72.98479932780415)
 
     def test_str(self):
         """Test the string representation of the object"""
