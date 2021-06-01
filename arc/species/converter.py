@@ -112,7 +112,7 @@ def str_to_xyz(xyz_str: str) -> dict:
 
 def xyz_to_str(xyz_dict: dict,
                isotope_format: Optional[str] = None,
-               ) -> str:
+               ) -> Optional[str]:
     """
     Convert an ARC xyz dictionary format, e.g.::
 
