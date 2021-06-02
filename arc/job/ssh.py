@@ -430,7 +430,9 @@ class SSHClient(object):
         Returns:
             list: lines of the node hostnames.
         """
-        cluster_soft = servers[self.server]['cluster_soft']
+        cluster_soft = servers[self.server]['cluster_soft'].lower()
+        if cluster_soft == 'htcondor':
+            return list()
         cmd = list_available_nodes_command[cluster_soft]
         stdout = self._send_command_to_server(command=cmd)[0]
         nodes = list()
