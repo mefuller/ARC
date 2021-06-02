@@ -415,8 +415,10 @@ class Scheduler(object):
                             self.run_sp_job(label=species.label)
                         if self.job_types['onedmin']:
                             self.run_onedmin_job(species.label)
-                elif (self.species_dict[species.label].initial_xyz is not None
-                      or self.species_dict[species.label].final_xyz is not None) and not self.testing:
+                elif ((self.species_dict[species.label].initial_xyz is not None
+                      or self.species_dict[species.label].final_xyz is not None)
+                      or self.species_dict[species.label].is_ts and self.species_dict[species.label].rxn_label is None) \
+                        and not self.testing:
                     # For restarting purposes: check before running jobs whether they were already terminated
                     # (check self.output) or whether they are "currently running" (check self.job_dict)
                     # This section takes care of restarting a Species (including a TS), but does not
