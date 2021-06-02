@@ -4,6 +4,7 @@
 # 	- installs torch-geometric and the required dependencies in the environment: https://pytorch-geometric.readthedocs.io/en/latest/notes/installation.html
 
 
+
 # get OS type
 unameOut="$(uname -s)"
 case "${unameOut}" in
