@@ -160,7 +160,7 @@ getenv        = True
 +g09root      = "/Local/ce_dana"
 +PATH         = "$(g09root)/g09:$PATH"
 +GAUSS_EXEDIR = "$(g09root)/g09:$GAUSS_EXEDIR"
-environment   = "GAUSS_EXEDIR=/Local/ce_dana/g09 GAUSS_SCRDIR=/srv01/technion/{un}/scripts g09root=/Local/ce_dana"
+environment   = "GAUSS_EXEDIR=/Local/ce_dana/g09 GAUSS_SCRDIR=/storage/ce_dana/{un}/scratch/g09/ g09root=/Local/ce_dana"
 
 should_transfer_files = no
 
