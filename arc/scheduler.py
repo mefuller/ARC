@@ -1351,13 +1351,13 @@ class Scheduler(object):
                 self.run_irc_job(label=label, irc_direction='forward')
                 self.run_irc_job(label=label, irc_direction='reverse')
             if self.species_dict[label].number_of_atoms > 1:
-                if 'freq' not in job_name:
+                if 'freq' not in job_name and self.job_types['freq']:
                     # this is either an opt or a composite job, spawn freq
                     self.run_freq_job(label)
                 elif not composite:
                     # this is an 'optfreq' job type, don't run freq
                     self.check_freq_job(label=label, job=self.job_dict[label]['optfreq'][job_name])
-            if not composite:
+            if not composite and self.job_types['sp']:
                 # don't use a solvation correction for this sp job if a solvation_scheme_level was specified
                 self.run_sp_job(label)
             if self.species_dict[label].mol is None:
