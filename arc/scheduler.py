@@ -2344,7 +2344,6 @@ class Scheduler(object):
         Args:
             label (str): The TS species label.
         """
-        print('switching TS!!!!!!!')
         self.determine_most_likely_ts_conformer(label=label)  # Look for a different TS guess.
         self.delete_all_species_jobs(label=label)  # Delete other currently running jobs for this TS.
         if not self.species_dict[label].ts_guesses_exhausted and self.species_dict[label].chosen_ts is not None:
@@ -2398,7 +2397,6 @@ class Scheduler(object):
             sp_path (str): The path to 'output.out' for the single point job.
             level (Level, optional): The level of theory used for the sp job.
         """
-        print('\n\n\n\n!!!!!!!!!!!!!! in post_sp_actions !!!!!!!!!!!!!!!!!!!!!!!!!!!\n\n\n\n')
         original_sp_path = self.output[label]['paths']['sp'] if 'sp' in self.output[label]['paths'] else None
         self.output[label]['paths']['sp'] = sp_path
         if self.sp_level is not None and 'ccsd' in self.sp_level.method:
@@ -2435,12 +2433,9 @@ class Scheduler(object):
                 self.output[label]['paths']['sp'] = original_sp_path  # restore the original path
 
         if self.species_dict[label].is_ts:
-            print(f'Species is a TS: {label}')
             for rxn in self.rxn_dict.values():
                 if rxn.ts_label == label:
-                    print(f'got rxn: {rxn}')
                     ts_e_elect_success = rxn.check_ts(verbose=True)
-                    print(f'ts_e_elect_success: {ts_e_elect_success}')
                     if not ts_e_elect_success:
                         self.switch_ts(label=label)
                     break
