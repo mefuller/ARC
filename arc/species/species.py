@@ -67,9 +67,10 @@ class ARCSpecies(object):
 
     Structures (rotors_dict is initialized in conformers.find_internal_rotors; pivots/scan/top values are 1-indexed)::
 
-            rotors_dict: {0: {'pivots': ``list``,
-                              'top': ``list``,
-                              'scan': ``list``,  # todo: update
+            rotors_dict: {0: {'pivots': ``List[int]``,  # 1-indexed
+                              'top': ``List[int]``,  # 1-indexed
+                              'scan': ``List[int]``,  # 1-indexed
+                              'torsion': ``List[int]``,  # 0-indexed
                               'number_of_running_jobs': ``int``,
                               'success': ``bool``,
                               'invalidation_reason': ``str``,
@@ -150,8 +151,8 @@ class ARCSpecies(object):
                                 Specifying '_diagonal' will increment all the respective dihedrals together,
                                 resulting in a 1D scan instead of an ND scan.
                                 Values are nested lists. Each value is a list where the entries are either pivot lists
-                                (e.g., [1,5]) or lists of pivot lists (e.g., [[1,5], [6,8]]), or a mix
-                                (e.g., [[4,8], [[6,9], [3, 4]]). The requested directed scan type will be executed
+                                (e.g., [1, 5]) or lists of pivot lists (e.g., [[1, 5], [6, 8]]), or a mix
+                                (e.g., [[4, 8], [[6, 9], [3, 4]]). The requested directed scan type will be executed
                                 separately for each list entry in the value. A list entry that contains only two pivots
                                 will result in a 1D scan, while a list entry with N pivots will consider all of them,
                                 and will result in an ND scan if '_diagonal' is not specified.
@@ -255,7 +256,7 @@ class ARCSpecies(object):
                      Entries are bonded atom indices tuples (1-indexed). An 'all_h' string entry is also allowed,
                      triggering BDE calculations for all hydrogen atoms in the molecule.
         directed_rotors (dict): Execute a directed internal rotation scan (i.e., a series of constrained optimizations).
-                                Data is in 3 levels of nested lists, converted from pivots to four-atom scan indices.
+                                Data is in 3 levels of nested lists, converted from pivots to four-atom torsion indices.
         consider_all_diastereomers (bool, optional): Whether to consider all different chiralities (tetrahydral carbon
                                                      centers, nitrogen inversions, and cis/trans double bonds) when
                                                      generating conformers. ``True`` to consider all.
@@ -979,11 +980,11 @@ class ARCSpecies(object):
         """
         Determine possible unique rotors in the species to be treated as hindered rotors,
         taking into account all localized structures.
-        The resulting rotors are saved in {'pivots': [1, 3], 'top': [3, 7], 'scan': [2, 1, 3, 7]} format
-        in self.species_dict[species.label]['rotors_dict']. Also updates 'number_of_rotors'.
+        The resulting rotors are saved in a ``{'pivots': [1, 3], 'top': [3, 7], 'scan': [2, 1, 3, 7]}`` format
+        in ``self.species_dict[species.label]['rotors_dict']``. Also updates ``self.number_of_rotors``.
         """
         if self.rotors_dict is None:
-            # this species was marked to skip rotor scans (.rotors_dict is not initialized as an empty dict but as None)
+            # This species was marked to skip rotor scans.
             return
         mol_list = self.mol_list or [self.mol]
         for mol in mol_list:
@@ -1012,32 +1013,10 @@ class ARCSpecies(object):
 
     def initialize_directed_rotors(self):
         """
-        Initialize self.directed_rotors, correcting the input to nested lists and to scans instead of pivots.
+        Initialize self.directed_rotors, correcting the input to nested lists and to torsions instead of pivots.
         Also modifies self.rotors_dict to remove respective 1D rotors dicts if appropriate and adds ND rotors dicts.
         Principally, from this point we don't really need self.directed_rotors, self.rotors_dict should have all
         relevant rotors info for the species, including directed and ND rotors.
-
-        Dictionary structure (initialized in conformers.find_internal_rotors)::
-
-                rotors_dict: {1: {'pivots': ``list``,
-                                  'top': ``list``,
-                                  'scan': ``list``,
-                                  'number_of_running_jobs': ``int``,
-                                  'success': ``bool``,
-                                  'invalidation_reason': ``str``,
-                                  'times_dihedral_set': ``int``,
-                                  'scan_path': <path to scan output file>,
-                                  'max_e': ``float``,  # in kJ/mol,
-                                  'symmetry': ``int``,
-                                  'dimensions': ``int``,
-                                  'original_dihedrals': ``list``,
-                                  'cont_indices': ``list``,
-                                  'directed_scan_type': ``str``,
-                                  'directed_scan': ``dict``,  # keys: tuples of dihedrals as strings,
-                                                              # values: dicts of energy, xyz, is_isomorphic, trsh
-                                 }
-                              2: {}, ...
-                             }
 
         Raises:
             SpeciesError: If the pivots don't represent a dihedral in the species.
@@ -1046,13 +1025,13 @@ class ARCSpecies(object):
             all_pivots = [rotor_dict['pivots'] for rotor_dict in self.rotors_dict.values()]
             directed_rotors, directed_rotors_scans = dict(), dict()
             for key, vals in self.directed_rotors.items():
-                # reformat as nested lists
+                # Reformat as nested lists.
                 directed_rotors[key] = list()
                 for val1 in vals:
                     if len(val1) != 2 and val1 not in ['all', ['all']]:
                         raise SpeciesError(f'directed_scan pivots must be lists of length 2, got {val1}.')
                     if isinstance(val1, (tuple, list)) and isinstance(val1[0], int):
-                        corrected_val = val1 if list(val1) in all_pivots else [val1[1], val1[0]]
+                        corrected_val = val1 if list(val1) in all_pivots else [val1[1], val1[0]]  # re-order if needed
                         directed_rotors[key].append([list(corrected_val)])
                     elif isinstance(val1, (tuple, list)) and isinstance(val1[0], (tuple, list)):
                         directed_rotors[key].append([list(val2 if list(val2) in all_pivots else [val2[1], val2[0]])
@@ -1081,14 +1060,15 @@ class ARCSpecies(object):
                             raise SpeciesError(f'The pivots {val} do not represent a rotor in species {self.label}. '
                                                f'Valid rotor pivots are: {all_pivots}\n\n'
                                                f'Species coordinates:\n{xyz_to_str(self.get_xyz())}')
-            # Modify self.rotors_dict to remove respective 1D rotors dicts and add ND rotors dicts
+            # Modify self.rotors_dict to remove respective 1D rotors dicts and add ND rotors dicts.
             rotor_indices_to_del = list()
             for key, vals in directed_rotors.items():
-                # an independent loop, so 1D *directed* scans won't be deleted (treated above)
+                # An independent loop, so 1D *directed* scans won't be deleted (treated above).
                 for pivots_list in vals:
-                    new_rotor = {'pivots': pivots_list,
-                                 'top': list(),
-                                 'scan': list(),
+                    new_rotor = {'pivots': pivots_list,  # 1-indexed
+                                 'top': list(),  # 1-indexed
+                                 'scan': list(),  # 1-indexed
+                                 'torsion': list(),  # 0-indexed
                                  'number_of_running_jobs': 0,
                                  'success': None,
                                  'invalidation_reason': '',
@@ -1102,13 +1082,14 @@ class ARCSpecies(object):
                                  'cont_indices': list(),
                                  }
                     for pivots in pivots_list:
-                        for index, rotors_dict in self.rotors_dict.items():
-                            if rotors_dict['pivots'] == pivots:
-                                new_rotor['top'].append(rotors_dict['top'])
-                                new_rotor['scan'].append(rotors_dict['scan'])
+                        for index, rotor_dict in self.rotors_dict.items():
+                            if rotor_dict['pivots'] == pivots:
+                                new_rotor['top'].append(rotor_dict['top'])
+                                new_rotor['scan'].append(rotor_dict['scan'])
+                                new_rotor['torsion'].append(rotor_dict['torsion'])
                                 new_rotor['dimensions'] += 1
-                                if not rotors_dict['directed_scan_type'] and index not in rotor_indices_to_del:
-                                    # remove this rotor dict, an ND one will be created instead
+                                if not rotor_dict['directed_scan_type'] and index not in rotor_indices_to_del:
+                                    # Remove this rotor dict, an ND one will be created instead.
                                     rotor_indices_to_del.append(index)
                                 break
                     if new_rotor['dimensions'] != 1:
@@ -1118,14 +1099,14 @@ class ARCSpecies(object):
                 if not self.rotors_dict[i]['directed_scan_type']:
                     del (self.rotors_dict[i])
 
-            # renumber the keys so iterative looping will make sense
+            # Renumber the keys so iterative looping will make sense.
             new_rotors_dict = dict()
             for i, rotor_dict in enumerate(list(self.rotors_dict.values())):
                 new_rotors_dict[i] = rotor_dict
             self.rotors_dict = new_rotors_dict
             self.number_of_rotors = i + 1
 
-            # replace pivots with four-atom scans
+            # Replace pivots with four-atom scans.
             for key, vals in directed_rotors.items():
                 directed_rotors_scans[key] = list()
                 for pivots_list in vals:
