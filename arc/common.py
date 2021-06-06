@@ -873,7 +873,7 @@ def is_notebook() -> bool:
         return False  # Probably standard Python interpreter
 
 
-def is_str_float(value: str) -> bool:
+def is_str_float(value: Optional[str]) -> bool:
     """
     Check whether a string can be converted to a floating number.
 
@@ -886,11 +886,11 @@ def is_str_float(value: str) -> bool:
     try:
         float(value)
         return True
-    except ValueError:
+    except (ValueError, TypeError):
         return False
 
 
-def is_str_int(value: str) -> bool:
+def is_str_int(value: Optional[str]) -> bool:
     """
     Check whether a string can be converted to an integer.
 
@@ -903,7 +903,7 @@ def is_str_int(value: str) -> bool:
     try:
         int(value)
         return True
-    except ValueError:
+    except (ValueError, TypeError):
         return False
 
 
