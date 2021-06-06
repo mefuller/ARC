@@ -268,7 +268,7 @@ Resonance structures will not be generated.</p></li>
 
 <dl class="py function">
 <dt id="arc.species.converter.check_xyz_dict">
-<code class="sig-prename descclassname">arc.species.converter.</code><code class="sig-name descname">check_xyz_dict</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">xyz</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/species/converter.html#check_xyz_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.converter.check_xyz_dict" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">arc.species.converter.</code><code class="sig-name descname">check_xyz_dict</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">xyz</span><span class="p">:</span> <span class="n">Union<span class="p">[</span>dict<span class="p">, </span>str<span class="p">]</span></span></em><span class="sig-paren">)</span> &#x2192; dict<a class="reference internal" href="../_modules/arc/species/converter.html#check_xyz_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.converter.check_xyz_dict" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check that the xyz dictionary entered is valid.
 If it is a string, convert it.
 If it is a Z matrix, convert it to cartesian coordinates,
@@ -289,7 +289,7 @@ If isotopes are not in xyz_dict, common values will be added.</p>
 
 <dl class="py function">
 <dt id="arc.species.converter.check_zmat_dict">
-<code class="sig-prename descclassname">arc.species.converter.</code><code class="sig-name descname">check_zmat_dict</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">zmat</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/species/converter.html#check_zmat_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.converter.check_zmat_dict" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">arc.species.converter.</code><code class="sig-name descname">check_zmat_dict</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">zmat</span><span class="p">:</span> <span class="n">Union<span class="p">[</span>dict<span class="p">, </span>str<span class="p">]</span></span></em><span class="sig-paren">)</span> &#x2192; dict<a class="reference internal" href="../_modules/arc/species/converter.html#check_zmat_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.converter.check_zmat_dict" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check that the zmat dictionary entered is valid.
 If it is a string, convert it.
 If it represents cartesian coordinates, convert it to internal coordinates.
@@ -671,7 +671,7 @@ If <cite>multiplicity</cite> is given, the returned species multiplicity will be
 
 <dl class="py function">
 <dt id="arc.species.converter.rdkit_conf_from_mol">
-<code class="sig-prename descclassname">arc.species.converter.</code><code class="sig-name descname">rdkit_conf_from_mol</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mol</span></em>, <em class="sig-param"><span class="n">xyz</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/species/converter.html#rdkit_conf_from_mol"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.converter.rdkit_conf_from_mol" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">arc.species.converter.</code><code class="sig-name descname">rdkit_conf_from_mol</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mol</span><span class="p">:</span> <span class="n">rmgpy.molecule.molecule.Molecule</span></em>, <em class="sig-param"><span class="n">xyz</span><span class="p">:</span> <span class="n">dict</span></em><span class="sig-paren">)</span> &#x2192; tuple<a class="reference internal" href="../_modules/arc/species/converter.html#rdkit_conf_from_mol"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.converter.rdkit_conf_from_mol" title="Permalink to this definition">¶</a></dt>
 <dd><blockquote>
 <div><p>Generate an RDKit Conformer object from an RMG Molecule object.</p>
 </div></blockquote>
@@ -682,20 +682,18 @@ If <cite>multiplicity</cite> is given, the returned species multiplicity will be
 <li><p><strong>xyz</strong> (<em>dict</em>) – The xyz coordinates (of the conformer, atoms must be ordered as in <code class="docutils literal notranslate"><span class="pre">mol</span></code>.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>An RDKit Conformer object.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>Conformer</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>An RDKit Molecule object.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>RDMol</p>
-</dd>
 <dt class="field-even">Raises</dt>
 <dd class="field-even"><p><strong>ConverterError</strong> – if <code class="docutils literal notranslate"><span class="pre">xyz</span></code> is of wrong type.</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><ul class="simple">
+<li><p>Conformer: An RDKit Conformer object.</p></li>
+<li><p>RDMol: An RDKit Molecule object.</p></li>
+</ul>
+</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>tuple</p>
 </dd>
 </dl>
 </dd></dl>

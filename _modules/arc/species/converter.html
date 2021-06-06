@@ -581,7 +581,7 @@
     <span class="k">return</span> <span class="n">xyz_to_str</span><span class="p">(</span><span class="n">xyz_dict</span><span class="o">=</span><span class="n">xyz_dict</span><span class="p">,</span> <span class="n">isotope_format</span><span class="o">=</span><span class="n">isotope_format</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="check_xyz_dict"><a class="viewcode-back" href="../../../api/converter.html#arc.species.converter.check_xyz_dict">[docs]</a><span class="k">def</span> <span class="nf">check_xyz_dict</span><span class="p">(</span><span class="n">xyz</span><span class="p">):</span>
+<div class="viewcode-block" id="check_xyz_dict"><a class="viewcode-back" href="../../../api/converter.html#arc.species.converter.check_xyz_dict">[docs]</a><span class="k">def</span> <span class="nf">check_xyz_dict</span><span class="p">(</span><span class="n">xyz</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Check that the xyz dictionary entered is valid.</span>
 <span class="sd">    If it is a string, convert it.</span>
@@ -618,7 +618,7 @@
     <span class="k">return</span> <span class="n">xyz_dict</span></div>
 
 
-<div class="viewcode-block" id="check_zmat_dict"><a class="viewcode-back" href="../../../api/converter.html#arc.species.converter.check_zmat_dict">[docs]</a><span class="k">def</span> <span class="nf">check_zmat_dict</span><span class="p">(</span><span class="n">zmat</span><span class="p">):</span>
+<div class="viewcode-block" id="check_zmat_dict"><a class="viewcode-back" href="../../../api/converter.html#arc.species.converter.check_zmat_dict">[docs]</a><span class="k">def</span> <span class="nf">check_zmat_dict</span><span class="p">(</span><span class="n">zmat</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Check that the zmat dictionary entered is valid.</span>
 <span class="sd">    If it is a string, convert it.</span>
@@ -1622,7 +1622,9 @@
     <span class="k">return</span> <span class="n">rd_mol</span></div>
 
 
-<div class="viewcode-block" id="rdkit_conf_from_mol"><a class="viewcode-back" href="../../../api/converter.html#arc.species.converter.rdkit_conf_from_mol">[docs]</a><span class="k">def</span> <span class="nf">rdkit_conf_from_mol</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">xyz</span><span class="p">):</span>
+<div class="viewcode-block" id="rdkit_conf_from_mol"><a class="viewcode-back" href="../../../api/converter.html#arc.species.converter.rdkit_conf_from_mol">[docs]</a><span class="k">def</span> <span class="nf">rdkit_conf_from_mol</span><span class="p">(</span><span class="n">mol</span><span class="p">:</span> <span class="n">Molecule</span><span class="p">,</span>
+                        <span class="n">xyz</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
+                        <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">     Generate an RDKit Conformer object from an RMG Molecule object.</span>
 
@@ -1630,13 +1632,13 @@
 <span class="sd">        mol (Molecule): The RMG Molecule object.</span>
 <span class="sd">        xyz (dict): The xyz coordinates (of the conformer, atoms must be ordered as in ``mol``.</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        Conformer: An RDKit Conformer object.</span>
-<span class="sd">    Returns:</span>
-<span class="sd">        RDMol: An RDKit Molecule object.</span>
-
 <span class="sd">    Raises:</span>
 <span class="sd">        ConverterError: if ``xyz`` is of wrong type.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        tuple:</span>
+<span class="sd">            - Conformer: An RDKit Conformer object.</span>
+<span class="sd">            - RDMol: An RDKit Molecule object.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">xyz</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
         <span class="k">raise</span> <span class="n">ConverterError</span><span class="p">(</span><span class="s1">&#39;The xyz argument seem to be of wrong type. Expected a dictionary, &#39;</span>

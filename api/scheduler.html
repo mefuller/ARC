@@ -784,23 +784,6 @@ stable species, and that exactly one imaginary frequency was assigned for a TS.<
 </dd></dl>
 
 <dl class="py method">
-<dt id="arc.scheduler.Scheduler.check_md_job">
-<code class="sig-name descname">check_md_job</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">label</span></em>, <em class="sig-param"><span class="n">job</span></em>, <em class="sig-param"><span class="n">max_iterations</span><span class="o">=</span><span class="default_value">10</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/scheduler.html#Scheduler.check_md_job"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.scheduler.Scheduler.check_md_job" title="Permalink to this definition">¶</a></dt>
-<dd><p>Check whether the MD spawning algorithm converged on a single structure.
-If not converged, spawn another MD job (up to a maximum number of jobs).
-If it did converge, save the resulting lowest conformers and DFT them.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>label</strong> (<em>str</em>) – The species label.</p></li>
-<li><p><strong>job</strong> (<a class="reference internal" href="job.html#arc.job.job.Job" title="arc.job.job.Job"><em>Job</em></a>) – The Gromacs MD job to check.</p></li>
-<li><p><strong>max_iterations</strong> (<em>int</em><em>, </em><em>optional</em>) – The maximal number of MD trials per species.</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
 <dt id="arc.scheduler.Scheduler.check_negative_freq">
 <code class="sig-name descname">check_negative_freq</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">label</span></em>, <em class="sig-param"><span class="n">job</span></em>, <em class="sig-param"><span class="n">vibfreqs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/scheduler.html#Scheduler.check_negative_freq"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.scheduler.Scheduler.check_negative_freq" title="Permalink to this definition">¶</a></dt>
 <dd><p>A helper function for determining the number of negative frequencies. Also logs appropriate errors.
@@ -1118,17 +1101,6 @@ self.unique_species_labels.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="arc.scheduler.Scheduler.run_force_field_fit_job">
-<code class="sig-name descname">run_force_field_fit_job</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">label</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/scheduler.html#Scheduler.run_force_field_fit_job"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.scheduler.Scheduler.run_force_field_fit_job" title="Permalink to this definition">¶</a></dt>
-<dd><p>Spawn a force field parameter fitting job (currently only Gaussian is supported for this task).</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>label</strong> (<em>str</em>) – The species label.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
 <dt id="arc.scheduler.Scheduler.run_freq_job">
 <code class="sig-name descname">run_freq_job</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">label</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/scheduler.html#Scheduler.run_freq_job"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.scheduler.Scheduler.run_freq_job" title="Permalink to this definition">¶</a></dt>
 <dd><p>Spawn a freq job using ‘final_xyz’ for species ot TS ‘label’.
@@ -1136,20 +1108,6 @@ If this was originally a composite job, run an appropriate separate freq job out
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>label</strong> (<em>str</em>) – The species label.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt id="arc.scheduler.Scheduler.run_gromacs_job">
-<code class="sig-name descname">run_gromacs_job</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">label</span></em>, <em class="sig-param"><span class="n">confs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/scheduler.html#Scheduler.run_gromacs_job"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.scheduler.Scheduler.run_gromacs_job" title="Permalink to this definition">¶</a></dt>
-<dd><p>Run a Gromacs MD job.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>label</strong> (<em>str</em>) – The species label.</p></li>
-<li><p><strong>confs</strong> (<em>str</em>) – The path to a YAML file with array-format coordinates to optimize.</p></li>
-</ul>
 </dd>
 </dl>
 </dd></dl>
@@ -1170,7 +1128,7 @@ If this was originally a composite job, run an appropriate separate freq job out
 
 <dl class="py method">
 <dt id="arc.scheduler.Scheduler.run_job">
-<code class="sig-name descname">run_job</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">label</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">level_of_theory</span><span class="p">:</span> <span class="n">Union<span class="p">[</span><a class="reference internal" href="level.html#arc.level.Level" title="arc.level.Level">arc.level.Level</a><span class="p">, </span>dict<span class="p">, </span>str<span class="p">]</span></span></em>, <em class="sig-param"><span class="n">job_type</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">xyz</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>dict<span class="p">]</span></span></em>, <em class="sig-param"><span class="n">fine</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>bool<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">software</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">shift</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">''</span></em>, <em class="sig-param"><span class="n">trsh</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">''</span></em>, <em class="sig-param"><span class="n">memory</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>int<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">conformer</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>int<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">- 1</span></em>, <em class="sig-param"><span class="n">ess_trsh_methods</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>list<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">scan</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>list<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">pivots</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>list<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">occ</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>int<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">scan_trsh</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">''</span></em>, <em class="sig-param"><span class="n">scan_res</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>int<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">max_job_time</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>int<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">confs</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">radius</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>float<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">directed_scan_type</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">directed_scans</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>list<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">directed_dihedrals</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>list<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">rotor_index</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>int<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">cpu_cores</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>int<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">irc_direction</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/scheduler.html#Scheduler.run_job"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.scheduler.Scheduler.run_job" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">run_job</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">label</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">level_of_theory</span><span class="p">:</span> <span class="n">Union<span class="p">[</span><a class="reference internal" href="level.html#arc.level.Level" title="arc.level.Level">arc.level.Level</a><span class="p">, </span>dict<span class="p">, </span>str<span class="p">]</span></span></em>, <em class="sig-param"><span class="n">job_type</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">xyz</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>dict<span class="p">]</span></span></em>, <em class="sig-param"><span class="n">fine</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>bool<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">software</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">shift</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">''</span></em>, <em class="sig-param"><span class="n">trsh</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">''</span></em>, <em class="sig-param"><span class="n">memory</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>int<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">conformer</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>int<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">- 1</span></em>, <em class="sig-param"><span class="n">ess_trsh_methods</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>list<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">scan</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>list<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">pivots</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>list<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">occ</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>int<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">scan_trsh</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">''</span></em>, <em class="sig-param"><span class="n">scan_res</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>int<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">max_job_time</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>int<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">radius</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>float<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">directed_scan_type</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">directed_scans</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>list<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">directed_dihedrals</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>list<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">rotor_index</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>int<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">cpu_cores</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>int<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">irc_direction</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/scheduler.html#Scheduler.run_job"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.scheduler.Scheduler.run_job" title="Permalink to this definition">¶</a></dt>
 <dd><p>A helper function for running (all) jobs.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1194,7 +1152,6 @@ but used to identify the rotor.</p></li>
 <li><p><strong>scan_trsh</strong> (<em>str</em><em>, </em><em>optional</em>) – A troubleshooting method for rotor scans.</p></li>
 <li><p><strong>scan_res</strong> (<em>int</em><em>, </em><em>optional</em>) – The rotor scan resolution in degrees.</p></li>
 <li><p><strong>max_job_time</strong> (<em>int</em><em>, </em><em>optional</em>) – The maximal allowed job time on the server in hours.</p></li>
-<li><p><strong>confs</strong> (<em>str</em><em>, </em><em>optional</em>) – A path to the YAML file conformer coordinates for a Gromacs MD job.</p></li>
 <li><p><strong>radius</strong> (<em>float</em><em>, </em><em>optional</em>) – The species radius in Angstrom.</p></li>
 <li><p><strong>directed_scan_type</strong> (<em>str</em><em>, </em><em>optional</em>) – The type of the directed scan.</p></li>
 <li><p><strong>directed_scans</strong> (<em>list</em><em>, </em><em>optional</em>) – Entries are lists of four-atom dihedral scan indices to constrain.</p></li>
@@ -1315,23 +1272,6 @@ The differentiation between <code class="docutils literal notranslate"><span cla
 <li><p><strong>InputError</strong> – If the species directed scan type has an unexpected value,
     or if <code class="docutils literal notranslate"><span class="pre">xyz</span></code> wasn’t given for a cont_opt job.</p></li>
 <li><p><strong>SchedulerError</strong> – If the rotor scan resolution as defined in settings.py is illegal.</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt id="arc.scheduler.Scheduler.spawn_md_jobs">
-<code class="sig-name descname">spawn_md_jobs</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">label</span></em>, <em class="sig-param"><span class="n">prev_conf_list</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">num_confs</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/scheduler.html#Scheduler.spawn_md_jobs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.scheduler.Scheduler.spawn_md_jobs" title="Permalink to this definition">¶</a></dt>
-<dd><p>Embed conformers and run a molecular dynamics optimization using a fitted force field.
-Then generate conformers using combinations of the detected torsion wells, and re-run until converging.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>label</strong> (<em>str</em>) – The species label.</p></li>
-<li><p><strong>prev_conf_list</strong> (<em>list</em><em>, </em><em>optional</em>) – The previous conformers (entries are two length lists, not dicts).
-If not given, a first Gromacs job will be spawned.</p></li>
-<li><p><strong>num_confs</strong> (<em>int</em><em>, </em><em>optional</em>) – The number of conformers to generate.</p></li>
 </ul>
 </dd>
 </dl>
