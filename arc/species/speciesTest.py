@@ -14,7 +14,7 @@ from rmgpy.reaction import Reaction
 from rmgpy.species import Species
 from rmgpy.transport import TransportData
 
-from arc.common import almost_equal_coords_lists, ARC_PATH
+from arc.common import ARC_PATH, almost_equal_coords_lists
 from arc.exceptions import SpeciesError
 from arc.level import Level
 from arc.plotter import save_conformers_file
@@ -139,11 +139,19 @@ class TestARCSpecies(unittest.TestCase):
         self.assertEqual(n4h6.mol.to_smiles(), 'NNNN')
         self.assertEqual(n4h6.optical_isomers, 2)
         self.assertEqual(n4h6.get_xyz(), n4h6_xyz)
+        self.assertAlmostEqual(n4h6.e0, 273.2465365710362)
+
+        c3_1_yml_path = os.path.join(ARC_PATH, 'arc', 'testing', 'yml_testing', 'C3_1.yml')
+        c3_1 = ARCSpecies(yml_path=c3_1_yml_path)
+        self.assertAlmostEqual(c3_1.e0, 86.34867237178679)
+        c3_2_yml_path = os.path.join(ARC_PATH, 'arc', 'testing', 'yml_testing', 'C3_2.yml')
+        c3_2 = ARCSpecies(yml_path=c3_2_yml_path)
+        self.assertAlmostEqual(c3_2.e0, 72.98479932780415)
 
     def test_str(self):
         """Test the string representation of the object"""
         str_representation = str(self.spc9)
-        expected_representation = 'ARCSpecies(label=NH2(S), smiles=[NH], is_ts=False, multiplicity=1, charge=0)'
+        expected_representation = 'ARCSpecies(label=NH2[S], smiles=[NH], is_ts=False, multiplicity=1, charge=0)'
         self.assertEqual(str_representation, expected_representation)
 
     def test_set_mol_list(self):
@@ -1313,14 +1321,17 @@ H       1.11582953    0.94384729   -0.10134685"""
 
     def test_check_label(self):
         """Test the species check_label() method"""
-        label = check_label('HCN')
+        label, original_label = check_label('HCN')
         self.assertEqual(label, 'HCN')
+        self.assertIsNone(original_label)
 
-        label = check_label('C#N')
+        label, original_label = check_label('C#N')
         self.assertEqual(label, 'CtN')
+        self.assertEqual(original_label, 'C#N')
 
-        label = check_label('C?N')
+        label, original_label = check_label('C?N')
         self.assertEqual(label, 'C_N')
+        self.assertEqual(original_label, 'C?N')
 
     def test_check_atom_balance(self):
         """Test the check_atom_balance function"""
@@ -1402,11 +1413,17 @@ class TestTSGuess(unittest.TestCase):
         """Test TSGuess.as_dict()"""
         tsg_dict = self.tsg1.as_dict()
         expected_dict = {'method': 'autotst',
+                         'conformer_index': None,
+                         'imaginary_freqs': None,
+                         'successful_irc': None,
+                         'successful_normal_mode': None,
                          'energy': None,
                          'family': 'H_Abstraction',
                          'index': None,
                          'rmg_reaction': 'CON=O <=> [O-][N+](=O)C',
                          'success': None,
+                         'method_direction': None,
+                         'method_index': None,
                          't0': None,
                          'execution_time': None}
         self.assertEqual(tsg_dict, expected_dict)
@@ -1419,16 +1436,17 @@ class TestTSGuess(unittest.TestCase):
         self.assertEqual(tsg.method, 'autotst')
         self.assertTrue(isinstance(tsg.rmg_reaction, Reaction))
 
-    def test_xyz_to_2d_get_formula(self):
+    def test_xyz_perception(self):
+        """Test MolGraph.get_formula()"""
         xyz_arb = {'symbols': ('H', 'C', 'H', 'H', 'O', 'N', 'O'),
-                 'isotopes': (1, 13, 1, 1, 16, 14, 16),
-                 'coords': ((-1.0, 0.0, 0.0),
-                            (0.0, 0.0, 0.0),
-                            (0.0, -1.0, 0.0),
-                            (0.0, 1.0, 0.0),
-                            (1.0, 0.0, 0.0),
-                            (2.0, 0.0, 0.0),
-                            (3.0, 0.0, 0.0),)}
+                   'isotopes': (1, 13, 1, 1, 16, 14, 16),
+                   'coords': ((-1.0, 0.0, 0.0),
+                              (0.0, 0.0, 0.0),
+                              (0.0, -1.0, 0.0),
+                              (0.0, 1.0, 0.0),
+                              (1.0, 0.0, 0.0),
+                              (2.0, 0.0, 0.0),
+                              (3.0, 0.0, 0.0),)}
         mol_graph_1 = MolGraph(symbols=xyz_arb['symbols'], coords=xyz_arb['coords'])
         self.assertEqual(mol_graph_1.get_formula(), 'CH3NO2')
 
