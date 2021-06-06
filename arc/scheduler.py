@@ -2490,13 +2490,13 @@ class Scheduler(object):
                                   level_of_theory=job.level)
             return None
         # Otherwise, check the scan job quality
-        invalidate, actions, energies = False, list(), list()
+        invalidate, actions, energies, angles = False, list(), list(), list()
         if job.rotor_index not in self.species_dict[label].rotors_dict.keys():
             raise SchedulerError(f'Could not match rotor {job.rotor_index} of species {label} '
                                  f'with torsions {job.torsions} to any of the existing rotors in the species.\n'
                                  f'The rotors dict of {label} is:\n{pprint.pprint(self.species_dict[label].rotors_dict)}')
 
-        invalidation_reason = ''
+        invalidation_reason, message = '', ''
         if self.species_dict[label].rotors_dict[job.rotor_index]['dimensions'] == 1:
             # This is a 1D scan.
             # Read energy profile (in kJ/mol), it may be used in the troubleshooting.
@@ -2566,7 +2566,7 @@ class Scheduler(object):
         self.species_dict[label].rotors_dict[job.rotor_index]['invalidation_reason'] += invalidation_reason
 
         # If energies were obtained, draw the scan curve.
-        if energies is not None and len(energies):
+        if energies is not None and len(energies) and angles is not None and len(angles):
             folder_name = 'rxns' if job.is_ts else 'Species'
             rotor_path = os.path.join(self.project_directory, 'output', folder_name, job.species_label, 'rotors')
             plotter.plot_1d_rotor_scan(angles=angles,
