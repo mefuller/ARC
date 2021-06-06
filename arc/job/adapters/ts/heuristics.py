@@ -531,12 +531,14 @@ def label_molecules(reactants: list,
     """
     React molecules to give the requested products via an RMG family.
     Results in a reaction with RMG's atom labels for the reactants and products.
+
     Args:
         reactants (list): Entries are Molecule instances of the reaction reactants.
         products (list): Entries are Molecule instances of the reaction products.
         family (KineticsFamily): The RMG reaction family instance.
         output_with_resonance (bool, optional): Whether to generate all resonance structures with labels.
                                                 ``True`` to generate, ``False`` by default.
+
     Returns:
         Reaction: An RMG Reaction instance with atom-labeled reactants and products.
     """
