@@ -292,8 +292,8 @@ H      -0.59436200   -0.94730400    0.00000000"""
 
     def test_parse_1d_scan_coords(self):
         """Test parsing the optimized coordinates of a torsion scan at each optimization point"""
-        path = os.path.join(ARC_PATH, 'arc', 'testing', 'rotor_scans', 'H2O2.out')
-        traj = parser.parse_1d_scan_coords(path)
+        path1 = os.path.join(ARC_PATH, 'arc', 'testing', 'rotor_scans', 'H2O2.out')
+        traj = parser.parse_1d_scan_coords(path1)
         self.assertEqual(len(traj), 37)
         self.assertEqual(traj[10], {'coords': ((-0.715582, -0.140909, 0.383809),
                                                (0.715582, 0.140909, 0.383809),
@@ -301,6 +301,11 @@ H      -0.59436200   -0.94730400    0.00000000"""
                                                (1.043959, -0.678384, -0.010288)),
                                     'isotopes': (16, 16, 1, 1),
                                     'symbols': ('O', 'O', 'H', 'H')})
+
+        # test that the function doesn't crush on an incomplete scan (errored during opt):
+        path2 = os.path.join(ARC_PATH, 'arc', 'testing', 'rotor_scans', 'TS_errored.out')
+        traj = parser.parse_1d_scan_coords(path2)
+        self.assertEqual(len(traj), 2)
 
     def test_parse_t1(self):
         """Test T1 diagnostic parsing"""
