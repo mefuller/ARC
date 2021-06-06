@@ -116,7 +116,7 @@ def _format_stdout(stdout):
 
 def check_job_status(job_id):
     """
-    Possible statuses: `before_submission`, `running`, `errored on node xx`, `done`
+    Possible status values: ``before_submission``, ``running``, ``errored on node xx``, ``done``
     Status line formats:
 
     OGE::
@@ -128,16 +128,19 @@ def check_job_status(job_id):
         14428     debug xq1371m2   user_name  R 50-04:04:46      1 node06
 
     PBS (taken from zeldo.dow.com)::
-                                                                                          Req'd       Req'd       Elap
-        Job ID                  Username    Queue    Jobname          SessID  NDS   TSK   Memory      Time    S   Time
-        ----------------------- ----------- -------- ---------------- ------ ----- ------ --------- --------- - ---------
-        2016614.zeldo.local     u780444     workq    scan.pbs          75380     1     10       --  730:00:00 R  00:00:20
-        2016616.zeldo.local     u780444     workq    scan.pbs          75380     1     10       --  730:00:00 R  00:00:20
+                                                                                         Req'd       Req'd       Elap
+        Job ID                  Username    Queue    Jobname         SessID  NDS   TSK   Memory      Time    S   Time
+        ----------------------- ----------- -------- --------------- ------ ----- ------ --------- --------- - ---------
+        2016614.zeldo.local     u780444     workq    scan.pbs         75380     1     10       --  730:00:00 R  00:00:20
+        2016616.zeldo.local     u780444     workq    scan.pbs         75380     1     10       --  730:00:00 R  00:00:20
 
-    HTCondor::
+    HTCondor (using ARC's modified condor_q command)::
 
-    443671.0 <username> a1001
-    443672.0 <username> a1002
+        3261.0 R 10 28161 a2719 56
+        3263.0 R 10 28161 a2721 23
+        3268.0 R 10 28161 a2726 18
+        3269.0 R 10 28161 a2727 17
+        3270.0 P 10 28161 a2728 23
     """
     server = 'local'
     cmd = check_status_command[servers[server]['cluster_soft']]
@@ -159,8 +162,8 @@ def delete_job(job_id):
             logger.error(f'Job {job_id} was scheduled for deletion, but the deletion command has appeared to errored, '
                          f'and is still running')
             raise RuntimeError(f'Could not delete job {job_id}')
-        else:  # The job seems to have been deleted.
-            logger.warning(f'Job {job_id} is no longer running, so we can continue.')
+        else:
+            logger.info(f'Job {job_id} is no longer running.')
 
 
 def check_running_jobs_ids() -> list:
