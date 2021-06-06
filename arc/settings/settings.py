@@ -182,7 +182,7 @@ valid_chars = "-_[]=.,%s%s" % (string.ascii_letters, string.digits)
 
 # A scan with better resolution (lower number here) takes more time to compute,
 # but the automatically-derived rotor symmetry number is more likely to be correct.
-rotor_scan_resolution = 8.0  # degrees. Default: 8.0
+rotor_scan_resolution = 10  # degrees. Default: 8.0
 
 # rotor validation parameters
 maximum_barrier = 40    # a rotor threshold (kJ/mol) above which the mode will be considered as vibrational if
@@ -211,6 +211,7 @@ preserve_params_in_scan = {
 # If the number of processes is greater than 'max_one' but equal or lower than 'max_two',
 # only two tasks will be spawned.
 tasks_coeff = {'A': 1.7, 'b': 0.35, 'cap': 100, 'max_one': 2, 'max_two': 9}
+# Todo: add min tasks for fast jobs such as GCN
 
 # Default job memory, cpu, time settings
 default_job_settings = {
