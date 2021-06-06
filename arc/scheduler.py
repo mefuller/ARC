@@ -2481,8 +2481,8 @@ class Scheduler(object):
         # If the job has not converged, troubleshoot ESS
         # Besides, according to the experience, 'Internal coordinate error' cannot be handled by
         # troubleshoot_ess() for scan jobs. It is usually related to bond or angle changes which
-        # causes the internal coordinates mess up in the middway of the scan. It can be resolved
-        # by conformer based scan troubleshooting method and its energies are readable.
+        # messes up the internal coordinates during the scan. It can be resolved
+        # by conformer-based scan troubleshooting method, yet its energies are readable.
         if job.job_status[1]['status'] != 'done' \
                 and job.job_status[1]['error'] != 'Internal coordinate error':
             self.troubleshoot_ess(label=label,
@@ -2508,7 +2508,7 @@ class Scheduler(object):
                 message = f'Energies from rotor scan of {label} of torsion {job.torsions} could not ' \
                           f'be read. Invalidating rotor.'
                 logger.error(message)
-            else:
+            elif len(energies) > 5:
                 trajectory = parser.parse_1d_scan_coords(path=job.local_path_to_output_file) \
                     if self.species_dict[label].is_ts else None
                 invalidate, invalidation_reason, message, actions = scan_quality_check(
