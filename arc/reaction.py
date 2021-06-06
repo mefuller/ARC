@@ -8,6 +8,7 @@ import numpy as np
 from qcelemental.exceptions import ValidationError
 from qcelemental.models.molecule import Molecule as QCMolecule
 
+from rmgpy.exceptions import ActionError
 from rmgpy.reaction import Reaction
 from rmgpy.species import Species
 
@@ -48,13 +49,13 @@ class ARCReaction(object):
         species_list (list, optional): A list of ARCSpecies entries for matching reactants and products
                                        to existing species.
         preserve_param_in_scan (list, optional): Entries are length two iterables of atom indices (1-indexed)
-                                                 between which distances and dihedrals of these pivots must be
+                                                 between which distances and dihedrals of these pivots in the TS must be
                                                  preserved. Used for identification of rotors which break a TS.
 
     Attributes:
         label (str): The reaction's label in the format `r1 + r2 <=> p1 + p2`
                      (or unimolecular on either side, as appropriate).
-        family (KineticsFamily): The RMG kinetic family, if applicable.
+        family (KineticsFamily, str): The RMG kinetic family, if applicable.
         family_own_reverse (bool): Whether the RMG family is its own reverse.
         reactants (list): A list of reactants labels corresponding to an :ref:`ARCSpecies <species>`.
         products (list): A list of products labels corresponding to an :ref:`ARCSpecies <species>`.
@@ -74,7 +75,7 @@ class ARCReaction(object):
                      corresponding TS :ref:`ARCSpecies <species>` object.
         ts_label (str): The :ref:`ARCSpecies <species>` label of the respective TS.
         preserve_param_in_scan (list): Entries are length two iterables of atom indices (1-indexed) between which
-                                       distances and dihedrals of these pivots must be preserved.
+                                       distances and dihedrals of these pivots in the TS must be preserved.
         atom_map (List[int]): An atom map, mapping the reactant atoms to the product atoms.
                               I.e., an atom map of [0, 2, 1] means that reactant atom 0 matches product atom 0,
                               reactant atom 1 matches product atom 2, and reactant atom 2 matches product atom 1.
@@ -697,7 +698,17 @@ class ARCReaction(object):
                     species=p_spc, well=1))
         return reactants, products
 
-    # todo: sort the atom pap methods + tests
+    def determine_ts_rotors(self, rmg_database):
+        """Determine rotors and populate the preserve_param_in_scan attribute in the TS species"""
+        if isinstance(self.family, str):
+            self.determine_family(rmg_database=rmg_database)
+        try:
+            self.family.add_atom_labels_for_reaction(reaction=self.rmg_reaction, output_with_resonance=False)
+        except ActionError as e:
+            logger.error(f'Cannot label atoms in reaction {self.label}. Got:\n{e}')
+            return None
+
+    # todo: sort the atom map methods + tests
 
     def get_atom_map(self, verbose: int = 0) -> Optional[List[int]]:
         """
