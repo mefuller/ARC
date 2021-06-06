@@ -364,9 +364,7 @@ class Scheduler(object):
                                 )
                     )
                 rxn.check_atom_balance()
-                if not rxn.done_opt_r_n_p:
-                    if all(xyz is not None for xyz in [spc.final_xyz for spc in rxn.r_species + rxn.p_species]):
-                        rxn.done_opt_r_n_p = True
+                rxn.check_done_opt_r_n_p()
 
         for species in self.species_list:
             if not isinstance(species, ARCSpecies):
