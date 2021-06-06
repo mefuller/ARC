@@ -2493,7 +2493,8 @@ class Scheduler(object):
         invalidate, actions, energies, angles = False, list(), list(), list()
         if job.rotor_index not in self.species_dict[label].rotors_dict.keys():
             raise SchedulerError(f'Could not match rotor {job.rotor_index} of species {label} '
-                                 f'with torsions {job.torsions} to any of the existing rotors in the species.\n'
+                                 f'with pivots {self.species_dict[label].rotors_dict[job.rotor_index]["pivots"]} '
+                                 f'to any of the existing rotors in the species.\n'
                                  f'The rotors dict of {label} is:\n{pprint.pprint(self.species_dict[label].rotors_dict)}')
 
         invalidation_reason, message = '', ''
@@ -2506,7 +2507,8 @@ class Scheduler(object):
             if energies is None:
                 invalidate = True
                 invalidation_reason = 'Could not read energies'
-                message = f'Energies from rotor scan of {label} of torsion {job.torsions} could not ' \
+                message = f'Energies from rotor scan of {label} of pivots ' \
+                          f'{self.species_dict[label].rotors_dict[job.rotor_index]["pivots"]} could not ' \
                           f'be read. Invalidating rotor.'
                 logger.error(message)
             elif len(energies) > 5:
@@ -2526,7 +2528,9 @@ class Scheduler(object):
 
                 if len(actions):
                     # the rotor scan is problematic, troubleshooting is required
-                    logger.info(f'Trying to troubleshoot rotor {job.torsions} of species {label} ...')
+                    logger.info(f'Trying to troubleshoot rotor '
+                                f'{self.species_dict[label].rotors_dict[job.rotor_index]["pivots"]} '
+                                f'of species {label} ...')
                     # Try to troubleshoot the rotor. sometimes, troubleshooting cannot yield solutions
                     # actions from scan_quality_check() is not the actual actions applied,
                     # they will be post-processed by trsh_scan_job. If troubleshooting fails,
@@ -2938,8 +2942,9 @@ class Scheduler(object):
                                                     log_file=job.local_path_to_output_file,
                                                     )
             except TrshError as e:
-                logger.error(f'Troubleshooting of the rotor scan on {torsions_to_scans(job.torsions)[0]} for '
-                             f'{label} failed. Got: {e}\nJob info:\n{job}')
+                logger.error(f'Troubleshooting of the rotor scan of pivots '
+                             f'{self.species_dict[label].rotors_dict[job.rotor_index]["pivots"]} for '
+                             f'{label} failed. Got:\n{e}\nJob info:\n{job}')
             except InputError as e:
                 logger.debug(f'Got invalid input for trsh_scan_job: {e}\nJob info:\n{job}')
             else:
