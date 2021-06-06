@@ -2496,6 +2496,7 @@ class Scheduler(object):
                                  f'with torsions {job.torsions} to any of the existing rotors in the species.\n'
                                  f'The rotors dict of {label} is:\n{pprint.pprint(self.species_dict[label].rotors_dict)}')
 
+        invalidation_reason = ''
         if self.species_dict[label].rotors_dict[job.rotor_index]['dimensions'] == 1:
             # This is a 1D scan.
             # Read energy profile (in kJ/mol), it may be used in the troubleshooting.
