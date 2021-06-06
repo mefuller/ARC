@@ -984,8 +984,7 @@ class JobAdapter(ABC):
                 constraints.append(f'{constraint_type_dict[len(constraint_tuple[0])]} '
                                    f'{constraint_tuple[0]} {constraint_tuple[1]}:.2f')
             constraints = constraints[0] if len(constraints) == 1 else constraints
-            # info += f'(pivots: {pivots}'
-            info += f' constraints: {constraints})' if constraints else ')'
+            info += f' constraints: {constraints})' if constraints else ''
         local, server, job_server_name = '', '', ''
         if self.execution_type != 'incore':
             if self.server == 'local':
