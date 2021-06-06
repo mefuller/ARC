@@ -529,7 +529,7 @@ def trsh_scan_job(label: str,
 
     Args:
         label (str): The species label.
-        scan_res (int or float): The scan resolution in degrees.
+        scan_res (int, float): The scan resolution in degrees.
         scan (list): The four atom indices representing the torsion to be troubleshooted.
         scan_list (list): Entries are the four-atom scan lists (1-indexed) of all torsions
                           (without duplicate pivots) in this species.
