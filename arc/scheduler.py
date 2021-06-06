@@ -512,7 +512,7 @@ class Scheduler(object):
                     if 'conformer' in job_name:
                         i = get_i_from_job_name(job_name)
                         job = self.job_dict[label]['conformers'][i]
-                        if not(job.job_id in self.server_job_ids and job.job_id not in self.completed_incore_jobs):
+                        if not (job.job_id in self.server_job_ids and job.job_id not in self.completed_incore_jobs):
                             # this is a completed conformer job
                             successful_server_termination = self.end_job(job=job, label=label, job_name=job_name)
                             if successful_server_termination:
@@ -541,7 +541,7 @@ class Scheduler(object):
                     if 'tsg' in job_name:
                         i = get_i_from_job_name(job_name)
                         job = self.job_dict[label]['tsg'][i]
-                        if not(job.job_id in self.server_job_ids and job.job_id not in self.completed_incore_jobs):
+                        if not (job.job_id in self.server_job_ids and job.job_id not in self.completed_incore_jobs):
                             # This is a successfully completed tsg job. It may have resulted in several TSGuesses.
                             successful_server_termination = self.end_job(job=job, label=label, job_name=job_name)
                             if successful_server_termination:
@@ -560,7 +560,7 @@ class Scheduler(object):
                     elif 'opt' in job_name:
                         # val is 'opt1', 'opt2', etc., or 'optfreq1', optfreq2', etc.
                         job = self.job_dict[label]['opt'][job_name]
-                        if not(job.job_id in self.server_job_ids and job.job_id not in self.completed_incore_jobs):
+                        if not (job.job_id in self.server_job_ids and job.job_id not in self.completed_incore_jobs):
                             successful_server_termination = self.end_job(job=job, label=label, job_name=job_name)
                             if successful_server_termination:
                                 success = self.parse_opt_geo(label=label, job=job)
@@ -571,7 +571,7 @@ class Scheduler(object):
                     elif 'freq' in job_name:
                         # this is NOT an 'optfreq' job
                         job = self.job_dict[label]['freq'][job_name]
-                        if not(job.job_id in self.server_job_ids and job.job_id not in self.completed_incore_jobs):
+                        if not (job.job_id in self.server_job_ids and job.job_id not in self.completed_incore_jobs):
                             successful_server_termination = self.end_job(job=job, label=label, job_name=job_name)
                             if successful_server_termination:
                                 self.check_freq_job(label=label, job=job)
@@ -579,7 +579,7 @@ class Scheduler(object):
                             break
                     elif 'sp' in job_name:
                         job = self.job_dict[label]['sp'][job_name]
-                        if not(job.job_id in self.server_job_ids and job.job_id not in self.completed_incore_jobs):
+                        if not (job.job_id in self.server_job_ids and job.job_id not in self.completed_incore_jobs):
                             successful_server_termination = self.end_job(job=job, label=label, job_name=job_name)
                             if successful_server_termination:
                                 self.check_sp_job(label=label, job=job)
@@ -587,7 +587,7 @@ class Scheduler(object):
                             break
                     elif 'composite' in job_name:
                         job = self.job_dict[label]['composite'][job_name]
-                        if not(job.job_id in self.server_job_ids and job.job_id not in self.completed_incore_jobs):
+                        if not (job.job_id in self.server_job_ids and job.job_id not in self.completed_incore_jobs):
                             successful_server_termination = self.end_job(job=job, label=label, job_name=job_name)
                             if successful_server_termination:
                                 success = self.parse_composite_geo(label=label, job=job)
@@ -597,7 +597,7 @@ class Scheduler(object):
                             break
                     elif 'directed_scan' in job_name:
                         job = self.job_dict[label]['directed_scan'][job_name]
-                        if not(job.job_id in self.server_job_ids and job.job_id not in self.completed_incore_jobs):
+                        if not (job.job_id in self.server_job_ids and job.job_id not in self.completed_incore_jobs):
                             successful_server_termination = self.end_job(job=job, label=label, job_name=job_name)
                             if successful_server_termination:
                                 self.check_directed_scan_job(label=label, job=job)
@@ -619,7 +619,7 @@ class Scheduler(object):
                             break
                     elif 'scan' in job_name and 'directed' not in job_name:
                         job = self.job_dict[label]['scan'][job_name]
-                        if not(job.job_id in self.server_job_ids and job.job_id not in self.completed_incore_jobs):
+                        if not (job.job_id in self.server_job_ids and job.job_id not in self.completed_incore_jobs):
                             job = self.job_dict[label]['scan'][job_name]
                             successful_server_termination = self.end_job(job=job, label=label, job_name=job_name)
                             # if successful_server_termination and job.directed_scans is None:  # todo: consider this once directed_scans are supported
@@ -629,7 +629,7 @@ class Scheduler(object):
                             break
                     elif 'irc' in job_name:
                         job = self.job_dict[label]['irc'][job_name]
-                        if not(job.job_id in self.server_job_ids and job.job_id not in self.completed_incore_jobs):
+                        if not (job.job_id in self.server_job_ids and job.job_id not in self.completed_incore_jobs):
                             successful_server_termination = self.end_job(job=job, label=label, job_name=job_name)
                             if successful_server_termination:
                                 self.check_irc_job(label=label, job=job)
@@ -637,7 +637,7 @@ class Scheduler(object):
                             break
                     elif 'orbitals' in job_name:
                         job = self.job_dict[label]['orbitals'][job_name]
-                        if not(job.job_id in self.server_job_ids and job.job_id not in self.completed_incore_jobs):
+                        if not (job.job_id in self.server_job_ids and job.job_id not in self.completed_incore_jobs):
                             successful_server_termination = self.end_job(job=job, label=label, job_name=job_name)
                             if successful_server_termination:
                                 # copy the orbitals file to the species / TS output folder
@@ -653,7 +653,7 @@ class Scheduler(object):
                             break
                     elif 'onedmin' in job_name:
                         job = self.job_dict[label]['onedmin'][job_name]
-                        if not(job.job_id in self.server_job_ids and job.job_id not in self.completed_incore_jobs):
+                        if not (job.job_id in self.server_job_ids and job.job_id not in self.completed_incore_jobs):
                             successful_server_termination = self.end_job(job=job, label=label, job_name=job_name)
                             if successful_server_termination:
                                 # Copy the lennard_jones file to the species output folder (TS's don't have L-J data).
@@ -2727,8 +2727,7 @@ class Scheduler(object):
                                  and job_type in ['conformers', 'opt', 'fine', 'freq', 'rotors', 'bde'])
                              or job_type == 'bde' and self.species_dict[label].bdes is None
                              or job_type == 'conformers'
-                             or job_type == 'tsg'
-                             ):
+                             or job_type == 'tsg'):
                 logger.debug(f'Species {label} did not converge')
                 all_converged = False
                 break
@@ -3212,7 +3211,7 @@ class Scheduler(object):
                         self.job_dict[spc_label] = dict()
                     if job_description['job_type'] not in self.job_dict[spc_label]:
                         if ('conformer' not in job_description or job_description['conformer'] is None) \
-                            and ('tsg' not in job_description or job_description['tsg'] is None):
+                                and ('tsg' not in job_description or job_description['tsg'] is None):
                             self.job_dict[spc_label][job_description['job_type']] = dict()
                         elif 'conformers' not in self.job_dict[spc_label]:
                             self.job_dict[spc_label]['conformers'] = dict()
