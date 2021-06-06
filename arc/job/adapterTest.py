@@ -195,11 +195,17 @@ class TestJobAdapter(unittest.TestCase):
         """Test determining job array parameters"""
         self.assertEqual(self.job_1.tasks, 5)
 
-    def test_write_hdf5(self):
-        """Test writing the HDF5 file"""
-        with pd.HDFStore(os.path.join(self.job_1.local_path, 'data.hdf5')) as store:
-            data = store['df'].to_dict()
-        self.assertEqual([key for key in data.keys()], ['spc1', 'spc2', 'spc3'])
+    # def test_write_hdf5(self):
+    #     """Test writing the HDF5 file"""
+    #     with pd.HDFStore(os.path.join(self.job_1.local_path, 'data.hdf5')) as store:
+    #         data = store['df'].to_dict()
+    #     self.assertEqual([key for key in data.keys()], ['spc1', 'spc2', 'spc3'])
+    #
+    # def test_write_hdf5_for_directed_scans(self):
+    #     """Test writing the HDF5 file for directed scans"""
+    #     with pd.HDFStore(os.path.join(self.job_1.local_path, 'data.hdf5')) as store:
+    #         data = store['df'].to_dict()
+    #     self.assertEqual([key for key in data.keys()], ['spc1', 'spc2', 'spc3'])
 
     def test_write_submit_script(self):
         """Test writing a submit script"""
@@ -291,13 +297,6 @@ class TestJobAdapter(unittest.TestCase):
                                        'remote': os.path.join(self.job_1.remote_path, 'm.x'),
                                        'source': 'input_files',
                                        'make_x': True})
-
-    def test_write_hdf5_for_directed_scans(self):
-        """Test writing the HDF5 file for directed scans"""
-        with pd.HDFStore(os.path.join(self.job_1.local_path, 'data.hdf5')) as store:
-            data = store['df'].to_dict()
-        print(data.keys())
-        self.assertEqual([key for key in data.keys()], ['spc1', 'spc2', 'spc3'])
 
     @classmethod
     def tearDownClass(cls):

@@ -63,6 +63,9 @@ def draw_structure(xyz=None, species=None, project_directory=None, method='show_
         species (ARCSpecies, optional): A species from which to extract the xyz coordinates to plot.
         project_directory (str, optional): A directory for saving the image (only supported for draw_3d).
         method (str, optional): The method to use, either 'show_sticks', 'draw_3d', or 'scatter'.
+
+    Todo:
+        Add qcelemental.models.Molecule.show (https://github.com/MolSSI/QCElemental/blob/master/qcelemental/models/molecule.py#L427)
     """
     if method not in ['show_sticks', 'draw_3d', 'scatter']:
         raise InputError(f"Recognized methods are 'show_sticks', 'draw_3d', or 'scatter', got: {method}")
@@ -855,7 +858,7 @@ def save_kinetics_lib(rxn_list, path, name, lib_long_desc):
         kinetics_library.entries = entries
         lib_path = os.path.join(path, 'kinetics', '')
         if os.path.exists(lib_path):
-            shutil.rmtree(lib_path)
+            shutil.rmtree(lib_path, ignore_errors=True)
         try:
             os.makedirs(lib_path)
         except OSError:
@@ -873,6 +876,7 @@ def save_conformers_file(project_directory: str,
                          is_ts: bool = False,
                          energies: Optional[List[float]] = None,
                          ts_methods: Optional[List[str]] = None,
+                         im_freqs: Optional[List[List[float]]] = None,
                          ):
     """
     Save the conformers before or after optimization.
@@ -889,6 +893,7 @@ def save_conformers_file(project_directory: str,
         energies (list, optional): Entries are energies corresponding to the conformer list in kJ/mol.
                                    If not given (None) then the Species.conformer_energies are used instead.
         ts_methods (list, optional): Entries are method names used to generate the TS guess.
+        im_freqs (list, optional): Entries lists of imaginary frequencies.
     """
     spc_dir = 'rxns' if is_ts else 'Species'
     geo_dir = os.path.join(project_directory, 'output', spc_dir, label, 'geometry', 'conformers')
@@ -918,6 +923,8 @@ def save_conformers_file(project_directory: str,
                     content += f'\nSMILES: {smiles}\n'
                 elif ts_methods is not None:
                     content += f'TS guess method: {ts_methods[i]}\n'
+                if im_freqs is not None and im_freqs[i] is not None:
+                    content += f'Imaginary frequencies: {im_freqs[i]}\n'
                 if optimized:
                     if energies[i] == min_e:
                         content += 'Relative Energy: 0 kJ/mol (lowest)'
