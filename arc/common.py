@@ -1215,3 +1215,23 @@ def torsions_to_scans(descriptor: Optional[List[List[int]]],
     if any(any(item < 0 for item in entry) for entry in new_descriptor):
         raise ValueError(f'Got an illegal value when converting:\n{descriptor}\ninto:\n{new_descriptor}')
     return new_descriptor
+
+
+def get_rms_from_normal_modes_disp(normal_modes_disp: np.ndarray,
+                                   mode: int = 0,
+                                   ) -> List[float]:
+    """
+    Get the root mean squares of the normal displacement modes.
+
+    Args:
+        normal_modes_disp (np.ndarray): THe normal displacement modes array.
+        mode (int, optional): THe normal mode displacement to consider fromt he array.
+
+    Returns:
+        List[float]: The RMS of the normal displacement modes.
+    """
+    rms = list()
+    nmd = normal_modes_disp[mode]
+    for entry in nmd:
+        rms.append((entry[0] ** 2 + entry[1] ** 2 + entry[2] ** 2) ** 0.5)
+    return rms
