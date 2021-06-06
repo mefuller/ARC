@@ -16,9 +16,10 @@ import pandas as pd
 from rmgpy.molecule.molecule import Molecule
 
 import arc.common as common
+import arc.species.converter as converter
 from arc.exceptions import InputError, SettingsError
 from arc.imports import settings
-import arc.species.converter as converter
+from arc.parser import parse_normal_modes_displacement
 
 
 servers = settings['servers']
@@ -670,6 +671,23 @@ H       1.98414750   -0.79355889   -0.24492049"""  # colliding atoms
             common.torsions_to_scans('4, 3, 5, 6')
         with self.assertRaises(ValueError):
             common.torsions_to_scans([[0, 1, 2, 3], [6, 8, 9, 10]], direction=-1)
+
+    def test_get_rms_from_normal_modes_disp(self):
+        """Test the get_rms_from_normal_modes_disp() function"""
+        path_1 = os.path.join(common.ARC_PATH, 'arc', 'testing', 'freq', 'C3H7_intra_h_TS.out')
+        normal_modes_disp = parse_normal_modes_displacement(path_1)[1]
+        rms = common.get_rms_from_normal_modes_disp(normal_modes_disp)
+        self.assertEqual(rms, [0.07874007874011811,
+                               0.07280109889280519,
+                               0.0,
+                               0.9914635646356349,
+                               0.03605551275463989,
+                               0.034641016151377546,
+                               0.0,
+                               0.033166247903554,
+                               0.01414213562373095,
+                               0.0],
+                         )
 
     @classmethod
     def tearDownClass(cls):
