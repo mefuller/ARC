@@ -195,7 +195,7 @@ max_rotor_trsh = 4      # maximum number of times to troubleshoot the same rotor
 preserve_params_in_scan = {
     'bond': 0.1,  # Default: 10% of the original bond length
     'angle': 10,  # Default: 10 degrees
-    'dihedral': 30,  # Default: 30 degrees
+    'dihedral': 50,  # Default: 30 degrees
 }
 
 # Coefficients to be used in a ``y = A * x ** b`` fit
