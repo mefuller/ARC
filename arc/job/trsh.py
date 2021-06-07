@@ -1297,17 +1297,11 @@ def scan_quality_check(label: str,
                                                      threshold=preserve_params_in_scan['dihedral'],
                                                      delta=delta)
             # Summarize changes
-            print(f'bond_change: {bond_change}')
-            print(f'angle_change: {angle_change}')
-            print(f'non_scan_rotor_change: {non_scan_rotor_change}')
-            print(f'scan_rotor_change: {scan_rotor_change}')
             change_sum = pd.concat([bond_change,
                                     angle_change,
                                     non_scan_rotor_change,
                                     scan_rotor_change])
             changed_ics = change_sum[change_sum == True].index.to_list()
-            print(f'change_sum: {change_sum}')
-            print(f'changed_ics: {changed_ics}')
             # Save changes in the format of {conformer index: problematic ics}
             if changed_ics:
                 invalidate = True
@@ -1356,7 +1350,6 @@ def scan_quality_check(label: str,
             return invalidate, invalidation_reason, message, actions
 
         # 1.3 Check consistency
-        print(f'changed_ic_dict: {changed_ic_dict}')
         if 0 in changed_ic_dict.keys() and len(changed_ic_dict) == 1:
             # A smooth scan with different initial and final conformer.
             invalidate = True
