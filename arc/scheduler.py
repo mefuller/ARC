@@ -10,6 +10,8 @@ import os
 import pprint
 import shutil
 import time
+
+import numpy as np
 from IPython.display import display
 from typing import TYPE_CHECKING, List, Optional, Tuple, Union
 
@@ -2261,7 +2263,7 @@ class Scheduler(object):
     def check_negative_freq(self,
                             label: str,
                             job: 'JobAdapter',
-                            vibfreqs: list,
+                            vibfreqs: Union[list, np.ndarray],
                             ):
         """
         A helper function for determining the number of negative frequencies. Also logs appropriate errors.
@@ -2595,7 +2597,7 @@ class Scheduler(object):
 
         Args:
             label (str): The species label.
-            torsions (list): The rotor torsions.
+            pivots (list): The rotor pivots.
             scan (list): The four atoms defining the dihedral.
             energies (list): The rotor scan energies in kJ/mol.
 
