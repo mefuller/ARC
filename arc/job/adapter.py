@@ -510,7 +510,7 @@ class JobAdapter(ABC):
             species_name_remote = self.species_label.replace('(', '_').replace(')', '_')  # todo: why only remote?
             path = servers[self.server].get('path', '').lower()
             path = os.path.join(path, servers[self.server]['un']) if path else ''
-            self.remote_path = os.path.join(f'{path}runs', 'ARC_Projects', self.project,
+            self.remote_path = os.path.join(path, 'runs', 'ARC_Projects', self.project,
                                             species_name_remote, self.job_name)
 
         self.set_additional_file_paths()
