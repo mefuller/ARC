@@ -265,7 +265,6 @@ def log_header(project: str,
     logger.log(level, '###############################################################')
     logger.log(level, '')
 
-
     paths_dict = {'ARC': ARC_PATH, 'RMG-Py': RMG_PATH, 'RMG-database': RMG_DATABASE_PATH}
     for repo, path in paths_dict.items():
         # Extract HEAD git commit
@@ -279,7 +278,7 @@ def log_header(project: str,
         else:
             logger.log(level, '\n')
 
-    logger.info(f'Starting project {project}')
+    logger.info(f'Starting project {project}\n')
 
 
 def log_footer(execution_time: str,
@@ -1123,7 +1122,7 @@ def get_close_tuple(key_1: Tuple[Union[float, str], ...],
                     keys: List[Tuple[Union[float, str], ...]],
                     tolerance: float = 0.05,
                     raise_error: bool = False,
-                    ) -> Optional[Tuple[Union[float, str], Union[float, str]]]:
+                    ) -> Optional[Tuple[Union[float, str], ...]]:
     """
     Get a key from a list of keys close in value to the given key.
     Even if just one of the items in the key has a close match, use the close value.
@@ -1225,7 +1224,7 @@ def get_rms_from_normal_modes_disp(normal_modes_disp: np.ndarray,
 
     Args:
         normal_modes_disp (np.ndarray): THe normal displacement modes array.
-        mode (int, optional): THe normal mode displacement to consider fromt he array.
+        mode (int, optional): The normal mode displacement index to consider from the array.
 
     Returns:
         List[float]: The RMS of the normal displacement modes.
