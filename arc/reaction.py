@@ -848,7 +848,7 @@ def remove_dup_species(species_list: List[ARCSpecies]) -> List[ARCSpecies]:
     Used when assigning r_species and p_species.
 
     Args:
-        species_list (List[ARCSpecies]): THe species list to process.
+        species_list (List[ARCSpecies]): The species list to process.
 
     Returns:
         List[ARCSpecies]: A list of species without duplicates.
