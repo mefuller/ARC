@@ -2851,7 +2851,11 @@ class Scheduler(object):
             self.output[label]['warnings'] += output_warning
         if len(confs):
             logger.info(f'Deleting all currently running jobs for species {label} before troubleshooting for '
-                        f'negative frequency...')
+                        f'negative frequency with perturbed conformers...')
+            logging.info(f'conformers:')
+            for conf in confs:  # DEBUG!! print
+                logging.info('\n')  # DEBUG!!
+                logging.info(xyz_to_str(conf))  # DEBUG!!
             self.delete_all_species_jobs(label)
             self.species_dict[label].conformers = confs
             self.species_dict[label].conformer_energies = [None] * len(confs)
@@ -3058,12 +3062,12 @@ class Scheduler(object):
         level_of_theory = Level(repr=level_of_theory)
         logger.info('\n')
         warning_message = f'Troubleshooting {label} job {job.job_name} which failed'
-        if job.job_status[1]["status"]:
+        if job.job_status[1]["status"] and job.job_status[1]["status"] != 'done':
             warning_message += f' with status: "{job.job_status[1]["status"]},"'
         if job.job_status[1]["keywords"]:
             warning_message += f'\nwith keywords: {job.job_status[1]["keywords"]}'
-        warning_message += f' in {job.job_adapter}.'
-        if {job.job_status[1]["error"]}:
+        warning_message += f' in {job.job_adapter}. '
+        if {job.job_status[1]["error"]} and job.job_status[1]["line"]:
             warning_message += f'The error "{job.job_status[1]["error"]}" was derived from the following line in the ' \
                                f'log file:\n"{job.job_status[1]["line"]}".'
         logger.warning(warning_message)
