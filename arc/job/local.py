@@ -226,7 +226,7 @@ def get_last_modified_time(file_path):
     Returns the last modified time of `file_path` in a datetime format.
 
     Args:
-        file_path (str): THe file path.
+        file_path (str): The file path.
 
     Returns:
         datetime.datetime: The last modified time of the file.
