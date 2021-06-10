@@ -445,8 +445,9 @@ def trsh_negative_freq(label: str,
     neg_freqs_trshed = neg_freqs_trshed if neg_freqs_trshed is not None else list()
     job_types = job_types if job_types is not None else ['rotors']
     output_errors, output_warnings, conformers, current_neg_freqs_trshed = list(), list(), list(), list()
-    factor, factor_increase = 1.1, 0.2
-    max_times_to_trsh_neg_freq = 5
+    factors = [1.1, 1.25, 1.7, 2.5, 5, 10]
+    factor = factors[0]
+    max_times_to_trsh_neg_freq = len(factors) + 1
     try:
         freqs, normal_modes_disp = parse_normal_modes_displacement(path=log_file)
     except NotImplementedError as e:
@@ -479,10 +480,11 @@ def trsh_negative_freq(label: str,
             logger.info(f'Species {label} has a negative frequency ({freqs[largest_neg_freq_idx]}). Perturbing its '
                         f'geometry using the respective vibrational normal mode displacement(s).')
             neg_freqs_idx = [largest_neg_freq_idx]  # indices of the negative frequencies to troubleshoot for
-        elif len(neg_freqs_idx) == 1 and any([np.allclose(freqs[0], vf, rtol=1e-04, atol=1e-02)
-                                              for vf in neg_freqs_trshed]):
+        elif len(neg_freqs_idx) == 1 \
+                and any([np.allclose(freqs[0], vf, rtol=1e-04, atol=1e-02) for vf in neg_freqs_trshed]) \
+                and len(neg_freqs_trshed) < len(factors):
             # species has one negative frequency, and has been troubleshooted for it before
-            factor = 1 + factor_increase * (len(neg_freqs_trshed) + 1)
+            factor = factors[len(neg_freqs_trshed)]
             logger.info(f'Species {label} has a negative frequency ({freqs[largest_neg_freq_idx]}) for the '
                         f'{len(neg_freqs_trshed)} time. Perturbing its geometry using the respective vibrational '
                         f'normal mode displacement(s), this time using a larger factor (x {factor})')
