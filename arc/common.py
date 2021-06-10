@@ -1223,7 +1223,7 @@ def get_rms_from_normal_modes_disp(normal_modes_disp: np.ndarray,
     Get the root mean squares of the normal displacement modes.
 
     Args:
-        normal_modes_disp (np.ndarray): THe normal displacement modes array.
+        normal_modes_disp (np.ndarray): The normal displacement modes array.
         mode (int, optional): The normal mode displacement index to consider from the array.
 
     Returns:
