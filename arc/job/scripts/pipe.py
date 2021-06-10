@@ -19,11 +19,9 @@ would be problem-specific.
 
 Code adapted from a script generously provided by bbarnes, ARL USA.
 
-
-
 ----
-workers run incore
 
+This script does not submit any jobs, it will manage the workers allocation it gets.
 
 """
 
