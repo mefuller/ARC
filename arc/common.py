@@ -278,7 +278,7 @@ def log_header(project: str,
         else:
             logger.log(level, '\n')
 
-    logger.info(f'Starting project {project}\n')
+    logger.info(f'Starting project {project}\n\n')
 
 
 def log_footer(execution_time: str,
