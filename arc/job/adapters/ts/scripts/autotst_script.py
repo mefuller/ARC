@@ -26,6 +26,8 @@ def parse_command_line_arguments(command_line_args=None):
                         help='a string representation of a reaction, e.g., CCCC+[O]O_[CH2]CCC+OO')
     parser.add_argument('output_path', metavar='The output path', type=str, nargs=1,
                         help='a string representation of the output path to store the results')
+    parser.add_argument('mkl_num_threads', metavar='The number of threads path', type=str, nargs=1,
+                        help='a string representation of the number of threads to use', default='1')
 
     args = parser.parse_args(command_line_args)
 
@@ -46,12 +48,16 @@ def main(reaction_label: Optional[str] = None,
         reaction_label (str, optional): The AutoTST reaction label in a r1+r1_p1+p2 format.
         output_path (str, optional): The path for storing the output file.
     """
+    # Parse command-line arguments
+    args = parse_command_line_arguments()
+
     if reaction_label is None:
-        # Parse command-line arguments
-        args = parse_command_line_arguments()
         reaction_label = str(args.reaction_label)
         output_path = str(args.output_path)
     print(f'AutoTST reaction label: {reaction_label}')
+
+    os.environ['MKL_NUM_THREADS'] = str(args.mkl_num_threads)
+    os.environ['MKL_DYNAMIC'] = 'FALSE'
 
     try:
         autotst_reaction = Reaction(label=reaction_label)
