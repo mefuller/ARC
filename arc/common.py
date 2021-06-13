@@ -1203,21 +1203,21 @@ def torsions_to_scans(descriptor: Optional[List[List[int]]],
     return new_descriptor
 
 
-def get_rms_from_normal_modes_disp(normal_modes_disp: np.ndarray,
-                                   mode: int = 0,
-                                   ) -> List[float]:
+def get_rms_from_normal_mode_disp(normal_mode_disp: np.ndarray,
+                                  mode_index: int = 0,
+                                  ) -> List[float]:
     """
     Get the root mean squares of the normal displacement modes.
 
     Args:
         normal_modes_disp (np.ndarray): The normal displacement modes array.
-        mode (int, optional): The normal mode displacement index to consider from the array.
+        mode_index (int, optional): The normal mode displacement index to consider from the array.
 
     Returns:
         List[float]: The RMS of the normal displacement modes.
     """
     rms = list()
-    nmd = normal_modes_disp[mode]
+    nmd = normal_mode_disp[mode_index]
     for entry in nmd:
         rms.append((entry[0] ** 2 + entry[1] ** 2 + entry[2] ** 2) ** 0.5)
     return rms
