@@ -342,7 +342,7 @@ class JobAdapter(ABC):
         Determine the number of tasks to use in a job array
         and whether to iterate by conformers, species, reactions, or scan constraints.
         """
-        # return None  # tmp
+        return None  # tmp
         # Todo: set a capacity for incore jobs per adapter. E.g., 1 for Gaussian, 100 for GCN without parallelization
         # todo: adapters with high capacity should know about it, they're currently set up to only run one instance
         if len(self.job_types) > 1:
@@ -407,7 +407,6 @@ class JobAdapter(ABC):
         (rather than running the pipe "incore", taking no advantage of the server's potential for parallelization).
         """
         if self.iterate_by:
-            print(self.iterate_by)
             data = dict()
             if 'reactions' in self.iterate_by:
                 for reaction in self.reactions:
