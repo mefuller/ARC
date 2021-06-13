@@ -407,6 +407,7 @@ class JobAdapter(ABC):
         (rather than running the pipe "incore", taking no advantage of the server's potential for parallelization).
         """
         if self.iterate_by:
+            print(self.iterate_by)
             data = dict()
             if 'reactions' in self.iterate_by:
                 for reaction in self.reactions:
