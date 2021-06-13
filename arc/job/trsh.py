@@ -32,7 +32,7 @@ from arc.species.converter import (ics_to_scan_constraints,
 from arc.species.species import determine_rotor_symmetry
 from arc.species.vectors import calculate_dihedral_angle, calculate_distance
 from arc.parser import (parse_1d_scan_coords,
-                        parse_normal_modes_displacement,
+                        parse_normal_mode_displacement,
                         parse_scan_args,
                         parse_scan_conformers,
                         parse_xyz_from_file,
@@ -455,10 +455,9 @@ def trsh_negative_freq(label: str,
     factors = [1.1, 1.25, 1.7, 2.5, 5, 10]
     factor = factors[0]
     max_times_to_trsh_neg_freq = len(factors) + 1
-    try:
-        freqs, normal_modes_disp = parse_normal_modes_displacement(path=log_file)
-    except NotImplementedError as e:
-        logger.error(f'Could not troubleshoot negative frequency for species {label}, got:\n{e}')
+    freqs, normal_modes_disp = parse_normal_mode_displacement(path=log_file, raise_error=False)
+    if not normal_modes_disp:
+        logger.error(f'Could not troubleshoot negative frequency for species {label}.')
         return [], [], output_errors, []
     if len(neg_freqs_trshed) > max_times_to_trsh_neg_freq:
         logger.error(f'Species {label} was troubleshooted for negative frequencies too many times.')
@@ -1396,7 +1395,7 @@ def scan_quality_check(label: str,
             invalidation_reason = f'initial and final points are inconsistent by more than {inconsistency_az:.2f} kJ/mol'
             message = f'Rotor scan of {label} between pivots {pivots} is inconsistent by more ' \
                       f'than {inconsistency_az:.2f} kJ/mol between initial and final positions. ' \
-                      f'Initial energy = {energies[0]}, final energy = {energies[-1]}. ARC will ' \
+                      f'Initial energy = {energies[0]:.2f}, final energy = {energies[-1]:.2f}. ARC will ' \
                       f'attempt to troubleshoot this rotor scan.'
             logger.error(message)
             actions = {'inc_res': None, 'freeze': 'all'}
