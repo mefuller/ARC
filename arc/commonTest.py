@@ -716,6 +716,11 @@ H       1.98414750   -0.79355889   -0.24492049"""  # colliding atoms
                                0.0],
                          )
 
+    def test_get_rxn_normal_mode_disp_atom_number(self):
+        """Test the get_rxn_normal_mode_disp_atom_number function"""
+        self.assertEqual(common.get_rxn_normal_mode_disp_atom_number('default'), 3)
+        self.assertEqual(common.get_rxn_normal_mode_disp_atom_number('intra_H_migration'), 3)
+
     @classmethod
     def tearDownClass(cls):
         """
