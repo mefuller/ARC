@@ -1221,3 +1221,17 @@ def get_rms_from_normal_mode_disp(normal_mode_disp: np.ndarray,
     for entry in nmd:
         rms.append((entry[0] ** 2 + entry[1] ** 2 + entry[2] ** 2) ** 0.5)
     return rms
+
+
+def get_rxn_normal_mode_disp_atom_number(rxn_family: str) -> int:
+    """
+    Get the number of atoms expected to have the largest normal mode displacement per reaction family.
+
+    Args:
+        rxn_family (str): THe reaction family label.
+
+    Returns:
+        int: The n respective umber of atoms.
+    """
+    content = read_yaml_file(os.path.join(ARC_PATH, 'data', 'rxn_normal_mode_disp.yml'))
+    return content.get(rxn_family, 3)
