@@ -2294,10 +2294,11 @@ class Scheduler(object):
                     if not self.species_dict[label].rotors_dict:
                         self.species_dict[label].determine_rotors()
                     # Invalidate rotors in which both pivots are included in the reactive zone:
-                    for rotor in self.species_dict[label].rotors_dict:
+                    for key, rotor in self.species_dict[label].rotors_dict.items():
                         if rotor['pivots'][0] in rxn_zone_atom_indices and rotor['pivots'][1] in rxn_zone_atom_indices:
                             rotor['success'] = False
                             rotor['invalidation_reason'] += 'Pivots participate in the TS reaction zone (code: pivTS). '
+                            logging.info(f"\nNot considering rotor {key} with pivots {rotor['pivots']}  in TS {label}\n")
             elif not self.species_dict[label].is_ts:
                 # Only trsh neg freq here for non TS species, trsh TS species is done in check_negative_freq()
                 self.troubleshoot_negative_freq(label=label, job=job)
