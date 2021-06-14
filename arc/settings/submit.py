@@ -636,7 +636,6 @@ export GAUSS_SCRDIR=/home/{un}/scratch/$SLURM_JOB_NAME-$SLURM_JOB_ID
 mkdir -p $GAUSS_SCRDIR
 chmod 750 $GAUSS_SCRDIR
 
-
 g16 < input.gjf > input.log
 
 rm -rf $GAUSS_SCRDIR
