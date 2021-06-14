@@ -456,7 +456,7 @@ def trsh_negative_freq(label: str,
     factor = factors[0]
     max_times_to_trsh_neg_freq = len(factors) + 1
     freqs, normal_modes_disp = parse_normal_mode_displacement(path=log_file, raise_error=False)
-    if not normal_modes_disp:
+    if not len(normal_modes_disp):
         logger.error(f'Could not troubleshoot negative frequency for species {label}.')
         return [], [], output_errors, []
     if len(neg_freqs_trshed) > max_times_to_trsh_neg_freq:
