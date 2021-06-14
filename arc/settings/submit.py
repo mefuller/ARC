@@ -641,5 +641,5 @@ g16 < input.gjf > input.log
 rm -rf $GAUSS_SCRDIR
 
     """,
-    }
+    },
 }
