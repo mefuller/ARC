@@ -382,9 +382,15 @@ class JobAdapter(ABC):
 
         if self.number_of_processes > 1:
             if self.tasks is None:
-                # "tasks" are individual jobs, "processes" are the workers/nodes.
-                # A trend line for the desired number of nodes vs. number of processes: y = 1.7 x ^ 0.35
-                # gives the following output: 10 -> 4, 100 -> 9, 1000 -> 20, 1e4 -> 43, 1e5 -> 96.
+                # rename "tasks" to "workers"
+                # "tasks" are simultaneous individual jobs, "processes" is the number of overall jobs in the "job bank".
+                # E.g., we can have 8 tasks (workers) for 1000 processes.
+                # A trend line for the desired number of nodes vs. number of processes:
+                #      y    = 1.7     x   ^ 0.35
+                # processes = 1.7 * tasks ^ 0.35
+                # gives the following output: 10 -> 4, 100 -> 9, 1000 -> 20, 1e4 -> 43, 1e5 -> 96. processes -> tasks
+                # species -> nodes
+                # processes -> tasks
                 # Cap the number of tasks at 100.
                 # Use just 1 or 2 tasks if there are less than 10 processes.
                 self.tasks = 1 if self.number_of_processes <= tasks_coeff['max_one'] \
