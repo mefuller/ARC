@@ -2924,15 +2924,15 @@ class Scheduler(object):
             if job.rotor_index in self.species_dict[label].rotors_dict else None
 
         # Check trsh_counter to avoid infinite rotor trsh looping.
-        if self.species_dict[label].rotor_dict['trsh_counter'] >= max_rotor_trsh:
-            logger.error(f"The rotor {self.species_dict[label].rotor_dict['pivots']} of species {label} was "
-                         f"troubleshooted for {self.species_dict[label].rotor_dict['trsh_counter']} times, "
+        if self.species_dict[label].rotors_dict['trsh_counter'] >= max_rotor_trsh:
+            logger.error(f"The rotor {self.species_dict[label].rotors_dict['pivots']} of species {label} was "
+                         f"troubleshooted for {self.species_dict[label].rotors_dict['trsh_counter']} times, "
                          f"will not troubleshoot for the "
-                         f"{get_number_with_ordinal_indicator(self.species_dict[label].rotor_dict['trsh_counter'] + 1)} "
+                         f"{get_number_with_ordinal_indicator(self.species_dict[label].rotors_dict['trsh_counter'] + 1)} "
                          f"time.")
             return trsh_success, actual_actions
         # Increase the trsh_counter.
-        self.species_dict[label].rotor_dict['trsh_counter'] += 1
+        self.species_dict[label].rotors_dict['trsh_counter'] += 1
 
         # A lower conformation was found.
         if 'change conformer' in methods:
