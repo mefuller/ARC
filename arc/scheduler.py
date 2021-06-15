@@ -19,6 +19,7 @@ from arc import parser, plotter
 from arc.common import (extermum_list,
                         get_angle_in_180_range,
                         get_logger,
+                        get_number_with_ordinal_indicator,
                         get_rms_from_normal_mode_disp,
                         get_rxn_normal_mode_disp_atom_number,
                         save_yaml_file,
@@ -64,12 +65,9 @@ if TYPE_CHECKING:
 logger = get_logger()
 
 LOWEST_MAJOR_TS_FREQ, HIGHEST_MAJOR_TS_FREQ, default_job_settings, \
-    default_job_types, rotor_scan_resolution, ts_adapters = settings['LOWEST_MAJOR_TS_FREQ'], \
-                                                            settings['HIGHEST_MAJOR_TS_FREQ'], \
-                                                            settings['default_job_settings'], \
-                                                            settings['default_job_types'], \
-                                                            settings['rotor_scan_resolution'], \
-                                                            settings['ts_adapters']
+    default_job_types, rotor_scan_resolution, ts_adapters, max_rotor_trsh = \
+    settings['LOWEST_MAJOR_TS_FREQ'], settings['HIGHEST_MAJOR_TS_FREQ'], settings['default_job_settings'], \
+    settings['default_job_types'], settings['rotor_scan_resolution'], settings['ts_adapters'], settings['max_rotor_trsh']
 
 ts_adapters = [ts_adapter.lower() for ts_adapter in ts_adapters]
 
@@ -2295,6 +2293,7 @@ class Scheduler(object):
                         self.species_dict[label].determine_rotors()
                     # Invalidate rotors in which both pivots are included in the reactive zone:
                     for key, rotor in self.species_dict[label].rotors_dict.items():
+                        print(rotor['pivots'])
                         if rotor['pivots'][0] in rxn_zone_atom_indices and rotor['pivots'][1] in rxn_zone_atom_indices:
                             rotor['success'] = False
                             rotor['invalidation_reason'] += 'Pivots participate in the TS reaction zone (code: pivTS). '
@@ -2530,8 +2529,7 @@ class Scheduler(object):
         # troubleshoot_ess() for scan jobs. It is usually related to bond or angle changes which
         # messes up the internal coordinates during the scan. It can be resolved
         # by conformer-based scan troubleshooting method, yet its energies are readable.
-        if job.job_status[1]['status'] != 'done' \
-                and job.job_status[1]['error'] != 'Internal coordinate error':
+        if job.job_status[1]['status'] != 'done' and job.job_status[1]['error'] != 'Internal coordinate error':
             self.troubleshoot_ess(label=label,
                                   job=job,
                                   level_of_theory=job.level)
@@ -2921,11 +2919,22 @@ class Scheduler(object):
         """
         label = job.species_label
         trsh_success = False
-        actual_actions = dict()  # If troubleshooting fails, there will be no action
+        actual_actions = dict()  # If troubleshooting fails, there will be no action.
         used_trsh_methods = self.species_dict[label].rotors_dict[job.rotor_index] \
             if job.rotor_index in self.species_dict[label].rotors_dict else None
 
-        # A lower conformation was found
+        # Check trsh_counter to avoid infinite rotor trsh looping.
+        if self.species_dict[label].rotor_dict['trsh_counter'] >= max_rotor_trsh:
+            logger.error(f"The rotor {self.species_dict[label].rotor_dict['pivots']} of species {label} was "
+                         f"troubleshooted for {self.species_dict[label].rotor_dict['trsh_counter']} times, "
+                         f"will not troubleshoot for the "
+                         f"{get_number_with_ordinal_indicator(self.species_dict[label].rotor_dict['trsh_counter'] + 1)} "
+                         f"time.")
+            return trsh_success, actual_actions
+        # Increase the trsh_counter.
+        self.species_dict[label].rotor_dict['trsh_counter'] += 1
+
+        # A lower conformation was found.
         if 'change conformer' in methods:
             # We will delete all of the jobs no matter we can successfully change to the conformer.
             # If succeed, we have to cancel jobs to avoid conflicts
@@ -2952,7 +2961,7 @@ class Scheduler(object):
                     self.species_dict[label].final_xyz = new_xyz
                     # Remove all completed rotor calculation information.
                     for rotor in self.species_dict[label].rotors_dict.values():
-                        # don't initialize all parameters, e.g., `times_dihedral_set` needs to remain as is
+                        # Don't initialize all parameters, e.g., `times_dihedral_set` needs to remain as is.
                         rotor['scan_path'] = ''
                         rotor['invalidation_reason'] = ''
                         rotor['success'] = None
@@ -2961,10 +2970,10 @@ class Scheduler(object):
                             rotor['times_dihedral_set'] += 1
                         # We can save the change conformer trsh info, but other trsh methods like
                         # freezing or increasing scan resolution can be cleaned, otherwise, they may
-                        # not be troubleshot
+                        # not be troubleshot.
                         rotor['trsh_methods'] = [trsh_method for trsh_method in rotor['trsh_methods']
                                                  if 'change conformer' in trsh_method]
-                    # re-run opt (or composite) on the new initial_xyz with the desired dihedral
+                    # Re-run opt (or composite) on the new initial_xyz with the desired dihedral.
                     if not self.composite_method:
                         self.run_opt_job(label)
                     else:
@@ -2973,7 +2982,7 @@ class Scheduler(object):
                     actual_actions = methods
                     return trsh_success, actual_actions
 
-            # The conformer is wrong, or we are in a loop changing to the same conformers again
+            # The conformer is wrong, or we are in a loop changing to the same conformers again.
             self.output[label]['errors'] += \
                 f'A lower conformer was found for {label} via a torsion mode, ' \
                 f'but it is not isomorphic with the 2D graph representation ' \
@@ -2982,7 +2991,7 @@ class Scheduler(object):
             self.output[label]['conformers'] += 'Unconverged'
             self.output[label]['convergence'] = False
         else:
-            # Freezing or increasing scan resolution
+            # Get the scan_list, useful for freezing or increasing the scan resolution.
             scan_list = [rotor_dict['scan'] for rotor_dict in
                          self.species_dict[label].rotors_dict.values()]
             try:
@@ -3002,7 +3011,7 @@ class Scheduler(object):
             else:
                 if scan_trsh or job.scan_res != scan_res \
                         and {'scan_trsh': scan_trsh, 'scan_res': scan_res} not in used_trsh_methods:
-                    # Valid troubleshooting method for freezing or increasing resolution
+                    # Valid troubleshooting method for freezing or increasing resolution.
                     trsh_success = True
                     actual_actions = {'scan_trsh': scan_trsh, 'scan_res': scan_res}
                     self.run_job(label=label,
@@ -3187,8 +3196,8 @@ class Scheduler(object):
                          f'{label}. No conformer for this species was found to be isomorphic with the 2D graph '
                          f'representation {self.species_dict[label].mol.copy(deep=True).to_smiles()}. '
                          f'NOT optimizing this species.')
-            self.output[label]['conformers'] += 'Error: No conformer was found to be isomorphic with the 2D' \
-                                                ' graph representation!; '
+            self.output[label]['conformers'] += 'Error: No conformer was found to be isomorphic with the 2D ' \
+                                                'graph representation!; '
         else:
             logger.info(f'Troubleshooting conformer job in {job.job_adapter} using {level_of_theory} for species {label}')
 
