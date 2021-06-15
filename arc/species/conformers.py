@@ -1501,6 +1501,7 @@ def find_internal_rotors(mol):
                         rotor['success'] = None
                         rotor['invalidation_reason'] = ''
                         rotor['times_dihedral_set'] = 0
+                        rotor['trsh_counter'] = 0
                         rotor['trsh_methods'] = list()
                         rotor['scan_path'] = ''
                         rotor['directed_scan_type'] = 'ess'  # default to 'ess', changed in initialize_directed_rotors()
