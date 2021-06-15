@@ -2924,12 +2924,12 @@ class Scheduler(object):
             if job.rotor_index in self.species_dict[label].rotors_dict else None
 
         # Check trsh_counter to avoid infinite rotor trsh looping.
-        if self.species_dict[label].rotors_dict['trsh_counter'] >= max_rotor_trsh:
-            logger.error(f"The rotor {self.species_dict[label].rotors_dict['pivots']} of species {label} was "
-                         f"troubleshooted for {self.species_dict[label].rotors_dict['trsh_counter']} times, "
-                         f"will not troubleshoot for the "
-                         f"{get_number_with_ordinal_indicator(self.species_dict[label].rotors_dict['trsh_counter'] + 1)} "
-                         f"time.")
+        if self.species_dict[label].rotors_dict[job.rotor_index]['trsh_counter'] >= max_rotor_trsh:
+            next_with_ordinal = get_number_with_ordinal_indicator(self.species_dict[label].rotors_dict[job.rotor_index]['trsh_counter'] + 1)
+            logger.error(f"The rotor {self.species_dict[label].rotors_dict[job.rotor_index]['pivots']} of species "
+                         f"{label} was troubleshooted for "
+                         f"{self.species_dict[label].rotors_dict[job.rotor_index]['trsh_counter']} times, "
+                         f"will not troubleshoot for the {next_with_ordinal} time.")
             return trsh_success, actual_actions
         # Increase the trsh_counter.
         self.species_dict[label].rotors_dict['trsh_counter'] += 1
