@@ -12,8 +12,8 @@ import pandas as pd
 from arc.common import (check_torsion_change,
                         determine_ess,
                         estimate_orca_mem_cpu_requirement,
-                        get_ordinal_indicator,
                         get_logger,
+                        get_number_with_ordinal_indicator,
                         is_same_pivot,
                         is_same_sequence_sublist,
                         is_str_float,
@@ -492,7 +492,7 @@ def trsh_negative_freq(label: str,
             # species has one negative frequency, and has been troubleshooted for it before
             factor = factors[len(neg_freqs_trshed)]
             logger.info(f'Species {label} has a negative frequency ({freqs[largest_neg_freq_idx]}) for the '
-                        f'{len(neg_freqs_trshed)}{get_ordinal_indicator(len(neg_freqs_trshed))} time. '
+                        f'{get_number_with_ordinal_indicator(len(neg_freqs_trshed))} time. '
                         f'Perturbing its geometry using the respective vibrational '
                         f'normal mode displacement(s), this time using a larger factor (x {factor})')
             neg_freqs_idx = [largest_neg_freq_idx]  # indices of the negative frequencies to troubleshoot for
