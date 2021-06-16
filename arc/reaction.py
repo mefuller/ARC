@@ -13,7 +13,7 @@ from rmgpy.reaction import Reaction
 from rmgpy.species import Species
 
 import arc.rmgdb as rmgdb
-from arc.common import extermum_list, get_logger
+from arc.common import extremum_list, get_logger
 from arc.exceptions import ReactionError, InputError
 from arc.species.converter import check_xyz_dict, str_to_xyz, xyz_to_str
 from arc.species.species import ARCSpecies, check_atom_balance, check_label
@@ -467,7 +467,7 @@ class ARCReaction(object):
         r_e = r_e0 if parameter == 'E0' else r_e_elect
         p_e = p_e0 if parameter == 'E0' else p_e_elect
         ts_e = ts_e0 if parameter == 'E0' else ts_e_elect
-        min_e = extermum_list([r_e, p_e, ts_e], return_min=True)
+        min_e = extremum_list([r_e, p_e, ts_e], return_min=True)
         e_str = 'E0' if parameter == 'E0' else 'electronic energy'
 
         if any([val is not None for val in [r_e, p_e, ts_e]]):

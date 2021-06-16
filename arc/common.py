@@ -668,11 +668,11 @@ def determine_top_group_indices(mol, atom1, atom2, index=1) -> Tuple[list, bool]
     return top, not atom2.is_hydrogen()
 
 
-def extermum_list(lst: list,
+def extremum_list(lst: list,
                   return_min: bool = True,
                   ) -> Optional[Union[int, None]]:
     """
-    A helper function for finding the minimum of a list of numbers (int/float)
+    A helper function for finding the extremum (either minimum or maximum) of a list of numbers (int/float)
     where some of the entries might be ``None``.
 
     Args:
@@ -681,7 +681,7 @@ def extermum_list(lst: list,
                                     ``True`` for minimum, ``False`` for maximum, ``True`` by default.
 
     Returns: int
-        The entry with the minimal value.
+        The entry with the minimal/maximal value.
     """
     if len(lst) == 0:
         return None
