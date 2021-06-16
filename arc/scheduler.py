@@ -2293,7 +2293,6 @@ class Scheduler(object):
                         self.species_dict[label].determine_rotors()
                     # Invalidate rotors in which both pivots are included in the reactive zone:
                     for key, rotor in self.species_dict[label].rotors_dict.items():
-                        print(rotor['pivots'])
                         if rotor['pivots'][0] in rxn_zone_atom_indices and rotor['pivots'][1] in rxn_zone_atom_indices:
                             rotor['success'] = False
                             rotor['invalidation_reason'] += 'Pivots participate in the TS reaction zone (code: pivTS). '
@@ -2879,9 +2878,6 @@ class Scheduler(object):
             logger.info(f'Deleting all currently running jobs for species {label} before troubleshooting for '
                         f'negative frequency with perturbed conformers...')
             logging.info(f'conformers:')
-            for conf in confs:  # DEBUG!! print
-                logging.info('\n')  # DEBUG!!
-                logging.info(xyz_to_str(conf))  # DEBUG!!
             self.delete_all_species_jobs(label)
             self.species_dict[label].conformers = confs
             self.species_dict[label].conformer_energies = [None] * len(confs)
