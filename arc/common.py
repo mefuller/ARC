@@ -670,9 +670,10 @@ def determine_top_group_indices(mol, atom1, atom2, index=1) -> Tuple[list, bool]
 
 def extermum_list(lst: list,
                   return_min: bool = True,
-                  ) -> Union[int, None]:
+                  ) -> Optional[Union[int, None]]:
     """
-    A helper function for finding the minimum of a list of numbers (int/float) where some of the entries might be None.
+    A helper function for finding the minimum of a list of numbers (int/float)
+    where some of the entries might be ``None``.
 
     Args:
         lst (list): The list.
