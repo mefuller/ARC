@@ -1211,7 +1211,7 @@ class ARCSpecies(object):
             self.determine_multiplicity_from_descriptors(smiles=smiles, adjlist=adjlist, mol=mol)
         if self.multiplicity is None or self.multiplicity < 1:
             self.determine_multiplicity_from_xyz()
-        if self.multiplicity is None:
+        if self.multiplicity is None and not self.is_ts:
             raise SpeciesError(f'Could not determine multiplicity for species {self.label}')
 
     def determine_multiplicity_from_descriptors(self,
