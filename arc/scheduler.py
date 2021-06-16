@@ -2019,11 +2019,12 @@ class Scheduler(object):
         if not self.species_dict[label].is_ts:
             raise SchedulerError('determine_most_likely_ts_conformer() method only processes transition state guesses.')
         if not self.species_dict[label].successful_methods:
-            # only run this block once, not every time a TS is selecting a different guess
+            # Only run this block once, not every time a TS is selecting a different guess.
             for tsg in self.species_dict[label].ts_guesses:
                 if tsg.success:
                     self.species_dict[label].successful_methods.append(tsg.method)
-                else:
+            for tsg in self.species_dict[label].ts_guesses:
+                if tsg.method not in self.species_dict[label].successful_methods:
                     self.species_dict[label].unsuccessful_methods.append(tsg.method)
             message = f'\nAll TS guesses for {label} terminated.'
             if self.species_dict[label].successful_methods and not self.species_dict[label].unsuccessful_methods:
