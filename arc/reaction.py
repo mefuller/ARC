@@ -125,7 +125,10 @@ class ARCReaction(object):
             self.reactants = [check_label(reactant)[0] for reactant in reactants] if reactants is not None else None
             self.products = [check_label(product)[0] for product in products] if products is not None else None
             self.rmg_reaction = rmg_reaction
-            if self.rmg_reaction is None and (self.reactants is None or self.products is None) and not self.label:
+            if self.rmg_reaction is None \
+                    and (self.reactants is None or self.products is None) \
+                    and (self.r_species is None or self.p_species is None) \
+                    and not self.label:
                 raise InputError(f'Cannot determine reactants and/or products labels for reaction {self.label}')
             if multiplicity is not None and not isinstance(multiplicity, int):
                 raise InputError(f'Reaction multiplicity must be an integer, '
@@ -273,7 +276,7 @@ class ARCReaction(object):
 
     def set_label_reactants_products(self, species_list: Optional[List[ARCSpecies]] = None):
         """A helper function for settings the label, reactants, and products attributes for a Reaction"""
-        # first make sure that reactants and products labels are defines (most often used)
+        # First make sure that reactants and products labels are defines (most often used).
         if self.reactants is None or self.products is None:
             if self.label:
                 if self.arrow not in self.label:
@@ -294,6 +297,9 @@ class ARCReaction(object):
             elif self.rmg_reaction is not None:
                 self.reactants = [r.label for r in self.rmg_reaction.reactants]
                 self.products = [p.label for p in self.rmg_reaction.products]
+            elif self.r_species is not None and self.p_species is not None:
+                self.reactants = [r.label for r in self.r_species]
+                self.products = [p.label for p in self.p_species]
         if not self.label:
             if self.reactants is not None and self.products is not None:
                 self.label = self.arrow.join([self.plus.join(r for r in self.reactants),
