@@ -877,6 +877,7 @@ def save_conformers_file(project_directory: str,
                          energies: Optional[List[float]] = None,
                          ts_methods: Optional[List[str]] = None,
                          im_freqs: Optional[List[List[float]]] = None,
+                         log_content: bool = False,
                          ):
     """
     Save the conformers before or after optimization.
@@ -894,6 +895,7 @@ def save_conformers_file(project_directory: str,
                                    If not given (None) then the Species.conformer_energies are used instead.
         ts_methods (list, optional): Entries are method names used to generate the TS guess.
         im_freqs (list, optional): Entries lists of imaginary frequencies.
+        log_content (bool): Whether to log the content of the conformers file. ``True`` to log, default is ``False``.
     """
     spc_dir = 'rxns' if is_ts else 'Species'
     geo_dir = os.path.join(project_directory, 'output', spc_dir, label, 'geometry', 'conformers')
@@ -936,7 +938,7 @@ def save_conformers_file(project_directory: str,
                     content += 'TS guess method: ' + ts_methods[i] + '\n'
                 content += 'Failed to converge'
             content += '\n\n\n'
-        if is_ts:
+        if log_content:
             logger.info(content)
         f.write(content)
 
