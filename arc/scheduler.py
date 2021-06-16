@@ -2249,13 +2249,16 @@ class Scheduler(object):
             label (str): The species label.
             job (JobAdapter): The frequency job object.
         """
+        print(f'************* in check_freq_job for {label}')
         freq_ok = False
         if job.job_status[1]['status'] == 'done':
+            print('L2255')
             if not os.path.isfile(job.local_path_to_output_file):
                 raise SchedulerError('Called check_freq_job with no output file')
             vibfreqs = parser.parse_frequencies(path=str(job.local_path_to_output_file), software=job.job_adapter)
             freq_ok = self.check_negative_freq(label=label, job=job, vibfreqs=vibfreqs)
             if freq_ok:
+                print('freq OK')
                 # copy the frequency file to the species / TS output folder
                 folder_name = 'rxns' if self.species_dict[label].is_ts else 'Species'
                 freq_path = os.path.join(self.project_directory, 'output', folder_name, label, 'geometry', 'freq.out')
@@ -2274,30 +2277,43 @@ class Scheduler(object):
                         self.species_dict[label].transport_data.comment = \
                             str(f'Polarizability calculated at the {self.freq_level.simple()} level of theory')
                 if self.species_dict[label].is_ts:
+                    print('is_ts')
                     # Parse normal mode displacement and invalidate rotors that break a TS.
                     freqs, normal_mode_disp = parser.parse_normal_mode_displacement(path=job.local_path_to_output_file,
                                                                                     raise_error=False)
+                    print(freqs)
+                    print(normal_mode_disp)
                     mode_index = list(freqs).index(min(freqs))  # get the index of the |largest| negative frequency
+                    print(mode_index)
                     # Get the root mean squares of the normal mode displacement:
                     normal_disp_mode_rms = get_rms_from_normal_mode_disp(normal_mode_disp, mode_index)
+                    print(f'normal_disp_mode_rms: {normal_disp_mode_rms}')
                     # Get the number of atoms that are expected to have the largest normal mode displacement per family:
                     atom_number = max(list(set([get_rxn_normal_mode_disp_atom_number(rxn_family=tsg.family)
                                                 for tsg in self.species_dict[label].ts_guesses])))
+                    print(atom_number)
                     # Get the indices of the atoms participating in the reaction (which form the reactive zone of the TS):
                     rxn_zone_atom_indices = sorted(range(len(normal_disp_mode_rms)),
                                                    key=lambda i: normal_disp_mode_rms[i],
                                                    reverse=True)[:atom_number]
+                    print(f'rxn_zone_atom_indices: {rxn_zone_atom_indices}')
                     # Convert atom_indices to be 1-indexed:
                     rxn_zone_atom_indices = [val + 1 for val in rxn_zone_atom_indices]
+                    print(f'rxn_zone_atom_indices + 1: {rxn_zone_atom_indices}')
                     # Determine rotors if needed:
                     if not self.species_dict[label].rotors_dict:
+                        print('didnt have a rotors dict')
                         self.species_dict[label].determine_rotors()
                     # Invalidate rotors in which both pivots are included in the reactive zone:
                     for key, rotor in self.species_dict[label].rotors_dict.items():
+                        print(f'checking {key}')
                         if rotor['pivots'][0] in rxn_zone_atom_indices and rotor['pivots'][1] in rxn_zone_atom_indices:
+                            print('got the rotor!!!!')
                             rotor['success'] = False
                             rotor['invalidation_reason'] += 'Pivots participate in the TS reaction zone (code: pivTS). '
                             logging.info(f"\nNot considering rotor {key} with pivots {rotor['pivots']}  in TS {label}\n")
+                            print(rotor)
+                    pprint.pprint(self.species_dict[label].rotors_dict.items())
             elif not self.species_dict[label].is_ts:
                 # Only trsh neg freq here for non TS species, trsh TS species is done in check_negative_freq()
                 self.troubleshoot_negative_freq(label=label, job=job)
