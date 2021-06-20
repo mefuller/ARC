@@ -496,7 +496,7 @@ class ARCReaction(object):
                 r_text = f'{r_e - min_e:.2f} kJ/mol' if r_e is not None else 'None'
                 ts_text = f'{ts_e - min_e:.2f} kJ/mol' if ts_e is not None else 'None'
                 p_text = f'{p_e - min_e:.2f} kJ/mol' if p_e is not None else 'None'
-                logger.info(f'\nReaction {self.label} has the following path {e_str} energies:\n'
+                logger.info(f'\nReaction {self.label} has the following path {e_str}:\n'
                             f'Reactants: {r_text}\n'
                             f'TS: {ts_text}\n'
                             f'Products: {p_text}')
