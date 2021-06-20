@@ -206,6 +206,7 @@ def loop_families(rmgdb: RMGDatabase,
     reaction = reaction.copy()  # use a copy to avoid changing atom order in the molecules by RMG
     fam_list = list()
     for family in rmgdb.kinetics.families.values():
+        family.save_order = True
         degenerate_reactions = list()
         family_reactions_by_r = list()  # family reactions for the specified reactants
         family_reactions_by_rnp = list()  # family reactions for the specified reactants and products
@@ -235,30 +236,36 @@ def loop_families(rmgdb: RMGDatabase,
         if len(reaction.products) == 1:
             for fam_rxn in family_reactions_by_r:
                 for product0 in reaction.products[0].molecule:
-                    if same_species_lists([product0], fam_rxn.products):
+                    if same_species_lists([product0], fam_rxn.products, save_order=True):
                         family_reactions_by_rnp.append(fam_rxn)
             degenerate_reactions = find_degenerate_reactions(rxn_list=family_reactions_by_rnp,
                                                              same_reactants=False,
-                                                             kinetics_database=rmgdb.kinetics)
+                                                             kinetics_database=rmgdb.kinetics,
+                                                             save_order=True
+                                                             )
         elif len(reaction.products) == 2:
             for fam_rxn in family_reactions_by_r:
                 for product0 in reaction.products[0].molecule:
                     for product1 in reaction.products[1].molecule:
-                        if same_species_lists([product0, product1], fam_rxn.products):
+                        if same_species_lists([product0, product1], fam_rxn.products, save_order=True):
                             family_reactions_by_rnp.append(fam_rxn)
             degenerate_reactions = find_degenerate_reactions(rxn_list=family_reactions_by_rnp,
                                                              same_reactants=False,
-                                                             kinetics_database=rmgdb.kinetics)
+                                                             kinetics_database=rmgdb.kinetics,
+                                                             save_order=True
+                                                             )
         elif len(reaction.products) == 3:
             for fam_rxn in family_reactions_by_r:
                 for product0 in reaction.products[0].molecule:
                     for product1 in reaction.products[1].molecule:
                         for product2 in reaction.products[2].molecule:
-                            if same_species_lists([product0, product1, product2], fam_rxn.products):
+                            if same_species_lists([product0, product1, product2], fam_rxn.products, save_order=True):
                                 family_reactions_by_rnp.append(fam_rxn)
             degenerate_reactions = find_degenerate_reactions(rxn_list=family_reactions_by_rnp,
                                                              same_reactants=False,
-                                                             kinetics_database=rmgdb.kinetics)
+                                                             kinetics_database=rmgdb.kinetics,
+                                                             save_order=True
+                                                             )
         if degenerate_reactions:
             fam_list.append((family, degenerate_reactions))
     return fam_list
