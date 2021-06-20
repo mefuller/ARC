@@ -290,7 +290,7 @@ class OrcaAdapter(JobAdapter):
                                      'settings.py as default or in the input file as additional options.')
                 self.add_to_args(val=dlpno_threshold, key1='keyword')
         else:
-            logger.debug(f'Running {self.level.method_type} method {self.level.method} method in Orca.')
+            logger.debug(f'Running {self.level.method_type} {self.level.method} method in Orca.')
 
         input_dict['restricted'] = 'r' if is_restricted(self) else 'u'
 
