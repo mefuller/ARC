@@ -477,18 +477,39 @@ class ARCReaction(object):
     def check_ts(self,
                  verbose: bool = True,
                  parameter: str = 'E0',
-                 ) -> bool:
+                 rxn_zone_indices: Optional[List[int]] = None,
+                 ):
         """
-        Check that the TS E0 or electronic energy is above both reactant and product wells.
-        By default E0 is checked first. If it is not available for all species and TS, the electronic energy is checked.
-        If the check cannot be performed, the method still returns ``True``.
+        Check the TS in terms of energy, normal mode displacement, and IRC.
+        Populates the ``TS.ts_checks`` dictionary.
+        Note that the 'freq' check is done in Scheduler.check_negative_freq() and not here.
 
         Args:
             verbose (bool, optional): Whether to print logging messages.
             parameter (str, optional): The energy parameter to consider ('E0' or 'e_elect').
+            rxn_zone_indices (List[int], optional): The 0-indexed atom indices of atoms participating in the
+                                                    reaction (which form the reactive zone of the TS).
+        """
+        if not self.ts_species.ts_checks['E0'] and not self.ts_species.ts_checks['e_elect']:
+            self.check_ts_energy(verbose=verbose, parameter=parameter)
+        if not self.ts_species.ts_checks['normal_mode_displacement'] and rxn_zone_indices is not None:
+            self.check_normal_mode_displacement(rxn_zone_indices)
+        # if not self.ts_species.ts_checks['IRC'] and IRC_wells is not None:
+        #     self.check_irc(rxn_zone_indices)
 
-        Returns:
-            bool: Whether the TS E0 or electronic energy is above both reactant and product wells, ``True`` if it is.
+    def check_ts_energy(self,
+                        verbose: bool = True,
+                        parameter: str = 'E0',
+                        ) -> None:
+        """
+        Check that the TS E0 or electronic energy is above both reactant and product wells.
+        By default E0 is checked first. If it is not available for all species and TS, the electronic energy is checked.
+        If the check cannot be performed, the method still returns ``True``.
+        Sets the respective energy parameter in the ``TS.ts_checks`` dictionary.
+
+        Args:
+            verbose (bool, optional): Whether to print logging messages.
+            parameter (str, optional): The energy parameter to consider ('E0' or 'e_elect').
         """
         if parameter not in ['E0', 'e_elect']:
             raise ValueError(f"The energy parameter must be either 'E0' or 'e_elect', got: {parameter}")
@@ -526,22 +547,54 @@ class ARCReaction(object):
                 # We have all params, we can make a quantitative decision.
                 if ts_e > r_e and ts_e > p_e:
                     # TS is above both wells.
-                    return True
+                    self.ts_species.ts_checks[parameter] = True
+                    return
                 # TS is not above both wells.
                 if verbose:
                     logger.error(f'TS of reaction {self.label} has a lower {e_str} value than expected.')
-                    return False
+                    self.ts_species.ts_checks[parameter] = False
+                    return
             # We don't have all params (some are ``None``).
         # We don't have any params (they are all ``None``), or we don't have any params and were only checking E0.
         if parameter == 'E0':
             # Use e_elect instead:
             logger.debug(f'Could not get all E0 values for reaction {self.label}, comparing energies using e_elect.')
-            return self.check_ts(verbose=verbose, parameter='e_elect')
+            self.check_ts_energy(verbose=verbose, parameter='e_elect')
+            return
         if verbose:
             logger.info('\n')
             logger.error(f"Could not get {e_str} of all species in reaction {self.label}. Cannot check TS.\n")
-        # We don't really know, return ``True``
-        return True
+        # We don't really know, assume ``True``
+        self.ts_species.ts_checks[parameter] = True
+        self.ts_species.ts_checks['warnings'] += 'Could not determine TS energy relative to the wells; '
+
+    def check_normal_mode_displacement(self, rxn_zone_indices: List[int]):
+        """
+        Check the normal mode displacement by making sure that the atom indices derived from the major motion
+        (the major normal mode displacement) fits the expected RMG reaction template.
+
+        Args:
+            rxn_zone_indices (List[int], optional): The 0-indexed atom indices of atoms participating in the
+                                                    reaction (which form the reactive zone of the TS).
+        """
+        rmg_rxn = self.rmg_reaction.copy()
+        try:
+            self.family.add_atom_labels_for_reaction(reaction=rmg_rxn, output_with_resonance=False, save_order=True)
+        except (ActionError, ValueError):
+            self.ts_species.ts_checks['normal_mode_displacement'] = True
+            self.ts_species.ts_checks['warnings'] += 'Could not determine atom labels from RMG, ' \
+                                                     'cannot check normal mode displacement; '
+        else:
+            r_labels, p_labels = list(), list()
+            for reactant in rmg_rxn.reactants:
+                r_labels.extend([int(atom.label.split('*')[1]) for atom in reactant.molecule[0].atoms if atom.label])
+            for product in rmg_rxn.products:
+                p_labels.extend([int(atom.label.split('*')[1]) for atom in product.molecule[0].atoms if atom.label])
+            r_labels.sort()
+            p_labels.sort()
+            rxn_zone_indices.sort()
+            if r_labels == p_labels == rxn_zone_indices:
+                self.ts_species.ts_checks['normal_mode_displacement'] = True
 
     def check_attributes(self):
         """Check that the Reaction object is defined correctly"""
@@ -760,16 +813,6 @@ class ARCReaction(object):
                 products.extend([Species(label=p_spc.label, molecule=[p_spc.mol])] *
                                 self.get_species_count(species=p_spc, well=1))
         return reactants, products
-
-    def determine_ts_rotors(self, rmg_database):
-        """Determine rotors and populate the preserve_param_in_scan attribute in the TS species"""
-        if isinstance(self.family, str):
-            self.determine_family(rmg_database=rmg_database)
-        try:
-            self.family.add_atom_labels_for_reaction(reaction=self.rmg_reaction, output_with_resonance=False)
-        except ActionError as e:
-            logger.error(f'Cannot label atoms in reaction {self.label}. Got:\n{e}')
-            return None
 
     # todo: sort the atom map methods + tests
 

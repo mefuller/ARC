@@ -306,7 +306,6 @@ class ARCSpecies(object):
                  rxn_index: Optional[int] = None,
                  smiles: str = '',
                  species_dict: Optional[dict] = None,
-                 ts_methods: Optional[List[str]] = None,
                  ts_number: Optional[int] = None,
                  xyz: Optional[Union[list, dict, str]] = None,
                  yml_path: Optional[str] = None,
