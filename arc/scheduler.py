@@ -2526,7 +2526,7 @@ class Scheduler(object):
             for rxn in self.rxn_dict.values():
                 if rxn.ts_label == label:
                     rxn.check_ts(verbose=True)
-                    if not rxn.ts_species.ts_checks['E0'] or not rxn.ts_species.ts_checks['e_elect']:
+                    if not (rxn.ts_species.ts_checks['E0'] or rxn.ts_species.ts_checks['e_elect']):
                         print('                 switch TS from L2522 !!!!!!!!!!!!!!!!!!!')
                         self.switch_ts(label=label)
                     break
