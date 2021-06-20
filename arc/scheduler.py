@@ -334,6 +334,7 @@ class Scheduler(object):
                         is_ts=True,
                         label=rxn.ts_label,
                         rxn_label=rxn.label,
+                        rxn_index=rxn.index,
                         multiplicity=rxn.multiplicity,
                         charge=rxn.charge,
                         compute_thermo=False,
@@ -352,6 +353,8 @@ class Scheduler(object):
                             ts_species = spc
                             if ts_species.rxn_label is None:
                                 ts_species.rxn_label = rxn.label
+                            if ts_species.rxn_index is None:
+                                ts_species.rxn_index = rxn.index
                             break
                 if ts_species is None:
                     raise SchedulerError(f'Could not identify a TS species for {rxn}')
@@ -2259,14 +2262,14 @@ class Scheduler(object):
             freq_ok = self.check_negative_freq(label=label, job=job, vibfreqs=vibfreqs)
             if freq_ok:
                 print('freq OK')
-                # copy the frequency file to the species / TS output folder
+                # Copy the frequency file to the species / TS output folder.
                 folder_name = 'rxns' if self.species_dict[label].is_ts else 'Species'
                 freq_path = os.path.join(self.project_directory, 'output', folder_name, label, 'geometry', 'freq.out')
                 try:
                     shutil.copyfile(job.local_path_to_output_file, freq_path)
                 except shutil.SameFileError:
                     pass
-                # set species.polarizability
+                # Set species.polarizability.
                 polarizability = parser.parse_polarizability(job.local_path_to_output_file)
                 if polarizability is not None:
                     self.species_dict[label].transport_data.polarizability = (polarizability, str('angstroms^3'))
@@ -2289,17 +2292,18 @@ class Scheduler(object):
                     normal_disp_mode_rms = get_rms_from_normal_mode_disp(normal_mode_disp, mode_index)
                     print(f'normal_disp_mode_rms: {normal_disp_mode_rms}')
                     # Get the number of atoms that are expected to have the largest normal mode displacement per family:
-                    atom_number = max(list(set([get_rxn_normal_mode_disp_atom_number(rxn_family=tsg.family)
-                                                for tsg in self.species_dict[label].ts_guesses])))
-                    print(atom_number)
+                    num_of_atoms = max(list(set([get_rxn_normal_mode_disp_atom_number(rxn_family=tsg.family,
+                                                                                      rms_list=normal_disp_mode_rms)
+                                                 for tsg in self.species_dict[label].ts_guesses])))
+                    print(num_of_atoms)
                     # Get the indices of the atoms participating in the reaction (which form the reactive zone of the TS):
-                    rxn_zone_atom_indices = sorted(range(len(normal_disp_mode_rms)),
+                    rxn_zone_indices_0 = sorted(range(len(normal_disp_mode_rms)),
                                                    key=lambda i: normal_disp_mode_rms[i],
-                                                   reverse=True)[:atom_number]
-                    print(f'rxn_zone_atom_indices: {rxn_zone_atom_indices}')
+                                                   reverse=True)[:num_of_atoms]
+                    print(f'rxn_zone_atom_indices: {rxn_zone_indices_0}')
                     # Convert atom_indices to be 1-indexed:
-                    rxn_zone_atom_indices = [val + 1 for val in rxn_zone_atom_indices]
-                    print(f'rxn_zone_atom_indices + 1: {rxn_zone_atom_indices}')
+                    rxn_zone_indices_1 = [val + 1 for val in rxn_zone_indices_0]
+                    print(f'rxn_zone_atom_indices + 1: {rxn_zone_indices_1}')
                     # Determine rotors if needed:
                     if not self.species_dict[label].rotors_dict:
                         print('didnt have a rotors dict')
@@ -2307,15 +2311,22 @@ class Scheduler(object):
                     # Invalidate rotors in which both pivots are included in the reactive zone:
                     for key, rotor in self.species_dict[label].rotors_dict.items():
                         print(f'checking {key}')
-                        if rotor['pivots'][0] in rxn_zone_atom_indices and rotor['pivots'][1] in rxn_zone_atom_indices:
+                        if rotor['pivots'][0] in rxn_zone_indices_1 and rotor['pivots'][1] in rxn_zone_indices_1:
                             print('got the rotor!!!!')
                             rotor['success'] = False
                             rotor['invalidation_reason'] += 'Pivots participate in the TS reaction zone (code: pivTS). '
                             logging.info(f"\nNot considering rotor {key} with pivots {rotor['pivots']}  in TS {label}\n")
                             print(rotor)
-                    pprint.pprint(self.species_dict[label].rotors_dict.items())
+                    # Check the normal mode displacement.
+                    self.rxn_dict[self.species_dict[label].rxn_index].check_ts(verbose=False,
+                                                                               rxn_zone_indices=rxn_zone_indices_0,
+                                                                               )
+                    if not self.species_dict[label].ts_checks['normal_mode_displacement']:
+                        logger.warning(f'The computed normal displacement mode of TS {label} does not match '
+                                       f'the expected labels from RMG. Switching TS conformer.')
+                        self.switch_ts(label=label)
             elif not self.species_dict[label].is_ts:
-                # Only trsh neg freq here for non TS species, trsh TS species is done in check_negative_freq()
+                # Only trsh neg freq here for non TS species, trsh TS species is done in check_negative_freq().
                 self.troubleshoot_negative_freq(label=label, job=job)
         if job.job_status[1]['status'] != 'done' or (not freq_ok and not self.species_dict[label].is_ts):
             self.troubleshoot_ess(label=label, job=job, level_of_theory=job.level)
@@ -2398,6 +2409,8 @@ class Scheduler(object):
                 if not self.testing:
                     # Update restart dictionary and save the yaml restart file:
                     self.save_restart_dict()
+                # Set the ts_checks attribute of the TS species:
+                self.species_dict[label].ts_checks['freq'] = True
                 return True
 
     def switch_ts(self, label: str):
@@ -2409,6 +2422,7 @@ class Scheduler(object):
         """
         self.determine_most_likely_ts_conformer(label=label)  # Look for a different TS guess.
         self.delete_all_species_jobs(label=label)  # Delete other currently running jobs for this TS.
+        self.species_dict[label].populate_ts_checks()  # Restart the TS checks dict.
         if not self.species_dict[label].ts_guesses_exhausted and self.species_dict[label].chosen_ts is not None:
             logger.info(f'Optimizing species {label} again using a different TS guess: '
                         f'conformer {self.species_dict[label].chosen_ts}')
@@ -3469,6 +3483,7 @@ class Scheduler(object):
                 ts_dict['ts_guesses_exhausted'] = species.ts_guesses_exhausted
                 ts_dict['ts_report'] = species.ts_report
                 ts_dict['rxn_label'] = species.rxn_label
+                ts_dict['rxn_index'] = species.rxn_index
                 for reaction in self.rxn_list:
                     if reaction.ts_label == species.label:
                         ts_dict['family'] = reaction.family.label if reaction.family is not None else None
