@@ -155,9 +155,10 @@ def load_rmg_database(rmgdb: RMGDatabase,
         try:
             family.add_rules_from_training(thermo_database=rmgdb.thermo)
         except KineticsError:
-            logger.info('Could not train family {0}'.format(family))
+            logger.info(f'Could not train family {family}')
         else:
             family.fill_rules_by_averaging_up(verbose=False)
+        family.save_order = True
     logger.info('\n\n')
 
 
@@ -191,18 +192,16 @@ def determine_reaction_family(rmgdb: RMGDatabase,
 
 def loop_families(rmgdb: RMGDatabase,
                   reaction: Reaction,
-                  ) -> List['KineticsFamily']:
+                  ) -> List[Tuple['KineticsFamily', list]]:
     """
-    Loop through kinetic families and return a list of tuples of (family, degenerate_reactions)
-    `reaction` is an RMG Reaction object.
-    Returns a list of (family, degenerate_reactions) tuples.
+    Loop through kinetic families and return a list of tuples of (family, degenerate_reactions).
 
     Args:
         rmgdb (RMGDatabase): The RMG database instance.
         reaction (Reaction): The RMG Reaction object.
 
-    Returns: List[KineticsFamily]
-        Entries are corresponding RMG KineticsFamily instances.
+    Returns: List[Tuple['KineticsFamily', list]]
+        Entries are tuples of a corresponding RMG KineticsFamily instance and a list of degenerate reactions.
     """
     reaction = reaction.copy()  # use a copy to avoid changing atom order in the molecules by RMG
     fam_list = list()
