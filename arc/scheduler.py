@@ -2026,10 +2026,12 @@ class Scheduler(object):
             # Only run this block once, not every time a TS is selecting a different guess.
             for tsg in self.species_dict[label].ts_guesses:
                 if tsg.success:
+                    print(f'adding {tsg.method} to successful_methods')
                     self.species_dict[label].successful_methods.append(tsg.method)
             for tsg in self.species_dict[label].ts_guesses:
-                print(f'debugging successful_methods for tsg.method')
+                print(f'debugging successful_methods for {tsg.method}')
                 if tsg.method not in self.species_dict[label].successful_methods:
+                    print(f'adding {tsg.method} to unsuccessful_methods!!! !!!')
                     self.species_dict[label].unsuccessful_methods.append(tsg.method)
             print(f'successful methods: {self.species_dict[label].successful_methods}')
             message = f'\nAll TS guesses for {label} terminated.'
@@ -2068,6 +2070,8 @@ class Scheduler(object):
             e_min = None
             if selected_i is None:
                 logger.warning(f'Could not determine a likely TS conformer for {label}')
+                self.species_dict[label].ts_number, self.species_dict[label].chosen_ts = None, None
+                self.species_dict[label].populate_ts_checks()
                 return None
             for tsg in self.species_dict[label].ts_guesses:
                 # Reset e_min to the lowest value regardless of other criteria (imaginary frequencies, IRC, normal modes).
@@ -2265,7 +2269,6 @@ class Scheduler(object):
             vibfreqs = parser.parse_frequencies(path=str(job.local_path_to_output_file), software=job.job_adapter)
             freq_ok = self.check_negative_freq(label=label, job=job, vibfreqs=vibfreqs)
             if freq_ok:
-                print('freq OK')
                 # Copy the frequency file to the species / TS output folder.
                 folder_name = 'rxns' if self.species_dict[label].is_ts else 'Species'
                 freq_path = os.path.join(self.project_directory, 'output', folder_name, label, 'geometry', 'freq.out')
@@ -2388,6 +2391,7 @@ class Scheduler(object):
                     # Todo: this warning is obsolete if changing the TS guess during the run.
                     self.output[label]['warnings'] += f'Warning: {len(neg_freqs)} imaginary freqs for TS ({neg_freqs}); '
                 print('                 switch TS from L2388 !!!!!!!!!!!!!!!!!!!')
+                # No need to set self.species_dict[label].ts_checks['freq'] to False, it'll be reset in switch_ts()
                 self.switch_ts(label=label)
                 return False
             else:
@@ -2427,7 +2431,7 @@ class Scheduler(object):
             label (str): The TS species label.
         """
         logger.info(f'Switching a TS guess for {label}...')
-        print('call self.species_dict[label].rxn_label from 2430')
+        print('call determine_most_likely_ts_conformer from 2430')
         self.determine_most_likely_ts_conformer(label=label)  # Look for a different TS guess.
         print('delete_all_species_jobs from L2432')
         self.delete_all_species_jobs(label=label)  # Delete other currently running jobs for this TS.
@@ -2521,8 +2525,8 @@ class Scheduler(object):
         if self.species_dict[label].is_ts:
             for rxn in self.rxn_dict.values():
                 if rxn.ts_label == label:
-                    ts_e_elect_success = rxn.check_ts(verbose=True)
-                    if not ts_e_elect_success:
+                    rxn.check_ts(verbose=True)
+                    if not rxn.ts_species.ts_checks['E0'] or not rxn.ts_species.ts_checks['e_elect']:
                         print('                 switch TS from L2522 !!!!!!!!!!!!!!!!!!!')
                         self.switch_ts(label=label)
                     break
