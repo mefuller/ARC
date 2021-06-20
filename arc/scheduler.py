@@ -530,6 +530,7 @@ class Scheduler(object):
                                 # Check isomorphism and run opt on most stable conformer geometry.
                                 logger.info(f'\nConformer jobs for {label} successfully terminated.\n')
                                 if self.species_dict[label].is_ts:
+                                    print('call self.species_dict[label].rxn_label from L533')
                                     self.determine_most_likely_ts_conformer(label)
                                 else:
                                     self.determine_most_stable_conformer(label)  # also checks isomorphism
@@ -2014,7 +2015,7 @@ class Scheduler(object):
     def determine_most_likely_ts_conformer(self, label: str):
         """
         Determine the most likely TS conformer.
-        Save the resulting xyz as `initial_xyz`.
+        Save the resulting xyz as the ``.initial_xyz`` attribute of the TS Species.
 
         Args:
             label (str): The TS species label.
@@ -2027,8 +2028,10 @@ class Scheduler(object):
                 if tsg.success:
                     self.species_dict[label].successful_methods.append(tsg.method)
             for tsg in self.species_dict[label].ts_guesses:
+                print(f'debugging successful_methods for tsg.method')
                 if tsg.method not in self.species_dict[label].successful_methods:
                     self.species_dict[label].unsuccessful_methods.append(tsg.method)
+            print(f'successful methods: {self.species_dict[label].successful_methods}')
             message = f'\nAll TS guesses for {label} terminated.'
             if self.species_dict[label].successful_methods and not self.species_dict[label].unsuccessful_methods:
                 message += f'\n All methods were successful in generating guesses: ' \
@@ -2046,13 +2049,14 @@ class Scheduler(object):
             logger.info('\n')
 
         if all([tsg.energy is None for tsg in self.species_dict[label].ts_guesses]):
-            logger.error(f'No guess converged for TS {label}!')
+            logger.error(f'No guess converged for TS {label}!\n'
+                         f'Cannot compute a rate coefficient for {self.species_dict[label].rxn_label}.')
         else:
             rxn_txt = '' if self.species_dict[label].rxn_label is None \
                 else f' of reaction {self.species_dict[label].rxn_label}'
             logger.info(f'\nGeometry *guesses* of successful TS guesses for {label}{rxn_txt}:')
             # Select the TSG with the lowest energy given that it has only one significant imaginary frequency.
-            # Todo: consider IRC well isomorphism, normal mode check (respective TSG attributes already exist)
+            # Todo: consider IRC well isomorphism
             e_min, selected_i = None, None
             self.species_dict[label].ts_guesses_exhausted = True
             for tsg in self.species_dict[label].ts_guesses:
@@ -2324,6 +2328,7 @@ class Scheduler(object):
                     if not self.species_dict[label].ts_checks['normal_mode_displacement']:
                         logger.warning(f'The computed normal displacement mode of TS {label} does not match '
                                        f'the expected labels from RMG. Switching TS conformer.')
+                        print('                 switch TS from L2329!!!!!!!!!!!!!!!!!!!')
                         self.switch_ts(label=label)
             elif not self.species_dict[label].is_ts:
                 # Only trsh neg freq here for non TS species, trsh TS species is done in check_negative_freq().
@@ -2382,6 +2387,7 @@ class Scheduler(object):
                 if f'{len(neg_freqs)} imaginary freqs for' not in self.output[label]['warnings']:
                     # Todo: this warning is obsolete if changing the TS guess during the run.
                     self.output[label]['warnings'] += f'Warning: {len(neg_freqs)} imaginary freqs for TS ({neg_freqs}); '
+                print('                 switch TS from L2388 !!!!!!!!!!!!!!!!!!!')
                 self.switch_ts(label=label)
                 return False
             else:
@@ -2420,7 +2426,10 @@ class Scheduler(object):
         Args:
             label (str): The TS species label.
         """
+        logger.info(f'Switching a TS guess for {label}...')
+        print('call self.species_dict[label].rxn_label from 2430')
         self.determine_most_likely_ts_conformer(label=label)  # Look for a different TS guess.
+        print('delete_all_species_jobs from L2432')
         self.delete_all_species_jobs(label=label)  # Delete other currently running jobs for this TS.
         self.species_dict[label].populate_ts_checks()  # Restart the TS checks dict.
         if not self.species_dict[label].ts_guesses_exhausted and self.species_dict[label].chosen_ts is not None:
@@ -2514,6 +2523,7 @@ class Scheduler(object):
                 if rxn.ts_label == label:
                     ts_e_elect_success = rxn.check_ts(verbose=True)
                     if not ts_e_elect_success:
+                        print('                 switch TS from L2522 !!!!!!!!!!!!!!!!!!!')
                         self.switch_ts(label=label)
                     break
 
@@ -2528,7 +2538,7 @@ class Scheduler(object):
         Check an IRC job and perform post-job tasks.
 
         Todo:
-            Need to check isomorphism
+            Need to check isomorphism !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
         Args:
             label (str): The species label.
@@ -2693,6 +2703,7 @@ class Scheduler(object):
                     allow_nonisomorphic_2d=self.allow_nonisomorphic_2d,
                     xyz=self.species_dict[label].initial_xyz)
                 if is_isomorphic:
+                    print('delete_all_species_jobs from L2705')
                     self.delete_all_species_jobs(label)
                     # Remove all completed rotor calculation information
                     for rotor_dict in self.species_dict[label].rotors_dict.values():
@@ -2901,6 +2912,7 @@ class Scheduler(object):
             self.output[label]['errors'] += output_error
             if 'Invalidating species' in output_error:
                 logger.info(f'Deleting all currently running jobs for species {label}...')
+                print('delete_all_species_jobs from L2913')
                 self.delete_all_species_jobs(label)
                 self.output[label]['convergence'] = False
         for output_warning in output_warnings:
@@ -2909,6 +2921,7 @@ class Scheduler(object):
             logger.info(f'Deleting all currently running jobs for species {label} before troubleshooting for '
                         f'negative frequency with perturbed conformers...')
             logging.info(f'conformers:')
+            print('delete_all_species_jobs from L2921')
             self.delete_all_species_jobs(label)
             self.species_dict[label].conformers = confs
             self.species_dict[label].conformer_energies = [None] * len(confs)
@@ -2968,6 +2981,7 @@ class Scheduler(object):
             # If not succeed, we are in a situation that we find a lower conformer, but either
             # this is a incorrect conformer or we have applied this troubleshooting before, but it
             # didn't yield a good result.
+            print('delete_all_species_jobs from L2980')
             self.delete_all_species_jobs(label)
 
             new_xyz = methods['change conformer']
@@ -3194,6 +3208,7 @@ class Scheduler(object):
                          )
         elif self.species_dict[label].is_ts and not self.species_dict[label].ts_guesses_exhausted:
             # Try a different TSGuess.
+            print('                 switch TS from L3203!!!!!!!!!!!!!!!!!!!')
             self.switch_ts(label=label)
 
         self.save_restart_dict()
