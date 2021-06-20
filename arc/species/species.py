@@ -335,6 +335,7 @@ class ARCSpecies(object):
         self.fragments = fragments
         self.original_label = None
         self.chosen_ts = None
+        self.ts_checks = dict()
 
         if species_dict is not None:
             # Reading from a dictionary (it's possible that the dict contain only a 'yml_path' argument, check first)
@@ -367,7 +368,6 @@ class ARCSpecies(object):
             self.successful_methods = list()
             self.unsuccessful_methods = list()
             self.chosen_ts_method = None
-            self.ts_checks = dict()
             self.chosen_ts_list = list()
             self.compute_thermo = compute_thermo if compute_thermo is not None else not self.is_ts
             self.e0_only = e0_only
@@ -483,8 +483,7 @@ class ARCSpecies(object):
 
         if self.mol is not None and self.mol_list is None:
             self.set_mol_list()
-        if self.is_ts:
-            self.populate_ts_checks()
+        self.populate_ts_checks()
 
     def __str__(self) -> str:
         """Return a string representation of the object"""
@@ -865,7 +864,9 @@ class ARCSpecies(object):
             if not self.is_ts:
                 try:
                     self.mol_list = self.mol.copy(deep=True).generate_resonance_structures(keep_isomorphic=False,
-                                                                                           filter_structures=True)
+                                                                                           filter_structures=True,
+                                                                                           save_order=True,
+                                                                                           )
                 except (ValueError, ILPSolutionError, ResonanceError) as e:
                     logger.warning(f'Could not generate resonance structures for species {self.label}. Got: {e}')
                     self.mol_list = [self.mol]
@@ -876,7 +877,10 @@ class ARCSpecies(object):
                 # try sorting by IDs, repeat object creation to make sure the original instances remain unchanged
                 mol_copy = self.mol.copy(deep=True)
                 mol_copy.assign_atom_ids()
-                mol_list = mol_copy.generate_resonance_structures(keep_isomorphic=False, filter_structures=True)
+                mol_list = mol_copy.generate_resonance_structures(keep_isomorphic=False,
+                                                                  filter_structures=True,
+                                                                  save_order=True,
+                                                                  )
                 for i in range(len(mol_list)):
                     mol = mol_list[i]  # not looping with mol so the iterator won't change within the loop
                     atoms = list()
@@ -1741,11 +1745,14 @@ class ARCSpecies(object):
 
     def populate_ts_checks(self):
         """Populate (or restart) the .ts_checks attribute with default (``False``) values."""
-        self.ts_checks = {'E0': False,
-                          'e_elect': False,
-                          'IRC': False,
-                          'normal_mode_displacement': False,
-                          }
+        if self.is_ts:
+            self.ts_checks = {'E0': False,
+                              'e_elect': False,
+                              'IRC': False,
+                              'freq': False,
+                              'normal_mode_displacement': False,
+                              'warnings': '',
+                              }
 
 
 class TSGuess(object):
