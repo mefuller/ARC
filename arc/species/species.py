@@ -490,8 +490,7 @@ class ARCSpecies(object):
 
         if self.mol is not None and self.mol_list is None:
             self.set_mol_list()
-        if self.is_ts:
-            self.populate_ts_checks()
+        self.populate_ts_checks()
 
     def __str__(self) -> str:
         """Return a string representation of the object"""
@@ -1819,11 +1818,14 @@ class ARCSpecies(object):
 
     def populate_ts_checks(self):
         """Populate (or restart) the .ts_checks attribute with default (``False``) values."""
-        self.ts_checks = {'E0': False,
-                          'e_elect': False,
-                          'IRC': False,
-                          'normal_mode_displacement': False,
-                          }
+        if self.is_ts:
+            self.ts_checks = {'E0': False,
+                              'e_elect': False,
+                              'IRC': False,
+                              'freq': False,
+                              'normal_mode_displacement': False,
+                              'warnings': '',
+                              }
 
 
 class TSGuess(object):
