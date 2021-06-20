@@ -41,3 +41,6 @@ scratch/
 
 # Compiled documentation
 docs/build/*
+
+# deleted files
+**/.fuse_hidden*
