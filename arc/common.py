@@ -1268,15 +1268,21 @@ def get_rxn_normal_mode_disp_atom_number(rxn_family: str,
     If ``rms_list`` is given, also include atoms with an rms value close to the lowest rms still considered.
 
     Args:
-        rxn_family (str): THe reaction family label.
+        rxn_family (str): The reaction family label.
         rms_list (List[float], optional): The root mean squares of the normal mode displacements.
 
+    Raises:
+        TypeError: If ``rms_list`` is not ``None`` and is either not a list or does not contain floats.
+
     Returns:
-        int: The n respective umber of atoms.
+        int: The respective number of atoms.
     """
+    print(rxn_family, rms_list)
+    if rms_list is not None and (not isinstance(rms_list, list) or not all(isinstance(entry, float) for entry in rms_list)):
+        raise TypeError(f'rms_list must be a non empty list, got {rms_list} of type {type(rms_list)}.')
     content = read_yaml_file(os.path.join(ARC_PATH, 'data', 'rxn_normal_mode_disp.yml'))
     number_by_family = content.get(rxn_family, 3)
-    if rms_list is None:
+    if rms_list is None or not len(rms_list):
         return number_by_family
     entry = None
     for i in range(number_by_family):
