@@ -2298,6 +2298,7 @@ class Scheduler(object):
                     # Get the root mean squares of the normal mode displacement:
                     normal_disp_mode_rms = get_rms_from_normal_mode_disp(normal_mode_disp, mode_index)
                     print(f'normal_disp_mode_rms: {normal_disp_mode_rms}')
+                    print([tsg.family for tsg in self.species_dict[label].ts_guesses])
                     # Get the number of atoms that are expected to have the largest normal mode displacement per family:
                     num_of_atoms = max(list(set([get_rxn_normal_mode_disp_atom_number(rxn_family=tsg.family,
                                                                                       rms_list=normal_disp_mode_rms)
@@ -2305,8 +2306,8 @@ class Scheduler(object):
                     print(num_of_atoms)
                     # Get the indices of the atoms participating in the reaction (which form the reactive zone of the TS):
                     rxn_zone_indices_0 = sorted(range(len(normal_disp_mode_rms)),
-                                                   key=lambda i: normal_disp_mode_rms[i],
-                                                   reverse=True)[:num_of_atoms]
+                                                key=lambda i: normal_disp_mode_rms[i],
+                                                reverse=True)[:num_of_atoms]
                     print(f'rxn_zone_atom_indices: {rxn_zone_indices_0}')
                     # Convert atom_indices to be 1-indexed:
                     rxn_zone_indices_1 = [val + 1 for val in rxn_zone_indices_0]
