@@ -18,7 +18,7 @@ import sys
 import time
 import warnings
 import yaml
-from typing import Any, List, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Any, List, Optional, Tuple, Union
 
 import numpy as np
 import pandas as pd
@@ -32,6 +32,9 @@ from rmgpy.qm.symmetry import PointGroupCalculator
 
 from arc.exceptions import InputError, SettingsError
 from arc.imports import settings
+
+if TYPE_CHECKING:
+    from arc.species import TSGuess
 
 
 logger = logging.getLogger('arc')
@@ -1241,7 +1244,7 @@ def get_rxn_normal_mode_disp_atom_number(rxn_family: str,
                                          rms_list: Optional[List[float]] = None,
                                          ) -> int:
     """
-    Get the number of atoms expected to have the largest normal mode displacement per reaction family.
+    Get the number of atoms expected to have the largest normal mode displacement per family.
     If ``rms_list`` is given, also include atoms with an rms value close to the lowest rms still considered.
 
     Args:
@@ -1262,6 +1265,7 @@ def get_rxn_normal_mode_disp_atom_number(rxn_family: str,
     if rms_list is None or not len(rms_list):
         return number_by_family
     entry = None
+    rms_list = rms_list.copy()
     for i in range(number_by_family):
         entry = max(rms_list)
         rms_list.pop(rms_list.index(entry))
@@ -1270,3 +1274,25 @@ def get_rxn_normal_mode_disp_atom_number(rxn_family: str,
             if (entry - rms) / entry < 0.12:
                 number_by_family += 1
     return number_by_family
+
+
+def get_expected_num_atoms_with_largest_normal_mode_disp(normal_disp_mode_rms: List[float],
+                                                         ts_guesses: List['TSGuess'],
+                                                         ) -> int:
+    """
+    Get the number of atoms that are expected to have the largest normal mode displacement for the TS
+    (considering all families). This is a wrapper for ``get_rxn_normal_mode_disp_atom_number()``.
+    It is theoretically possible that TSGuesses of the same species will belong to different families.
+
+    Args:
+        normal_disp_mode_rms (List[float]): The RMS of the normal displacement modes..
+        ts_guesses: The TSGuess objects of a TS species.
+
+    Returns:
+        int: The number of atoms to consider that have a significant motions in the normal mode displacement.
+    """
+    families = list(set([tsg.family for tsg in ts_guesses]))
+    num_of_atoms = max([get_rxn_normal_mode_disp_atom_number(rxn_family=family,
+                                                             rms_list=normal_disp_mode_rms)
+                        for family in families])
+    return num_of_atoms
