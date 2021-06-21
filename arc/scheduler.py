@@ -18,10 +18,10 @@ from typing import TYPE_CHECKING, List, Optional, Tuple, Union
 from arc import parser, plotter
 from arc.common import (extremum_list,
                         get_angle_in_180_range,
+                        get_expected_num_atoms_with_largest_normal_mode_disp,
                         get_logger,
                         get_number_with_ordinal_indicator,
                         get_rms_from_normal_mode_disp,
-                        get_rxn_normal_mode_disp_atom_number,
                         save_yaml_file,
                         sort_two_lists_by_the_first,
                         torsions_to_scans,
@@ -2287,23 +2287,16 @@ class Scheduler(object):
                         self.species_dict[label].transport_data.comment = \
                             str(f'Polarizability calculated at the {self.freq_level.simple()} level of theory')
                 if self.species_dict[label].is_ts:
-                    print('is_ts')
                     # Parse normal mode displacement and invalidate rotors that break a TS.
                     freqs, normal_mode_disp = parser.parse_normal_mode_displacement(path=job.local_path_to_output_file,
                                                                                     raise_error=False)
-                    print(freqs)
-                    print(normal_mode_disp)
                     mode_index = list(freqs).index(min(freqs))  # get the index of the |largest| negative frequency
-                    print(mode_index)
                     # Get the root mean squares of the normal mode displacement:
                     normal_disp_mode_rms = get_rms_from_normal_mode_disp(normal_mode_disp, mode_index)
-                    print(f'normal_disp_mode_rms: {normal_disp_mode_rms}')
-                    print([tsg.family for tsg in self.species_dict[label].ts_guesses])
-                    # Get the number of atoms that are expected to have the largest normal mode displacement per family:
-                    num_of_atoms = max(list(set([get_rxn_normal_mode_disp_atom_number(rxn_family=tsg.family,
-                                                                                      rms_list=normal_disp_mode_rms)
-                                                 for tsg in self.species_dict[label].ts_guesses])))
-                    print(num_of_atoms)
+                    num_of_atoms = get_expected_num_atoms_with_largest_normal_mode_disp(
+                        normal_disp_mode_rms=normal_disp_mode_rms,
+                        ts_guesses=self.species_dict[label].ts_guesses,
+                    )
                     # Get the indices of the atoms participating in the reaction (which form the reactive zone of the TS):
                     rxn_zone_indices_0 = sorted(range(len(normal_disp_mode_rms)),
                                                 key=lambda i: normal_disp_mode_rms[i],
