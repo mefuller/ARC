@@ -297,7 +297,8 @@ class GCNAdapter(JobAdapter):
             script_path = os.path.join(ARC_PATH, 'arc', 'job', 'adapters', 'ts', 'scripts', 'gcn_script.py')
             command_0 = 'source ~/.bashrc'
 
-            for _ in range(5):  # todo: this number of repetitions shoudl be studied and optimized, perhaps leave it as a handle
+            for _ in range(10):
+                # GCN is highly non-deterministic
 
                 ts_xyz_fwd, ts_xyz_rev = None, None
 
