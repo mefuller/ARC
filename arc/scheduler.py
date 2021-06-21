@@ -2320,11 +2320,12 @@ class Scheduler(object):
                             print(rotor)
                     # Check the normal mode displacement.
                     self.rxn_dict[self.species_dict[label].rxn_index].check_ts(verbose=False,
-                                                                               rxn_zone_indices=rxn_zone_indices_0,
+                                                                               rxn_zone_atom_indices=rxn_zone_indices_0,
                                                                                )
                     if not self.species_dict[label].ts_checks['normal_mode_displacement']:
-                        logger.warning(f'The computed normal displacement mode of TS {label} does not match '
-                                       f'the expected labels from RMG. Switching TS conformer.')
+                        logger.warning(f'The computed normal displacement mode of TS {label} ({rxn_zone_indices_0}) '
+                                       f'does not match the expected labels from RMG '
+                                       f'({self.species_dict[label].rxn_zone_atom_indices}). Switching TS conformer.')
                         print('                 switch TS from L2329!!!!!!!!!!!!!!!!!!!')
                         self.switch_ts(label=label)
             elif not self.species_dict[label].is_ts:
