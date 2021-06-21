@@ -436,7 +436,7 @@ class ARCReaction(object):
     def check_ts(self,
                  verbose: bool = True,
                  parameter: str = 'E0',
-                 rxn_zone_indices: Optional[List[int]] = None,
+                 rxn_zone_atom_indices: Optional[List[int]] = None,
                  ):
         """
         Check the TS in terms of energy, normal mode displacement, and IRC.
@@ -446,13 +446,13 @@ class ARCReaction(object):
         Args:
             verbose (bool, optional): Whether to print logging messages.
             parameter (str, optional): The energy parameter to consider ('E0' or 'e_elect').
-            rxn_zone_indices (List[int], optional): The 0-indexed atom indices of atoms participating in the
-                                                    reaction (which form the reactive zone of the TS).
+            rxn_zone_atom_indices (List[int], optional): The 0-indexed atom indices of atoms participating in the
+                                                         reaction (which form the reactive zone of the TS).
         """
         if not self.ts_species.ts_checks['E0'] and not self.ts_species.ts_checks['e_elect']:
             self.check_ts_energy(verbose=verbose, parameter=parameter)
-        if not self.ts_species.ts_checks['normal_mode_displacement'] and rxn_zone_indices is not None:
-            self.check_normal_mode_displacement(rxn_zone_indices)
+        if not self.ts_species.ts_checks['normal_mode_displacement'] and rxn_zone_atom_indices is not None:
+            self.check_normal_mode_displacement(rxn_zone_atom_indices)
         # if not self.ts_species.ts_checks['IRC'] and IRC_wells is not None:
         #     self.check_irc(rxn_zone_indices)
 
@@ -526,13 +526,13 @@ class ARCReaction(object):
         self.ts_species.ts_checks[parameter] = True
         self.ts_species.ts_checks['warnings'] += 'Could not determine TS energy relative to the wells; '
 
-    def check_normal_mode_displacement(self, rxn_zone_indices: List[int]):
+    def check_normal_mode_displacement(self, rxn_zone_atom_indices: List[int]):
         """
         Check the normal mode displacement by making sure that the atom indices derived from the major motion
         (the major normal mode displacement) fits the expected RMG reaction template.
 
         Args:
-            rxn_zone_indices (List[int], optional): The 0-indexed atom indices of atoms participating in the
+            rxn_zone_atom_indices (List[int], optional): The 0-indexed atom indices of atoms participating in the
                                                     reaction (which form the reactive zone of the TS).
         """
         rmg_rxn = self.rmg_reaction.copy()
@@ -550,7 +550,8 @@ class ARCReaction(object):
                 p_labels.extend([int(atom.label.split('*')[1]) for atom in product.molecule[0].atoms if atom.label])
             r_labels.sort()
             p_labels.sort()
-            rxn_zone_indices.sort()
+            rxn_zone_atom_indices.sort()
+            self.ts_species.rxn_zone_atom_indices = rxn_zone_atom_indices
             if r_labels == p_labels == rxn_zone_indices:
                 self.ts_species.ts_checks['normal_mode_displacement'] = True
 
