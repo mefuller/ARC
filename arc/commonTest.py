@@ -17,6 +17,7 @@ from rmgpy.molecule.molecule import Molecule
 
 import arc.common as common
 import arc.species.converter as converter
+from arc.species.species import ARCSpecies, TSGuess
 from arc.exceptions import InputError, SettingsError
 from arc.imports import settings
 from arc.parser import parse_normal_mode_displacement
@@ -708,6 +709,19 @@ H       1.98414750   -0.79355889   -0.24492049"""  # colliding atoms
         rms_list_1 = [0.01414213562373095, 0.05, 0.04, 0.5632938842203065, 0.7993122043357026, 0.08944271909999159,
                       0.10677078252031312, 0.09000000000000001, 0.05, 0.09433981132056604]
         self.assertEqual(common.get_rxn_normal_mode_disp_atom_number('intra_H_migration', rms_list=rms_list_1), 4)
+
+    def test_get_expected_num_atoms_with_largest_normal_mode_disp(self):
+        """Test the get_expected_num_atoms_with_largest_normal_mode_disp() function"""
+        ts = ARCSpecies(label='TS', is_ts=True)
+        ts.ts_guesses = [TSGuess(family='intra_H_migration', xyz='C 0 0 0'),
+                         TSGuess(family='intra_H_migration', xyz='C 0 0 0'),
+                         ]
+        normal_disp_mode_rms = [0.01414213562373095, 0.05, 0.04, 0.5632938842203065, 0.7993122043357026,
+                                0.08944271909999159, 0.10677078252031312, 0.09000000000000001, 0.05, 0.09433981132056604]
+        num_of_atoms = common.get_expected_num_atoms_with_largest_normal_mode_disp(
+            normal_disp_mode_rms=normal_disp_mode_rms,
+            ts_guesses=ts.ts_guesses)
+        self.assertEqual(num_of_atoms, 4)
 
     @classmethod
     def tearDownClass(cls):
