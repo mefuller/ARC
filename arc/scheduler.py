@@ -18,9 +18,10 @@ from typing import TYPE_CHECKING, List, Optional, Tuple, Union
 from arc import parser, plotter
 from arc.common import (extremum_list,
                         get_angle_in_180_range,
+                        get_expected_num_atoms_with_largest_normal_mode_disp,
                         get_logger,
+                        get_number_with_ordinal_indicator,
                         get_rms_from_normal_mode_disp,
-                        get_rxn_normal_mode_disp_atom_number,
                         save_yaml_file,
                         sort_two_lists_by_the_first,
                         torsions_to_scans,
@@ -64,12 +65,9 @@ if TYPE_CHECKING:
 logger = get_logger()
 
 LOWEST_MAJOR_TS_FREQ, HIGHEST_MAJOR_TS_FREQ, default_job_settings, \
-    default_job_types, rotor_scan_resolution, ts_adapters = settings['LOWEST_MAJOR_TS_FREQ'], \
-                                                            settings['HIGHEST_MAJOR_TS_FREQ'], \
-                                                            settings['default_job_settings'], \
-                                                            settings['default_job_types'], \
-                                                            settings['rotor_scan_resolution'], \
-                                                            settings['ts_adapters']
+    default_job_types, rotor_scan_resolution, ts_adapters, max_rotor_trsh = \
+    settings['LOWEST_MAJOR_TS_FREQ'], settings['HIGHEST_MAJOR_TS_FREQ'], settings['default_job_settings'], \
+    settings['default_job_types'], settings['rotor_scan_resolution'], settings['ts_adapters'], settings['max_rotor_trsh']
 
 ts_adapters = [ts_adapter.lower() for ts_adapter in ts_adapters]
 
@@ -336,6 +334,7 @@ class Scheduler(object):
                         is_ts=True,
                         label=rxn.ts_label,
                         rxn_label=rxn.label,
+                        rxn_index=rxn.index,
                         multiplicity=rxn.multiplicity,
                         charge=rxn.charge,
                         compute_thermo=False,
@@ -354,6 +353,8 @@ class Scheduler(object):
                             ts_species = spc
                             if ts_species.rxn_label is None:
                                 ts_species.rxn_label = rxn.label
+                            if ts_species.rxn_index is None:
+                                ts_species.rxn_index = rxn.index
                             break
                 if ts_species is None:
                     raise SchedulerError(f'Could not identify a TS species for {rxn}')
@@ -530,6 +531,7 @@ class Scheduler(object):
                                 # Check isomorphism and run opt on most stable conformer geometry.
                                 logger.info(f'\nConformer jobs for {label} successfully terminated.\n')
                                 if self.species_dict[label].is_ts:
+                                    print('call self.species_dict[label].rxn_label from L533')
                                     self.determine_most_likely_ts_conformer(label)
                                 else:
                                     self.determine_most_stable_conformer(label)  # also checks isomorphism
@@ -2014,7 +2016,7 @@ class Scheduler(object):
     def determine_most_likely_ts_conformer(self, label: str):
         """
         Determine the most likely TS conformer.
-        Save the resulting xyz as `initial_xyz`.
+        Save the resulting xyz as the ``.initial_xyz`` attribute of the TS Species.
 
         Args:
             label (str): The TS species label.
@@ -2022,12 +2024,17 @@ class Scheduler(object):
         if not self.species_dict[label].is_ts:
             raise SchedulerError('determine_most_likely_ts_conformer() method only processes transition state guesses.')
         if not self.species_dict[label].successful_methods:
-            # only run this block once, not every time a TS is selecting a different guess
+            # Only run this block once, not every time a TS is selecting a different guess.
             for tsg in self.species_dict[label].ts_guesses:
                 if tsg.success:
+                    print(f'adding {tsg.method} to successful_methods')
                     self.species_dict[label].successful_methods.append(tsg.method)
-                else:
+            for tsg in self.species_dict[label].ts_guesses:
+                print(f'debugging successful_methods for {tsg.method}')
+                if tsg.method not in self.species_dict[label].successful_methods:
+                    print(f'adding {tsg.method} to unsuccessful_methods!!! !!!')
                     self.species_dict[label].unsuccessful_methods.append(tsg.method)
+            print(f'successful methods: {self.species_dict[label].successful_methods}')
             message = f'\nAll TS guesses for {label} terminated.'
             if self.species_dict[label].successful_methods and not self.species_dict[label].unsuccessful_methods:
                 message += f'\n All methods were successful in generating guesses: ' \
@@ -2045,13 +2052,14 @@ class Scheduler(object):
             logger.info('\n')
 
         if all([tsg.energy is None for tsg in self.species_dict[label].ts_guesses]):
-            logger.error(f'No guess converged for TS {label}!')
+            logger.error(f'No guess converged for TS {label}!\n'
+                         f'Cannot compute a rate coefficient for {self.species_dict[label].rxn_label}.')
         else:
             rxn_txt = '' if self.species_dict[label].rxn_label is None \
                 else f' of reaction {self.species_dict[label].rxn_label}'
             logger.info(f'\n\nGeometry *guesses* of successful TS guesses for {label}{rxn_txt}:')
             # Select the TSG with the lowest energy given that it has only one significant imaginary frequency.
-            # Todo: consider IRC well isomorphism, normal mode check (respective TSG attributes already exist)
+            # Todo: consider IRC well isomorphism
             e_min, selected_i = None, None
             self.species_dict[label].ts_guesses_exhausted = True
             for tsg in self.species_dict[label].ts_guesses:
@@ -2063,6 +2071,8 @@ class Scheduler(object):
             e_min = None
             if selected_i is None:
                 logger.warning(f'Could not determine a likely TS conformer for {label}')
+                self.species_dict[label].ts_number, self.species_dict[label].chosen_ts = None, None
+                self.species_dict[label].populate_ts_checks()
                 return None
             for tsg in self.species_dict[label].ts_guesses:
                 # Reset e_min to the lowest value regardless of other criteria (imaginary frequencies, IRC, normal modes).
@@ -2251,21 +2261,23 @@ class Scheduler(object):
             label (str): The species label.
             job (JobAdapter): The frequency job object.
         """
+        print(f'************* in check_freq_job for {label}')
         freq_ok = False
         if job.job_status[1]['status'] == 'done':
+            print('L2255')
             if not os.path.isfile(job.local_path_to_output_file):
                 raise SchedulerError('Called check_freq_job with no output file')
             vibfreqs = parser.parse_frequencies(path=str(job.local_path_to_output_file), software=job.job_adapter)
             freq_ok = self.check_negative_freq(label=label, job=job, vibfreqs=vibfreqs)
             if freq_ok:
-                # copy the frequency file to the species / TS output folder
+                # Copy the frequency file to the species / TS output folder.
                 folder_name = 'rxns' if self.species_dict[label].is_ts else 'Species'
                 freq_path = os.path.join(self.project_directory, 'output', folder_name, label, 'geometry', 'freq.out')
                 try:
                     shutil.copyfile(job.local_path_to_output_file, freq_path)
                 except shutil.SameFileError:
                     pass
-                # set species.polarizability
+                # Set species.polarizability.
                 polarizability = parser.parse_polarizability(job.local_path_to_output_file)
                 if polarizability is not None:
                     self.species_dict[label].transport_data.polarizability = (polarizability, str('angstroms^3'))
@@ -2282,25 +2294,43 @@ class Scheduler(object):
                     mode_index = list(freqs).index(min(freqs))  # get the index of the |largest| negative frequency
                     # Get the root mean squares of the normal mode displacement:
                     normal_disp_mode_rms = get_rms_from_normal_mode_disp(normal_mode_disp, mode_index)
-                    # Get the number of atoms that are expected to have the largest normal mode displacement per family:
-                    atom_number = max(list(set([get_rxn_normal_mode_disp_atom_number(rxn_family=tsg.family)
-                                                for tsg in self.species_dict[label].ts_guesses])))
+                    num_of_atoms = get_expected_num_atoms_with_largest_normal_mode_disp(
+                        normal_disp_mode_rms=normal_disp_mode_rms,
+                        ts_guesses=self.species_dict[label].ts_guesses,
+                    )
                     # Get the indices of the atoms participating in the reaction (which form the reactive zone of the TS):
-                    rxn_zone_atom_indices = sorted(range(len(normal_disp_mode_rms)),
-                                                   key=lambda i: normal_disp_mode_rms[i],
-                                                   reverse=True)[:atom_number]
+                    rxn_zone_atom_indices_0 = sorted(range(len(normal_disp_mode_rms)),
+                                                key=lambda i: normal_disp_mode_rms[i],
+                                                reverse=True)[:num_of_atoms]
+                    print(f'rxn_zone_atom_indices: {rxn_zone_atom_indices_0}')
                     # Convert atom_indices to be 1-indexed:
-                    rxn_zone_atom_indices = [val + 1 for val in rxn_zone_atom_indices]
+                    rxn_zone_atom_indices_1 = [val + 1 for val in rxn_zone_atom_indices_0]
+                    print(f'rxn_zone_atom_indices + 1: {rxn_zone_atom_indices_1}')
                     # Determine rotors if needed:
                     if not self.species_dict[label].rotors_dict:
+                        print('didnt have a rotors dict')
                         self.species_dict[label].determine_rotors()
                     # Invalidate rotors in which both pivots are included in the reactive zone:
-                    for rotor in self.species_dict[label].rotors_dict:
-                        if rotor['pivots'][0] in rxn_zone_atom_indices and rotor['pivots'][1] in rxn_zone_atom_indices:
+                    for key, rotor in self.species_dict[label].rotors_dict.items():
+                        print(f'checking {key}')
+                        if rotor['pivots'][0] in rxn_zone_atom_indices_1 and rotor['pivots'][1] in rxn_zone_atom_indices_1:
+                            print('got the rotor!!!!')
                             rotor['success'] = False
                             rotor['invalidation_reason'] += 'Pivots participate in the TS reaction zone (code: pivTS). '
+                            logging.info(f"\nNot considering rotor {key} with pivots {rotor['pivots']}  in TS {label}\n")
+                            print(rotor)
+                    # Check the normal mode displacement.
+                    self.rxn_dict[self.species_dict[label].rxn_index].check_ts(verbose=False,
+                                                                               rxn_zone_atom_indices=rxn_zone_atom_indices_0,
+                                                                               )
+                    if not self.species_dict[label].ts_checks['normal_mode_displacement']:
+                        logger.warning(f'The computed normal displacement mode of TS {label} ({rxn_zone_atom_indices_0}) '
+                                       f'does not match the expected labels from RMG '
+                                       f'({self.species_dict[label].rxn_zone_atom_indices}). Switching TS conformer.')
+                        print('                 switch TS from L2329!!!!!!!!!!!!!!!!!!!')
+                        self.switch_ts(label=label)
             elif not self.species_dict[label].is_ts:
-                # Only trsh neg freq here for non TS species, trsh TS species is done in check_negative_freq()
+                # Only trsh neg freq here for non TS species, trsh TS species is done in check_negative_freq().
                 self.troubleshoot_negative_freq(label=label, job=job)
         if job.job_status[1]['status'] != 'done' or (not freq_ok and not self.species_dict[label].is_ts):
             self.troubleshoot_ess(label=label, job=job, level_of_theory=job.level)
@@ -2356,6 +2386,8 @@ class Scheduler(object):
                 if f'{len(neg_freqs)} imaginary freqs for' not in self.output[label]['warnings']:
                     # Todo: this warning is obsolete if changing the TS guess during the run.
                     self.output[label]['warnings'] += f'Warning: {len(neg_freqs)} imaginary freqs for TS ({neg_freqs}); '
+                print('                 switch TS from L2388 !!!!!!!!!!!!!!!!!!!')
+                # No need to set self.species_dict[label].ts_checks['freq'] to False, it'll be reset in switch_ts()
                 self.switch_ts(label=label)
                 return False
             else:
@@ -2383,6 +2415,8 @@ class Scheduler(object):
                 if not self.testing:
                     # Update restart dictionary and save the yaml restart file:
                     self.save_restart_dict()
+                # Set the ts_checks attribute of the TS species:
+                self.species_dict[label].ts_checks['freq'] = True
                 return True
 
     def switch_ts(self, label: str):
@@ -2392,11 +2426,15 @@ class Scheduler(object):
         Args:
             label (str): The TS species label.
         """
+        logger.info(f'Switching a TS guess for {label}...')
+        print('call determine_most_likely_ts_conformer from 2430')
         self.determine_most_likely_ts_conformer(label=label)  # Look for a different TS guess.
+        print('delete_all_species_jobs from L2432')
         self.delete_all_species_jobs(label=label)  # Delete other currently running jobs for this TS.
+        self.species_dict[label].populate_ts_checks()  # Restart the TS checks dict.
         if not self.species_dict[label].ts_guesses_exhausted and self.species_dict[label].chosen_ts is not None:
             logger.info(f'Optimizing species {label} again using a different TS guess: '
-                        f'({self.species_dict[label].chosen_ts})')
+                        f'conformer {self.species_dict[label].chosen_ts}')
             if not self.composite_method:
                 self.run_opt_job(label, fine=self.fine_only)
             else:
@@ -2483,8 +2521,9 @@ class Scheduler(object):
         if self.species_dict[label].is_ts:
             for rxn in self.rxn_dict.values():
                 if rxn.ts_label == label:
-                    ts_e_elect_success = rxn.check_ts(verbose=True)
-                    if not ts_e_elect_success:
+                    rxn.check_ts(verbose=True)
+                    if not (rxn.ts_species.ts_checks['E0'] or rxn.ts_species.ts_checks['e_elect']):
+                        print('                 switch TS from L2522 !!!!!!!!!!!!!!!!!!!')
                         self.switch_ts(label=label)
                     break
 
@@ -2499,7 +2538,7 @@ class Scheduler(object):
         Check an IRC job and perform post-job tasks.
 
         Todo:
-            Need to check isomorphism
+            Need to check isomorphism !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
         Args:
             label (str): The species label.
@@ -2530,8 +2569,7 @@ class Scheduler(object):
         # troubleshoot_ess() for scan jobs. It is usually related to bond or angle changes which
         # messes up the internal coordinates during the scan. It can be resolved
         # by conformer-based scan troubleshooting method, yet its energies are readable.
-        if job.job_status[1]['status'] != 'done' \
-                and job.job_status[1]['error'] != 'Internal coordinate error':
+        if job.job_status[1]['status'] != 'done' and job.job_status[1]['error'] != 'Internal coordinate error':
             self.troubleshoot_ess(label=label,
                                   job=job,
                                   level_of_theory=job.level)
@@ -2665,6 +2703,7 @@ class Scheduler(object):
                     allow_nonisomorphic_2d=self.allow_nonisomorphic_2d,
                     xyz=self.species_dict[label].initial_xyz)
                 if is_isomorphic:
+                    print('delete_all_species_jobs from L2705')
                     self.delete_all_species_jobs(label)
                     # Remove all completed rotor calculation information
                     for rotor_dict in self.species_dict[label].rotors_dict.values():
@@ -2872,6 +2911,7 @@ class Scheduler(object):
             self.output[label]['errors'] += output_error
             if 'Invalidating species' in output_error:
                 logger.info(f'Deleting all currently running jobs for species {label}...')
+                print('delete_all_species_jobs from L2913')
                 self.delete_all_species_jobs(label)
                 self.output[label]['convergence'] = False
         for output_warning in output_warnings:
@@ -2880,9 +2920,7 @@ class Scheduler(object):
             logger.info(f'Deleting all currently running jobs for species {label} before troubleshooting for '
                         f'negative frequency with perturbed conformers...')
             logging.info(f'conformers:')
-            for conf in confs:  # DEBUG!! print
-                logging.info('\n')  # DEBUG!!
-                logging.info(xyz_to_str(conf))  # DEBUG!!
+            print('delete_all_species_jobs from L2921')
             self.delete_all_species_jobs(label)
             self.species_dict[label].conformers = confs
             self.species_dict[label].conformer_energies = [None] * len(confs)
@@ -2920,17 +2958,29 @@ class Scheduler(object):
         """
         label = job.species_label
         trsh_success = False
-        actual_actions = dict()  # If troubleshooting fails, there will be no action
+        actual_actions = dict()  # If troubleshooting fails, there will be no action.
         used_trsh_methods = self.species_dict[label].rotors_dict[job.rotor_index] \
             if job.rotor_index in self.species_dict[label].rotors_dict else None
 
-        # A lower conformation was found
+        # Check trsh_counter to avoid infinite rotor trsh looping.
+        if self.species_dict[label].rotors_dict[job.rotor_index]['trsh_counter'] >= max_rotor_trsh:
+            next_with_ordinal = get_number_with_ordinal_indicator(self.species_dict[label].rotors_dict[job.rotor_index]['trsh_counter'] + 1)
+            logger.error(f"The rotor {self.species_dict[label].rotors_dict[job.rotor_index]['pivots']} of species "
+                         f"{label} was troubleshooted for "
+                         f"{self.species_dict[label].rotors_dict[job.rotor_index]['trsh_counter']} times, "
+                         f"will not troubleshoot for the {next_with_ordinal} time.")
+            return trsh_success, actual_actions
+        # Increase the trsh_counter.
+        self.species_dict[label].rotors_dict['trsh_counter'] += 1
+
+        # A lower conformation was found.
         if 'change conformer' in methods:
             # We will delete all of the jobs no matter we can successfully change to the conformer.
             # If succeed, we have to cancel jobs to avoid conflicts
             # If not succeed, we are in a situation that we find a lower conformer, but either
             # this is a incorrect conformer or we have applied this troubleshooting before, but it
             # didn't yield a good result.
+            print('delete_all_species_jobs from L2980')
             self.delete_all_species_jobs(label)
 
             new_xyz = methods['change conformer']
@@ -2951,7 +3001,7 @@ class Scheduler(object):
                     self.species_dict[label].final_xyz = new_xyz
                     # Remove all completed rotor calculation information.
                     for rotor in self.species_dict[label].rotors_dict.values():
-                        # don't initialize all parameters, e.g., `times_dihedral_set` needs to remain as is
+                        # Don't initialize all parameters, e.g., `times_dihedral_set` needs to remain as is.
                         rotor['scan_path'] = ''
                         rotor['invalidation_reason'] = ''
                         rotor['success'] = None
@@ -2960,10 +3010,10 @@ class Scheduler(object):
                             rotor['times_dihedral_set'] += 1
                         # We can save the change conformer trsh info, but other trsh methods like
                         # freezing or increasing scan resolution can be cleaned, otherwise, they may
-                        # not be troubleshot
+                        # not be troubleshot.
                         rotor['trsh_methods'] = [trsh_method for trsh_method in rotor['trsh_methods']
                                                  if 'change conformer' in trsh_method]
-                    # re-run opt (or composite) on the new initial_xyz with the desired dihedral
+                    # Re-run opt (or composite) on the new initial_xyz with the desired dihedral.
                     if not self.composite_method:
                         self.run_opt_job(label)
                     else:
@@ -2972,7 +3022,7 @@ class Scheduler(object):
                     actual_actions = methods
                     return trsh_success, actual_actions
 
-            # The conformer is wrong, or we are in a loop changing to the same conformers again
+            # The conformer is wrong, or we are in a loop changing to the same conformers again.
             self.output[label]['errors'] += \
                 f'A lower conformer was found for {label} via a torsion mode, ' \
                 f'but it is not isomorphic with the 2D graph representation ' \
@@ -2981,7 +3031,7 @@ class Scheduler(object):
             self.output[label]['conformers'] += 'Unconverged'
             self.output[label]['convergence'] = False
         else:
-            # Freezing or increasing scan resolution
+            # Get the scan_list, useful for freezing or increasing the scan resolution.
             scan_list = [rotor_dict['scan'] for rotor_dict in
                          self.species_dict[label].rotors_dict.values()]
             try:
@@ -3001,7 +3051,7 @@ class Scheduler(object):
             else:
                 if scan_trsh or job.scan_res != scan_res \
                         and {'scan_trsh': scan_trsh, 'scan_res': scan_res} not in used_trsh_methods:
-                    # Valid troubleshooting method for freezing or increasing resolution
+                    # Valid troubleshooting method for freezing or increasing resolution.
                     trsh_success = True
                     actual_actions = {'scan_trsh': scan_trsh, 'scan_res': scan_res}
                     self.run_job(label=label,
@@ -3157,6 +3207,7 @@ class Scheduler(object):
                          )
         elif self.species_dict[label].is_ts and not self.species_dict[label].ts_guesses_exhausted:
             # Try a different TSGuess.
+            print('                 switch TS from L3203!!!!!!!!!!!!!!!!!!!')
             self.switch_ts(label=label)
 
         self.save_restart_dict()
@@ -3186,8 +3237,8 @@ class Scheduler(object):
                          f'{label}. No conformer for this species was found to be isomorphic with the 2D graph '
                          f'representation {self.species_dict[label].mol.copy(deep=True).to_smiles()}. '
                          f'NOT optimizing this species.')
-            self.output[label]['conformers'] += 'Error: No conformer was found to be isomorphic with the 2D' \
-                                                ' graph representation!; '
+            self.output[label]['conformers'] += 'Error: No conformer was found to be isomorphic with the 2D ' \
+                                                'graph representation!; '
         else:
             logger.info(f'Troubleshooting conformer job in {job.job_adapter} using {level_of_theory} for species {label}')
 
@@ -3446,6 +3497,7 @@ class Scheduler(object):
                 ts_dict['ts_guesses_exhausted'] = species.ts_guesses_exhausted
                 ts_dict['ts_report'] = species.ts_report
                 ts_dict['rxn_label'] = species.rxn_label
+                ts_dict['rxn_index'] = species.rxn_index
                 for reaction in self.rxn_list:
                     if reaction.ts_label == species.label:
                         ts_dict['family'] = reaction.family.label if reaction.family is not None else None
