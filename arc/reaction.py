@@ -454,7 +454,7 @@ class ARCReaction(object):
         if not self.ts_species.ts_checks['normal_mode_displacement'] and rxn_zone_atom_indices is not None:
             self.check_normal_mode_displacement(rxn_zone_atom_indices)
         # if not self.ts_species.ts_checks['IRC'] and IRC_wells is not None:
-        #     self.check_irc(rxn_zone_indices)
+        #     self.check_irc(rxn_zone_atom_indices)
 
     def check_ts_energy(self,
                         verbose: bool = True,
@@ -552,7 +552,7 @@ class ARCReaction(object):
             p_labels.sort()
             rxn_zone_atom_indices.sort()
             self.ts_species.rxn_zone_atom_indices = rxn_zone_atom_indices
-            if r_labels == p_labels == rxn_zone_indices:
+            if r_labels == p_labels == rxn_zone_atom_indices:
                 self.ts_species.ts_checks['normal_mode_displacement'] = True
 
     def check_attributes(self):
