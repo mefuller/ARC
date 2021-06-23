@@ -158,7 +158,7 @@ class GaussianAdapter(JobAdapter):
         if any(arg is None for arg in [job_type, level]):
             raise ValueError(f'All of the following arguments must be given:\n'
                              f'job_type, level, project, project_directory\n'
-                             f'Got: {job_type} {level}, respectively')
+                             f'Got: {job_type}, {level}, {project}, {project_directory}, respectively')
 
         self.project = project
         self.project_directory = project_directory

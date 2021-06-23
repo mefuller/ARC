@@ -2,7 +2,7 @@
 A module for representing a reaction.
 """
 
-from typing import List, Optional, Tuple, Union
+from typing import TYPE_CHECKING, List, Optional, Tuple, Union
 
 import numpy as np
 from qcelemental.exceptions import ValidationError
@@ -18,6 +18,8 @@ from arc.exceptions import ReactionError, InputError
 from arc.species.converter import check_xyz_dict, str_to_xyz, xyz_to_str
 from arc.species.species import ARCSpecies, check_atom_balance, check_label
 
+if TYPE_CHECKING:
+    from rmgpy.data.rmg import RMGDatabase
 
 logger = get_logger()
 
@@ -423,10 +425,17 @@ class ARCReaction(object):
         return multiplicity
 
     def determine_family(self,
-                         rmg_database,
-                         save_order: bool = False,
+                         rmg_database: 'RMGDatabase',
+                         save_order: bool = True,
                          ):
-        """Determine the RMG family and saves the (family, own reverse) tuple in the ``family`` attribute"""
+        """
+        Determine the RMG family.
+        Populates the .family, and .family_own_reverse attributes.
+
+        Args:
+            rmg_database ('RMGDatabase'): The RMGDatabase object instance.
+            save_order (bool, optional): Whether to save the order of atoms in RMG Molecule objects.
+        """
         if self.rmg_reaction is not None:
             self.family, self.family_own_reverse = rmgdb.determine_reaction_family(rmgdb=rmg_database,
                                                                                    reaction=self.rmg_reaction.copy(),
@@ -529,12 +538,15 @@ class ARCReaction(object):
     def check_normal_mode_displacement(self, rxn_zone_atom_indices: List[int]):
         """
         Check the normal mode displacement by making sure that the atom indices derived from the major motion
-        (the major normal mode displacement) fits the expected RMG reaction template.
+        (the major normal mode displacement) fit the expected RMG reaction template.
+        Note that RMG does not differentiate well between hydrogen atoms since it thinks in 2D.
 
         Args:
-            rxn_zone_atom_indices (List[int], optional): The 0-indexed atom indices of atoms participating in the
-                                                    reaction (which form the reactive zone of the TS).
+            rxn_zone_atom_indices (List[int], optional): The 0-indexed indices of atoms participating in the
+                                                         reaction (which form the reactive zone of the TS).
         """
+        # todo: symmetry like in C[CH]C will give different results. need to consider degeneracy in RMG and check if one path fits
+        # todo: hydrogens are problematic, can't know using 2D which H on a CH3 migrated
         rmg_rxn = self.rmg_reaction.copy()
         try:
             self.family.add_atom_labels_for_reaction(reaction=rmg_rxn, output_with_resonance=False, save_order=True)
@@ -543,14 +555,20 @@ class ARCReaction(object):
             self.ts_species.ts_checks['warnings'] += 'Could not determine atom labels from RMG, ' \
                                                      'cannot check normal mode displacement; '
         else:
+            print(self.family)
             r_labels, p_labels = list(), list()
             for reactant in rmg_rxn.reactants:
-                r_labels.extend([int(atom.label.split('*')[1]) for atom in reactant.molecule[0].atoms if atom.label])
+                print([(i, atom.label) for i, atom in enumerate(reactant.molecule[0].atoms)])
+                r_labels.extend([i for i, atom in enumerate(reactant.molecule[0].atoms) if atom.label])
             for product in rmg_rxn.products:
-                p_labels.extend([int(atom.label.split('*')[1]) for atom in product.molecule[0].atoms if atom.label])
+                print([(i, atom.label) for i, atom in enumerate(product.molecule[0].atoms)])
+                p_labels.extend([i for i, atom in enumerate(product.molecule[0].atoms) if atom.label])
+            r_labels, p_labels = list(set(r_labels)), list(set(p_labels))
             r_labels.sort()
             p_labels.sort()
+            print(r_labels, p_labels)
             rxn_zone_atom_indices.sort()
+            print(rxn_zone_atom_indices)
             self.ts_species.rxn_zone_atom_indices = rxn_zone_atom_indices
             if r_labels == p_labels == rxn_zone_atom_indices:
                 self.ts_species.ts_checks['normal_mode_displacement'] = True

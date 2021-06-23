@@ -20,7 +20,6 @@ import arc.species.converter as converter
 from arc.species.species import ARCSpecies, TSGuess
 from arc.exceptions import InputError, SettingsError
 from arc.imports import settings
-from arc.parser import parse_normal_mode_displacement
 
 
 servers = settings['servers']
@@ -685,43 +684,17 @@ H       1.98414750   -0.79355889   -0.24492049"""  # colliding atoms
         with self.assertRaises(ValueError):
             common.torsions_to_scans([[0, 1, 2, 3], [6, 8, 9, 10]], direction=-1)
 
-    def test_get_rms_from_normal_modes_disp(self):
-        """Test the get_rms_from_normal_modes_disp() function"""
-        path_1 = os.path.join(common.ARC_PATH, 'arc', 'testing', 'freq', 'C3H7_intra_h_TS.out')
-        normal_modes_disp = parse_normal_mode_displacement(path_1)[1]
-        rms = common.get_rms_from_normal_mode_disp(normal_modes_disp)
-        self.assertEqual(rms, [0.07874007874011811,
-                               0.07280109889280519,
-                               0.0,
-                               0.9914635646356349,
-                               0.03605551275463989,
-                               0.034641016151377546,
-                               0.0,
-                               0.033166247903554,
-                               0.01414213562373095,
-                               0.0],
-                         )
-
-    def test_get_rxn_normal_mode_disp_atom_number(self):
-        """Test the get_rxn_normal_mode_disp_atom_number function"""
-        self.assertEqual(common.get_rxn_normal_mode_disp_atom_number('default'), 3)
-        self.assertEqual(common.get_rxn_normal_mode_disp_atom_number('intra_H_migration'), 3)
-        rms_list_1 = [0.01414213562373095, 0.05, 0.04, 0.5632938842203065, 0.7993122043357026, 0.08944271909999159,
-                      0.10677078252031312, 0.09000000000000001, 0.05, 0.09433981132056604]
-        self.assertEqual(common.get_rxn_normal_mode_disp_atom_number('intra_H_migration', rms_list=rms_list_1), 4)
-
-    def test_get_expected_num_atoms_with_largest_normal_mode_disp(self):
-        """Test the get_expected_num_atoms_with_largest_normal_mode_disp() function"""
-        ts = ARCSpecies(label='TS', is_ts=True)
-        ts.ts_guesses = [TSGuess(family='intra_H_migration', xyz='C 0 0 0'),
-                         TSGuess(family='intra_H_migration', xyz='C 0 0 0'),
-                         ]
-        normal_disp_mode_rms = [0.01414213562373095, 0.05, 0.04, 0.5632938842203065, 0.7993122043357026,
-                                0.08944271909999159, 0.10677078252031312, 0.09000000000000001, 0.05, 0.09433981132056604]
-        num_of_atoms = common.get_expected_num_atoms_with_largest_normal_mode_disp(
-            normal_disp_mode_rms=normal_disp_mode_rms,
-            ts_guesses=ts.ts_guesses)
-        self.assertEqual(num_of_atoms, 4)
+    def test_convert_list_index_0_to_1(self):
+        """Test the convert_list_index_0_to_1() function"""
+        self.assertEqual(common.convert_list_index_0_to_1([]), [])
+        self.assertEqual(common.convert_list_index_0_to_1([0]), [1])
+        self.assertEqual(common.convert_list_index_0_to_1([1], direction=-1), [0])
+        self.assertEqual(common.convert_list_index_0_to_1([0, 5, 8]), [1, 6, 9])
+        self.assertEqual(common.convert_list_index_0_to_1([0, 5, 8]), [1, 6, 9])
+        with self.assertRaises(ValueError):
+            common.convert_list_index_0_to_1([-9])
+        with self.assertRaises(ValueError):
+            common.convert_list_index_0_to_1([0], direction=-1)
 
     @classmethod
     def tearDownClass(cls):

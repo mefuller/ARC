@@ -1214,85 +1214,28 @@ def torsions_to_scans(descriptor: Optional[List[List[int]]],
     if not isinstance(descriptor[0], (list, tuple)):
         descriptor = [descriptor]
     direction = direction if direction == 1 else -1  # anything other than 1 is translated to -1
-    new_descriptor = [[item + direction for item in entry] for entry in descriptor]
+    new_descriptor = [convert_list_index_0_to_1(entry, direction) for entry in descriptor]
     if any(any(item < 0 for item in entry) for entry in new_descriptor):
         raise ValueError(f'Got an illegal value when converting:\n{descriptor}\ninto:\n{new_descriptor}')
     return new_descriptor
 
 
-def get_rms_from_normal_mode_disp(normal_mode_disp: np.ndarray,
-                                  mode_index: int = 0,
-                                  ) -> List[float]:
+def convert_list_index_0_to_1(_list: list, direction: int = 1) -> list:
     """
-    Get the root mean squares of the normal displacement modes.
+    Convert a list from 0-indexed to 1-indexed, or vice versa.
+    Ensures positive values in the resulting list.
 
     Args:
-        normal_modes_disp (np.ndarray): The normal displacement modes array.
-        mode_index (int, optional): The normal mode displacement index to consider from the array.
-
-    Returns:
-        List[float]: The RMS of the normal displacement modes.
-    """
-    rms = list()
-    nmd = normal_mode_disp[mode_index]
-    for entry in nmd:
-        rms.append((entry[0] ** 2 + entry[1] ** 2 + entry[2] ** 2) ** 0.5)
-    return rms
-
-
-def get_rxn_normal_mode_disp_atom_number(rxn_family: str,
-                                         rms_list: Optional[List[float]] = None,
-                                         ) -> int:
-    """
-    Get the number of atoms expected to have the largest normal mode displacement per family.
-    If ``rms_list`` is given, also include atoms with an rms value close to the lowest rms still considered.
-
-    Args:
-        rxn_family (str): The reaction family label.
-        rms_list (List[float], optional): The root mean squares of the normal mode displacements.
+        _list (list): The list to be converted.
+        direction (int, optional): Either 1 or -1 to convert 0-indexed to 1-indexed or vice versa, respectively.
 
     Raises:
-        TypeError: If ``rms_list`` is not ``None`` and is either not a list or does not contain floats.
+        ValueError: If the new list contains negative values.
 
     Returns:
-        int: The respective number of atoms.
+        list: The converted indices.
     """
-    print(rxn_family, rms_list)
-    if rms_list is not None and (not isinstance(rms_list, list) or not all(isinstance(entry, float) for entry in rms_list)):
-        raise TypeError(f'rms_list must be a non empty list, got {rms_list} of type {type(rms_list)}.')
-    content = read_yaml_file(os.path.join(ARC_PATH, 'data', 'rxn_normal_mode_disp.yml'))
-    number_by_family = content.get(rxn_family, 3)
-    if rms_list is None or not len(rms_list):
-        return number_by_family
-    entry = None
-    rms_list = rms_list.copy()
-    for i in range(number_by_family):
-        entry = max(rms_list)
-        rms_list.pop(rms_list.index(entry))
-    if entry is not None:
-        for rms in rms_list:
-            if (entry - rms) / entry < 0.12:
-                number_by_family += 1
-    return number_by_family
-
-
-def get_expected_num_atoms_with_largest_normal_mode_disp(normal_disp_mode_rms: List[float],
-                                                         ts_guesses: List['TSGuess'],
-                                                         ) -> int:
-    """
-    Get the number of atoms that are expected to have the largest normal mode displacement for the TS
-    (considering all families). This is a wrapper for ``get_rxn_normal_mode_disp_atom_number()``.
-    It is theoretically possible that TSGuesses of the same species will belong to different families.
-
-    Args:
-        normal_disp_mode_rms (List[float]): The RMS of the normal displacement modes..
-        ts_guesses: The TSGuess objects of a TS species.
-
-    Returns:
-        int: The number of atoms to consider that have a significant motions in the normal mode displacement.
-    """
-    families = list(set([tsg.family for tsg in ts_guesses]))
-    num_of_atoms = max([get_rxn_normal_mode_disp_atom_number(rxn_family=family,
-                                                             rms_list=normal_disp_mode_rms)
-                        for family in families])
-    return num_of_atoms
+    new_list = [item + direction for item in _list]
+    if any(val < 0 for val in new_list):
+        raise ValueError(f'The resulting list from converting {_list} has negative values:\n{new_list}')
+    return new_list
