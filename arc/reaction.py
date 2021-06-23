@@ -465,7 +465,7 @@ class ARCReaction(object):
         A wrapper for rmgdb determine_reaction_family() function.
 
         Args:
-            rmg_database (RMGDatabase): The RMG database instance.
+            rmg_database (RMGDatabase): The RMGDatabase object instance.
             save_order (bool, optional): Whether to retain atomic order of the RMG ``reaction`` object instance.
         """
         if self.rmg_reaction is not None:
@@ -571,12 +571,15 @@ class ARCReaction(object):
     def check_normal_mode_displacement(self, rxn_zone_atom_indices: List[int]):
         """
         Check the normal mode displacement by making sure that the atom indices derived from the major motion
-        (the major normal mode displacement) fits the expected RMG reaction template.
+        (the major normal mode displacement) fit the expected RMG reaction template.
+        Note that RMG does not differentiate well between hydrogen atoms since it thinks in 2D.
 
         Args:
-            rxn_zone_atom_indices (List[int], optional): The 0-indexed atom indices of atoms participating in the
-                                                    reaction (which form the reactive zone of the TS).
+            rxn_zone_atom_indices (List[int], optional): The 0-indexed indices of atoms participating in the
+                                                         reaction (which form the reactive zone of the TS).
         """
+        # todo: symmetry like in C[CH]C will give different results. need to consider degeneracy in RMG and check if one path fits
+        # todo: hydrogens are problematic, can't know using 2D which H on a CH3 migrated
         rmg_rxn = self.rmg_reaction.copy()
         try:
             self.family.add_atom_labels_for_reaction(reaction=rmg_rxn, output_with_resonance=False, save_order=True)
@@ -587,9 +590,10 @@ class ARCReaction(object):
         else:
             r_labels, p_labels = list(), list()
             for reactant in rmg_rxn.reactants:
-                r_labels.extend([int(atom.label.split('*')[1]) for atom in reactant.molecule[0].atoms if atom.label])
+                r_labels.extend([i for i, atom in enumerate(reactant.molecule[0].atoms) if atom.label])
             for product in rmg_rxn.products:
-                p_labels.extend([int(atom.label.split('*')[1]) for atom in product.molecule[0].atoms if atom.label])
+                p_labels.extend([i for i, atom in enumerate(product.molecule[0].atoms) if atom.label])
+            r_labels, p_labels = list(set(r_labels)), list(set(p_labels))
             r_labels.sort()
             p_labels.sort()
             rxn_zone_atom_indices.sort()

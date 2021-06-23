@@ -16,12 +16,16 @@ from IPython.display import display
 from typing import TYPE_CHECKING, List, Optional, Tuple, Union
 
 from arc import parser, plotter
+from arc.checks import (check_ts_freq_job,
+                        get_expected_num_atoms_with_largest_normal_mode_disp,
+                        get_i_from_job_name,
+                        get_rms_from_normal_mode_disp,
+                        sum_time_delta,
+                        )
 from arc.common import (extremum_list,
                         get_angle_in_180_range,
-                        get_expected_num_atoms_with_largest_normal_mode_disp,
                         get_logger,
                         get_number_with_ordinal_indicator,
-                        get_rms_from_normal_mode_disp,
                         save_yaml_file,
                         sort_two_lists_by_the_first,
                         torsions_to_scans,
@@ -2259,7 +2263,7 @@ class Scheduler(object):
 
         Args:
             label (str): The species label.
-            job (JobAdapter): The frequency job object.
+            job (JobAdapter): The frequency job object instance.
         """
         print(f'************* in check_freq_job for {label}')
         freq_ok = False
@@ -2288,47 +2292,12 @@ class Scheduler(object):
                         self.species_dict[label].transport_data.comment = \
                             str(f'Polarizability calculated at the {self.freq_level.simple()} level of theory')
                 if self.species_dict[label].is_ts:
-                    # Parse normal mode displacement and invalidate rotors that break a TS.
-                    freqs, normal_mode_disp = parser.parse_normal_mode_displacement(path=job.local_path_to_output_file,
-                                                                                    raise_error=False)
-                    mode_index = list(freqs).index(min(freqs))  # get the index of the |largest| negative frequency
-                    # Get the root mean squares of the normal mode displacement:
-                    normal_disp_mode_rms = get_rms_from_normal_mode_disp(normal_mode_disp, mode_index)
-                    num_of_atoms = get_expected_num_atoms_with_largest_normal_mode_disp(
-                        normal_disp_mode_rms=normal_disp_mode_rms,
-                        ts_guesses=self.species_dict[label].ts_guesses,
-                    )
-                    # Get the indices of the atoms participating in the reaction (which form the reactive zone of the TS):
-                    rxn_zone_atom_indices_0 = sorted(range(len(normal_disp_mode_rms)),
-                                                key=lambda i: normal_disp_mode_rms[i],
-                                                reverse=True)[:num_of_atoms]
-                    print(f'rxn_zone_atom_indices: {rxn_zone_atom_indices_0}')
-                    # Convert atom_indices to be 1-indexed:
-                    rxn_zone_atom_indices_1 = [val + 1 for val in rxn_zone_atom_indices_0]
-                    print(f'rxn_zone_atom_indices + 1: {rxn_zone_atom_indices_1}')
-                    # Determine rotors if needed:
-                    if not self.species_dict[label].rotors_dict:
-                        print('didnt have a rotors dict')
-                        self.species_dict[label].determine_rotors()
-                    # Invalidate rotors in which both pivots are included in the reactive zone:
-                    for key, rotor in self.species_dict[label].rotors_dict.items():
-                        print(f'checking {key}')
-                        if rotor['pivots'][0] in rxn_zone_atom_indices_1 and rotor['pivots'][1] in rxn_zone_atom_indices_1:
-                            print('got the rotor!!!!')
-                            rotor['success'] = False
-                            rotor['invalidation_reason'] += 'Pivots participate in the TS reaction zone (code: pivTS). '
-                            logging.info(f"\nNot considering rotor {key} with pivots {rotor['pivots']}  in TS {label}\n")
-                            print(rotor)
-                    # Check the normal mode displacement.
-                    self.rxn_dict[self.species_dict[label].rxn_index].check_ts(verbose=False,
-                                                                               rxn_zone_atom_indices=rxn_zone_atom_indices_0,
-                                                                               )
-                    if not self.species_dict[label].ts_checks['normal_mode_displacement']:
-                        logger.warning(f'The computed normal displacement mode of TS {label} ({rxn_zone_atom_indices_0}) '
-                                       f'does not match the expected labels from RMG '
-                                       f'({self.species_dict[label].rxn_zone_atom_indices}). Switching TS conformer.')
-                        print('                 switch TS from L2329!!!!!!!!!!!!!!!!!!!')
-                        self.switch_ts(label=label)
+                    switch_ts = check_ts_freq_job(species=self.species_dict[label],
+                                                  reaction=self.rxn_dict[self.species_dict[label].rxn_index],
+                                                  job=job,
+                                                  )
+                    if switch_ts:
+                        self.switch_ts(label)
             elif not self.species_dict[label].is_ts:
                 # Only trsh neg freq here for non TS species, trsh TS species is done in check_negative_freq().
                 self.troubleshoot_negative_freq(label=label, job=job)
@@ -3529,41 +3498,3 @@ class Scheduler(object):
         path = os.path.join(self.project_directory, 'output', 'rxns', 'TS_guess_report.yml')
         if content:
             save_yaml_file(path=path, content=content)
-
-
-def sum_time_delta(timedelta_list: List[datetime.timedelta]) -> datetime.timedelta:
-    """
-    A helper function for summing datetime.timedelta objects.
-
-    Args:
-        timedelta_list (list): Time delta's to sum.
-
-    Returns:
-        datetime.timedelta: The timedelta sum.
-    """
-    result = datetime.timedelta(0)
-    for timedelta in timedelta_list:
-        if timedelta is not None:
-            result += timedelta
-    return result
-
-
-def get_i_from_job_name(job_name: str) -> Optional[int]:
-    """
-    Get the conformer or tsg index from the job name.
-
-    Args:
-        job_name (str): The job name, e.g., 'conformer12' or 'tsg5'.
-
-    Returns:
-        Optional[int]: The corresponding conformer or tsg index.
-
-    Todo:
-        Add tests.
-    """
-    i = None
-    if 'conformer' in job_name:
-        i = int(job_name[9:])
-    elif 'tsg' in job_name:
-        i = int(job_name[3:])
-    return i
