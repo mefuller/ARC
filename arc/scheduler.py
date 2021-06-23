@@ -16,12 +16,10 @@ from IPython.display import display
 from typing import TYPE_CHECKING, List, Optional, Tuple, Union
 
 from arc import parser, plotter
-from arc.checks import (check_ts_freq_job,
-                        get_expected_num_atoms_with_largest_normal_mode_disp,
-                        get_i_from_job_name,
-                        get_rms_from_normal_mode_disp,
-                        sum_time_delta,
-                        )
+from arc.checks.ts import (check_ts_freq_job,
+                           get_i_from_job_name,
+                           sum_time_delta,
+                           )
 from arc.common import (extremum_list,
                         get_angle_in_180_range,
                         get_logger,
