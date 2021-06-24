@@ -17,7 +17,7 @@ from typing import TYPE_CHECKING, List, Optional, Tuple, Union
 
 from arc import parser, plotter
 from arc.checks.common import get_i_from_job_name, sum_time_delta
-from arc.checks.ts import check_ts_freq_job
+from arc.checks.ts import check_ts, check_ts_freq_job
 from arc.common import (extremum_list,
                         get_angle_in_180_range,
                         get_logger,
@@ -2485,7 +2485,7 @@ class Scheduler(object):
         if self.species_dict[label].is_ts:
             for rxn in self.rxn_dict.values():
                 if rxn.ts_label == label:
-                    rxn.check_ts(verbose=True)
+                    check_ts(reaction=rxn, verbose=True)
                     if not (rxn.ts_species.ts_checks['E0'] or rxn.ts_species.ts_checks['e_elect']):
                         print('                 switch TS from L2522 !!!!!!!!!!!!!!!!!!!')
                         self.switch_ts(label=label)
