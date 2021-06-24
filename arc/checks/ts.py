@@ -238,6 +238,7 @@ def get_rxn_zone_atom_indices(reaction: 'ARCReaction',
                                                                     raise_error=False)
     normal_disp_mode_rms = get_rms_from_normal_mode_disp(normal_mode_disp, freqs)
     num_of_atoms = get_expected_num_atoms_with_largest_normal_mode_disp(
+        reaction=reaction,
         normal_disp_mode_rms=normal_disp_mode_rms,
         ts_guesses=reaction.ts_species.ts_guesses,
     )
@@ -281,6 +282,7 @@ def get_index_of_abs_largest_neg_freq(freqs: np.ndarray) -> Optional[int]:
 
 
 def get_expected_num_atoms_with_largest_normal_mode_disp(normal_disp_mode_rms: List[float],
+                                                         reaction: 'ARCReaction',
                                                          ts_guesses: List['TSGuess'],
                                                          ) -> int:
     """
@@ -289,14 +291,18 @@ def get_expected_num_atoms_with_largest_normal_mode_disp(normal_disp_mode_rms: L
     It is theoretically possible that TSGuesses of the same species will belong to different families.
 
     Args:
-        normal_disp_mode_rms (List[float]): The RMS of the normal displacement modes..
+        normal_disp_mode_rms (List[float]): The RMS of the normal displacement modes.
+        reaction ('ARCReaction'): The respective reaction object instance.
         ts_guesses (List['TSGuess']): The TSGuess objects of a TS species.
 
     Returns:
         int: The number of atoms to consider that have a significant motions in the normal mode displacement.
     """
     families = list(set([tsg.family for tsg in ts_guesses]))
-    num_of_atoms = max([get_rxn_normal_mode_disp_atom_number(rxn_family=family, rms_list=normal_disp_mode_rms)
+    num_of_atoms = max([get_rxn_normal_mode_disp_atom_number(rxn_family=family,
+                                                             reaction=reaction,
+                                                             rms_list=normal_disp_mode_rms,
+                                                             )
                         for family in families])
     return num_of_atoms
 
