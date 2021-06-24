@@ -12,7 +12,7 @@ from rmgpy.reaction import Reaction
 from rmgpy.species import Species
 
 import arc.rmgdb as rmgdb
-from arc.common import extremum_list, get_logger
+from arc.common import get_logger
 from arc.exceptions import ReactionError, InputError
 from arc.species.converter import check_xyz_dict, str_to_xyz, xyz_to_str
 from arc.species.species import ARCSpecies, check_atom_balance, check_label
@@ -151,7 +151,7 @@ class ARCReaction(object):
         """The reactants to products atom map"""
         if self._atom_map is None \
                 and all(species.get_xyz(generate=False) is not None for species in self.r_species + self.p_species):
-            self._atom_map = self.get_atom_map()
+            self._atom_map = self.get_atom_map(direction=1)
         return self._atom_map
 
     @atom_map.setter
@@ -219,7 +219,7 @@ class ARCReaction(object):
             reaction_dict['preserve_param_in_scan'] = self.preserve_param_in_scan
         if 'rmg_reaction' in reaction_dict:
             reaction_dict['rmg_reaction'] = self.rmg_reaction_to_str()
-        reaction_dict['family'] = self.family
+        reaction_dict['family'] = self.family.label
         reaction_dict['family_own_reverse'] = self.family_own_reverse
         reaction_dict['long_kinetic_description'] = self.long_kinetic_description
         reaction_dict['label'] = self.label
@@ -241,7 +241,13 @@ class ARCReaction(object):
         self.charge = reaction_dict['charge'] if 'charge' in reaction_dict else 0
         self.reactants = reaction_dict['reactants'] if 'reactants' in reaction_dict else None
         self.products = reaction_dict['products'] if 'products' in reaction_dict else None
-        self.family = reaction_dict['family'] if 'family' in reaction_dict else None
+        if 'family' in reaction_dict:
+            db = rmgdb.make_rmg_database_object()
+            rmgdb.load_families_only(db)
+            self.family = rmgdb.get_family(rmgdb=db, label=reaction_dict['family'])
+            self.family.save_order = True
+        else:
+            self.family = None
         self.family_own_reverse = reaction_dict['family_own_reverse'] if 'family_own_reverse' in reaction_dict else 0
         if 'rmg_reaction' in reaction_dict:
             self.rmg_reaction_from_str(reaction_string=reaction_dict['rmg_reaction'])
@@ -653,7 +659,10 @@ class ARCReaction(object):
 
     # todo: sort the atom map methods + tests
 
-    def get_atom_map(self, verbose: int = 0) -> Optional[List[int]]:
+    def get_atom_map(self,
+                     verbose: int = 0,
+                     direction: int = 1,
+                     ) -> Optional[List[int]]:
         """
         Get the atom mapping of the reactant atoms to the product atoms.
         I.e., an atom map of [0, 2, 1] means that reactant atom 0 matches product atom 0,
@@ -663,7 +672,8 @@ class ARCReaction(object):
         the best alignment for non-oriented, non-ordered 3D structures.
 
         Args:
-            verbose (int): The verbosity level (0-4).
+            verbose (int, optional): The verbosity level (0-4).
+            direction (int, optional): Whether to map reactants to products (1) or products to reactants (-1).
 
         Returns: Optional[List[int]]
             The atom map.
@@ -689,7 +699,10 @@ class ARCReaction(object):
         except ValidationError as e:
             logger.warning(f'Could not get atom map for {self}, got:\n{e}')
         else:
-            data = products.align(ref_mol=reactants, verbose=verbose)[1]
+            if direction != -1:
+                data = products.align(ref_mol=reactants, verbose=verbose)[1]
+            else:
+                data = reactants.align(ref_mol=products, verbose=verbose)[1]
             atom_map = data['mill'].atommap.tolist()
         return atom_map
 
