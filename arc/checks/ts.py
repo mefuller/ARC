@@ -31,7 +31,7 @@ logger = get_logger()
 def check_ts(reaction: 'ARCReaction',
              verbose: bool = True,
              parameter: str = 'E0',
-             rxn_zone_atom_indices: Optional[List[int]] = None,
+             job: Optional['JobAdapter'] = None,
              ):
     """
     Check the TS in terms of energy, normal mode displacement, and IRC.
@@ -39,18 +39,42 @@ def check_ts(reaction: 'ARCReaction',
     Note that the 'freq' check is done in Scheduler.check_negative_freq() and not here.
 
     Args:
-        reaction ('ARCReaction'): THe reaction for which the TS is checked.
+        reaction ('ARCReaction'): The reaction for which the TS is checked.
         verbose (bool, optional): Whether to print logging messages.
         parameter (str, optional): The energy parameter to consider ('E0' or 'e_elect').
-        rxn_zone_atom_indices (List[int], optional): The 0-indices of atoms participating in the reaction which form the
-                                                     reactive zone of the TS **according to the normal mode analysis**.
+        job ('JobAdapter', optional): The frequency job object instance.
     """
     if not reaction.ts_species.ts_checks['E0'] and not reaction.ts_species.ts_checks['e_elect']:
         check_ts_energy(reaction=reaction, verbose=verbose, parameter=parameter)
-    if not reaction.ts_species.ts_checks['normal_mode_displacement'] and rxn_zone_atom_indices is not None:
-        check_normal_mode_displacement(reaction, rxn_zone_atom_indices)
+
+    if not reaction.ts_species.ts_checks['normal_mode_displacement'] and job is not None:
+        check_normal_mode_displacement(reaction, job=job)
+
     # if not self.ts_species.ts_checks['IRC'] and IRC_wells is not None:
-    #     self.check_irc(rxn_zone_atom_indices)
+    #     self.check_irc()
+
+    if ts_passed_all_checks(species=reaction.ts_species, exemptions=['E0', 'warnings', 'IRC']) and job is not None:
+        invalidate_rotors_with_both_pivots_in_a_reactive_zone(reaction, job)
+
+
+def ts_passed_all_checks(species: 'ARCSpecies',
+                         exemptions: Optional[List[str]] = None,
+                         ) -> bool:
+    """
+    Check whether the TS species passes all checks other than ones specified in ``exemptions``.
+
+    Args:
+        species ('ARCSpecies'): The TS species.
+        exemptions (List[str], optional): Keys of the TS.ts_checks dict to pass.
+
+    Returns:
+        bool: Whether the TS species passed all checks.
+    """
+    exemptions = exemptions or list()
+    for check, value in species.ts_checks.items():
+        if check not in exemptions and not value and not (check == 'e_elect' and species.ts_checks['E0']):
+            return False
+    return True
 
 
 def check_ts_energy(reaction: 'ARCReaction',
@@ -63,7 +87,7 @@ def check_ts_energy(reaction: 'ARCReaction',
     Sets the respective energy parameter in the ``TS.ts_checks`` dictionary.
 
     Args:
-        reaction ('ARCReaction'): THe reaction for which the TS is checked.
+        reaction ('ARCReaction'): The reaction for which the TS is checked.
         verbose (bool, optional): Whether to print logging messages.
         parameter (str, optional): The energy parameter to consider ('E0' or 'e_elect').
     """
@@ -126,21 +150,25 @@ def check_ts_energy(reaction: 'ARCReaction',
 
 
 def check_normal_mode_displacement(reaction: 'ARCReaction',
-                                   rxn_zone_atom_indices: List[int]):
+                                   job: 'JobAdapter',
+                                   rxn_zone_atom_indices: Optional[List[int]] = None,
+                                   ):
     """
     Check the normal mode displacement by making sure that the atom indices derived from the major motion
     (the major normal mode displacement) fit the expected RMG reaction template.
     Note that RMG does not differentiate well between hydrogen atoms since it thinks in 2D,
     and therefore we must consider symmetry/degeneracy as facilitated by find_equivalent_atoms_in_reactants().
-    ``rxn_zone_atom_indices`` contain the frequency normal mode displacement atom index information,
-    and here it is compared to the RMG template information.
 
     Args:
         reaction ('ARCReaction'): The reaction for which the TS is checked.
-        rxn_zone_atom_indices (List[int], optional): The 0-indices of atoms participating in the reaction which form the
-                                                     reactive zone of the TS **according to the normal mode analysis**.
+        job ('JobAdapter'): The frequency job object instance.
+        rxn_zone_atom_indices (List[int], optional): The 0-indices of atoms identified by the normal displacement
+                                                     mode as the reaction zone. Automatically determined if not given.
     """
+    if job is None:
+        return
     determine_family(reaction)
+    rxn_zone_atom_indices = rxn_zone_atom_indices or get_rxn_zone_atom_indices(reaction, job)
     reaction.ts_species.ts_checks['normal_mode_displacement'] = False
     rmg_rxn = reaction.rmg_reaction.copy()
     try:
@@ -165,85 +193,53 @@ def check_normal_mode_displacement(reaction: 'ARCReaction',
             reaction.ts_species.ts_checks['normal_mode_displacement'] = True
 
 
-def check_ts_freq_job(species: 'ARCSpecies',
-                      reaction: 'ARCReaction',
-                      job: 'JobAdapter',
-                      ) -> bool:
-    """
-    Parse normal mode displacement. Invalidate rotors that break a TS,
-    and determine whether the the normal mode displacement make sense for the given RMG family.
-
-    Args:
-        species ('ARCSpecies'): The TS species.
-        reaction ('ARCReaction'): The respective reaction object instance.
-        job ('JobAdapter'): The frequency job object instance.
-
-    Returns:
-        bool: Whether a new TS guess should be tried.
-    """
-    switch_ts = False
-    if not species.is_ts:
-        return switch_ts
-    freqs, normal_mode_disp = parser.parse_normal_mode_displacement(path=job.local_path_to_output_file,
-                                                                    raise_error=False)
-    rxn_zone_atom_indices = get_indices_of_atoms_participating_in_reaction(normal_mode_disp=normal_mode_disp,
-                                                                           freqs=freqs,
-                                                                           ts_guesses=species.ts_guesses,
-                                                                           )
-    invalidate_rotors_with_both_pivots_in_a_reactive_zone(species=species,
-                                                          rxn_zone_atom_indices=rxn_zone_atom_indices)
-
-    # Check the normal mode displacement.
-    check_ts(reaction=reaction, verbose=False, rxn_zone_atom_indices=rxn_zone_atom_indices)
-    if not species.ts_checks['normal_mode_displacement']:
-        logger.warning(f'The computed normal displacement mode of TS {species.label} ({rxn_zone_atom_indices}) '
-                       f'does not match the expected labels from RMG '
-                       f'({species.rxn_zone_atom_indices}). Switching TS conformer.')
-        switch_ts = True
-    return switch_ts
-
-
-def invalidate_rotors_with_both_pivots_in_a_reactive_zone(species: 'ARCSpecies',
-                                                          rxn_zone_atom_indices: List[int],
+def invalidate_rotors_with_both_pivots_in_a_reactive_zone(reaction: 'ARCReaction',
+                                                          job: 'JobAdapter',
+                                                          rxn_zone_atom_indices: Optional[List[int]] = None,
                                                           ):
     """
     Invalidate rotors in which both pivots are included in the reactive zone.
 
     Args:
-        species ('ARCSpecies'): The TS species.
-        rxn_zone_atom_indices (List[int]): The 0-indexed indices of atoms participating in the reaction zone of a TS.
+        reaction ('ARCReaction'): The respective reaction object instance.
+        job ('JobAdapter'): The frequency job object instance.
+        rxn_zone_atom_indices (List[int], optional): The 0-indices of atoms identified by the normal displacement
+                                                     mode as the reaction zone. Automatically determined if not given.
     """
-    if not species.rotors_dict:
-        species.determine_rotors()
+    rxn_zone_atom_indices = rxn_zone_atom_indices or get_rxn_zone_atom_indices(reaction, job)
+    if not reaction.ts_species.rotors_dict:
+        reaction.ts_species.determine_rotors()
     rxn_zone_atom_indices_1 = convert_list_index_0_to_1(rxn_zone_atom_indices)
-    for key, rotor in species.rotors_dict.items():
+    for key, rotor in reaction.ts_species.rotors_dict.items():
+        print(f"pivots: {rotor['pivots']}, rxn_zone_atom_indices_1: {rxn_zone_atom_indices_1}")
         if rotor['pivots'][0] in rxn_zone_atom_indices_1 and rotor['pivots'][1] in rxn_zone_atom_indices_1:
+            print(f'in: {rotor["pivots"]}')
             rotor['success'] = False
             if 'pivTS' not in rotor['invalidation_reason']:
                 rotor['invalidation_reason'] += 'Pivots participate in the TS reaction zone (code: pivTS). '
-                logging.info(f"\nNot considering rotor {key} with pivots {rotor['pivots']} in TS {species.label}\n")
+                logging.info(f"\nNot considering rotor {key} with pivots {rotor['pivots']} in TS {reaction.ts_species.label}\n")
 
 
-def get_indices_of_atoms_participating_in_reaction(normal_mode_disp: np.ndarray,
-                                                   freqs: np.ndarray,
-                                                   ts_guesses: List['TSGuess'],
-                                                   ) -> List[int]:
+def get_rxn_zone_atom_indices(reaction: 'ARCReaction',
+                              job: 'JobAdapter',
+                              ) -> List[int]:
     """
-    Get the indices of the atoms participating in the reaction (which form the reactive zone of the TS).
+    Get the reaction zone atom indices by parsing normal mode displacement.
 
     Args:
-        normal_mode_disp (np.ndarray): The normal displacement modes array.
-        freqs (np.ndarray): Entries are frequency values.
-        ts_guesses (List[TSGuess]): The TSGuess object instances of the TS Species.
+        reaction ('ARCReaction'): The respective reaction object instance.
+        job ('JobAdapter'): The frequency job object instance.
 
     Returns:
         List[int]: The indices of the atoms participating in the reaction.
                    The indices are 0-indexed and sorted in an increasing order.
     """
+    freqs, normal_mode_disp = parser.parse_normal_mode_displacement(path=job.local_path_to_output_file,
+                                                                    raise_error=False)
     normal_disp_mode_rms = get_rms_from_normal_mode_disp(normal_mode_disp, freqs)
     num_of_atoms = get_expected_num_atoms_with_largest_normal_mode_disp(
         normal_disp_mode_rms=normal_disp_mode_rms,
-        ts_guesses=ts_guesses,
+        ts_guesses=reaction.ts_species.ts_guesses,
     )
     return sorted(range(len(normal_disp_mode_rms)), key=lambda i: normal_disp_mode_rms[i], reverse=True)[:num_of_atoms]
 
@@ -305,7 +301,8 @@ def get_expected_num_atoms_with_largest_normal_mode_disp(normal_disp_mode_rms: L
     return num_of_atoms
 
 
-def get_rxn_normal_mode_disp_atom_number(rxn_family: str,
+def get_rxn_normal_mode_disp_atom_number(rxn_family: Optional[str] = None,
+                                         reaction: Optional['ARCReaction'] = None,
                                          rms_list: Optional[List[float]] = None,
                                          ) -> int:
     """
@@ -313,7 +310,8 @@ def get_rxn_normal_mode_disp_atom_number(rxn_family: str,
     If ``rms_list`` is given, also include atoms with an rms value close to the lowest rms still considered.
 
     Args:
-        rxn_family (str): The reaction family label.
+        rxn_family (str, optional): The reaction family label.
+        reaction ('ARCReaction', optional): The reaction object instance.
         rms_list (List[float], optional): The root mean squares of the normal mode displacements.
 
     Raises:
@@ -322,13 +320,18 @@ def get_rxn_normal_mode_disp_atom_number(rxn_family: str,
     Returns:
         int: The respective number of atoms.
     """
-    if not isinstance(rxn_family, str):
-        raise TypeError(f'rxn_family must be a string, got {rxn_family} which is a {type(rxn_family)}.')
-    if rms_list is not None and (
-            not isinstance(rms_list, list) or not all(isinstance(entry, float) for entry in rms_list)):
+    DEFAULT = 3
+    if rms_list is not None \
+            and (not isinstance(rms_list, list) or not all(isinstance(entry, float) for entry in rms_list)):
         raise TypeError(f'rms_list must be a non empty list, got {rms_list} of type {type(rms_list)}.')
+    family = rxn_family
+    if family is None and reaction is not None and reaction.family is not None:
+        family = reaction.family.label
+    if family is None:
+        logger.warning(f'Cannot deduce a reaction family for {reaction}, assuming {DEFAULT} atoms in the reaction zone.')
+        return DEFAULT
     content = read_yaml_file(os.path.join(ARC_PATH, 'data', 'rxn_normal_mode_disp.yml'))
-    number_by_family = content.get(rxn_family, 3)
+    number_by_family = content.get(rxn_family, DEFAULT)
     if rms_list is None or not len(rms_list):
         return number_by_family
     entry = None

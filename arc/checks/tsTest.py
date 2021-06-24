@@ -99,6 +99,36 @@ H                 -1.28677889    1.04716138   -1.01532486"""
         cls.rxn_2a.ts_species = cls.ts_spc_2
         cls.rxn_2b = ARCReaction(r_species=[cls.reactant_2b], p_species=[cls.product_2])
         cls.rxn_2b.ts_species = cls.ts_spc_2
+        cls.job1 = job_factory(job_adapter='gaussian',
+                               species=[cls.ts_spc_2],
+                               job_type='composite',
+                               level=Level(method='CBS-QB3'),
+                               project='test_project',
+                               project_directory=os.path.join(ARC_PATH,
+                                                              'Projects',
+                                                              'arc_project_for_testing_delete_after_usage4'),
+                               )
+        cls.job1.local_path_to_output_file = os.path.join(ts.ARC_PATH, 'arc', 'testing', 'composite',
+                                                          'TS_intra_H_migration_CBS-QB3.out')
+
+    def test_did_ts_pass_all_checks(self):
+        """Test the did_ts_pass_all_checks() function"""
+        spc = ARCSpecies(label='TS', is_ts=True)
+        spc.populate_ts_checks()
+        self.assertFalse(ts.ts_passed_all_checks(spc))
+
+        self.ts_checks = {'E0': False,
+                          'e_elect': False,
+                          'IRC': False,
+                          'freq': False,
+                          'normal_mode_displacement': False,
+                          'warnings': '',
+                          }
+        for key in ['E0', 'e_elect', 'IRC', 'freq']:
+            spc.ts_checks[key] = True
+        self.assertFalse(ts.ts_passed_all_checks(spc))
+        self.assertTrue(ts.ts_passed_all_checks(spc, exemptions=['normal_mode_displacement', 'warnings']))
+        spc.ts_checks['e_elect'] = False # todo: check this last thing when elect is false but E0 is true
 
     def test_determine_family(self):
         """Test the determine_family() function"""
@@ -180,58 +210,35 @@ H                 -1.28677889    1.04716138   -1.01532486"""
 
         # expecting for rxn_2a: [[0, 2], [1], [4, 5, 6, 7, 8, 9]])
         self.rxn_2a.determine_family(rmg_database=self.rmgdb)
-        ts.check_normal_mode_displacement(reaction=self.rxn_2a, rxn_zone_atom_indices=[15, 25])  # wrong indices
+        ts.check_normal_mode_displacement(reaction=self.rxn_2a, job=self.job1, rxn_zone_atom_indices=[15, 25])  # wrong indices
         self.assertFalse(self.rxn_2a.ts_species.ts_checks['normal_mode_displacement'])
-        ts.check_normal_mode_displacement(reaction=self.rxn_2a, rxn_zone_atom_indices=[0, 1, 3])  # non-reactive atom 3
+        ts.check_normal_mode_displacement(reaction=self.rxn_2a, job=self.job1, rxn_zone_atom_indices=[0, 1, 3])  # non-reactive atom 3
         self.assertFalse(self.rxn_2a.ts_species.ts_checks['normal_mode_displacement'])
-        ts.check_normal_mode_displacement(reaction=self.rxn_2a, rxn_zone_atom_indices=[0, 0, 4])  # repeated indices
+        ts.check_normal_mode_displacement(reaction=self.rxn_2a, job=self.job1, rxn_zone_atom_indices=[0, 0, 4])  # repeated indices
         self.assertFalse(self.rxn_2a.ts_species.ts_checks['normal_mode_displacement'])
-        ts.check_normal_mode_displacement(reaction=self.rxn_2a, rxn_zone_atom_indices=[0, 2, 4])  # not including all positions
+        ts.check_normal_mode_displacement(reaction=self.rxn_2a, job=self.job1, rxn_zone_atom_indices=[0, 2, 4])  # not including all positions
         self.assertFalse(self.rxn_2a.ts_species.ts_checks['normal_mode_displacement'])
-        ts.check_normal_mode_displacement(reaction=self.rxn_2a, rxn_zone_atom_indices=[6, 1, 4])  # not including all positions
+        ts.check_normal_mode_displacement(reaction=self.rxn_2a, job=self.job1, rxn_zone_atom_indices=[6, 1, 4])  # not including all positions
         self.assertFalse(self.rxn_2a.ts_species.ts_checks['normal_mode_displacement'])
-        ts.check_normal_mode_displacement(reaction=self.rxn_2a, rxn_zone_atom_indices=[0, 1, 4])  # correct
+        ts.check_normal_mode_displacement(reaction=self.rxn_2a, job=self.job1, rxn_zone_atom_indices=[0, 1, 4])  # correct
         self.assertTrue(self.rxn_2a.ts_species.ts_checks['normal_mode_displacement'])
-        ts.check_normal_mode_displacement(reaction=self.rxn_2a, rxn_zone_atom_indices=[2, 1, 8])  # correct variant
+        ts.check_normal_mode_displacement(reaction=self.rxn_2a, job=self.job1, rxn_zone_atom_indices=[2, 1, 8])  # correct variant
         self.assertTrue(self.rxn_2a.ts_species.ts_checks['normal_mode_displacement'])
 
         # expecting for rxn_2b: [[0, 6], [1], [3, 4, 5, 7, 8, 9]])
-        ts.check_normal_mode_displacement(reaction=self.rxn_2b, rxn_zone_atom_indices=[0, 1, 2])  # non-reactive atom 2
+        ts.check_normal_mode_displacement(reaction=self.rxn_2b, job=self.job1, rxn_zone_atom_indices=[0, 1, 2])  # non-reactive atom 2
         self.assertFalse(self.rxn_2b.ts_species.ts_checks['normal_mode_displacement'])
-        ts.check_normal_mode_displacement(reaction=self.rxn_2b, rxn_zone_atom_indices=[0, 1, 4])  # correct
+        ts.check_normal_mode_displacement(reaction=self.rxn_2b, job=self.job1, rxn_zone_atom_indices=[0, 1, 4])  # correct
         self.assertTrue(self.rxn_2b.ts_species.ts_checks['normal_mode_displacement'])
-        ts.check_normal_mode_displacement(reaction=self.rxn_2b, rxn_zone_atom_indices=[6, 1, 4])  # correct variant (but incorrect for rxn2_a)
+        ts.check_normal_mode_displacement(reaction=self.rxn_2b, job=self.job1, rxn_zone_atom_indices=[6, 1, 4])  # correct variant (but incorrect for rxn2_a)
         self.assertTrue(self.rxn_2b.ts_species.ts_checks['normal_mode_displacement'])
-
-    def test_check_ts_freq_job(self):
-        """Test the check_ts_freq_job() function"""
-        self.reactant_2a.e0, self.product_2.e0, self.ts_spc_2.e0 = 0, 10, 100
-        rxn = ARCReaction(r_species=[self.reactant_2a], p_species=[self.product_2])
-        rxn.ts_species = self.ts_spc_2
-        rxn.determine_family(self.rmgdb)
-        job = job_factory(job_adapter='gaussian',
-                          species=[self.ts_spc_2],
-                          job_type='composite',
-                          level=Level(method='CBS-QB3'),
-                          project='test_project',
-                          project_directory=os.path.join(ARC_PATH,
-                                                         'Projects',
-                                                         'arc_project_for_testing_delete_after_usage4'),
-                          )
-        job.local_path_to_output_file = os.path.join(ts.ARC_PATH, 'arc', 'testing', 'composite',
-                                                     'TS_intra_H_migration_CBS-QB3.out')
-        # print(ts_spc.ts_checks)
-        # switch_ts = ts.check_ts_freq_job(species=ts_spc, reaction=rxn, job=job)
-        # print(switch_ts)
-        # print(ts_spc.ts_checks)
-        # raise
 
     def test_invalidate_rotors_with_both_pivots_in_a_reactive_zone(self):
         """Test the invalidate_rotors_with_both_pivots_in_a_reactive_zone() function"""
         ts_spc_1 = ARCSpecies(label='TS', is_ts=True, xyz=self.ts_xyz_1)
         ts_spc_1.mol_from_xyz()
         ts_spc_1.determine_rotors()
-        # Manually add the rotor that breaks the TS, it is not identified automatically.
+        # Manually add the rotor that breaks the TS, it is not identified automatically:
         ts_spc_1.rotors_dict[1] = {'pivots': [2, 3],
                                    'top': [4, 8],
                                    'scan': [1, 2, 3, 4],
@@ -239,8 +246,12 @@ H                 -1.28677889    1.04716138   -1.01532486"""
                                    'success': None,
                                    'invalidation_reason': '',
                                    'dimensions': 1}
+        rxn = ARCReaction(r_species=[ARCSpecies(label='N#[CH]', smiles='N#C'), ARCSpecies(label='[CH2][OH]', smiles='[CH2]O')],
+                          p_species=[ARCSpecies(label='N=CCO', smiles='[N]=CCO')])
+        rxn.ts_species = ts_spc_1
         rxn_zone_atom_indices = [1, 2]
-        ts.invalidate_rotors_with_both_pivots_in_a_reactive_zone(species=ts_spc_1,
+        ts.invalidate_rotors_with_both_pivots_in_a_reactive_zone(reaction=rxn,
+                                                                 job=self.job1,
                                                                  rxn_zone_atom_indices=rxn_zone_atom_indices)
         self.assertEqual(ts_spc_1.rotors_dict[0]['pivots'], [1, 2])
         self.assertEqual(ts_spc_1.rotors_dict[0]['invalidation_reason'], '')
@@ -251,28 +262,17 @@ H                 -1.28677889    1.04716138   -1.01532486"""
                          'Pivots participate in the TS reaction zone (code: pivTS). ')
         self.assertEqual(ts_spc_1.rotors_dict[1]['success'], False)
 
-        ts_spc_2 = ARCSpecies(label='TS', is_ts=True, xyz=self.ts_xyz_2)
-        ts_spc_2.mol_from_xyz()
-        rxn_zone_atom_indices = [1, 2, 6]
-        ts.invalidate_rotors_with_both_pivots_in_a_reactive_zone(species=ts_spc_2,
-                                                                 rxn_zone_atom_indices=rxn_zone_atom_indices)
-        self.assertEqual(ts_spc_2.rotors_dict[0]['pivots'], [1, 2])
-        self.assertEqual(ts_spc_2.rotors_dict[0]['scan'], [5, 1, 2, 3])
-        self.assertEqual(ts_spc_2.rotors_dict[0]['invalidation_reason'], '')
-        self.assertIsNone(ts_spc_2.rotors_dict[0]['success'])
-        self.assertEqual(ts_spc_2.rotors_dict[1]['pivots'], [2, 3])
-        self.assertEqual(ts_spc_2.rotors_dict[1]['scan'], [1, 2, 3, 9])
-        self.assertEqual(ts_spc_2.rotors_dict[1]['invalidation_reason'],
+        ts.invalidate_rotors_with_both_pivots_in_a_reactive_zone(reaction=self.rxn_2a,
+                                                                 job=self.job1)
+        self.assertEqual(self.rxn_2a.ts_species.rotors_dict[0]['pivots'], [1, 2])
+        self.assertEqual(self.rxn_2a.ts_species.rotors_dict[0]['scan'], [5, 1, 2, 3])
+        self.assertEqual(self.rxn_2a.ts_species.rotors_dict[0]['invalidation_reason'], '')
+        self.assertIsNone(self.rxn_2a.ts_species.rotors_dict[0]['success'])
+        self.assertEqual(self.rxn_2a.ts_species.rotors_dict[1]['pivots'], [2, 3])
+        self.assertEqual(self.rxn_2a.ts_species.rotors_dict[1]['scan'], [1, 2, 3, 9])
+        self.assertEqual(self.rxn_2a.ts_species.rotors_dict[1]['invalidation_reason'],
                          'Pivots participate in the TS reaction zone (code: pivTS). ')
-        self.assertEqual(ts_spc_2.rotors_dict[1]['success'], False)
-
-    def test_get_indices_of_atoms_participating_in_reaction(self):
-        """Test the get_indices_of_atoms_participating_in_reaction() function"""
-        # Todo - check again
-        self.assertEqual(ts.get_indices_of_atoms_participating_in_reaction(normal_mode_disp=self.normal_modes_disp_1,
-                                                                           freqs=self.freqs_1,
-                                                                           ts_guesses=self.ts_1.ts_guesses,
-                                                                           ), [3, 0, 1])
+        self.assertEqual(self.rxn_2a.ts_species.rotors_dict[1]['success'], False)
 
     def test_get_rms_from_normal_modes_disp(self):
         """Test the get_rms_from_normal_modes_disp() function"""
@@ -311,13 +311,12 @@ H                 -1.28677889    1.04716138   -1.01532486"""
     def test_get_rxn_normal_mode_disp_atom_number(self):
         """Test the get_rxn_normal_mode_disp_atom_number function"""
         with self.assertRaises(TypeError):
-            ts.get_rxn_normal_mode_disp_atom_number(15)
+            ts.get_rxn_normal_mode_disp_atom_number('family', rms_list='family')
         with self.assertRaises(TypeError):
-            ts.get_rxn_normal_mode_disp_atom_number('family', 'family')
+            ts.get_rxn_normal_mode_disp_atom_number('family', rms_list=['family'])
         with self.assertRaises(TypeError):
-            ts.get_rxn_normal_mode_disp_atom_number('family', ['family'])
-        with self.assertRaises(TypeError):
-            ts.get_rxn_normal_mode_disp_atom_number('family', 15.215)
+            ts.get_rxn_normal_mode_disp_atom_number('family', rms_list=15.215)
+        self.assertEqual(ts.get_rxn_normal_mode_disp_atom_number(), 3)
         self.assertEqual(ts.get_rxn_normal_mode_disp_atom_number('default'), 3)
         self.assertEqual(ts.get_rxn_normal_mode_disp_atom_number('intra_H_migration'), 3)
         self.assertEqual(ts.get_rxn_normal_mode_disp_atom_number('intra_H_migration', rms_list=self.rms_list_1), 4)
