@@ -8,12 +8,11 @@ import numpy as np
 from qcelemental.exceptions import ValidationError
 from qcelemental.models.molecule import Molecule as QCMolecule
 
-from rmgpy.exceptions import ActionError
 from rmgpy.reaction import Reaction
 from rmgpy.species import Species
 
 import arc.rmgdb as rmgdb
-from arc.common import extremum_list, get_logger
+from arc.common import get_logger
 from arc.exceptions import ReactionError, InputError
 from arc.species.converter import check_xyz_dict, str_to_xyz, xyz_to_str
 from arc.species.species import ARCSpecies, check_atom_balance, check_label
@@ -151,7 +150,7 @@ class ARCReaction(object):
         """The reactants to products atom map"""
         if self._atom_map is None \
                 and all(species.get_xyz(generate=False) is not None for species in self.r_species + self.p_species):
-            self._atom_map = self.get_atom_map()
+            self._atom_map = self.get_atom_map(direction=1)
         return self._atom_map
 
     @atom_map.setter
@@ -247,7 +246,7 @@ class ARCReaction(object):
         self.charge = reaction_dict['charge'] if 'charge' in reaction_dict else 0
         self.reactants = reaction_dict['reactants'] if 'reactants' in reaction_dict else None
         self.products = reaction_dict['products'] if 'products' in reaction_dict else None
-        if 'family' in reaction_dict and reaction_dict['family'] is not None:
+        if 'family' in reaction_dict:
             db = rmgdb.make_rmg_database_object()
             rmgdb.load_families_only(db)
             self.family = rmgdb.get_family(rmgdb=db, label=reaction_dict['family'])
@@ -474,133 +473,6 @@ class ARCReaction(object):
                                                                                    save_order=save_order,
                                                                                    )
 
-    def check_ts(self,
-                 verbose: bool = True,
-                 parameter: str = 'E0',
-                 rxn_zone_atom_indices: Optional[List[int]] = None,
-                 ):
-        """
-        Check the TS in terms of energy, normal mode displacement, and IRC.
-        Populates the ``TS.ts_checks`` dictionary.
-        Note that the 'freq' check is done in Scheduler.check_negative_freq() and not here.
-
-        Args:
-            verbose (bool, optional): Whether to print logging messages.
-            parameter (str, optional): The energy parameter to consider ('E0' or 'e_elect').
-            rxn_zone_atom_indices (List[int], optional): The 0-indexed atom indices of atoms participating in the
-                                                         reaction (which form the reactive zone of the TS).
-        """
-        if not self.ts_species.ts_checks['E0'] and not self.ts_species.ts_checks['e_elect']:
-            self.check_ts_energy(verbose=verbose, parameter=parameter)
-        if not self.ts_species.ts_checks['normal_mode_displacement'] and rxn_zone_atom_indices is not None:
-            self.check_normal_mode_displacement(rxn_zone_atom_indices)
-        # if not self.ts_species.ts_checks['IRC'] and IRC_wells is not None:
-        #     self.check_irc(rxn_zone_atom_indices)
-
-    def check_ts_energy(self,
-                        verbose: bool = True,
-                        parameter: str = 'E0',
-                        ) -> None:
-        """
-        Check that the TS E0 or electronic energy is above both reactant and product wells.
-        By default E0 is checked first. If it is not available for all species and TS, the electronic energy is checked.
-        If the check cannot be performed, the method still returns ``True``.
-        Sets the respective energy parameter in the ``TS.ts_checks`` dictionary.
-
-        Args:
-            verbose (bool, optional): Whether to print logging messages.
-            parameter (str, optional): The energy parameter to consider ('E0' or 'e_elect').
-        """
-        if parameter not in ['E0', 'e_elect']:
-            raise ValueError(f"The energy parameter must be either 'E0' or 'e_elect', got: {parameter}")
-
-        # Determine E0 and e_elect.
-        r_e0 = None if any([spc.e0 is None for spc in self.r_species]) \
-            else sum(spc.e0 * self.get_species_count(species=spc, well=0) for spc in self.r_species)
-        p_e0 = None if any([spc.e0 is None for spc in self.p_species]) \
-            else sum(spc.e0 * self.get_species_count(species=spc, well=1) for spc in self.p_species)
-        ts_e0 = self.ts_species.e0
-        r_e_elect = None if any([spc.e_elect is None for spc in self.r_species]) \
-            else sum(spc.e_elect * self.get_species_count(species=spc, well=0) for spc in self.r_species)
-        p_e_elect = None if any([spc.e_elect is None for spc in self.p_species]) \
-            else sum(spc.e_elect * self.get_species_count(species=spc, well=1) for spc in self.p_species)
-        ts_e_elect = self.ts_species.e_elect
-
-        # Determine the parameter by which to compare.
-        r_e = r_e0 if parameter == 'E0' else r_e_elect
-        p_e = p_e0 if parameter == 'E0' else p_e_elect
-        ts_e = ts_e0 if parameter == 'E0' else ts_e_elect
-        min_e = extremum_list([r_e, p_e, ts_e], return_min=True)
-        e_str = 'E0' if parameter == 'E0' else 'electronic energy'
-
-        if any([val is not None for val in [r_e, p_e, ts_e]]):
-            if verbose:
-                r_text = f'{r_e - min_e:.2f} kJ/mol' if r_e is not None else 'None'
-                ts_text = f'{ts_e - min_e:.2f} kJ/mol' if ts_e is not None else 'None'
-                p_text = f'{p_e - min_e:.2f} kJ/mol' if p_e is not None else 'None'
-                logger.info(f'\nReaction {self.label} has the following path {e_str}:\n'
-                            f'Reactants: {r_text}\n'
-                            f'TS: {ts_text}\n'
-                            f'Products: {p_text}')
-
-            if all([val is not None for val in [r_e, p_e, ts_e]]):
-                # We have all params, we can make a quantitative decision.
-                if ts_e > r_e and ts_e > p_e:
-                    # TS is above both wells.
-                    self.ts_species.ts_checks[parameter] = True
-                    return
-                # TS is not above both wells.
-                if verbose:
-                    logger.error(f'TS of reaction {self.label} has a lower {e_str} value than expected.')
-                    self.ts_species.ts_checks[parameter] = False
-                    return
-            # We don't have all params (some are ``None``).
-        # We don't have any params (they are all ``None``), or we don't have any params and were only checking E0.
-        if parameter == 'E0':
-            # Use e_elect instead:
-            logger.debug(f'Could not get all E0 values for reaction {self.label}, comparing energies using e_elect.')
-            self.check_ts_energy(verbose=verbose, parameter='e_elect')
-            return
-        if verbose:
-            logger.info('\n')
-            logger.error(f"Could not get {e_str} of all species in reaction {self.label}. Cannot check TS.\n")
-        # We don't really know, assume ``True``
-        self.ts_species.ts_checks[parameter] = True
-        self.ts_species.ts_checks['warnings'] += 'Could not determine TS energy relative to the wells; '
-
-    def check_normal_mode_displacement(self, rxn_zone_atom_indices: List[int]):
-        """
-        Check the normal mode displacement by making sure that the atom indices derived from the major motion
-        (the major normal mode displacement) fit the expected RMG reaction template.
-        Note that RMG does not differentiate well between hydrogen atoms since it thinks in 2D.
-
-        Args:
-            rxn_zone_atom_indices (List[int], optional): The 0-indexed indices of atoms participating in the
-                                                         reaction (which form the reactive zone of the TS).
-        """
-        # todo: symmetry like in C[CH]C will give different results. need to consider degeneracy in RMG and check if one path fits
-        # todo: hydrogens are problematic, can't know using 2D which H on a CH3 migrated
-        rmg_rxn = self.rmg_reaction.copy()
-        try:
-            self.family.add_atom_labels_for_reaction(reaction=rmg_rxn, output_with_resonance=False, save_order=True)
-        except (ActionError, ValueError):
-            self.ts_species.ts_checks['normal_mode_displacement'] = True
-            self.ts_species.ts_checks['warnings'] += 'Could not determine atom labels from RMG, ' \
-                                                     'cannot check normal mode displacement; '
-        else:
-            r_labels, p_labels = list(), list()
-            for reactant in rmg_rxn.reactants:
-                r_labels.extend([i for i, atom in enumerate(reactant.molecule[0].atoms) if atom.label])
-            for product in rmg_rxn.products:
-                p_labels.extend([i for i, atom in enumerate(product.molecule[0].atoms) if atom.label])
-            r_labels, p_labels = list(set(r_labels)), list(set(p_labels))
-            r_labels.sort()
-            p_labels.sort()
-            rxn_zone_atom_indices.sort()
-            self.ts_species.rxn_zone_atom_indices = rxn_zone_atom_indices
-            if r_labels == p_labels == rxn_zone_atom_indices:
-                self.ts_species.ts_checks['normal_mode_displacement'] = True
-
     def check_attributes(self):
         """Check that the Reaction object is defined correctly"""
         self.set_label_reactants_products()
@@ -821,7 +693,10 @@ class ARCReaction(object):
 
     # todo: sort the atom map methods + tests
 
-    def get_atom_map(self, verbose: int = 0) -> Optional[List[int]]:
+    def get_atom_map(self,
+                     verbose: int = 0,
+                     direction: int = 1,
+                     ) -> Optional[List[int]]:
         """
         Get the atom mapping of the reactant atoms to the product atoms.
         I.e., an atom map of [0, 2, 1] means that reactant atom 0 matches product atom 0,
@@ -832,7 +707,8 @@ class ARCReaction(object):
         the best alignment for non-oriented, non-ordered 3D structures.
 
         Args:
-            verbose (int): The verbosity level (0-4).
+            verbose (int, optional): The verbosity level (0-4).
+            direction (int, optional): Whether to map reactants to products (1) or products to reactants (-1).
 
         Returns: Optional[List[int]]
             The atom map, entry indices correspond to reactant indices, entry values correspond to product indices.
@@ -858,7 +734,10 @@ class ARCReaction(object):
         except ValidationError as e:
             logger.warning(f'Could not get atom map for {self}, got:\n{e}')
         else:
-            data = products.align(ref_mol=reactants, verbose=verbose)[1]
+            if direction != -1:
+                data = products.align(ref_mol=reactants, verbose=verbose)[1]
+            else:
+                data = reactants.align(ref_mol=products, verbose=verbose)[1]
             atom_map = data['mill'].atommap.tolist()
         return atom_map
 
