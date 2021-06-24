@@ -17,7 +17,7 @@ from typing import TYPE_CHECKING, List, Optional, Tuple, Union
 
 from arc import parser, plotter
 from arc.checks.common import get_i_from_job_name, sum_time_delta
-from arc.checks.ts import check_ts, check_ts_freq_job
+from arc.checks.ts import check_ts, ts_passed_all_checks
 from arc.common import (extremum_list,
                         get_angle_in_180_range,
                         get_logger,
@@ -2287,11 +2287,9 @@ class Scheduler(object):
                         self.species_dict[label].transport_data.comment = \
                             str(f'Polarizability calculated at the {self.freq_level.simple()} level of theory')
                 if self.species_dict[label].is_ts:
-                    switch_ts = check_ts_freq_job(species=self.species_dict[label],
-                                                  reaction=self.rxn_dict[self.species_dict[label].rxn_index],
-                                                  job=job,
-                                                  )
-                    if switch_ts:
+                    check_ts(reaction=self.rxn_dict[self.species_dict[label].rxn_index], job=job)
+                    if ts_passed_all_checks(species=self.species_dict[label],
+                                            exemptions=['E0', 'e_elect', 'IRC', 'warnings']):
                         self.switch_ts(label)
             elif not self.species_dict[label].is_ts:
                 # Only trsh neg freq here for non TS species, trsh TS species is done in check_negative_freq().
@@ -2350,8 +2348,6 @@ class Scheduler(object):
                 if f'{len(neg_freqs)} imaginary freqs for' not in self.output[label]['warnings']:
                     # Todo: this warning is obsolete if changing the TS guess during the run.
                     self.output[label]['warnings'] += f'Warning: {len(neg_freqs)} imaginary freqs for TS ({neg_freqs}); '
-                print('                 switch TS from L2388 !!!!!!!!!!!!!!!!!!!')
-                # No need to set self.species_dict[label].ts_checks['freq'] to False, it'll be reset in switch_ts()
                 self.switch_ts(label=label)
                 return False
             else:
