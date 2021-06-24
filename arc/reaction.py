@@ -219,7 +219,8 @@ class ARCReaction(object):
             reaction_dict['preserve_param_in_scan'] = self.preserve_param_in_scan
         if 'rmg_reaction' in reaction_dict:
             reaction_dict['rmg_reaction'] = self.rmg_reaction_to_str()
-        reaction_dict['family'] = self.family.label
+        if self.family is not None:
+            reaction_dict['family'] = self.family.label
         reaction_dict['family_own_reverse'] = self.family_own_reverse
         reaction_dict['long_kinetic_description'] = self.long_kinetic_description
         reaction_dict['label'] = self.label
