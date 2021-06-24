@@ -21,6 +21,7 @@ from arkane.ess import ess_factory
 import rmgpy.constants as constants
 
 import arc.plotter as plotter
+from arc.checks.ts import check_ts
 from arc.common import get_logger
 from arc.exceptions import InputError, RotorError
 from arc.imports import input_files
@@ -186,7 +187,7 @@ class ArkaneAdapter(StatmechAdapter):
                              f'of reaction {self.reaction.label}')
             else:
                 ts_species.e0 = arkane_ts_species.conformer.E0.value_si * 0.001  # convert to kJ/mol
-                self.reaction.check_ts()
+                check_ts(reaction=self.reaction)  # Todo: what do we do with the test results?
                 self.reaction.dh_rxn298 = \
                     sum([product.thermo.get_enthalpy(298) * self.reaction.get_species_count(product, well=1)
                          for product in self.reaction.p_species]) \
