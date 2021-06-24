@@ -2288,8 +2288,11 @@ class Scheduler(object):
                             str(f'Polarizability calculated at the {self.freq_level.simple()} level of theory')
                 if self.species_dict[label].is_ts:
                     check_ts(reaction=self.rxn_dict[self.species_dict[label].rxn_index], job=job)
-                    if ts_passed_all_checks(species=self.species_dict[label],
-                                            exemptions=['E0', 'e_elect', 'IRC', 'warnings']):
+                    if not ts_passed_all_checks(species=self.species_dict[label],
+                                                exemptions=['E0', 'e_elect', 'IRC', 'warnings']):
+                        logging.info(f'TS {label} did not pass all checks. '
+                                     f'Status is:\n{self.species_dict[label].ts_checks}\n'
+                                     f'Searching for a better TS conformer...')
                         self.switch_ts(label)
             elif not self.species_dict[label].is_ts:
                 # Only trsh neg freq here for non TS species, trsh TS species is done in check_negative_freq().
