@@ -100,6 +100,11 @@ H                 -1.28677889    1.04716138   -1.01532486"""
         cls.rxn_2b = ARCReaction(r_species=[cls.reactant_2b], p_species=[cls.product_2])
         cls.rxn_2b.ts_species = cls.ts_spc_2
 
+    def test_determine_family(self):
+        """Test the determine_family() function"""
+        ts.determine_family(reaction=self.rxn_2a)
+        self.assertEqual(self.rxn_2a.family.label, 'intra_H_migration')
+
     def test_check_ts_energy(self):
         """Test the check_ts_energy() method"""
         def populate_ts_checks_and_check_ts_energy(reaction: ARCReaction, parameter='E0'):
@@ -167,20 +172,36 @@ H                 -1.28677889    1.04716138   -1.01532486"""
         populate_ts_checks_and_check_ts_energy(rxn1, parameter='e_elect')
         self.assertTrue(rxn1.ts_species.ts_checks['e_elect'])
 
-    # def test_check_normal_mode_displacement(self):
-    #     rxn1 = ARCReaction(r_species=[ARCSpecies(label='[CH2]CC', smiles='[CH2]CC')],
-    #                        p_species=[ARCSpecies(label='C[CH]C', smiles='C[CH]C')])
-    #     rxn1.ts_species = ARCSpecies(label='TS1', is_ts=True)
-    #     rxn1.ts_species.populate_ts_checks()
-    #     self.assertFalse(rxn1.ts_species.ts_checks['normal_mode_displacement'])
-    #
-    #     rxn1.determine_family(rmg_database=self.rmgdb)
-    #     ts.check_normal_mode_displacement(reaction=rxn1, rxn_zone_atom_indices=[15, 25])
-    #     self.assertFalse(rxn1.ts_species.ts_checks['normal_mode_displacement'])
-    #
-    #     rxn1.ts_species.populate_ts_checks()
-    #     ts.check_normal_mode_displacement(reaction=rxn1, rxn_zone_atom_indices=[1, 2, 3])
-    #     self.assertTrue(rxn1.ts_species.ts_checks['normal_mode_displacement'])
+    def test_check_normal_mode_displacement(self):
+        self.rxn_2a.ts_species.populate_ts_checks()
+        self.assertFalse(self.rxn_2a.ts_species.ts_checks['normal_mode_displacement'])
+        self.rxn_2b.ts_species.populate_ts_checks()
+        self.assertFalse(self.rxn_2b.ts_species.ts_checks['normal_mode_displacement'])
+
+        # expecting for rxn_2a: [[0, 2], [1], [4, 5, 6, 7, 8, 9]])
+        self.rxn_2a.determine_family(rmg_database=self.rmgdb)
+        ts.check_normal_mode_displacement(reaction=self.rxn_2a, rxn_zone_atom_indices=[15, 25])  # wrong indices
+        self.assertFalse(self.rxn_2a.ts_species.ts_checks['normal_mode_displacement'])
+        ts.check_normal_mode_displacement(reaction=self.rxn_2a, rxn_zone_atom_indices=[0, 1, 3])  # non-reactive atom 3
+        self.assertFalse(self.rxn_2a.ts_species.ts_checks['normal_mode_displacement'])
+        ts.check_normal_mode_displacement(reaction=self.rxn_2a, rxn_zone_atom_indices=[0, 0, 4])  # repeated indices
+        self.assertFalse(self.rxn_2a.ts_species.ts_checks['normal_mode_displacement'])
+        ts.check_normal_mode_displacement(reaction=self.rxn_2a, rxn_zone_atom_indices=[0, 2, 4])  # not including all positions
+        self.assertFalse(self.rxn_2a.ts_species.ts_checks['normal_mode_displacement'])
+        ts.check_normal_mode_displacement(reaction=self.rxn_2a, rxn_zone_atom_indices=[6, 1, 4])  # not including all positions
+        self.assertFalse(self.rxn_2a.ts_species.ts_checks['normal_mode_displacement'])
+        ts.check_normal_mode_displacement(reaction=self.rxn_2a, rxn_zone_atom_indices=[0, 1, 4])  # correct
+        self.assertTrue(self.rxn_2a.ts_species.ts_checks['normal_mode_displacement'])
+        ts.check_normal_mode_displacement(reaction=self.rxn_2a, rxn_zone_atom_indices=[2, 1, 8])  # correct variant
+        self.assertTrue(self.rxn_2a.ts_species.ts_checks['normal_mode_displacement'])
+
+        # expecting for rxn_2b: [[0, 6], [1], [3, 4, 5, 7, 8, 9]])
+        ts.check_normal_mode_displacement(reaction=self.rxn_2b, rxn_zone_atom_indices=[0, 1, 2])  # non-reactive atom 2
+        self.assertFalse(self.rxn_2b.ts_species.ts_checks['normal_mode_displacement'])
+        ts.check_normal_mode_displacement(reaction=self.rxn_2b, rxn_zone_atom_indices=[0, 1, 4])  # correct
+        self.assertTrue(self.rxn_2b.ts_species.ts_checks['normal_mode_displacement'])
+        ts.check_normal_mode_displacement(reaction=self.rxn_2b, rxn_zone_atom_indices=[6, 1, 4])  # correct variant (but incorrect for rxn2_a)
+        self.assertTrue(self.rxn_2b.ts_species.ts_checks['normal_mode_displacement'])
 
     def test_check_ts_freq_job(self):
         """Test the check_ts_freq_job() function"""
