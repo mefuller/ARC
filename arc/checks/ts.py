@@ -42,8 +42,8 @@ def check_ts(reaction: 'ARCReaction',
         reaction ('ARCReaction'): THe reaction for which the TS is checked.
         verbose (bool, optional): Whether to print logging messages.
         parameter (str, optional): The energy parameter to consider ('E0' or 'e_elect').
-        rxn_zone_atom_indices (List[int], optional): The 0-indexed atom indices of atoms participating in the
-                                                     reaction (which form the reactive zone of the TS).
+        rxn_zone_atom_indices (List[int], optional): The 0-indices of atoms participating in the reaction which form the
+                                                     reactive zone of the TS **according to the normal mode analysis**.
     """
     if not reaction.ts_species.ts_checks['E0'] and not reaction.ts_species.ts_checks['e_elect']:
         check_ts_energy(reaction=reaction, verbose=verbose, parameter=parameter)
@@ -130,36 +130,38 @@ def check_normal_mode_displacement(reaction: 'ARCReaction',
     """
     Check the normal mode displacement by making sure that the atom indices derived from the major motion
     (the major normal mode displacement) fit the expected RMG reaction template.
-    Note that RMG does not differentiate well between hydrogen atoms since it thinks in 2D.
+    Note that RMG does not differentiate well between hydrogen atoms since it thinks in 2D,
+    and therefore we must consider symmetry/degeneracy as facilitated by find_equivalent_atoms_in_reactants().
+    ``rxn_zone_atom_indices`` contain the frequency normal mode displacement atom index information,
+    and here it is compared to the RMG template information.
 
     Args:
-        reaction ('ARCReaction'): THe reaction for which the TS is checked.
-        rxn_zone_atom_indices (List[int], optional): The 0-indexed indices of atoms participating in the
-                                                     reaction (which form the reactive zone of the TS).
+        reaction ('ARCReaction'): The reaction for which the TS is checked.
+        rxn_zone_atom_indices (List[int], optional): The 0-indices of atoms participating in the reaction which form the
+                                                     reactive zone of the TS **according to the normal mode analysis**.
     """
-    # todo: symmetry like in C[CH]C will give different results. need to consider degeneracy in RMG and check if one path fits
-    # todo: hydrogens are problematic, can't know using 2D which H on a CH3 migrated
+    determine_family(reaction)
+    reaction.ts_species.ts_checks['normal_mode_displacement'] = False
     rmg_rxn = reaction.rmg_reaction.copy()
     try:
         reaction.family.add_atom_labels_for_reaction(reaction=rmg_rxn, output_with_resonance=False, save_order=True)
     except (ActionError, ValueError):
-        reaction.ts_species.ts_checks['normal_mode_displacement'] = True
         reaction.ts_species.ts_checks['warnings'] += 'Could not determine atom labels from RMG, ' \
                                                      'cannot check normal mode displacement; '
+        reaction.ts_species.ts_checks['normal_mode_displacement'] = True
     else:
-        r_labels, p_labels = list(), list()
-        for reactant in rmg_rxn.reactants:
-            print([(i, atom.label) for i, atom in enumerate(reactant.atoms)])
-            r_labels.extend([i for i, atom in enumerate(reactant.atoms) if atom.label])
-        for product in rmg_rxn.products:
-            print([(i, atom.label) for i, atom in enumerate(product.atoms)])
-            p_labels.extend([i for i, atom in enumerate(product.atoms) if atom.label])
-        r_labels, p_labels = list(set(r_labels)), list(set(p_labels))
-        r_labels.sort()
-        p_labels.sort()
-        rxn_zone_atom_indices.sort()
-        reaction.ts_species.rxn_zone_atom_indices = rxn_zone_atom_indices
-        if r_labels == p_labels == rxn_zone_atom_indices:
+        equivalent_indices = find_equivalent_atoms_in_reactants(reaction)
+        found_positions = list()
+        for rxn_zone_atom_index in rxn_zone_atom_indices:
+            atom_found = False
+            for i, entry in enumerate(equivalent_indices):
+                if rxn_zone_atom_index in entry and i not in found_positions:
+                    atom_found = True
+                    found_positions.append(i)
+                    break
+            if not atom_found:
+                break
+        else:
             reaction.ts_species.ts_checks['normal_mode_displacement'] = True
 
 
@@ -354,10 +356,7 @@ def find_equivalent_atoms_in_reactants(reaction: 'ARCReaction') -> Optional[List
     Returns:
         Optional[List[List[int]]]: Entries are lists of 0-indices, each such list represents equivalent atoms.
     """
-    if reaction.family is None:
-        db = rmgdb.make_rmg_database_object()
-        rmgdb.load_families_only(db)
-        reaction.determine_family(db)
+    determine_family(reaction)
     if reaction.family is None:
         return None
     rmg_reactions = reaction.family.generate_reactions(reactants=[spc.mol for spc in reaction.r_species],
@@ -402,3 +401,16 @@ def get_atom_indices_of_labeled_atoms_in_an_rmg_reaction(reaction: 'TemplateReac
                 index_dict[labeled_atom[0]] = i
                 break
     return index_dict
+
+
+def determine_family(reaction: 'ARCReaction'):
+    """
+    Determine the RMG reaction family for an ARC reaction.
+
+    Args:
+        reaction ('ARCReaction'): An ARCReaction object instance.
+    """
+    if reaction.family is None:
+        db = rmgdb.make_rmg_database_object()
+        rmgdb.load_families_only(db)
+        reaction.determine_family(db)
