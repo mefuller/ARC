@@ -1642,7 +1642,7 @@ H       1.25408721   -0.86065907   -0.09003883"""
         c3_1_spc = ARCSpecies(yml_path=c3_1_path)
         c3_2_spc = ARCSpecies(yml_path=c3_2_path)
         rxn_1 = ARCReaction(r_species=[c3_1_spc], p_species=[c3_2_spc])
-        self.assertIsNone(rxn_1.done_opt_r_n_p)
+        self.assertFalse(rxn_1.done_opt_r_n_p)
         rxn_1.check_done_opt_r_n_p()
         self.assertEqual(rxn_1.done_opt_r_n_p, True)
 
