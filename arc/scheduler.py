@@ -2293,6 +2293,7 @@ class Scheduler(object):
                         logging.info(f'TS {label} did not pass all checks. '
                                      f'Status is:\n{self.species_dict[label].ts_checks}\n'
                                      f'Searching for a better TS conformer...')
+                        print('2296')
                         self.switch_ts(label)
             elif not self.species_dict[label].is_ts:
                 # Only trsh neg freq here for non TS species, trsh TS species is done in check_negative_freq().
@@ -2351,6 +2352,11 @@ class Scheduler(object):
                 if f'{len(neg_freqs)} imaginary freqs for' not in self.output[label]['warnings']:
                     # Todo: this warning is obsolete if changing the TS guess during the run.
                     self.output[label]['warnings'] += f'Warning: {len(neg_freqs)} imaginary freqs for TS ({neg_freqs}); '
+
+                logging.info(f'TS {label} ?????. '
+                             f'Status is:\n{self.species_dict[label].ts_checks}\n'
+                             f'Searching for a better TS conformer...')
+                print('2359')
                 self.switch_ts(label=label)
                 return False
             else:
@@ -2486,7 +2492,12 @@ class Scheduler(object):
                 if rxn.ts_label == label:
                     check_ts(reaction=rxn, verbose=True)
                     if not (rxn.ts_species.ts_checks['E0'] or rxn.ts_species.ts_checks['e_elect']):
+
+                        logging.info(f'TS {label} did n????. '
+                                     f'Status is:\n{self.species_dict[label].ts_checks}\n'
+                                     f'Searching for a better TS conformer...')
                         print('                 switch TS from L2522 !!!!!!!!!!!!!!!!!!!')
+                        print('2500')
                         self.switch_ts(label=label)
                     break
 
@@ -3171,6 +3182,11 @@ class Scheduler(object):
                          )
         elif self.species_dict[label].is_ts and not self.species_dict[label].ts_guesses_exhausted:
             # Try a different TSGuess.
+
+            logging.info(f'TS {label} di?????. '
+                         f'Status is:\n{self.species_dict[label].ts_checks}\n'
+                         f'Searching for a better TS conformer...')
+            print('3189')
             print('                 switch TS from L3203!!!!!!!!!!!!!!!!!!!')
             self.switch_ts(label=label)
 
