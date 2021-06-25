@@ -1407,7 +1407,7 @@ class Scheduler(object):
             for bde_species in bde_species_list:
                 if bde_species.label != 'H':
                     # H is was added in main
-                    logging.info(f'Creating the BDE species {bde_species.label} from the original species {label}')
+                    logger.info(f'Creating the BDE species {bde_species.label} from the original species {label}')
                     self.species_list.append(bde_species)
                     self.species_dict[bde_species.label] = bde_species
                     self.unique_species_labels.append(bde_species.label)
@@ -2288,11 +2288,11 @@ class Scheduler(object):
                             str(f'Polarizability calculated at the {self.freq_level.simple()} level of theory')
                 if self.species_dict[label].is_ts:
                     check_ts(reaction=self.rxn_dict[self.species_dict[label].rxn_index], job=job)
-                    if not ts_passed_all_checks(species=self.species_dict[label],
-                                                exemptions=['E0', 'e_elect', 'IRC', 'warnings']):
-                        logging.info(f'TS {label} did not pass all checks. '
-                                     f'Status is:\n{self.species_dict[label].ts_checks}\n'
-                                     f'Searching for a better TS conformer...')
+                    if self.species_dict[label].ts_checks['freq'] is False \
+                            or self.species_dict[label].ts_checks['normal_mode_displacement'] is False:
+                        logger.info(f'TS {label} did not pass all checks. '
+                                    f'Status is:\n{self.species_dict[label].ts_checks}\n'
+                                    f'Searching for a better TS conformer...')
                         print('2296')
                         self.switch_ts(label)
             elif not self.species_dict[label].is_ts:
@@ -2353,7 +2353,7 @@ class Scheduler(object):
                     # Todo: this warning is obsolete if changing the TS guess during the run.
                     self.output[label]['warnings'] += f'Warning: {len(neg_freqs)} imaginary freqs for TS ({neg_freqs}); '
 
-                logging.info(f'TS {label} ?????. '
+                logger.info(f'TS {label} ?????. '
                              f'Status is:\n{self.species_dict[label].ts_checks}\n'
                              f'Searching for a better TS conformer...')
                 print('2359')
@@ -2493,7 +2493,7 @@ class Scheduler(object):
                     check_ts(reaction=rxn, verbose=True)
                     if not (rxn.ts_species.ts_checks['E0'] or rxn.ts_species.ts_checks['e_elect']):
 
-                        logging.info(f'TS {label} did n????. '
+                        logger.info(f'TS {label} did n????. '
                                      f'Status is:\n{self.species_dict[label].ts_checks}\n'
                                      f'Searching for a better TS conformer...')
                         print('                 switch TS from L2522 !!!!!!!!!!!!!!!!!!!')
@@ -2894,7 +2894,7 @@ class Scheduler(object):
         if len(confs):
             logger.info(f'Deleting all currently running jobs for species {label} before troubleshooting for '
                         f'negative frequency with perturbed conformers...')
-            logging.info(f'conformers:')
+            logger.info(f'conformers:')
             print('delete_all_species_jobs from L2921')
             self.delete_all_species_jobs(label)
             self.species_dict[label].conformers = confs
@@ -3183,7 +3183,7 @@ class Scheduler(object):
         elif self.species_dict[label].is_ts and not self.species_dict[label].ts_guesses_exhausted:
             # Try a different TSGuess.
 
-            logging.info(f'TS {label} di?????. '
+            logger.info(f'TS {label} di?????. '
                          f'Status is:\n{self.species_dict[label].ts_checks}\n'
                          f'Searching for a better TS conformer...')
             print('3189')
