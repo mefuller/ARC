@@ -56,7 +56,7 @@ def main(reaction_label: Optional[str] = None,
         output_path = str(args.output_path)
     print(f'AutoTST reaction label: {reaction_label}')
 
-    os.environ['MKL_NUM_THREADS'] = str(args.mkl_num_threads)
+    # os.environ['MKL_NUM_THREADS'] = str(args.mkl_num_threads)
     # os.environ['MKL_DYNAMIC'] = 'FALSE'
 
     try:
