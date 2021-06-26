@@ -374,7 +374,7 @@ ${self.species[0].occ}wf,spin=${input_dict['spin']},charge=${input_dict['charge'
         Execute a job to the server's queue.
         """
         self._log_job_execution()
-        # submit to queue, differentiate between local (same machine using its queue) and remote servers
+        # Submit to queue, differentiate between local (same machine using its queue) and remote servers.
         if self.server != 'local':
             with SSHClient(self.server) as ssh:
                 self.job_status[0], self.job_id = ssh.submit_job(remote_path=self.remote_path)
