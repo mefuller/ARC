@@ -6,7 +6,7 @@ import logging
 import os
 
 import numpy as np
-from typing import TYPE_CHECKING, Dict, List, Optional, Tuple
+from typing import TYPE_CHECKING, Dict, List, Optional
 
 from rmgpy.exceptions import ActionError
 
@@ -32,28 +32,40 @@ def check_ts(reaction: 'ARCReaction',
              verbose: bool = True,
              parameter: str = 'E0',
              job: Optional['JobAdapter'] = None,
+             checks: Optional[List[str]] = None,
              ):
     """
     Check the TS in terms of energy, normal mode displacement, and IRC.
     Populates the ``TS.ts_checks`` dictionary.
     Note that the 'freq' check is done in Scheduler.check_negative_freq() and not here.
 
+    Todo:
+        check IRC
+        add tests
+
     Args:
         reaction ('ARCReaction'): The reaction for which the TS is checked.
         verbose (bool, optional): Whether to print logging messages.
         parameter (str, optional): The energy parameter to consider ('E0' or 'e_elect').
         job ('JobAdapter', optional): The frequency job object instance.
+        checks (List[str], optional): Specific checks to run. Optional values: 'energy', 'freq', 'IRC', 'rotors'.
     """
-    if not reaction.ts_species.ts_checks['E0'] and not reaction.ts_species.ts_checks['e_elect']:
+    checks = checks or list()
+    for entry in checks:
+        if entry not in ['energy', 'freq', 'IRC', 'rotors']:
+            raise ValueError(f"Requested checks could be 'energy', 'freq', 'IRC', or 'rotors', got:\n{checks}")
+
+    if 'energy' in checks or (not reaction.ts_species.ts_checks['E0'] and not reaction.ts_species.ts_checks['e_elect']):
         check_ts_energy(reaction=reaction, verbose=verbose, parameter=parameter)
 
-    if not reaction.ts_species.ts_checks['normal_mode_displacement'] and job is not None:
+    if 'freq' in checks or (not reaction.ts_species.ts_checks['normal_mode_displacement'] and job is not None):
         check_normal_mode_displacement(reaction, job=job)
 
-    # if not self.ts_species.ts_checks['IRC'] and IRC_wells is not None:
+    # if 'IRC' in checks or (not self.ts_species.ts_checks['IRC'] and IRC_wells is not None):
     #     self.check_irc()
 
-    if ts_passed_all_checks(species=reaction.ts_species, exemptions=['E0', 'warnings', 'IRC']) and job is not None:
+    if 'rotors' in checks or (ts_passed_all_checks(species=reaction.ts_species, exemptions=['E0', 'warnings', 'IRC'])
+                              and job is not None):
         invalidate_rotors_with_both_pivots_in_a_reactive_zone(reaction, job)
 
 
@@ -211,16 +223,14 @@ def invalidate_rotors_with_both_pivots_in_a_reactive_zone(reaction: 'ARCReaction
         reaction.ts_species.determine_rotors()
     rxn_zone_atom_indices_1 = convert_list_index_0_to_1(rxn_zone_atom_indices)
     for key, rotor in reaction.ts_species.rotors_dict.items():
-        print(f"pivots: {rotor['pivots']}, rxn_zone_atom_indices_1: {rxn_zone_atom_indices_1}")
         if rotor['pivots'][0] in rxn_zone_atom_indices_1 and rotor['pivots'][1] in rxn_zone_atom_indices_1:
-            print(f'in: {rotor["pivots"]}')
             rotor['success'] = False
             if 'pivTS' not in rotor['invalidation_reason']:
                 rotor['invalidation_reason'] += 'Pivots participate in the TS reaction zone (code: pivTS). '
                 logging.info(f"\nNot considering rotor {key} with pivots {rotor['pivots']} in TS {reaction.ts_species.label}\n")
 
 
-def get_rxn_zone_atom_indices(reaction: 'ARCReaction',
+def get_rxn_zone_atom_indices(reaction: 'ARCReaction',  # todo check_ts_freq_job in scheduler, and test this
                               job: 'JobAdapter',
                               ) -> List[int]:
     """
@@ -237,11 +247,10 @@ def get_rxn_zone_atom_indices(reaction: 'ARCReaction',
     freqs, normal_mode_disp = parser.parse_normal_mode_displacement(path=job.local_path_to_output_file,
                                                                     raise_error=False)
     normal_disp_mode_rms = get_rms_from_normal_mode_disp(normal_mode_disp, freqs)
-    num_of_atoms = get_expected_num_atoms_with_largest_normal_mode_disp(
-        reaction=reaction,
-        normal_disp_mode_rms=normal_disp_mode_rms,
-        ts_guesses=reaction.ts_species.ts_guesses,
-    )
+    num_of_atoms = get_expected_num_atoms_with_largest_normal_mode_disp(normal_disp_mode_rms=normal_disp_mode_rms,
+                                                                        ts_guesses=reaction.ts_species.ts_guesses,
+                                                                        reaction=reaction,
+                                                                        )
     return sorted(range(len(normal_disp_mode_rms)), key=lambda i: normal_disp_mode_rms[i], reverse=True)[:num_of_atoms]
 
 
@@ -282,8 +291,8 @@ def get_index_of_abs_largest_neg_freq(freqs: np.ndarray) -> Optional[int]:
 
 
 def get_expected_num_atoms_with_largest_normal_mode_disp(normal_disp_mode_rms: List[float],
-                                                         reaction: 'ARCReaction',
                                                          ts_guesses: List['TSGuess'],
+                                                         reaction: Optional['ARCReaction'] = None,
                                                          ) -> int:
     """
     Get the number of atoms that are expected to have the largest normal mode displacement for the TS
@@ -292,8 +301,8 @@ def get_expected_num_atoms_with_largest_normal_mode_disp(normal_disp_mode_rms: L
 
     Args:
         normal_disp_mode_rms (List[float]): The RMS of the normal displacement modes.
-        reaction ('ARCReaction'): The respective reaction object instance.
         ts_guesses (List['TSGuess']): The TSGuess objects of a TS species.
+        reaction ('ARCReaction'): The respective reaction object instance.
 
     Returns:
         int: The number of atoms to consider that have a significant motions in the normal mode displacement.
@@ -326,7 +335,7 @@ def get_rxn_normal_mode_disp_atom_number(rxn_family: Optional[str] = None,
     Returns:
         int: The respective number of atoms.
     """
-    DEFAULT = 3
+    default = 3
     if rms_list is not None \
             and (not isinstance(rms_list, list) or not all(isinstance(entry, float) for entry in rms_list)):
         raise TypeError(f'rms_list must be a non empty list, got {rms_list} of type {type(rms_list)}.')
@@ -334,10 +343,10 @@ def get_rxn_normal_mode_disp_atom_number(rxn_family: Optional[str] = None,
     if family is None and reaction is not None and reaction.family is not None:
         family = reaction.family.label
     if family is None:
-        logger.warning(f'Cannot deduce a reaction family for {reaction}, assuming {DEFAULT} atoms in the reaction zone.')
-        return DEFAULT
+        logger.warning(f'Cannot deduce a reaction family for {reaction}, assuming {default} atoms in the reaction zone.')
+        return default
     content = read_yaml_file(os.path.join(ARC_PATH, 'data', 'rxn_normal_mode_disp.yml'))
-    number_by_family = content.get(rxn_family, DEFAULT)
+    number_by_family = content.get(rxn_family, default)
     if rms_list is None or not len(rms_list):
         return number_by_family
     entry = None
