@@ -108,8 +108,6 @@ H                 -1.28677889    1.04716138   -1.01532486"""
                                                               'Projects',
                                                               'arc_project_for_testing_delete_after_usage4'),
                                )
-        cls.job1.local_path_to_output_file = os.path.join(ts.ARC_PATH, 'arc', 'testing', 'composite',
-                                                          'TS_intra_H_migration_CBS-QB3.out')
 
     def test_did_ts_pass_all_checks(self):
         """Test the did_ts_pass_all_checks() function"""
@@ -208,30 +206,83 @@ H                 -1.28677889    1.04716138   -1.01532486"""
         self.rxn_2b.ts_species.populate_ts_checks()
         self.assertFalse(self.rxn_2b.ts_species.ts_checks['normal_mode_displacement'])
 
-        # expecting for rxn_2a: [[0, 2], [1], [4, 5, 6, 7, 8, 9]])
+        self.job1.local_path_to_output_file = os.path.join(ts.ARC_PATH, 'arc', 'testing', 'composite',
+                                                           'TS_intra_H_migration_CBS-QB3.out')
+        # Expecting for rxn_2a: [[0, 2], [1], [4, 5, 6, 7, 8, 9]])
         self.rxn_2a.determine_family(rmg_database=self.rmgdb)
         ts.check_normal_mode_displacement(reaction=self.rxn_2a, job=self.job1, rxn_zone_atom_indices=[15, 25])  # wrong indices
         self.assertFalse(self.rxn_2a.ts_species.ts_checks['normal_mode_displacement'])
+        self.rxn_2a.ts_species.populate_ts_checks()
         ts.check_normal_mode_displacement(reaction=self.rxn_2a, job=self.job1, rxn_zone_atom_indices=[0, 1, 3])  # non-reactive atom 3
         self.assertFalse(self.rxn_2a.ts_species.ts_checks['normal_mode_displacement'])
+        self.rxn_2a.ts_species.populate_ts_checks()
         ts.check_normal_mode_displacement(reaction=self.rxn_2a, job=self.job1, rxn_zone_atom_indices=[0, 0, 4])  # repeated indices
         self.assertFalse(self.rxn_2a.ts_species.ts_checks['normal_mode_displacement'])
+        self.rxn_2a.ts_species.populate_ts_checks()
         ts.check_normal_mode_displacement(reaction=self.rxn_2a, job=self.job1, rxn_zone_atom_indices=[0, 2, 4])  # not including all positions
         self.assertFalse(self.rxn_2a.ts_species.ts_checks['normal_mode_displacement'])
+        self.rxn_2a.ts_species.populate_ts_checks()
         ts.check_normal_mode_displacement(reaction=self.rxn_2a, job=self.job1, rxn_zone_atom_indices=[6, 1, 4])  # not including all positions
         self.assertFalse(self.rxn_2a.ts_species.ts_checks['normal_mode_displacement'])
+        self.rxn_2a.ts_species.populate_ts_checks()
         ts.check_normal_mode_displacement(reaction=self.rxn_2a, job=self.job1, rxn_zone_atom_indices=[0, 1, 4])  # correct
         self.assertTrue(self.rxn_2a.ts_species.ts_checks['normal_mode_displacement'])
+        self.rxn_2a.ts_species.populate_ts_checks()
         ts.check_normal_mode_displacement(reaction=self.rxn_2a, job=self.job1, rxn_zone_atom_indices=[2, 1, 8])  # correct variant
         self.assertTrue(self.rxn_2a.ts_species.ts_checks['normal_mode_displacement'])
 
-        # expecting for rxn_2b: [[0, 6], [1], [3, 4, 5, 7, 8, 9]])
+        # Expecting for rxn_2b: [[0, 6], [1], [3, 4, 5, 7, 8, 9]])
         ts.check_normal_mode_displacement(reaction=self.rxn_2b, job=self.job1, rxn_zone_atom_indices=[0, 1, 2])  # non-reactive atom 2
         self.assertFalse(self.rxn_2b.ts_species.ts_checks['normal_mode_displacement'])
+        self.rxn_2b.ts_species.populate_ts_checks()
         ts.check_normal_mode_displacement(reaction=self.rxn_2b, job=self.job1, rxn_zone_atom_indices=[0, 1, 4])  # correct
         self.assertTrue(self.rxn_2b.ts_species.ts_checks['normal_mode_displacement'])
+        self.rxn_2b.ts_species.populate_ts_checks()
         ts.check_normal_mode_displacement(reaction=self.rxn_2b, job=self.job1, rxn_zone_atom_indices=[6, 1, 4])  # correct variant (but incorrect for rxn2_a)
         self.assertTrue(self.rxn_2b.ts_species.ts_checks['normal_mode_displacement'])
+
+        # Wrong TS for intra H migration [CH2]CC <=> C[CH]C
+        self.job1.local_path_to_output_file = os.path.join(ts.ARC_PATH, 'arc', 'testing', 'composite',
+                                                           'TS_C3_intraH_1.out')  # A wrong TS.
+        self.rxn_2a.ts_species.populate_ts_checks()
+        ts.check_normal_mode_displacement(reaction=self.rxn_2a, job=self.job1)
+        self.assertFalse(self.rxn_2a.ts_species.ts_checks['normal_mode_displacement'])
+
+        self.job1.local_path_to_output_file = os.path.join(ts.ARC_PATH, 'arc', 'testing', 'composite',
+                                                           'TS_C3_intraH_2.out')  # A wrong TS.
+        self.rxn_2a.ts_species.populate_ts_checks()
+        ts.check_normal_mode_displacement(reaction=self.rxn_2a, job=self.job1)
+        self.assertFalse(self.rxn_2a.ts_species.ts_checks['normal_mode_displacement'])
+
+        self.job1.local_path_to_output_file = os.path.join(ts.ARC_PATH, 'arc', 'testing', 'composite',
+                                                           'TS_C3_intraH_3.out')  # ** The correct TS. **
+        self.rxn_2a.ts_species.populate_ts_checks()
+        ts.check_normal_mode_displacement(reaction=self.rxn_2a, job=self.job1)
+        self.assertTrue(self.rxn_2a.ts_species.ts_checks['normal_mode_displacement'])
+
+        self.job1.local_path_to_output_file = os.path.join(ts.ARC_PATH, 'arc', 'testing', 'composite',
+                                                           'TS_C3_intraH_4.out')  # A wrong TS.
+        self.rxn_2a.ts_species.populate_ts_checks()
+        ts.check_normal_mode_displacement(reaction=self.rxn_2a, job=self.job1)
+        self.assertFalse(self.rxn_2a.ts_species.ts_checks['normal_mode_displacement'])
+
+        self.job1.local_path_to_output_file = os.path.join(ts.ARC_PATH, 'arc', 'testing', 'composite',
+                                                           'TS_C3_intraH_5.out')  # A wrong TS.
+        self.rxn_2a.ts_species.populate_ts_checks()
+        ts.check_normal_mode_displacement(reaction=self.rxn_2a, job=self.job1)
+        self.assertFalse(self.rxn_2a.ts_species.ts_checks['normal_mode_displacement'])
+
+        self.job1.local_path_to_output_file = os.path.join(ts.ARC_PATH, 'arc', 'testing', 'composite',
+                                                           'TS_C3_intraH_6.out')  # A wrong TS.
+        self.rxn_2a.ts_species.populate_ts_checks()
+        ts.check_normal_mode_displacement(reaction=self.rxn_2a, job=self.job1)
+        self.assertFalse(self.rxn_2a.ts_species.ts_checks['normal_mode_displacement'])
+
+        self.job1.local_path_to_output_file = os.path.join(ts.ARC_PATH, 'arc', 'testing', 'composite',
+                                                           'TS_C3_intraH_7.out')  # A wrong TS.
+        self.rxn_2a.ts_species.populate_ts_checks()
+        ts.check_normal_mode_displacement(reaction=self.rxn_2a, job=self.job1)
+        self.assertFalse(self.rxn_2a.ts_species.ts_checks['normal_mode_displacement'])
 
     def test_invalidate_rotors_with_both_pivots_in_a_reactive_zone(self):
         """Test the invalidate_rotors_with_both_pivots_in_a_reactive_zone() function"""
@@ -262,6 +313,9 @@ H                 -1.28677889    1.04716138   -1.01532486"""
                          'Pivots participate in the TS reaction zone (code: pivTS). ')
         self.assertEqual(ts_spc_1.rotors_dict[1]['success'], False)
 
+        self.job1.local_path_to_output_file = os.path.join(ts.ARC_PATH, 'arc', 'testing', 'composite',
+                                                           'TS_intra_H_migration_CBS-QB3.out')
+        self.rxn_2a.ts_species.populate_ts_checks()
         ts.invalidate_rotors_with_both_pivots_in_a_reactive_zone(reaction=self.rxn_2a,
                                                                  job=self.job1)
         self.assertEqual(self.rxn_2a.ts_species.rotors_dict[0]['pivots'], [1, 2])
@@ -303,9 +357,8 @@ H                 -1.28677889    1.04716138   -1.01532486"""
         """Test the get_expected_num_atoms_with_largest_normal_mode_disp() function"""
         normal_disp_mode_rms = [0.01414213562373095, 0.05, 0.04, 0.5632938842203065, 0.7993122043357026,
                                 0.08944271909999159, 0.10677078252031312, 0.09000000000000001, 0.05, 0.09433981132056604]
-        num_of_atoms = ts.get_expected_num_atoms_with_largest_normal_mode_disp(
-            normal_disp_mode_rms=normal_disp_mode_rms,
-            ts_guesses=self.ts_1.ts_guesses)
+        num_of_atoms = ts.get_expected_num_atoms_with_largest_normal_mode_disp(normal_disp_mode_rms=normal_disp_mode_rms,
+                                                                               ts_guesses=self.ts_1.ts_guesses)
         self.assertEqual(num_of_atoms, 4)
 
     def test_get_rxn_normal_mode_disp_atom_number(self):
