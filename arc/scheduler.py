@@ -2281,9 +2281,8 @@ class Scheduler(object):
                             str(f'Polarizability calculated at the {self.freq_level.simple()} level of theory')
                 if self.species_dict[label].is_ts:
                     check_ts(reaction=self.rxn_dict[self.species_dict[label].rxn_index], job=job)
-                    if self.species_dict[label].ts_checks['freq'] is False \
-                            or self.species_dict[label].ts_checks['normal_mode_displacement'] is False:
-                        logger.info(f'TS {label} did not pass all checks. '
+                    if self.species_dict[label].ts_checks['normal_mode_displacement'] is False:
+                        logger.info(f'TS {label} did not pass the normal mode displacement check. '
                                     f'Status is:\n{self.species_dict[label].ts_checks}\n'
                                     f'Searching for a better TS conformer...')
                         self.switch_ts(label)
@@ -2342,8 +2341,10 @@ class Scheduler(object):
                 logger.error(f'TS {label} has {len(neg_freqs)} imaginary frequencies ({neg_freqs}), '
                              f'should have exactly 1{add_text}.')
                 if f'{len(neg_freqs)} imaginary freqs for' not in self.output[label]['warnings']:
-                    # Todo: this warning is obsolete if changing the TS guess during the run.
                     self.output[label]['warnings'] += f'Warning: {len(neg_freqs)} imaginary freqs for TS ({neg_freqs}); '
+                    logger.info(f'TS {label} did not pass the negative frequency check. '
+                                f'Status is:\n{self.species_dict[label].ts_checks}\n'
+                                f'Searching for a better TS conformer...')
                 self.switch_ts(label=label)
                 return False
             else:
@@ -2477,6 +2478,9 @@ class Scheduler(object):
                 if rxn.ts_label == label:
                     check_ts(reaction=rxn, verbose=True)
                     if not (rxn.ts_species.ts_checks['E0'] or rxn.ts_species.ts_checks['e_elect']):
+                        logger.info(f'TS {label} did not pass the energy check. '
+                                    f'Status is:\n{self.species_dict[label].ts_checks}\n'
+                                    f'Searching for a better TS conformer...')
                         self.switch_ts(label=label)
                     break
 
@@ -3156,6 +3160,9 @@ class Scheduler(object):
                          shift=shift,
                          )
         elif self.species_dict[label].is_ts and not self.species_dict[label].ts_guesses_exhausted:
+            logger.info(f'TS {label} did not pass the normal mode displacement check. '
+                        f'Status is:\n{self.species_dict[label].ts_checks}\n'
+                        f'Searching for a better TS conformer...')
             self.switch_ts(label=label)
 
         self.save_restart_dict()
