@@ -2083,8 +2083,11 @@ class Scheduler(object):
                 if tsg.success and tsg.energy is not None:  # guess method and ts_level opt were both successful
                     tsg.energy -= e_min
                     im_freqs = f', imaginary frequencies {tsg.imaginary_freqs}' if tsg.imaginary_freqs is not None else ''
+                    execution_time = str(tsg.execution_time)
+                    execution_time = execution_time[:execution_time.index('.') + 2] \
+                        if '.' in execution_time else execution_time
                     logger.info(f'TS guess {tsg.index} for {label}. Method: {tsg.method}, relative energy: '
-                                f'{tsg.energy:.2f} kJ/mol, guess execution time: {tsg.execution_time}{im_freqs}')
+                                f'{tsg.energy:.2f} kJ/mol, guess execution time: {execution_time}{im_freqs}')
                     # for TSs, only use `draw_3d()`, not `show_sticks()` which gets connectivity wrong:
                     plotter.draw_structure(xyz=tsg.initial_xyz, method='draw_3d')
             logger.info('\n')
