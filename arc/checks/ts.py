@@ -209,7 +209,7 @@ def check_normal_mode_displacement(reaction: 'ARCReaction',
             if not atom_found:
                 print(f'\n\nequivalent_indices: {equivalent_indices}')
                 print(f'found_positions: {found_positions}')
-                print(f'atom {entry} was not found')
+                print(f'rxn_zone_atom_index: {rxn_zone_atom_index}. atom {entry} was not found')
                 break
         else:
             print('marking normal_mode_displacement as True !!!!!!!!!!')
