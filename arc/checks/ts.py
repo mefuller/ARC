@@ -475,6 +475,9 @@ def map_arc_rmg_species(arc_reaction: 'ARCReaction',
                     else:
                         spc_map[i] = [j]
                     break
+    print(f'ARC reaction label: {arc_reaction.label}')
+    print(f'reactants order in ARC: {[spc.label for spc in arc_reaction.r_species]}')
+    print(f'reactants order in RMG: {[spc.copy() for spc in rmg_reaction.reactants]}')
     print(f'r_map: {r_map}')
     print(f'p_map: {p_map}')
     return r_map, p_map
