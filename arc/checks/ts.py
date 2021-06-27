@@ -59,6 +59,7 @@ def check_ts(reaction: 'ARCReaction',
         check_ts_energy(reaction=reaction, verbose=verbose, parameter=parameter)
 
     if 'freq' in checks or (not reaction.ts_species.ts_checks['normal_mode_displacement'] and job is not None):
+        print('checking freq in ts L62')
         check_normal_mode_displacement(reaction, job=job)
 
     # if 'IRC' in checks or (not self.ts_species.ts_checks['IRC'] and IRC_wells is not None):
@@ -177,8 +178,10 @@ def check_normal_mode_displacement(reaction: 'ARCReaction',
         rxn_zone_atom_indices (List[int], optional): The 0-indices of atoms identified by the normal displacement
                                                      mode as the reaction zone. Automatically determined if not given.
     """
+    print('checking NDM in ts L 181')
     if job is None:
         return
+    print('checking NDM in ts L 183')
     determine_family(reaction)
     rxn_zone_atom_indices = rxn_zone_atom_indices or get_rxn_zone_atom_indices(reaction, job)
     reaction.ts_species.ts_checks['normal_mode_displacement'] = False
@@ -186,6 +189,7 @@ def check_normal_mode_displacement(reaction: 'ARCReaction',
     try:
         reaction.family.add_atom_labels_for_reaction(reaction=rmg_rxn, output_with_resonance=False, save_order=True)
     except (ActionError, ValueError):
+        print('exception!!!')
         reaction.ts_species.ts_checks['warnings'] += 'Could not determine atom labels from RMG, ' \
                                                      'cannot check normal mode displacement; '
         reaction.ts_species.ts_checks['normal_mode_displacement'] = True
@@ -194,14 +198,17 @@ def check_normal_mode_displacement(reaction: 'ARCReaction',
         found_positions = list()
         for rxn_zone_atom_index in rxn_zone_atom_indices:
             atom_found = False
+            print(f'equivalent_indices: {equivalent_indices}')
             for i, entry in enumerate(equivalent_indices):
                 if rxn_zone_atom_index in entry and i not in found_positions:
                     atom_found = True
                     found_positions.append(i)
                     break
             if not atom_found:
+                print(f'atom {entry} was not found')
                 break
         else:
+            print('marking normal_mode_displacement as True !!!!!!!!!!')
             reaction.ts_species.ts_checks['normal_mode_displacement'] = True
 
 
