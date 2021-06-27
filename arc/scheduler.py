@@ -556,7 +556,7 @@ class Scheduler(object):
                                     break
                             else:
                                 # All tsg jobs terminated. Spawn confs.
-                                logger.info(f'\nTS Guess jobs for {label} successfully terminated.\n')
+                                logger.info(f'\nTS guess jobs for {label} successfully terminated.\n')
                                 self.run_conformer_jobs(labels=[label])
                             self.timer = False
                             break
