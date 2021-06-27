@@ -432,15 +432,19 @@ def get_atom_indices_of_labeled_atoms_in_an_rmg_reaction(arc_reaction: 'ARCReact
     reactant_atoms, product_atoms = list(), list()
     rmg_reactant_order = [val[0] for key, val in sorted(r_map.items(), key=lambda item: item[0])]
     rmg_product_order = [val[0] for key, val in sorted(p_map.items(), key=lambda item: item[0])]
+    print(f'adding atoms from RMG species in order:')
     for i in rmg_reactant_order:
+        print(i)
         reactant_atoms.extend([atom for atom in rmg_reaction.reactants[i].atoms])
     for i in rmg_product_order:
+        print(i)
         product_atoms.extend([atom for atom in rmg_reaction.products[i].atoms])
     for labeled_atom in rmg_reaction.labeledAtoms:
         for i, atom in enumerate(reactant_atoms):
             if atom.id == labeled_atom[1].id:
                 index_dict[labeled_atom[0]] = i
                 break
+    print(f'index_dict: {index_dict}')
     return index_dict
 
 
@@ -469,6 +473,8 @@ def map_arc_rmg_species(arc_reaction: 'ARCReaction',
                         spc_map[i].append(j)
                     else:
                         spc_map[i] = [j]
+    print(f'r_map: {r_map}')
+    print(f'p_map: {p_map}')
     return r_map, p_map
 
 
