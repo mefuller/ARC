@@ -9,12 +9,13 @@ import os
 import unittest
 import shutil
 
+from rmgpy.molecule.molecule import Molecule
 from rmgpy.reaction import Reaction
 from rmgpy.species import Species
 
 import arc.rmgdb as rmgdb
 from arc.common import ARC_PATH
-from arc.job.adapters.ts.heuristics import HeuristicsAdapter
+from arc.job.adapters.ts.heuristics import HeuristicsAdapter, find_distant_neighbor, reverse_xyz
 from arc.reaction import ARCReaction
 from arc.species.species import ARCSpecies
 
@@ -128,9 +129,9 @@ H -0.7886440 -0.8942950 0.4695060"""
         self.assertEqual(rxn2.ts_species.multiplicity, 2)
         self.assertEqual(len(rxn2.ts_species.ts_guesses), 18)
         self.assertEqual(rxn2.ts_species.ts_guesses[0].initial_xyz['symbols'],
-                         ('C', 'C', 'C', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'O', 'O', 'H'))
+                         ('C', 'C', 'C', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'O', 'O'))
         self.assertEqual(rxn2.ts_species.ts_guesses[1].initial_xyz['symbols'],
-                         ('C', 'C', 'C', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'O', 'O', 'H'))
+                         ('C', 'C', 'C', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'O', 'O'))
         self.assertEqual(len(rxn2.ts_species.ts_guesses[1].initial_xyz['coords']), 14)
         self.assertTrue(rxn2.ts_species.ts_guesses[0].success)
         self.assertTrue(rxn2.ts_species.ts_guesses[1].success)
@@ -179,7 +180,7 @@ H      -0.21011639   -1.57815495   -1.64338139"""
         h2o_xyz = """O      -0.00032832    0.39781490    0.00000000
 H      -0.76330345   -0.19953755    0.00000000
 H       0.76363177   -0.19827735    0.00000000"""
-        cccoh = ARCSpecies(label='CCCO', smiles='CCCO', xyz=cccoh_xyz)
+        cccoh = ARCSpecies(label='CCCOH', smiles='CCCO', xyz=cccoh_xyz)
         oh = ARCSpecies(label='OH', smiles='[OH]', xyz=oh_xyz)
         ccco = ARCSpecies(label='CCCO', smiles='CCC[O]', xyz=ccco_xyz)
         h2o = ARCSpecies(label='H2O', smiles='O', xyz=h2o_xyz)
@@ -203,7 +204,7 @@ H       0.76363177   -0.19827735    0.00000000"""
         self.assertEqual(rxn3.ts_species.multiplicity, 2)
         self.assertEqual(len(rxn3.ts_species.ts_guesses), 18)
         self.assertEqual(rxn3.ts_species.ts_guesses[0].initial_xyz['symbols'],
-                         ('C', 'C', 'C', 'O', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'O', 'H'))
+                         ('C', 'C', 'C', 'O', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'O'))
         self.assertEqual(len(rxn3.ts_species.ts_guesses[1].initial_xyz['coords']), 14)
 
         cdcoh_xyz = """C      -0.80601307   -0.11773769    0.32792128
@@ -241,6 +242,94 @@ H       0.99232452    1.08896899    0.06242974"""
         self.assertEqual(rxn4.ts_species.multiplicity, 2)
         self.assertEqual(len(rxn4.ts_species.ts_guesses), 1)
         self.assertEqual(rxn4.ts_species.ts_guesses[0].initial_xyz['symbols'], ('C', 'C', 'O', 'H', 'H', 'H', 'H', 'H'))
+
+    def test_reverse_xyz(self):
+        """Test the reverse_xyz() function."""
+        xyz = {'symbols': ('S', 'O', 'N', 'C', 'H', 'H', 'H'),
+               'isotopes': (32, 16, 14, 12, 1, 1, 1),
+               'coords': ((1.02558264, -0.04344404, -0.07343859),
+                          (-0.25448248, 1.10710477, 0.18359696),
+                          (-1.30762173, 0.15796567, -0.1048929),
+                          (-0.49011438, -1.0370438, 0.15365747),
+                          (-0.6486995, -1.85796321, -0.54773423),
+                          (-0.60359153, -1.37304859, 1.18613964),
+                          (-1.43009127, 0.23517346, -1.11797908))}
+
+        reversed_xyz_1 = reverse_xyz(xyz=xyz, reactants_reversed=False, rmg_reactant_mol=Molecule(smiles='[CH3]'))
+        self.assertEqual(reversed_xyz_1, xyz)
+
+        expected_xyz_2 = {'symbols': ('C', 'H', 'H', 'H', 'S', 'O', 'N'),
+               'isotopes': (12, 1, 1, 1, 32, 16, 14),
+               'coords': ((-0.49011438, -1.0370438, 0.15365747),
+                          (-0.6486995, -1.85796321, -0.54773423),
+                          (-0.60359153, -1.37304859, 1.18613964),
+                          (-1.43009127, 0.23517346, -1.11797908),
+                          (1.02558264, -0.04344404, -0.07343859),
+                          (-0.25448248, 1.10710477, 0.18359696),
+                          (-1.30762173, 0.15796567, -0.1048929))}
+        reversed_xyz_2 = reverse_xyz(xyz=xyz, reactants_reversed=True, rmg_reactant_mol=Molecule(smiles='[CH3]'))
+        self.assertEqual(reversed_xyz_2, expected_xyz_2)
+
+    def test_find_distant_neighbor(self):
+        """Test the find_distant_neighbor() function."""
+        xyz_1 = {'symbols': ('S', 'O', 'O', 'N', 'C', 'H', 'H', 'H', 'H', 'H'),
+                 'isotopes': (32, 16, 16, 14, 12, 1, 1, 1, 1, 1),
+                 'coords': ((-0.06618943, -0.12360663, -0.07631983),
+                            (-0.79539707, 0.86755487, 1.02675668),
+                            (-0.68919931, 0.25421823, -1.34830853),
+                            (0.01546439, -1.54297548, 0.44580391),
+                            (1.59721519, 0.47861334, 0.00711),
+                            (1.94428095, 0.40772394, 1.03719428),
+                            (2.20318015, -0.14715186, -0.64755729),
+                            (1.59252246, 1.5117895, -0.33908352),
+                            (-0.8785689, -2.02453514, 0.38494433),
+                            (-1.34135876, 1.49608206, 0.53295071))}
+        mol_1 = ARCSpecies(label='CS(=O)(O)[NH]', xyz=xyz_1).mol
+        self.assertEqual(find_distant_neighbor(rmg_mol=mol_1, start=8), 0)
+        self.assertEqual(find_distant_neighbor(rmg_mol=mol_1, start=9), 0)
+        self.assertEqual(find_distant_neighbor(rmg_mol=mol_1, start=5), 0)
+        self.assertIn(find_distant_neighbor(rmg_mol=mol_1, start=2), [1, 3, 4])
+        self.assertIn(find_distant_neighbor(rmg_mol=mol_1, start=4), [1, 2, 3])
+        self.assertIn(find_distant_neighbor(rmg_mol=mol_1, start=3), [1, 2, 4])
+        self.assertIn(find_distant_neighbor(rmg_mol=mol_1, start=0), [5, 6, 7, 8, 9])
+
+        xyz_2 = {'symbols': ('S', 'H', 'O', 'N', 'C', 'H', 'H', 'H', 'H'),
+                 'isotopes': (32, 1, 16, 14, 12, 1, 1, 1, 1),
+                 'coords': ((-0.06618943, -0.12360663, -0.07631983),
+                            (-0.79539707, 0.86755487, 1.02675668),
+                            (-0.68919931, 0.25421823, -1.34830853),
+                            (0.01546439, -1.54297548, 0.44580391),
+                            (1.59721519, 0.47861334, 0.00711),
+                            (1.94428095, 0.40772394, 1.03719428),
+                            (2.20318015, -0.14715186, -0.64755729),
+                            (1.59252246, 1.5117895, -0.33908352),
+                            (-0.8785689, -2.02453514, 0.38494433))}
+        mol_2 = ARCSpecies(label='C[SH](=O)[NH]', xyz=xyz_2).mol
+        self.assertEqual(find_distant_neighbor(rmg_mol=mol_2, start=8), 0)
+        self.assertEqual(find_distant_neighbor(rmg_mol=mol_2, start=5), 0)
+        self.assertIn(find_distant_neighbor(rmg_mol=mol_2, start=2), [3, 4])
+        self.assertIn(find_distant_neighbor(rmg_mol=mol_2, start=4), [2, 3])
+        self.assertIn(find_distant_neighbor(rmg_mol=mol_2, start=3), [2, 4])
+        self.assertIn(find_distant_neighbor(rmg_mol=mol_2, start=0), [5, 6, 7, 8])
+
+        xyz_3 = """ C                 -2.27234259   -0.78101274   -0.00989219
+ H                 -1.94047502   -1.78971513   -0.14135849
+ H                 -1.87026865   -0.16873290   -0.78986011
+ H                 -3.34123881   -0.74952096   -0.04689398
+ C                 -1.79025824   -0.25578524    1.35514655
+ H                 -2.12212581    0.75291715    1.48661285
+ H                 -2.19233218   -0.86806508    2.13511447
+ N                 -0.32177464   -0.29904964    1.40598078
+ H                  0.05399540    0.27317450    0.67703880
+ H                 -0.00873286    0.04200717    2.29236958"""
+        mol_3 = ARCSpecies(label='EA', smiles='NCC', xyz=xyz_3).mol
+        self.assertEqual(find_distant_neighbor(rmg_mol=mol_3, start=9), 4)
+        self.assertEqual(find_distant_neighbor(rmg_mol=mol_3, start=8), 4)
+        self.assertIn(find_distant_neighbor(rmg_mol=mol_3, start=5), [0, 7])
+        self.assertIn(find_distant_neighbor(rmg_mol=mol_3, start=6), [0, 7])
+        self.assertEqual(find_distant_neighbor(rmg_mol=mol_3, start=1), 4)
+        self.assertEqual(find_distant_neighbor(rmg_mol=mol_3, start=2), 4)
+        self.assertEqual(find_distant_neighbor(rmg_mol=mol_3, start=2), 4)
 
     @classmethod
     def tearDownClass(cls):
