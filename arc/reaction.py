@@ -631,7 +631,7 @@ class ARCReaction(object):
             well (int, optional): Either ``0`` or ``1`` for the reactants or products well, respectively.
 
         Returns:
-            Union[int, None]: The number of times this species appears in the respective well.
+            Optional[int]: The number of times this species appears in the respective well.
         """
         if species is None and label is None:
             raise ValueError('Called get_species_count without a species nor its label.')
