@@ -6,7 +6,7 @@ import logging
 import os
 
 import numpy as np
-from typing import TYPE_CHECKING, Dict, List, Optional
+from typing import TYPE_CHECKING, Dict, List, Optional, Tuple, Union
 
 from rmgpy.exceptions import ActionError
 
@@ -21,6 +21,7 @@ from arc.common import (ARC_PATH,
 
 if TYPE_CHECKING:
     from rmgpy.data.kinetics.family import TemplateReaction
+    from rmgpy.reaction import Reaction
     from arc.job.adapter import JobAdapter
     from arc.species.species import ARCSpecies, TSGuess
     from arc.reaction import ARCReaction
@@ -197,9 +198,10 @@ def check_normal_mode_displacement(reaction: 'ARCReaction',
     else:
         equivalent_indices = find_equivalent_atoms_in_reactants(reaction)
         found_positions = list()
+        print(f'equivalent_indices: {equivalent_indices}')
         for rxn_zone_atom_index in rxn_zone_atom_indices:
             atom_found = False
-            print(f'equivalent_indices: {equivalent_indices}')
+            print(f'rxn_zone_atom_index: {rxn_zone_atom_index}')
             for i, entry in enumerate(equivalent_indices):
                 print(f'{i}: looking at {entry}')
                 if rxn_zone_atom_index in entry and i not in found_positions:
@@ -393,7 +395,9 @@ def find_equivalent_atoms_in_reactants(reaction: 'ARCReaction') -> Optional[List
                                                        prod_resonance=True,
                                                        delete_labels=False,
                                                        )
-    dicts = [get_atom_indices_of_labeled_atoms_in_an_rmg_reaction(rmg_reaction) for rmg_reaction in rmg_reactions]
+    dicts = [get_atom_indices_of_labeled_atoms_in_an_rmg_reaction(rmg_reaction=rmg_reaction,
+                                                                  arc_reaction=reaction)
+             for rmg_reaction in rmg_reactions]
     equivalence_map = dict()
     for index_dict in dicts:
         for key, value in index_dict.items():
@@ -405,31 +409,67 @@ def find_equivalent_atoms_in_reactants(reaction: 'ARCReaction') -> Optional[List
     return equivalent_indices
 
 
-def get_atom_indices_of_labeled_atoms_in_an_rmg_reaction(reaction: 'TemplateReaction') -> Optional[Dict[str, int]]:
+def get_atom_indices_of_labeled_atoms_in_an_rmg_reaction(arc_reaction: 'ARCReaction',
+                                                         rmg_reaction: 'TemplateReaction',
+                                                         ) -> Optional[Dict[str, int]]:
     """
     Get the RMG reaction labels and the corresponding 0-indexed atom indices
     for all labeled atoms in an TemplateReaction.
 
     Args:
-        reaction ('TemplateReaction'): An RMG family TemplateReaction object instance.
+        arc_reaction ('ARCReaction'): An ARCReaction object instance.
+        rmg_reaction ('TemplateReaction'): A respective RMG family TemplateReaction object instance.
 
     Returns:
         Optional[Dict[str, int]]: Keys are labels (e.g., '*1'), values are corresponding 0-indices atoms.
     """
-    if not hasattr(reaction, 'labeledAtoms') or not len(reaction.labeledAtoms):
+    if not hasattr(rmg_reaction, 'labeledAtoms') or not len(rmg_reaction.labeledAtoms):
         return None
+
+    r_map, p_map = map_arc_rmg_species(arc_reaction=arc_reaction, rmg_reaction=rmg_reaction)
+
     index_dict = dict()
     reactant_atoms, product_atoms = list(), list()
-    for mol in reaction.reactants:
-        reactant_atoms.extend([atom for atom in mol.atoms])
-    for mol in reaction.products:
-        product_atoms.extend([atom for atom in mol.atoms])
-    for labeled_atom in reaction.labeledAtoms:
+    rmg_reactant_order = [val[0] for key, val in sorted(r_map.items(), key=lambda item: item[0])]
+    rmg_product_order = [val[0] for key, val in sorted(p_map.items(), key=lambda item: item[0])]
+    for i in rmg_reactant_order:
+        reactant_atoms.extend([atom for atom in rmg_reaction.reactants[i].atoms])
+    for i in rmg_product_order:
+        product_atoms.extend([atom for atom in rmg_reaction.products[i].atoms])
+    for labeled_atom in rmg_reaction.labeledAtoms:
         for i, atom in enumerate(reactant_atoms):
             if atom.id == labeled_atom[1].id:
                 index_dict[labeled_atom[0]] = i
                 break
     return index_dict
+
+
+def map_arc_rmg_species(arc_reaction: 'ARCReaction',
+                        rmg_reaction: Union['Reaction', 'TemplateReaction'],
+                        ) -> Tuple[Dict[int, int], Dict[int, int]]:
+    """
+    Map the species pairs in an ARC reaction to those in a respective RMG reaction.
+
+    Args:
+        arc_reaction ('ARCReaction'): An ARCReaction object instance.
+        rmg_reaction (Union['Reaction', 'TemplateReaction']): A respective RMG family TemplateReaction object instance.
+
+    Returns:
+        Tuple[Dict[int, int], Dict[int, int]]: Keys are specie indices in the ARC reaction,
+                                               values are respective indices in the RMG reaction.
+                                               The first tuple entry refers to reactants, the second to products.
+    """
+    r_map, p_map = dict(), dict()
+    for spc_map, rmg_species, arc_species in [(r_map, rmg_reaction.reactants, arc_reaction.r_species),
+                                              (p_map, rmg_reaction.products, arc_reaction.p_species)]:
+        for i, arc_spc in enumerate(arc_species):
+            for j, rmg_spc in enumerate(rmg_species):
+                if rmg_spc.is_isomorphic(arc_spc.mol, save_order=True):
+                    if i in spc_map.keys():
+                        spc_map[i].append(j)
+                    else:
+                        spc_map[i] = [j]
+    return r_map, p_map
 
 
 def determine_family(reaction: 'ARCReaction'):
