@@ -35,10 +35,10 @@ class TestAutoTSTAdapter(unittest.TestCase):
     def test_autotst_h_abstraction(self):
         """Test AutoTST for H Abstraction reactions"""
         rxn1 = ARCReaction(reactants=['CCC', 'HO2'], products=['C3H7', 'H2O2'],
-                           rmg_reaction=Reaction(reactants=[Species().from_smiles('CCC'),
-                                                            Species().from_smiles('O[O]')],
-                                                 products=[Species().from_smiles('[CH2]CC'),
-                                                           Species().from_smiles('OO')]))
+                           rmg_reaction=Reaction(reactants=[Species(label='CCC', smiles='CCC'),
+                                                            Species(label='HO2', smiles='O[O]')],
+                                                 products=[Species(label='C3H7', smiles='[CH2]CC'),
+                                                           Species(label='H2O2', smiles='OO')]))
         rxn1.determine_family(rmg_database=self.rmgdb)
         self.assertEqual(rxn1.family.label, 'H_Abstraction')
         atst1 = AutoTSTAdapter(job_type='tsg',
@@ -135,8 +135,8 @@ class TestAutoTSTAdapter(unittest.TestCase):
         self.assertEqual(rxn1.ts_species.ts_guesses[3].method, 'autotst')
         self.assertEqual(rxn1.ts_species.ts_guesses[0].method_index, 0)
         self.assertEqual(rxn1.ts_species.ts_guesses[1].method_index, 1)
-        self.assertEqual(rxn1.ts_species.ts_guesses[2].method_index, 0)
-        self.assertEqual(rxn1.ts_species.ts_guesses[3].method_index, 1)
+        self.assertEqual(rxn1.ts_species.ts_guesses[2].method_index, 2)
+        self.assertEqual(rxn1.ts_species.ts_guesses[3].method_index, 3)
         self.assertEqual(rxn1.ts_species.ts_guesses[0].method_direction, 'F')
         self.assertEqual(rxn1.ts_species.ts_guesses[1].method_direction, 'F')
         self.assertEqual(rxn1.ts_species.ts_guesses[2].method_direction, 'R')
@@ -163,7 +163,7 @@ class TestAutoTSTAdapter(unittest.TestCase):
                                )
         atst1.execute_incore()
         self.assertEqual(rxn1.ts_species.multiplicity, 2)
-        self.assertEqual(len(rxn1.ts_species.ts_guesses), 4)
+        self.assertEqual(len(rxn1.ts_species.ts_guesses), 2)
         self.assertEqual(rxn1.ts_species.ts_guesses[0].initial_xyz['symbols'],
                          ('O', 'C', 'C', 'H', 'H', 'H'))
         self.assertEqual(rxn1.ts_species.ts_guesses[1].initial_xyz['symbols'],
