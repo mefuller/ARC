@@ -178,10 +178,11 @@ def check_normal_mode_displacement(reaction: 'ARCReaction',
         rxn_zone_atom_indices (List[int], optional): The 0-indices of atoms identified by the normal displacement
                                                      mode as the reaction zone. Automatically determined if not given.
     """
-    print('checking NDM in ts L 181')
     if job is None:
         return
     print('checking NDM in ts L 183')
+    print(reaction)
+    print(job.local_path_to_output_file)
     determine_family(reaction)
     rxn_zone_atom_indices = rxn_zone_atom_indices or get_rxn_zone_atom_indices(reaction, job)
     reaction.ts_species.ts_checks['normal_mode_displacement'] = False
@@ -200,11 +201,14 @@ def check_normal_mode_displacement(reaction: 'ARCReaction',
             atom_found = False
             print(f'equivalent_indices: {equivalent_indices}')
             for i, entry in enumerate(equivalent_indices):
+                print(f'{i}: looking at {entry}')
                 if rxn_zone_atom_index in entry and i not in found_positions:
                     atom_found = True
                     found_positions.append(i)
                     break
             if not atom_found:
+                print(f'\n\nequivalent_indices: {equivalent_indices}')
+                print(f'found_positions: {found_positions}')
                 print(f'atom {entry} was not found')
                 break
         else:
