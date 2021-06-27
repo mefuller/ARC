@@ -2280,7 +2280,12 @@ class Scheduler(object):
                         self.species_dict[label].transport_data.comment = \
                             str(f'Polarizability calculated at the {self.freq_level.simple()} level of theory')
                 if self.species_dict[label].is_ts:
+                    print(f'checking ts normal mode displacement Scheduler L2283')
                     check_ts(reaction=self.rxn_dict[self.species_dict[label].rxn_index], job=job)
+                    print('from rxn:')
+                    print(self.rxn_dict[self.species_dict[label].rxn_index].ts_species.ts_checks)
+                    print('from spc:')
+                    print(self.species_dict[label].ts_checks)
                     if self.species_dict[label].ts_checks['normal_mode_displacement'] is False:
                         logger.info(f'TS {label} did not pass the normal mode displacement check. '
                                     f'Status is:\n{self.species_dict[label].ts_checks}\n'
@@ -3160,7 +3165,7 @@ class Scheduler(object):
                          shift=shift,
                          )
         elif self.species_dict[label].is_ts and not self.species_dict[label].ts_guesses_exhausted:
-            logger.info(f'TS {label} did not pass the normal mode displacement check. '
+            logger.info(f'TS {label} did not converge. '
                         f'Status is:\n{self.species_dict[label].ts_checks}\n'
                         f'Searching for a better TS conformer...')
             self.switch_ts(label=label)
