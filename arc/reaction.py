@@ -355,10 +355,21 @@ class ARCReaction(object):
         A helper function for generating the ARC Species (.r_species and .p_species) from the RMG Reaction object
         """
         if self.rmg_reaction is not None and not len(self.r_species) and not len(self.p_species):
-            self.r_species = [ARCSpecies(label=check_label(spc.label)[0], mol=spc.molecule[0])
-                              for spc in self.rmg_reaction.reactants]
-            self.p_species = [ARCSpecies(label=check_label(spc.label)[0], mol=spc.molecule[0])
-                              for spc in self.rmg_reaction.products]
+            self.r_species, self.p_species = list(), list()
+            for i, rmg_reactant in enumerate(self.rmg_reaction.reactants):
+                if len(self.reactants) > i:
+                    label = self.reactants[i]
+                else:
+                    label = rmg_reactant.label or rmg_reactant.molecule[0].to_smiles()
+                label = check_label(label)[0]
+                self.r_species.append(ARCSpecies(label=label, mol=rmg_reactant.molecule[0]))
+            for i, rmg_product in enumerate(self.rmg_reaction.products):
+                if len(self.products) > i:
+                    label = self.products[i]
+                else:
+                    label = rmg_product.label or rmg_product.molecule[0].to_smiles()
+                label = check_label(label)[0]
+                self.p_species.append(ARCSpecies(label=label, mol=rmg_product.molecule[0]))
 
     def get_rxn_charge(self):
         """A helper function for determining the surface charge"""
