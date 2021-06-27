@@ -1002,20 +1002,21 @@ class ARCSpecies(object):
             # This species was marked to skip rotor scans.
             return
         mol_list = self.mol_list or [self.mol]
-        for mol in mol_list:
-            if mol is None:
-                continue
-            rotors = conformers.find_internal_rotors(mol)
-            for new_rotor in rotors:
-                for existing_rotor in self.rotors_dict.values():
-                    if existing_rotor['pivots'] == new_rotor['pivots']:
-                        break
-                else:
-                    self.rotors_dict[self.number_of_rotors] = new_rotor
-                    self.number_of_rotors += 1
-        if (mol_list is None or not mol_list or all([mol is None for mol in mol_list])) and not self.is_ts:
-            logger.error(f'Could not determine rotors for {self.label} without a 2D graph structure')
-
+        if mol_list is None or not len(mol_list) or all([mol is None for mol in mol_list]):
+            if not self.is_ts:
+                logger.error(f'Could not determine rotors for {self.label} without a 2D graph structure')
+        else:
+            for mol in mol_list:
+                if mol is None:
+                    continue
+                rotors = conformers.find_internal_rotors(mol.copy())
+                for new_rotor in rotors:
+                    for existing_rotor in self.rotors_dict.values():
+                        if existing_rotor['pivots'] == new_rotor['pivots']:
+                            break
+                    else:
+                        self.rotors_dict[self.number_of_rotors] = new_rotor
+                        self.number_of_rotors += 1
         if self.number_of_rotors == 1:
             logger.info(f'\nFound one possible rotor for {self.label}')
         elif self.number_of_rotors > 1:
@@ -1023,7 +1024,6 @@ class ARCSpecies(object):
         if self.number_of_rotors > 0:
             logger.info(f'Pivot list(s) for {self.label}: '
                         f'{[self.rotors_dict[i]["pivots"] for i in range(self.number_of_rotors)]}\n')
-
         self.initialize_directed_rotors()
 
     def initialize_directed_rotors(self):
