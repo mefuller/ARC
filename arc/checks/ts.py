@@ -184,10 +184,22 @@ def check_normal_mode_displacement(reaction: 'ARCReaction',
     print('checking NDM in ts L 183')
     print(reaction)
     print(job.local_path_to_output_file)
+
+    xyz = parser.parse_geometry(job.local_path_to_output_file)
+    import pprint
+    print('TS xyz:')
+    pprint.pprint(xyz)
+
     determine_family(reaction)
     rxn_zone_atom_indices = rxn_zone_atom_indices or get_rxn_zone_atom_indices(reaction, job)
     reaction.ts_species.ts_checks['normal_mode_displacement'] = False
     rmg_rxn = reaction.rmg_reaction.copy()
+    print('reactants xyz:')
+    for r in reaction.r_species:
+        pprint.pprint(r.get_xyz())
+    print('reactants atoms:')
+    for r in rmg_rxn:
+        print(r.molecule[0].atoms)
     try:
         reaction.family.add_atom_labels_for_reaction(reaction=rmg_rxn, output_with_resonance=False, save_order=True)
     except (ActionError, ValueError):
