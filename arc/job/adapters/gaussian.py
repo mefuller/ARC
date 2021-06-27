@@ -361,8 +361,9 @@ class GaussianAdapter(JobAdapter):
         if self.level.solvation_method is not None:
             input_dict['job_type_1'] += f' SCRF=({self.level.solvation_method}, Solvent={self.level.solvent})'
 
-        input_dict['job_type_1'] += ' guess=read' if self.checkfile is not None and os.path.isfile(self.checkfile) \
-            else ' guess=mix'
+        if self.species[0].number_of_atoms > 1:
+            input_dict['job_type_1'] += ' guess=read' if self.checkfile is not None and os.path.isfile(self.checkfile) \
+                else ' guess=mix'
 
         input_dict = update_input_dict_with_args(args=self.args, input_dict=input_dict)
 
