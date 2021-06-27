@@ -145,11 +145,6 @@ H                 -1.28677889    1.04716138   -1.01532486"""
         self.assertTrue(ts.ts_passed_all_checks(spc, exemptions=['normal_mode_displacement', 'warnings']))
         spc.ts_checks['e_elect'] = False  # todo: check this last thing when elect is false but E0 is true
 
-    def test_determine_family(self):
-        """Test the determine_family() function"""
-        ts.determine_family(reaction=self.rxn_2a)
-        self.assertEqual(self.rxn_2a.family.label, 'intra_H_migration')
-
     def test_check_ts_energy(self):
         """Test the check_ts_energy() method"""
         def populate_ts_checks_and_check_ts_energy(reaction: ARCReaction, parameter='E0'):
@@ -470,6 +465,11 @@ H                 -1.28677889    1.04716138   -1.01532486"""
         r_map, p_map = ts.map_arc_rmg_species(rmg_reaction=rmg_reaction, arc_reaction=arc_reaction)
         self.assertEqual(r_map, {0: [0, 1]})
         self.assertEqual(p_map, {0: [0]})
+
+    def test_determine_family(self):
+        """Test the determine_family() function"""
+        ts.determine_family(reaction=self.rxn_2a)
+        self.assertEqual(self.rxn_2a.family.label, 'intra_H_migration')
 
     @classmethod
     def tearDownClass(cls):
