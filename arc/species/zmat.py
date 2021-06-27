@@ -1247,7 +1247,7 @@ def is_angle_linear(angle, tolerance=None):
     Returns:
         bool: Whether the angle is close to 180 or 0 degrees, ``True`` if it is.
     """
-    tol = tolerance if tolerance is not None else TOL_180
+    tol = tolerance or TOL_180
     if 180 - tol < angle <= 180 or 0 <= angle < tol:
         return True
     return False
