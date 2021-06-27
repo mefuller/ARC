@@ -469,10 +469,12 @@ def map_arc_rmg_species(arc_reaction: 'ARCReaction',
         for i, arc_spc in enumerate(arc_species):
             for j, rmg_spc in enumerate(rmg_species):
                 if rmg_spc.is_isomorphic(arc_spc.mol, save_order=True):
+                    print(f'{arc_spc.label} is isomorphic with {rmg_spc.copy()}')
                     if i in spc_map.keys():
                         spc_map[i].append(j)
                     else:
                         spc_map[i] = [j]
+                    break
     print(f'r_map: {r_map}')
     print(f'p_map: {p_map}')
     return r_map, p_map
