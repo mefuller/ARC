@@ -11,6 +11,9 @@ import shutil
 
 import numpy as np
 
+from rmgpy.reaction import Reaction
+from rmgpy.species import Species
+
 import arc.checks.ts as ts
 import arc.rmgdb as rmgdb
 from arc.common import ARC_PATH
@@ -100,7 +103,7 @@ H                 -1.28677889    1.04716138   -1.01532486"""
         cls.rxn_2b = ARCReaction(r_species=[cls.reactant_2b], p_species=[cls.product_2])
         cls.rxn_2b.ts_species = cls.ts_spc_2
         cls.job1 = job_factory(job_adapter='gaussian',
-                               species=[cls.ts_spc_2],
+                               species=[ARCSpecies(label='SPC', smiles='C')],
                                job_type='composite',
                                level=Level(method='CBS-QB3'),
                                project='test_project',
@@ -108,6 +111,11 @@ H                 -1.28677889    1.04716138   -1.01532486"""
                                                               'Projects',
                                                               'arc_project_for_testing_delete_after_usage4'),
                                )
+
+        cls.rxn_3 = ARCReaction(r_species=[ARCSpecies(label='NH3', smiles='N'), ARCSpecies(label='H', smiles='[H]')],
+                                p_species=[ARCSpecies(label='NH2', smiles='[NH2]'), ARCSpecies(label='H2', smiles='[H][H]')])
+        cls.rxn_3.ts_species = ARCSpecies(label='TS3', is_ts=True,
+                                          xyz=os.path.join(ts.ARC_PATH, 'arc', 'testing', 'freq', 'TS_NH3+H=NH2+H2.out'))
 
     def test_check_ts(self):
         """Test the check_ts() function."""
@@ -135,7 +143,7 @@ H                 -1.28677889    1.04716138   -1.01532486"""
             spc.ts_checks[key] = True
         self.assertFalse(ts.ts_passed_all_checks(spc))
         self.assertTrue(ts.ts_passed_all_checks(spc, exemptions=['normal_mode_displacement', 'warnings']))
-        spc.ts_checks['e_elect'] = False # todo: check this last thing when elect is false but E0 is true
+        spc.ts_checks['e_elect'] = False  # todo: check this last thing when elect is false but E0 is true
 
     def test_determine_family(self):
         """Test the determine_family() function"""
@@ -301,6 +309,13 @@ H                 -1.28677889    1.04716138   -1.01532486"""
         ts.check_normal_mode_displacement(reaction=self.rxn_2a, job=self.job1)
         self.assertTrue(self.rxn_2a.ts_species.ts_checks['normal_mode_displacement'])
 
+        self.job1.local_path_to_output_file = os.path.join(ts.ARC_PATH, 'arc', 'testing', 'freq',
+                                                           'TS_NH3+H=NH2+H2.out')  # NH3 + H <=> NH2 + H2
+        self.rxn_3.ts_species.populate_ts_checks()
+        self.assertFalse(self.rxn_3.ts_species.ts_checks['normal_mode_displacement'])
+        ts.check_normal_mode_displacement(reaction=self.rxn_3, job=self.job1)
+        self.assertTrue(self.rxn_3.ts_species.ts_checks['normal_mode_displacement'])
+
     def test_invalidate_rotors_with_both_pivots_in_a_reactive_zone(self):
         """Test the invalidate_rotors_with_both_pivots_in_a_reactive_zone() function"""
         ts_spc_1 = ARCSpecies(label='TS', is_ts=True, xyz=self.ts_xyz_1)
@@ -409,8 +424,9 @@ H                 -1.28677889    1.04716138   -1.01532486"""
                                                               prod_resonance=True,
                                                               delete_labels=False,
                                                               )
-        map = ts.get_atom_indices_of_labeled_atoms_in_an_rmg_reaction(rmg_reactions[0])
-        self.assertEqual(map, {'*2': 0, '*1': 1, '*3': 4})
+        map_ = ts.get_atom_indices_of_labeled_atoms_in_an_rmg_reaction(rmg_reaction=rmg_reactions[0],
+                                                                      arc_reaction=self.rxn_2a)
+        self.assertEqual(map_, {'*2': 0, '*1': 1, '*3': 4})
 
         for atom, symbol in zip(self.rxn_2b.r_species[0].mol.atoms, ['C', 'C', 'H', 'H', 'H', 'H', 'C', 'H', 'H', 'H']):
             self.assertEqual(atom.symbol, symbol)
@@ -419,8 +435,41 @@ H                 -1.28677889    1.04716138   -1.01532486"""
                                                               prod_resonance=True,
                                                               delete_labels=False,
                                                               )
-        map = ts.get_atom_indices_of_labeled_atoms_in_an_rmg_reaction(rmg_reactions[0])
-        self.assertEqual(map, {'*2': 0, '*1': 1, '*3': 3})
+        map_ = ts.get_atom_indices_of_labeled_atoms_in_an_rmg_reaction(rmg_reaction=rmg_reactions[0],
+                                                                      arc_reaction=self.rxn_2a)
+        self.assertEqual(map_, {'*2': 0, '*1': 1, '*3': 3})
+
+    def test_map_arc_rmg_species(self):
+        """Test the map_arc_rmg_species() function."""
+        rmg_reaction_1 = Reaction(reactants=[Species(smiles='N'), Species(smiles='[H]')],
+                                  products=[Species(smiles='[NH2]'), Species(smiles='[H][H]')])
+        rmg_reaction_2 = Reaction(reactants=[Species(smiles='[H]'), Species(smiles='N')],
+                                  products=[Species(smiles='[H][H]'), Species(smiles='[NH2]')])
+        rmg_reaction_3 = Reaction(reactants=[Species(smiles='N'), Species(smiles='[H]')],
+                                  products=[Species(smiles='[H][H]'), Species(smiles='[NH2]')])
+        arc_reaction = ARCReaction(r_species=[ARCSpecies(label='NH3', smiles='N'), ARCSpecies(label='H', smiles='[H]')],
+                                   p_species=[ARCSpecies(label='NH2', smiles='[NH2]'), ARCSpecies(label='H2', smiles='[H][H]')])
+
+        r_map, p_map = ts.map_arc_rmg_species(rmg_reaction=rmg_reaction_1, arc_reaction=arc_reaction)
+        self.assertEqual(r_map, {0: [0], 1: [1]})
+        self.assertEqual(p_map, {0: [0], 1: [1]})
+
+        r_map, p_map = ts.map_arc_rmg_species(rmg_reaction=rmg_reaction_2, arc_reaction=arc_reaction)
+        self.assertEqual(r_map, {0: [1], 1: [0]})
+        self.assertEqual(p_map, {0: [1], 1: [0]})
+
+        r_map, p_map = ts.map_arc_rmg_species(rmg_reaction=rmg_reaction_3, arc_reaction=arc_reaction)
+        self.assertEqual(r_map, {0: [0], 1: [1]})
+        self.assertEqual(p_map, {0: [1], 1: [0]})
+
+        rmg_reaction = Reaction(reactants=[Species(smiles='[CH3]'), Species(smiles='[CH3]')],
+                                products=[Species(smiles='CC')])
+        arc_reaction = ARCReaction(r_species=[ARCSpecies(label='CH3', smiles='[CH3]'), ARCSpecies(label='CH3', smiles='[CH3]')],
+                                   p_species=[ARCSpecies(label='C2H6', smiles='CC')])
+
+        r_map, p_map = ts.map_arc_rmg_species(rmg_reaction=rmg_reaction, arc_reaction=arc_reaction)
+        self.assertEqual(r_map, {0: [0, 1]})
+        self.assertEqual(p_map, {0: [0]})
 
     @classmethod
     def tearDownClass(cls):
