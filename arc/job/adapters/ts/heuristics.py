@@ -23,11 +23,13 @@ from arc.job.adapters.common import check_argument_consistency, ts_adapters_by_r
 from arc.job.factory import register_job_adapter
 from arc.plotter import save_geo
 from arc.species.converter import compare_zmats, zmat_from_xyz, zmat_to_xyz
+from arc.species.converter import xyz_from_data
 from arc.species.species import ARCSpecies, TSGuess
 from arc.species.zmat import get_parameter_from_atom_indices, is_angle_linear, up_param
 
 if TYPE_CHECKING:
     from rmgpy.data.kinetics.family import KineticsFamily
+    from rmgpy.molecule.molecule import Molecule
     from arc.level import Level
     from arc.reaction import ARCReaction
     from arc.species import ARCSpecies
@@ -268,7 +270,10 @@ class HeuristicsAdapter(JobAdapter):
             reaction_list = list()
             for reactants in list(reactant_mol_combinations):
                 for products in list(product_mol_combinations):
-                    reaction = label_molecules(list(reactants), list(products), rxn.family)
+                    reaction = label_molecules(reactants=list(reactants),
+                                               products=list(products),
+                                               family=rxn.family,
+                                               )
                     if reaction is not None:
                         reaction_list.append(reaction)
 
@@ -277,7 +282,10 @@ class HeuristicsAdapter(JobAdapter):
             if family == 'H_Abstraction':
                 tsg = TSGuess(method=f'Heuristics')
                 tsg.tic()
-                xyzs = h_abstraction(rxn, reaction_list, dihedral_increment=20)  # todo: dihedral_increment should be a variable
+                xyzs = h_abstraction(arc_reaction=rxn,
+                                     rmg_reactions=reaction_list,
+                                     dihedral_increment=20,
+                                     )  # todo: dihedral_increment should vary
                 tsg.tok()
 
             for method_index, xyz in enumerate(xyzs):
@@ -341,9 +349,9 @@ def combine_coordinates_with_redundant_atoms(xyz1,
     """
     Combine two coordinates that share an atom.
     For this redundant atom case, only three additional degrees of freedom (here ``a2``, ``d2``, and ``d3``)
-    are required. The number of atoms in ``mol2`` should be lesser than or equal to the number of atoms in ''mol1''.
+    are required. The number of atoms in ``mol2`` should be lesser than or equal to the number of atoms in ``mol1``.
 
-    Atom scheme (dummy atom X will be added if the B-H-A angle is close to 180 degrees)::
+    Atom scheme (dummy atom X will be added if the A-H-B angle is close to 180 degrees)::
 
                     X           D
                     |         /
@@ -352,7 +360,7 @@ def combine_coordinates_with_redundant_atoms(xyz1,
         C
         |--- mol1 --|-- mol2 ---|
 
-    zmats will be created in the following way::
+    zmats will be constructed in the following way::
 
         zmat1 = {'symbols': ('C', 'H', 'H', 'H', 'H'),
                  'coords': ((None, None, None),  # 0, atom A
@@ -523,29 +531,32 @@ def combine_coordinates_with_redundant_atoms(xyz1,
     return zmat_to_xyz(zmat=combined_zmat, keep_dummy=keep_dummy)
 
 
-def label_molecules(reactants: list,
-                    products: list,
+def label_molecules(reactants: List['Molecule'],
+                    products: List['Molecule'],
                     family: 'KineticsFamily',
                     output_with_resonance: bool = False,
-                    ) -> Union[Reaction, None]:
+                    ) -> Optional[Reaction]:
     """
     React molecules to give the requested products via an RMG family.
     Results in a reaction with RMG's atom labels for the reactants and products.
 
     Args:
-        reactants (list): Entries are Molecule instances of the reaction reactants.
-        products (list): Entries are Molecule instances of the reaction products.
-        family (KineticsFamily): The RMG reaction family instance.
+        reactants (List['Molecule']): Entries are Molecule instances of the reaction reactants.
+        products (List['Molecule']): Entries are Molecule instances of the reaction products.
+        family ('KineticsFamily'): The RMG reaction family instance.
         output_with_resonance (bool, optional): Whether to generate all resonance structures with labels.
                                                 ``True`` to generate, ``False`` by default.
 
     Returns:
-        Reaction: An RMG Reaction instance with atom-labeled reactants and products.
+        Optional[Reaction]: An RMG Reaction instance with atom-labeled reactants and products.
     """
     reaction = Reaction(reactants=reactants, products=products)
     try:
-        family.add_atom_labels_for_reaction(reaction=reaction, output_with_resonance=output_with_resonance)
-    except ActionError:
+        family.add_atom_labels_for_reaction(reaction=reaction,
+                                            output_with_resonance=output_with_resonance,
+                                            save_order=True,
+                                            )
+    except (ActionError, ValueError):
         return None
     return reaction
 
@@ -553,7 +564,13 @@ def label_molecules(reactants: list,
 # Family-specific heuristics:
 
 
-def h_abstraction(arc_reaction, rmg_reactions, r1_stretch=1.2, r2_stretch=1.2, a2=180, dihedral_increment=20) -> list:
+def h_abstraction(arc_reaction: 'ARCReaction',
+                  rmg_reactions: List['Reaction'],
+                  r1_stretch: float = 1.2,
+                  r2_stretch: float = 1.2,
+                  a2: float = 180,
+                  dihedral_increment: int = 20,
+                  ) -> List[dict]:
     """
     Generate TS guesses for reactions of the RMG H_Abstraction family.
 
@@ -567,72 +584,48 @@ def h_abstraction(arc_reaction, rmg_reactions, r1_stretch=1.2, r2_stretch=1.2, a
         r2_stretch (float, optional): The factor by which to multiply (stretch/shrink) the bond length to the terminal
                                       atom ``h2`` in ``xyz2`` (bond B-H2).
         a2 (float, optional): The angle (in degrees) in the combined structure between atoms B-H-A (angle B-H-A).
-        dihedral_increment (float, optional): The dihedral increment to use for B-H-A-C and D-B-H-C dihedral scans.
+        dihedral_increment (int, optional): The dihedral increment to use for B-H-A-C and D-B-H-C dihedral scans.
 
-    Returns: list
+    Returns: List[dict]
         Entries are Cartesian coordinates of TS guesses for all reactions.
     """
     xyz_guesses = list()
 
-    # identify R1H and R2H in "R1H + R2 <=> R1 + R2H" for the ARC reaction:
-    arc_reactant = sorted(arc_reaction.r_species, key=lambda x: x.multiplicity, reverse=False)[0]
-    arc_product = sorted(arc_reaction.p_species, key=lambda x: x.multiplicity, reverse=False)[0]
+    # Identify R1H and R2H in the "R1H + R2 <=> R1 + R2H" or "R2 + R1H <=> R2H + R1" reaction
+    # using the first RMG reaction; all other RMG reactions and the ARC reaction should have the same order.
+    reactants_reversed, products_reversed = False, False
+    for i, reactant in enumerate(rmg_reactions[0].reactants):
+        for atom in reactant.molecule[0].atoms:
+            if atom.label == '*2' and i != 0:
+                reactants_reversed = True
+    for i, product in enumerate(rmg_reactions[0].products):
+        for atom in product.molecule[0].atoms:
+            if atom.label == '*2' and i != 1:
+                products_reversed = True
+
+    arc_reactant = arc_reaction.r_species[1] if reactants_reversed else arc_reaction.r_species[0]
+    arc_product = arc_reaction.p_species[0] if products_reversed else arc_reaction.p_species[1]
 
     for rmg_reaction in rmg_reactions:
-        # identify R1H and R2H in "R1H + R2 <=> R1 + R2H" for the RMG reaction:
-        rmg_reactant_mol = sorted(rmg_reaction.reactants, key=lambda x: x.multiplicity, reverse=False)[0].molecule[0]
-        rmg_product_mol = sorted(rmg_reaction.products, key=lambda x: x.multiplicity, reverse=False)[0].molecule[0]
+        rmg_reactant_mol = rmg_reaction.reactants[1].molecule[0] if reactants_reversed \
+            else rmg_reaction.reactants[0].molecule[0]
+        rmg_product_mol = rmg_reaction.products[0].molecule[0] if products_reversed \
+            else rmg_reaction.products[1].molecule[0]
 
         h1 = rmg_reactant_mol.atoms.index([atom for atom in rmg_reactant_mol.atoms
                                            if atom.label == '*2'][0])
         h2 = rmg_product_mol.atoms.index([atom for atom in rmg_product_mol.atoms
                                           if atom.label == '*2'][0])
 
-        c, d = None, None
+        c = find_distant_neighbor(rmg_mol=rmg_reactant_mol, start=h1)
+        d = find_distant_neighbor(rmg_mol=rmg_product_mol, start=h2)
+        mol = rmg_product_mol.copy()
 
-        # atom C is the 0-index of an atom in ``xyz1`` connected to either A or H1 which is neither A nor H1
-        if len(rmg_reactant_mol.atoms) > 2:
-            found_c = False
-            a = None
-            # search for atom C connected to atom A:
-            for atom_a in rmg_reactant_mol.atoms[h1].edges.keys():
-                for atom_c in atom_a.edges.keys():
-                    if rmg_reactant_mol.atoms.index(atom_c) != h1:
-                        a = rmg_reactant_mol.atoms.index(atom_a)
-                        c = rmg_reactant_mol.atoms.index(atom_c)
-                        found_c = True
-                        break
-                if not found_c:
-                    for atom in rmg_reactant_mol.atoms:
-                        if rmg_reactant_mol.atoms.index(atom) not in [h1, a]:
-                            c = rmg_reactant_mol.atoms.index(atom)
-                            break
-                break
-
-        # atom D is the 0-index of an atom in ``xyz2`` connected to either B or H2 which is neither B nor H2
-        if len(rmg_product_mol.atoms) > 2:
-            found_d = False
-            b = None
-            # search for atom D connected to atom B:
-            for atom_b in rmg_product_mol.atoms[h2].edges.keys():
-                for atom_d in atom_b.edges.keys():
-                    if rmg_product_mol.atoms.index(atom_d) != h2:
-                        b = rmg_product_mol.atoms.index(atom_b)
-                        d = rmg_product_mol.atoms.index(atom_d)
-                        found_d = True
-                        break
-                if not found_d:
-                    for atom in rmg_product_mol.atoms:
-                        if rmg_product_mol.atoms.index(atom) not in [h2, b]:
-                            d = rmg_product_mol.atoms.index(atom)
-                            break
-                break
-
-        # d2 describes the B-H-A-C dihedral, populate d2_values if C exists and the B-H-A angle is not linear
+        # d2 describes the B-H-A-C dihedral, populate d2_values if C exists and the B-H-A angle is not linear.
         d2_values = list(range(0, 360, dihedral_increment)) if len(rmg_reactant_mol.atoms) > 2 \
             and not is_angle_linear(a2) else list()
 
-        # d3 describes the D-B-H-C dihedral, populate d3_values if D and C exist
+        # d3 describes the D-B-H-C dihedral, populate d3_values if D and C exist.
         d3_values = list(range(0, 360, dihedral_increment)) if len(rmg_product_mol.atoms) > 2 \
             and len(rmg_product_mol.atoms) > 2 else list()
 
@@ -644,14 +637,13 @@ def h_abstraction(arc_reaction, rmg_reactions, r1_stretch=1.2, r2_stretch=1.2, a
             d2_d3_product = [(None, d3) for d3 in d3_values]
         else:
             d2_d3_product = [(None, None)]
-
         # Todo:
         # r1_stretch_, r2_stretch_, a2_ = get_training_params(
         #     family='H_Abstraction',
         #     atom_type_key=tuple(sorted([atom_a.atomtype.label, atom_b.atomtype.label])),
         #     atom_symbol_key=tuple(sorted([atom_a.element.symbol, atom_b.element.symbol])),
         # )
-        r1_stretch_, r2_stretch_, a2_ = 1.2, 1.2, 170  # general guesses
+        # r1_stretch_, r2_stretch_, a2_ = 1.2, 1.2, 170  # general guesses
 
         zmats = list()
         for d2, d3 in d2_d3_product:
@@ -659,8 +651,8 @@ def h_abstraction(arc_reaction, rmg_reactions, r1_stretch=1.2, r2_stretch=1.2, a
             try:
                 xyz_guess = combine_coordinates_with_redundant_atoms(xyz1=arc_reactant.get_xyz(),
                                                                      xyz2=arc_product.get_xyz(),
-                                                                     mol1=arc_reactant.mol,
-                                                                     mol2=arc_product.mol,
+                                                                     mol1=rmg_reactant_mol,
+                                                                     mol2=rmg_product_mol,
                                                                      h1=h1,
                                                                      h2=h2,
                                                                      c=c,
@@ -681,12 +673,73 @@ def h_abstraction(arc_reaction, rmg_reactions, r1_stretch=1.2, r2_stretch=1.2, a
                     if compare_zmats(existing_zmat_guess, zmat_guess):
                         break
                 else:
-                    # this TS is unique, and has no atom collisions
+                    # This TS is unique, and has no atom collisions.
                     zmats.append(zmat_guess)
+                    xyz_guess = reverse_xyz(xyz_guess, reactants_reversed, rmg_reactant_mol)
                     xyz_guesses.append(xyz_guess)
 
-    # learn bond stretches and the A-H-B angle for different atom types
+    # Todo: Learn bond stretches and the A-H-B angle for different atom types.
     return xyz_guesses
+
+
+def reverse_xyz(xyz: dict,
+                reactants_reversed: bool,
+                rmg_reactant_mol: 'Molecule',
+                ) -> dict:
+    """
+    Sort the atoms order in a TS xyz guess according to the reactants order in the reaction.
+
+    Args:
+        xyz (dict): The TS xyz guess.
+        reactants_reversed (bool): Whether the reactants were reversed when generating the TS guess.
+        rmg_reactant_mol ('Molecule'): The Molecule object instance describing the first reactant in the
+                                       according to the RMG family template.
+
+    Returns:
+        dict: The sorted TS xyz guess.
+    """
+    if not reactants_reversed:
+        return xyz
+    r1_atoms_num = len(rmg_reactant_mol.atoms)
+    r2_atoms_num = len(xyz['symbols']) - r1_atoms_num
+    symbols, coords, isotopes = list(), list(), list()
+    for i in range(r1_atoms_num):
+        symbols.append(xyz['symbols'][i + r2_atoms_num])
+        coords.append(xyz['coords'][i + r2_atoms_num])
+        isotopes.append(xyz['isotopes'][i + r2_atoms_num])
+    for i in range(r2_atoms_num):
+        symbols.append(xyz['symbols'][i])
+        coords.append(xyz['coords'][i])
+        isotopes.append(xyz['isotopes'][i])
+    return xyz_from_data(symbols=symbols, coords=coords, isotopes=isotopes)
+
+
+def find_distant_neighbor(rmg_mol: 'Molecule',
+                          start: int,
+                          ) -> Optional[int]:
+    """
+    Find the 0-index of a distant neighbor (2 steps away) if possible from the start atom.
+    Preferably, a heavy atom will be returned.
+
+    Args:
+        rmg_mol ('Molecule'): The RMG molecule object instance to explore.
+        start (int): The 0-index of the start atom.
+
+    Returns:
+        Optional[int]: The 0-index of the distant neighbor.
+    """
+    if len(rmg_mol.atoms) <= 2:
+        return None
+    distant_neighbor_h_index = None
+    for neighbor in rmg_mol.atoms[start].edges.keys():
+        for distant_neighbor in neighbor.edges.keys():
+            distant_neighbor_index = rmg_mol.atoms.index(distant_neighbor)
+            if distant_neighbor_index != start:
+                if distant_neighbor.is_hydrogen():
+                    distant_neighbor_h_index = distant_neighbor_index
+                else:
+                    return distant_neighbor_index
+    return distant_neighbor_h_index
 
 
 register_job_adapter('heuristics', HeuristicsAdapter)
