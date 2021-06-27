@@ -198,7 +198,7 @@ def check_normal_mode_displacement(reaction: 'ARCReaction',
     for r in reaction.r_species:
         pprint.pprint(r.get_xyz())
     print('reactants atoms:')
-    for r in rmg_rxn:
+    for r in rmg_rxn.reactants:
         print(r.molecule[0].atoms)
     try:
         reaction.family.add_atom_labels_for_reaction(reaction=rmg_rxn, output_with_resonance=False, save_order=True)
