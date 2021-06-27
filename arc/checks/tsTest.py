@@ -109,6 +109,15 @@ H                 -1.28677889    1.04716138   -1.01532486"""
                                                               'arc_project_for_testing_delete_after_usage4'),
                                )
 
+    def test_check_ts(self):
+        """Test the check_ts() function."""
+        self.job1.local_path_to_output_file = os.path.join(ts.ARC_PATH, 'arc', 'testing', 'freq',
+                                                           'TS_C3_intraH_8.out')  # Correct TS (freq run, not composite).
+        self.rxn_2a.ts_species.populate_ts_checks()
+        self.assertFalse(self.rxn_2a.ts_species.ts_checks['normal_mode_displacement'])
+        ts.check_ts(reaction=self.rxn_2a, job=self.job1)
+        self.assertTrue(self.rxn_2a.ts_species.ts_checks['normal_mode_displacement'])
+
     def test_did_ts_pass_all_checks(self):
         """Test the did_ts_pass_all_checks() function"""
         spc = ARCSpecies(label='TS', is_ts=True)
@@ -201,6 +210,7 @@ H                 -1.28677889    1.04716138   -1.01532486"""
         self.assertTrue(rxn1.ts_species.ts_checks['e_elect'])
 
     def test_check_normal_mode_displacement(self):
+        """Test the check_normal_mode_displacement() function."""
         self.rxn_2a.ts_species.populate_ts_checks()
         self.assertFalse(self.rxn_2a.ts_species.ts_checks['normal_mode_displacement'])
         self.rxn_2b.ts_species.populate_ts_checks()
@@ -283,6 +293,13 @@ H                 -1.28677889    1.04716138   -1.01532486"""
         self.rxn_2a.ts_species.populate_ts_checks()
         ts.check_normal_mode_displacement(reaction=self.rxn_2a, job=self.job1)
         self.assertFalse(self.rxn_2a.ts_species.ts_checks['normal_mode_displacement'])
+
+        self.job1.local_path_to_output_file = os.path.join(ts.ARC_PATH, 'arc', 'testing', 'freq',
+                                                           'TS_C3_intraH_8.out')  # Correct TS (freq run, not composite).
+        self.rxn_2a.ts_species.populate_ts_checks()
+        self.assertFalse(self.rxn_2a.ts_species.ts_checks['normal_mode_displacement'])
+        ts.check_normal_mode_displacement(reaction=self.rxn_2a, job=self.job1)
+        self.assertTrue(self.rxn_2a.ts_species.ts_checks['normal_mode_displacement'])
 
     def test_invalidate_rotors_with_both_pivots_in_a_reactive_zone(self):
         """Test the invalidate_rotors_with_both_pivots_in_a_reactive_zone() function"""
