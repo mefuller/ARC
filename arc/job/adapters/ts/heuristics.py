@@ -374,7 +374,7 @@ def combine_coordinates_with_redundant_atoms(xyz1,
         zmat2 = {'symbols': ('H', 'H', 'H', 'H', 'C'),
                  'coords': ((None, None, None),  # H2, redundant H atom, will be united with H1
                             ('R_5_4' * r2_stretch, a2 (B-H-A) = 'A_5_4_0', d2 (B-H-A-C) = 'D_5_4_0_1'),  # 5, atom B
-                            ('R_6_5', 'A_6_5_4', d3 (D-B-H-C) = 'D_6_5_4_1'),  # 6, atom D
+                            ('R_6_5', 'A_6_5_4', d3 (D-B-H-A) = 'D_6_5_4_0'),  # 6, atom D
                             ('R_7_6', 'A_7_6_4', 'D_7_6_4_5'),  # 7
                             ('R_8_7', 'A_8_7_6', 'D_8_7_6_5')),  # 8
                  'vars': {...},
@@ -399,7 +399,7 @@ def combine_coordinates_with_redundant_atoms(xyz1,
         d2 (float, optional): The dihedral angle (in degrees) between atoms B-H-A-C (dihedral B-H-A-C).
                               This argument must be given only if the a2 angle is not linear,
                               and mol2 has 3 or more atoms, otherwise it is meaningless.
-        d3 (float, optional): The dihedral angel (in degrees) between atoms D-B-H-C (dihedral D-B-H-C).
+        d3 (float, optional): The dihedral angel (in degrees) between atoms D-B-H-A (dihedral D-B-H-A).
                               This parameter is mandatory only if atom D exists (i.e., if ``mol2`` has 3 or more atoms).
         keep_dummy (bool, optional): Whether to keep a dummy atom if added, ``True`` to keep, ``False`` by default.
 
@@ -431,7 +431,7 @@ def combine_coordinates_with_redundant_atoms(xyz1,
         raise ValueError('The d parameter (the index of atom D in xyz2) must be given if mol2 has 3 or more atoms, '
                          'got None.')
     if len(mol2.atoms) > 2 and d3 is None:
-        raise ValueError('The d3 parameter (dihedral D-B-H-C) must be given if mol2 has 3 or more atoms, got None.')
+        raise ValueError('The d3 parameter (dihedral D-B-H-A) must be given if mol2 has 3 or more atoms, got None.')
 
     a = mol1.atoms.index(list(mol1.atoms[h1].edges.keys())[0])
     b = mol2.atoms.index(list(mol2.atoms[h2].edges.keys())[0])
@@ -478,7 +478,7 @@ def combine_coordinates_with_redundant_atoms(xyz1,
         param_a2 = f'A_{zb}_{zh}_{zx}'  # B-H-X
         param_d2 = f'D_{zb}_{zh}_{zx}_{za}' if zc is not None else None  # B-H-X-A
     if d3 is not None and zd is not None:
-        param_d3 = f'D_{zd}_{zb}_{zh}_{zc}'  # D-B-H-C
+        param_d3 = f'D_{zd}_{zb}_{zh}_{za}'  # D-B-H-A
     else:
         param_d3 = None
 
@@ -625,9 +625,8 @@ def h_abstraction(arc_reaction: 'ARCReaction',
         d2_values = list(range(0, 360, dihedral_increment)) if len(rmg_reactant_mol.atoms) > 2 \
             and not is_angle_linear(a2) else list()
 
-        # d3 describes the D-B-H-C dihedral, populate d3_values if D and C exist.
-        d3_values = list(range(0, 360, dihedral_increment)) if len(rmg_product_mol.atoms) > 2 \
-            and len(rmg_product_mol.atoms) > 2 else list()
+        # d3 describes the D-B-H-A dihedral, populate d3_values if D exists.
+        d3_values = list(range(0, 360, dihedral_increment)) if len(rmg_product_mol.atoms) > 2 else list()
 
         if d2_values and d3_values:
             d2_d3_product = list(itertools.product(d2_values, d3_values))
