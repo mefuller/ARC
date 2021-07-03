@@ -485,41 +485,6 @@ H       0.99232452    1.08896899    0.06242974"""
         self.assertEqual(new_vars, expected_new_vars)
         self.assertEqual(new_map, expected_new_map)
 
-    def test_reorder_ts_xyz_guess(self):
-        """Test the reorder_ts_xyz_guess() function"""
-        # Test OH + NH3
-        xyz_1 = {'symbols': ('N', 'H', 'H', 'H', 'O', 'H'), 'isotopes': (7, 1, 1, 1, 8, 1),
-                 'coords': ((0, 0, 0), (1, 0, 0), (2, 0, 0), (3, 0, 0), (4, 0, 0), (5, 0, 0))}
-        xyz = reorder_ts_xyz_guess(xyz=xyz_1,
-                                   reactants_reversed=True,
-                                   atom_map=[0, 1, 2, 3, 4, 5],  # Relates to OH-NH3 (reversed).
-                                   rmg_reactant_mol=Molecule(smiles='N'),
-                                   )
-        expected_xyz_1 = {'symbols': ('O', 'H', 'N', 'H', 'H', 'H'), 'isotopes': (8, 1, 7, 1, 1, 1),
-                          'coords': ((4, 0, 0), (5, 0, 0), (0, 0, 0), (1, 0, 0), (2, 0, 0), (3, 0, 0))}
-        self.assertEqual(xyz, expected_xyz_1)
-
-        # Test NH3 + OH
-        xyz = reorder_ts_xyz_guess(xyz=xyz_1,
-                                   reactants_reversed=False,
-                                   atom_map=[0, 1, 2, 3, 4, 5],
-                                   rmg_reactant_mol=Molecule(smiles='N'),
-                                   )
-        self.assertEqual(xyz, xyz_1)
-
-        # Test NH2 + H2O
-        xyz_2 = {'symbols': ('H', 'O', 'H', 'N', 'H', 'H'), 'isotopes': (1, 8, 1, 7, 1, 1),
-                 'coords': ((0, 0, 0), (1, 0, 0), (2, 0, 0), (3, 0, 0), (4, 0, 0), (5, 0, 0))}
-        xyz = reorder_ts_xyz_guess(xyz=xyz_2,
-                                   reactants_reversed=True,
-                                   atom_map=[0, 1, 2, 5, 3, 4],  # maps the reaction, doesn't know of the TS reverse order. does not map R to P, maps the wierd TS order to Rs
-                                   rmg_reactant_mol=Molecule(smiles='O'),
-                                   )
-        expected_xyz_2 = {'symbols': ('N', 'H', 'H', 'O', 'H', 'H'), 'isotopes': (7, 1, 1, 8, 1, 1),
-                          'coords': ((3, 0, 0), (4, 0, 0), (5, 0, 0), (1, 0, 0), (0, 0, 0), (2, 0, 0))}
-        print(xyz)
-        self.assertEqual(xyz, expected_xyz_2)
-
     def test_reverse_xyz(self):
         """Test the reverse_xyz() function."""
         # Test OH + NH3
