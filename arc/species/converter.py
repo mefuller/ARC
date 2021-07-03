@@ -384,9 +384,11 @@ def sort_xyz_using_indices(xyz_dict: dict,
                            ) -> dict:
     """
     Sort the tuples in an xyz dict according to the given indices.
+
     Args:
         xyz_dict (dict): The Cartesian coordinates.
         indices (List[int]): Entries are 0-indices of the desired order.
+
     Returns:
         dict: The ordered xyz.
     """
