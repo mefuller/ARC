@@ -679,6 +679,7 @@ class ARCReaction(object):
         Get the atom mapping of the reactant atoms to the product atoms.
         I.e., an atom map of [0, 2, 1] means that reactant atom 0 matches product atom 0,
         reactant atom 1 matches product atom 2, and reactant atom 2 matches product atom 1.
+        All indices are 0-indexed.
 
         Employs the Kabsch, Hungarian, and Uno algorithms to exhaustively locate
         the best alignment for non-oriented, non-ordered 3D structures.
@@ -688,7 +689,7 @@ class ARCReaction(object):
             direction (int, optional): Whether to map reactants to products (1) or products to reactants (-1).
 
         Returns: Optional[List[int]]
-            The atom map.
+            The atom map, entry indices correspond to reactant indices, entry values correspond to product indices.
         """
         atom_map = None
         try:
