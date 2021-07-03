@@ -15,8 +15,16 @@ from rmgpy.species import Species
 
 import arc.rmgdb as rmgdb
 from arc.common import ARC_PATH
-from arc.job.adapters.ts.heuristics import HeuristicsAdapter, find_distant_neighbor, reverse_xyz
+from arc.job.adapters.ts.heuristics import (HeuristicsAdapter,
+                                            determine_glue_params_to_combine_zmats,
+                                            find_distant_neighbor,
+                                            generate_the_two_constrained_zmats,
+                                            get_modified_params_from_zmat2,
+                                            reverse_xyz,
+                                            stretch_zmat_bond,
+                                            )
 from arc.reaction import ARCReaction
+from arc.species.converter import zmat_to_xyz
 from arc.species.species import ARCSpecies
 
 
@@ -33,6 +41,53 @@ class TestHeuristicsAdapter(unittest.TestCase):
         cls.maxDiff = None
         cls.rmgdb = rmgdb.make_rmg_database_object()
         rmgdb.load_families_only(cls.rmgdb)
+        cls.ccooh_xyz = {'symbols': ('C', 'C', 'O', 'O', 'H', 'H', 'H', 'H', 'H', 'H'),
+                         'isotopes': (12, 12, 16, 16, 1, 1, 1, 1, 1, 1),
+                         'coords': ((-1.34047, -0.03188, 0.16703), (0.07658, -0.19298, -0.34334),
+                                    (0.27374, 0.70670, -1.43275), (1.64704, 0.49781, -1.86879),
+                                    (-2.06314, -0.24194, -0.62839), (-1.53242, -0.70687, 1.00574),
+                                    (-1.51781, 0.99794, 0.49424), (0.24018, -1.21958, -0.68782),
+                                    (0.79344, 0.03863, 0.45152), (1.95991, 1.39912, -1.67215))}
+        cls.c2h6_xyz = {'symbols': ('C', 'C', 'H', 'H', 'H', 'H', 'H', 'H'),
+                        'isotopes': (12, 12, 1, 1, 1, 1, 1, 1),
+                        'coords': ((0.75560, 0.02482, 0.00505), (-0.75560, -0.02482, -0.00505),
+                                   (1.17380, -0.93109, -0.32410), (1.11891, 0.80903, -0.66579),
+                                   (1.12656, 0.23440, 1.01276), (-1.17380, 0.93109, 0.32410),
+                                   (-1.11891, -0.809039, 0.66579), (-1.12656, -0.23440, -1.01276))}
+        cls.zmat1 = {'symbols': ('C', 'C', 'O', 'O', 'H', 'H', 'H', 'H', 'H', 'H'),
+                     'coords': ((None, None, None), ('R_1_0', None, None), ('R_2_1', 'A_2_1_0', None),
+                                ('R_3_2', 'A_3_2_1', 'D_3_2_1_0'), ('R_4_0', 'A_4_0_1', 'D_4_0_1_3'),
+                                ('R_5_0', 'A_5_0_1', 'D_5_0_1_4'), ('R_6_0', 'A_6_0_1', 'D_6_0_1_5'),
+                                ('R_7_1', 'A_7_1_0', 'D_7_1_0_6'), ('R_8_1', 'A_8_1_0', 'D_8_1_0_7'),
+                                ('R_9_3', 'A_9_3_2', 'D_9_3_2_1')),
+                     'vars': {'R_1_0': 1.5147479951212197, 'R_2_1': 1.4265728986680748,
+                              'A_2_1_0': 108.63387152978416, 'R_3_2': 1.4559254886404387,
+                              'A_3_2_1': 105.58023544826183, 'D_3_2_1_0': 179.9922243050821,
+                              'R_4_0': 1.0950205915944824, 'A_4_0_1': 110.62463321031589,
+                              'D_4_0_1_3': 59.13545080998071, 'R_5_0': 1.093567969297245,
+                              'A_5_0_1': 110.91425998596507, 'D_5_0_1_4': 120.87266977773987,
+                              'R_6_0': 1.0950091062890002, 'A_6_0_1': 110.62270362433773,
+                              'D_6_0_1_5': 120.87301274044218, 'R_7_1': 1.0951433842986755,
+                              'A_7_1_0': 110.20822115119915, 'D_7_1_0_6': 181.16392677464265,
+                              'R_8_1': 1.0951410439636102, 'A_8_1_0': 110.20143800025897,
+                              'D_8_1_0_7': 239.4199964284852, 'R_9_3': 0.9741224704818748,
+                              'A_9_3_2': 96.30065819269021, 'D_9_3_2_1': 242.3527063196313},
+                     'map': {0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8, 9: 9}}
+        cls.zmat2 = {'symbols': ('H', 'C', 'C', 'H', 'H', 'H', 'H', 'H'),
+                     'coords': ((None, None, None), ('R_1_0', None, None), ('R_2_1', 'A_2_1_0', None),
+                                ('R_3_1', 'A_3_1_2', 'D_3_1_2_0'), ('R_4_1', 'A_4_1_2', 'D_4_1_2_3'),
+                                ('R_5_2', 'A_5_2_1', 'D_5_2_1_4'), ('R_6_2', 'A_6_2_1', 'D_6_2_1_5'),
+                                ('R_7_2', 'A_7_2_1', 'D_7_2_1_6')),
+                     'vars': {'R_1_0': 1.0940775789443724, 'R_2_1': 1.5120487296562577,
+                              'A_2_1_0': 110.56801921096591, 'R_3_1': 1.0940725668318991,
+                              'A_3_1_2': 110.56890700195424, 'D_3_1_2_0': 239.99938309284212,
+                              'R_4_1': 1.0940817193677925, 'A_4_1_2': 110.56754686774481,
+                              'D_4_1_2_3': 239.9997190582892, 'R_5_2': 1.0940725668318991,
+                              'A_5_2_1': 110.56890700195424, 'D_5_2_1_4': 59.99971758419434,
+                              'R_6_2': 1.0940840619688397, 'A_6_2_1': 110.56790845138725,
+                              'D_6_2_1_5': 239.99905123159166, 'R_7_2': 1.0940817193677925,
+                              'A_7_2_1': 110.56754686774481, 'D_7_2_1_6': 240.00122783407815},
+                     'map': {0: 3, 1: 0, 2: 1, 3: 2, 4: 4, 5: 5, 6: 6, 7: 7}}
 
     def test_heuristics_for_h_abstraction(self):
         """
@@ -129,9 +184,9 @@ H -0.7886440 -0.8942950 0.4695060"""
         self.assertEqual(rxn2.ts_species.multiplicity, 2)
         self.assertEqual(len(rxn2.ts_species.ts_guesses), 18)
         self.assertEqual(rxn2.ts_species.ts_guesses[0].initial_xyz['symbols'],
-                         ('C', 'C', 'C', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'O', 'O'))
+                         ('C', 'C', 'C', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'O', 'O', 'H'))
         self.assertEqual(rxn2.ts_species.ts_guesses[1].initial_xyz['symbols'],
-                         ('C', 'C', 'C', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'O', 'O'))
+                         ('C', 'C', 'C', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'O', 'O', 'H'))
         self.assertEqual(len(rxn2.ts_species.ts_guesses[1].initial_xyz['coords']), 14)
         self.assertTrue(rxn2.ts_species.ts_guesses[0].success)
         self.assertTrue(rxn2.ts_species.ts_guesses[1].success)
@@ -204,7 +259,7 @@ H       0.76363177   -0.19827735    0.00000000"""
         self.assertEqual(rxn3.ts_species.multiplicity, 2)
         self.assertEqual(len(rxn3.ts_species.ts_guesses), 18)
         self.assertEqual(rxn3.ts_species.ts_guesses[0].initial_xyz['symbols'],
-                         ('C', 'C', 'C', 'O', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'O'))
+                         ('C', 'C', 'C', 'O', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'H', 'O', 'H'))
         self.assertEqual(len(rxn3.ts_species.ts_guesses[1].initial_xyz['coords']), 14)
 
         cdcoh_xyz = """C      -0.80601307   -0.11773769    0.32792128
@@ -243,6 +298,193 @@ H       0.99232452    1.08896899    0.06242974"""
         self.assertEqual(len(rxn4.ts_species.ts_guesses), 1)
         self.assertEqual(rxn4.ts_species.ts_guesses[0].initial_xyz['symbols'], ('C', 'C', 'O', 'H', 'H', 'H', 'H', 'H'))
 
+    def test_keeping_atom_order_in_ts(self):
+        """Test that the generated TS has the same atom order as in the reactants"""
+        from arc.species.converter import xyz_to_str
+        ccooj_xyz = {'symbols': ('C', 'C', 'O', 'O', 'H', 'H', 'H', 'H', 'H'),
+                     'isotopes': (12, 12, 16, 16, 1, 1, 1, 1, 1),
+                     'coords': ((-1.10653, -0.06552, 0.042602), (0.385508, 0.205048, 0.049674),
+                                (0.759622, 1.114927, -1.032928), (0.675395, 0.525342, -2.208593),
+                                (-1.671503, 0.860958, 0.166273), (-1.396764, -0.534277, -0.898851),
+                                (-1.36544, -0.740942, 0.862152), (0.97386, -0.704577, -0.082293),
+                                (0.712813, 0.732272, 0.947293))}
+        rxn_1 = ARCReaction(r_species=[ARCSpecies(label='CCOOj', smiles='CCO[O]', xyz=ccooj_xyz),
+                                       ARCSpecies(label='C2H6', smiles='CC', xyz=self.c2h6_xyz)],
+                            p_species=[ARCSpecies(label='CCOOH', smiles='CCOO', xyz=self.ccooh_xyz),
+                                       ARCSpecies(label='C2H5', smiles='[CH2]C')])
+        rxn_1.determine_family(rmg_database=self.rmgdb)
+        heuristics_1 = HeuristicsAdapter(job_type='tsg',
+                                         reactions=[rxn_1],
+                                         testing=True,
+                                         project='test_1',
+                                         project_directory=os.path.join(ARC_PATH, 'arc', 'testing', 'heuristics_1'),
+                                         )
+        heuristics_1.execute_incore()
+        for tsg in rxn_1.ts_species.ts_guesses:
+            self.assertEqual(tsg.initial_xyz['symbols'],
+                             ('C', 'O', 'O', 'H', 'H', 'H', 'H', 'H', 'C', 'C', 'H', 'H', 'H', 'H', 'H', 'H', 'C'))
+        print(xyz_to_str(rxn_1.ts_species.ts_guesses[0].initial_xyz))
+        raise
+
+    def test_generate_the_two_constrained_zmats(self):
+        """Test the generate_the_two_constrained_zmats() function."""
+        zmat1, zmat2 = generate_the_two_constrained_zmats(xyz1=self.ccooh_xyz,
+                                                          xyz2=self.c2h6_xyz,
+                                                          mol1=ARCSpecies(label='CCOOH',
+                                                                          smiles='CCOO',
+                                                                          xyz=self.ccooh_xyz).mol,
+                                                          mol2=ARCSpecies(label='C2H6',
+                                                                          smiles='CC',
+                                                                          xyz=self.c2h6_xyz).mol,
+                                                          h1=9,
+                                                          h2=3,
+                                                          a=3,
+                                                          b=0,
+                                                          d=1,
+                                                          )
+        self.assertEqual(zmat1, self.zmat1)
+        self.assertEqual(zmat2, self.zmat2)
+
+    def test_stretch_zmat_bond(self):
+        """Test the stretch_zmat_bond function."""
+        zmat2 = self.zmat2.copy()
+        stretch_zmat_bond(zmat=zmat2, indices=(1, 0), stretch=1.5)
+        self.assertEqual(zmat2['vars']['R_2_1'], 1.5120487296562577 * 1.5)
+
+    def test_determine_glue_params_to_combine_zmats(self):
+        """Test the determine_glue_params_to_combine_zmats() function."""
+        zmat = {'symbols': ('C', 'C', 'O', 'O', 'H', 'H', 'H', 'H', 'H', 'H'),
+                'coords': ((None, None, None), ('R_1_0', None, None), ('R_2_1', 'A_2_1_0', None),
+                           ('R_3_2', 'A_3_2_1', 'D_3_2_1_0'), ('R_4_0', 'A_4_0_1', 'D_4_0_1_3'),
+                           ('R_5_0', 'A_5_0_1', 'D_5_0_1_4'), ('R_6_0', 'A_6_0_1', 'D_6_0_1_5'),
+                           ('R_7_1', 'A_7_1_0', 'D_7_1_0_6'), ('R_8_1', 'A_8_1_0', 'D_8_1_0_7'),
+                           ('R_9_3', 'A_9_3_2', 'D_9_3_2_1')),
+                'vars': {'R_1_0': 1.5147479951212197, 'R_2_1': 1.4265728986680748,
+                         'A_2_1_0': 108.63387152978416, 'R_3_2': 1.4559254886404387,
+                         'A_3_2_1': 105.58023544826183, 'D_3_2_1_0': 179.9922243050821,
+                         'R_4_0': 1.0950205915944824, 'A_4_0_1': 110.62463321031589,
+                         'D_4_0_1_3': 59.13545080998071, 'R_5_0': 1.093567969297245,
+                         'A_5_0_1': 110.91425998596507, 'D_5_0_1_4': 120.87266977773987,
+                         'R_6_0': 1.0950091062890002, 'A_6_0_1': 110.62270362433773,
+                         'D_6_0_1_5': 120.87301274044218, 'R_7_1': 1.0951433842986755,
+                         'A_7_1_0': 110.20822115119915, 'D_7_1_0_6': 181.16392677464265,
+                         'R_8_1': 1.0951410439636102, 'A_8_1_0': 110.20143800025897,
+                         'D_8_1_0_7': 239.4199964284852, 'R_9_3': 0.9741224704818748,
+                         'A_9_3_2': 96.30065819269021, 'D_9_3_2_1': 242.3527063196313},
+                'map': {0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8, 9: 9}}
+        zmat_1 = zmat.copy()
+        param_a2, param_d2, param_d3 = determine_glue_params_to_combine_zmats(zmat=zmat_1,
+                                                                              is_a2_linear=True,
+                                                                              a=3,
+                                                                              c=2,
+                                                                              d=0,
+                                                                              d3=30,
+                                                                              )
+        self.assertEqual(param_a2, 'A_11_9_10')
+        self.assertEqual(param_d2, 'D_11_9_10_3')
+        self.assertEqual(param_d3, 'D_12_11_9_3')
+        self.assertEqual(zmat_1['symbols'][-1], 'X')
+        self.assertEqual(zmat_1['coords'][-1], ('RX_10_9', 'AX_10_9_3', 'DX_10_9_3_2'))
+        self.assertEqual(zmat_1['vars']['RX_10_9'], 1.0)
+        self.assertEqual(zmat_1['vars']['AX_10_9_3'], 90)
+        self.assertEqual(zmat_1['vars']['DX_10_9_3_2'], 0)
+        self.assertEqual(zmat_1['map'][10], 'X10')
+        expected_xyz_1 = {'symbols': ('C', 'C', 'O', 'O', 'H', 'H', 'H', 'H', 'H', 'H', 'X'),
+                          'isotopes': (12, 12, 16, 16, 1, 1, 1, 1, 1, 1, None),
+                          'coords': ((0.01398594476849108, -0.6889055930112338, -1.784376061009113),
+                                     (0.01398594476849108, -0.6889055930112338, -0.26962806588789334),
+                                     (0.01398594476849108, 0.6628859053975544, 0.18618985833619472),
+                                     (0.013795619205083086, 0.5853276282667381, 1.6400480721581545),
+                                     (0.8936110241109786, -0.1630214384486075, -2.1700905561834642),
+                                     (0.013993742824539971, -1.7104245574061123, -2.174747562010025),
+                                     (-0.8656459383075578, -0.16302845349065453, -2.170051996558082),
+                                     (0.9066278741353695, -1.1982381538878737, 0.10867044129945613),
+                                     (-0.8786689727859842, -1.1983013118398729, 0.10854795923608584),
+                                     (-0.8438878073681937, 1.028321080587749, 1.77062574436878),
+                                     (-0.9409710712603131, 1.1321270125843694, 0.7807776912038682))}
+        self.assertEqual(zmat_to_xyz(zmat_1, keep_dummy=True), expected_xyz_1)
+
+        param_a2, param_d2, param_d3 = determine_glue_params_to_combine_zmats(zmat=zmat.copy(),
+                                                                              is_a2_linear=True,
+                                                                              a=3,
+                                                                              c=2,
+                                                                              d=0,
+                                                                              d3=None,
+                                                                              )
+        self.assertEqual(param_a2, 'A_11_9_10')
+        self.assertEqual(param_d2, 'D_11_9_10_3')
+        self.assertIsNone(param_d3)
+
+        param_a2, param_d2, param_d3 = determine_glue_params_to_combine_zmats(zmat=zmat.copy(),
+                                                                              is_a2_linear=True,
+                                                                              a=3,
+                                                                              c=None,
+                                                                              d=None,
+                                                                              d3=None,
+                                                                              )
+        self.assertEqual(param_a2, 'A_11_9_10')
+        self.assertIsNone(param_d2)
+        self.assertIsNone(param_d3)
+
+    def test_get_modified_params_from_zmat2(self):
+        """Test the get_modified_params_from_zmat2() function."""
+        zmat1 = {'symbols': ('C', 'C', 'H', 'H', 'H', 'H', 'H', 'H', 'X'),
+                 'coords': ((None, None, None), ('R_1_0', None, None), ('R_2_0', 'A_2_0_1', None),
+                            ('R_3_0', 'A_3_0_1', 'D_3_0_1_2'), ('R_4_1', 'A_4_1_0', 'D_4_1_0_3'),
+                            ('R_5_1', 'A_5_1_0', 'D_5_1_0_4'), ('R_6_1', 'A_6_1_0', 'D_6_1_0_5'),
+                            ('R_7_0', 'A_7_0_1', 'D_7_0_1_6'), ('RX_8_7', 'AX_8_7_0', 'DX_8_7_0_1')),
+                 'vars': {'R_1_0': 1.5120487296562577, 'R_2_0': 1.0940775789443724, 'A_2_0_1': 110.56801921096591,
+                          'R_3_0': 1.0940817193677925, 'A_3_0_1': 110.56754686774481, 'D_3_0_1_2': 119.99910067703652,
+                          'R_4_1': 1.0940725668318991, 'A_4_1_0': 110.56890700195424, 'D_4_1_0_3': 59.99971758419434,
+                          'R_5_1': 1.0940840619688397, 'A_5_1_0': 110.56790845138725, 'D_5_1_0_4': 239.99905123159166,
+                          'R_6_1': 1.0940817193677925, 'A_6_1_0': 110.56754686774481, 'D_6_1_0_5': 240.00122783407815,
+                          'R_7_0': 1.3128870801982788, 'A_7_0_1': 110.56890700195424, 'D_7_0_1_6': 300.00028241580566,
+                          'RX_8_7': 1.0, 'AX_8_7_0': 90.0, 'DX_8_7_0_1': 0},
+                 'map': {0: 0, 1: 1, 2: 3, 3: 4, 4: 5, 5: 6, 6: 7, 7: 2, 8: 'X8'}}
+        zmat2 = {'symbols': ('H', 'O', 'O', 'C', 'C', 'H', 'H', 'H', 'H', 'H'),
+                 'coords': ((None, None, None), ('R_1_0', None, None), ('R_2_1', 'A_2_1_0', None),
+                            ('R_3_2', 'A_3_2_1', 'D_3_2_1_0'), ('R_4_3', 'A_4_3_2', 'D_4_3_2_1'),
+                            ('R_5_4', 'A_5_4_3', 'D_5_4_3_2'), ('R_6_4', 'A_6_4_3', 'D_6_4_3_5'),
+                            ('R_7_4', 'A_7_4_3', 'D_7_4_3_6'), ('R_8_3', 'A_8_3_4', 'D_8_3_4_7'),
+                            ('R_9_3', 'A_9_3_4', 'D_9_3_4_8')),
+                 'vars': {'R_1_0': 1.1689469645782498, 'R_2_1': 1.4559254886404387, 'A_2_1_0': 96.30065819269021,
+                          'R_3_2': 1.4265728986680748, 'A_3_2_1': 105.58023544826183, 'D_3_2_1_0': 242.3527063196313,
+                          'R_4_3': 1.5147479951212197, 'A_4_3_2': 108.63387152978416, 'D_4_3_2_1': 179.9922243050821,
+                          'R_5_4': 1.0950205915944824, 'A_5_4_3': 110.62463321031589, 'D_5_4_3_2': 59.1268942923763,
+                          'R_6_4': 1.093567969297245, 'A_6_4_3': 110.91425998596507, 'D_6_4_3_5': 120.87266977773987,
+                          'R_7_4': 1.0950091062890002, 'A_7_4_3': 110.62270362433773, 'D_7_4_3_6': 120.87301274044218,
+                          'R_8_3': 1.0951433842986755, 'A_8_3_4': 110.20822115119915, 'D_8_3_4_7': 181.16392677464265,
+                          'R_9_3': 1.0951410439636102, 'A_9_3_4': 110.20143800025897, 'D_9_3_4_8': 239.4199964284852},
+                 'map': {0: 9, 1: 3, 2: 2, 3: 1, 4: 0, 5: 4, 6: 5, 7: 6, 8: 7, 9: 8}}
+        new_coords, new_vars, new_map = get_modified_params_from_zmat2(zmat1=zmat1,
+                                                                       zmat2=zmat2,
+                                                                       is_a2_linear=True,
+                                                                       glue_params=('A_9_7_8', 'D_9_7_8_0', 'D_10_9_7_0'),
+                                                                       a2=100,
+                                                                       c=1,
+                                                                       d2=None,
+                                                                       d3=0,
+                                                                       )
+        expected_new_coords = [('R_9_7', 'A_9_7_8', 'D_9_7_8_0'), ('R_10_9', 'A_10_9_8', 'D_10_9_7_0'),
+                               ('R_11_10', 'A_11_10_9', 'D_11_10_9_8'), ('R_12_11', 'A_12_11_10', 'D_12_11_10_9'),
+                               ('R_13_12', 'A_13_12_11', 'D_13_12_11_10'), ('R_14_12', 'A_14_12_11', 'D_14_12_11_13'),
+                               ('R_15_12', 'A_15_12_11', 'D_15_12_11_14'), ('R_16_11', 'A_16_11_12', 'D_16_11_12_15'),
+                               ('R_17_11', 'A_17_11_12', 'D_17_11_12_16')]
+        expected_new_vars = {'R_9_7': 1.1689469645782498, 'A_9_7_8': 190, 'D_9_7_8_0': 0, 'R_10_9': 1.4559254886404387,
+                             'A_10_9_8': 96.30065819269021, 'D_10_9_7_0': 0, 'R_11_10': 1.4265728986680748,
+                             'A_11_10_9': 105.58023544826183, 'D_11_10_9_8': 242.3527063196313, 'R_12_11': 1.5147479951212197,
+                             'A_12_11_10': 108.63387152978416, 'D_12_11_10_9': 179.9922243050821, 'R_13_12': 1.0950205915944824,
+                             'A_13_12_11': 110.62463321031589, 'D_13_12_11_10': 59.1268942923763, 'R_14_12': 1.093567969297245,
+                             'A_14_12_11': 110.91425998596507, 'D_14_12_11_13': 120.87266977773987, 'R_15_12': 1.0950091062890002,
+                             'A_15_12_11': 110.62270362433773, 'D_15_12_11_14': 120.87301274044218, 'R_16_11': 1.0951433842986755,
+                             'A_16_11_12': 110.20822115119915, 'D_16_11_12_15': 181.16392677464265, 'R_17_11': 1.0951410439636102,
+                             'A_17_11_12': 110.20143800025897, 'D_17_11_12_16': 239.4199964284852}
+        expected_new_map = {0: 0, 1: 1, 2: 3, 3: 4, 4: 5, 5: 6, 6: 7, 7: 2, 8: 'X8', 9: 12, 10: 11, 11: 10, 12: 9,
+                            13: 13, 14: 14, 15: 15, 16: 16, 17: 17}
+        self.assertEqual(new_coords, expected_new_coords)
+        self.assertEqual(new_vars, expected_new_vars)
+        self.assertEqual(new_map, expected_new_map)
+
     def test_reverse_xyz(self):
         """Test the reverse_xyz() function."""
         xyz = {'symbols': ('S', 'O', 'N', 'C', 'H', 'H', 'H'),
@@ -254,19 +496,18 @@ H       0.99232452    1.08896899    0.06242974"""
                           (-0.6486995, -1.85796321, -0.54773423),
                           (-0.60359153, -1.37304859, 1.18613964),
                           (-1.43009127, 0.23517346, -1.11797908))}
-
         reversed_xyz_1 = reverse_xyz(xyz=xyz, reactants_reversed=False, rmg_reactant_mol=Molecule(smiles='[CH3]'))
         self.assertEqual(reversed_xyz_1, xyz)
 
         expected_xyz_2 = {'symbols': ('C', 'H', 'H', 'H', 'S', 'O', 'N'),
-               'isotopes': (12, 1, 1, 1, 32, 16, 14),
-               'coords': ((-0.49011438, -1.0370438, 0.15365747),
-                          (-0.6486995, -1.85796321, -0.54773423),
-                          (-0.60359153, -1.37304859, 1.18613964),
-                          (-1.43009127, 0.23517346, -1.11797908),
-                          (1.02558264, -0.04344404, -0.07343859),
-                          (-0.25448248, 1.10710477, 0.18359696),
-                          (-1.30762173, 0.15796567, -0.1048929))}
+                          'isotopes': (12, 1, 1, 1, 32, 16, 14),
+                          'coords': ((-0.49011438, -1.0370438, 0.15365747),
+                                     (-0.6486995, -1.85796321, -0.54773423),
+                                     (-0.60359153, -1.37304859, 1.18613964),
+                                     (-1.43009127, 0.23517346, -1.11797908),
+                                     (1.02558264, -0.04344404, -0.07343859),
+                                     (-0.25448248, 1.10710477, 0.18359696),
+                                     (-1.30762173, 0.15796567, -0.1048929))}
         reversed_xyz_2 = reverse_xyz(xyz=xyz, reactants_reversed=True, rmg_reactant_mol=Molecule(smiles='[CH3]'))
         self.assertEqual(reversed_xyz_2, expected_xyz_2)
 
@@ -338,6 +579,7 @@ H       0.99232452    1.08896899    0.06242974"""
         Delete all project directories created during these unit tests.
         """
         shutil.rmtree(os.path.join(ARC_PATH, 'arc', 'testing', 'heuristics'), ignore_errors=True)
+        shutil.rmtree(os.path.join(ARC_PATH, 'arc', 'testing', 'heuristics_1'), ignore_errors=True)
 
 
 if __name__ == '__main__':
