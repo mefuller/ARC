@@ -12,7 +12,6 @@ Todo:
 import datetime
 import itertools
 import os
-import pprint
 from typing import TYPE_CHECKING, List, Optional, Tuple, Union
 
 from rmgpy.exceptions import ActionError
@@ -23,7 +22,7 @@ from arc.job.adapter import JobAdapter
 from arc.job.adapters.common import check_argument_consistency, ts_adapters_by_rmg_family
 from arc.job.factory import register_job_adapter
 from arc.plotter import save_geo
-from arc.species.converter import compare_zmats, sort_xyz_using_indices, xyz_from_data, zmat_from_xyz, zmat_to_xyz, xyz_to_str
+from arc.species.converter import compare_zmats, sort_xyz_using_indices, xyz_from_data, zmat_from_xyz, zmat_to_xyz
 from arc.species.species import ARCSpecies, TSGuess
 from arc.species.zmat import get_parameter_from_atom_indices, is_angle_linear, up_param
 
@@ -710,15 +709,16 @@ def h_abstraction(arc_reaction: 'ARCReaction',
 
     # Identify R1H and R2H in the "R1H + R2 <=> R1 + R2H" or "R2 + R1H <=> R2H + R1" reaction
     # using the first RMG reaction; all other RMG reactions and the ARC reaction should have the same order.
+    # The expected RMG atom labels are: (*1)R-(*2)H + (*3)Rj <=> (*1)Rj + (*3)R-(*2)H.
     reactants_reversed, products_reversed = False, False
-    for i, reactant in enumerate(rmg_reactions[0].reactants):
-        for atom in reactant.molecule[0].atoms:
-            if atom.label == '*2' and i != 0:
-                reactants_reversed = True
-    for i, product in enumerate(rmg_reactions[0].products):
-        for atom in product.molecule[0].atoms:
-            if atom.label == '*2' and i != 1:
-                products_reversed = True
+    for atom in rmg_reactions[0].reactants[0].molecule[0].atoms:
+        if atom.label == '*3':
+            reactants_reversed = True
+            break
+    for atom in rmg_reactions[0].products[0].molecule[0].atoms:
+        if atom.label == '*2':
+            products_reversed = True
+            break
 
     arc_reactant = arc_reaction.r_species[1] if reactants_reversed else arc_reaction.r_species[0]
     arc_product = arc_reaction.p_species[0] if products_reversed else arc_reaction.p_species[1]
@@ -736,7 +736,6 @@ def h_abstraction(arc_reaction: 'ARCReaction',
 
         c = find_distant_neighbor(rmg_mol=rmg_reactant_mol, start=h1)
         d = find_distant_neighbor(rmg_mol=rmg_product_mol, start=h2)
-        mol = rmg_product_mol.copy()
 
         # d2 describes the B-H-A-C dihedral, populate d2_values if C exists and the B-H-A angle is not linear.
         d2_values = list(range(0, 360, dihedral_increment)) if len(rmg_reactant_mol.atoms) > 2 \
@@ -792,8 +791,8 @@ def h_abstraction(arc_reaction: 'ARCReaction',
                     # This TS is unique, and has no atom collisions.
                     zmats.append(zmat_guess)
                     xyz_guess = reorder_ts_xyz_guess(xyz=xyz_guess,
-                                                     reaction=arc_reaction,
                                                      reactants_reversed=reactants_reversed,
+                                                     atom_map=arc_reaction.atom_map,
                                                      rmg_reactant_mol=rmg_reactant_mol,
                                                      )
                     xyz_guesses.append(xyz_guess)
@@ -803,8 +802,8 @@ def h_abstraction(arc_reaction: 'ARCReaction',
 
 
 def reorder_ts_xyz_guess(xyz: dict,
-                         reaction: 'ARCReaction',  # todo: change to the atom map?
                          reactants_reversed: bool,
+                         atom_map: List[int],
                          rmg_reactant_mol: 'Molecule',
                          ) -> dict:
     """
@@ -812,19 +811,18 @@ def reorder_ts_xyz_guess(xyz: dict,
 
     Args:
         xyz (dict): The TS xyz guess.
-        reaction (ARCReaction): The corresponding ARCReaction object instance.
         reactants_reversed (bool): Whether the reactants were reversed when generating the TS guess.
-        rmg_reactant_mol ('Molecule'): The Molecule object instance describing the first reactant in the
-                                       according to the RMG family template.
+        atom_map (List[int]): The corresponding reaction atom map.
+        rmg_reactant_mol ('Molecule'): The Molecule object instance describing the first reactant in the reaction
+                                       according to the RMG family template, the (*1)R-(*2)H species.
 
     Returns:
         dict: The sorted TS xyz guess.
     """
-    # todo: sort the atom order that stemmed from the product, call reverse_xyz()
-    return reverse_xyz(xyz=xyz,
-                       reactants_reversed=reactants_reversed,
-                       rmg_reactant_mol=rmg_reactant_mol,
-                       )
+    r1_atom_num = len(rmg_reactant_mol.atoms)
+    atom_map = atom_map[r1_atom_num:] + atom_map[:r1_atom_num] if reactants_reversed else atom_map
+    xyz = sort_xyz_using_indices(xyz_dict=xyz, indices=atom_map)
+    return xyz
 
 
 
@@ -846,18 +844,22 @@ def reverse_xyz(xyz: dict,
     """
     if not reactants_reversed:
         return xyz
-    r1_atoms_num = len(rmg_reactant_mol.atoms)
-    r2_atoms_num = len(xyz['symbols']) - r1_atoms_num
-    symbols, coords, isotopes = list(), list(), list()
-    for i in range(r1_atoms_num):
-        symbols.append(xyz['symbols'][i + r2_atoms_num])
-        coords.append(xyz['coords'][i + r2_atoms_num])
-        isotopes.append(xyz['isotopes'][i + r2_atoms_num])
-    for i in range(r2_atoms_num):
-        symbols.append(xyz['symbols'][i])
-        coords.append(xyz['coords'][i])
-        isotopes.append(xyz['isotopes'][i])
-    return xyz_from_data(symbols=symbols, coords=coords, isotopes=isotopes)
+    r3_atom_num = len(xyz['symbols']) - len(rmg_reactant_mol.atoms)
+    atom_map = list(range(r3_atom_num, len(xyz['symbols']))) + list(range(r3_atom_num))
+    xyz = sort_xyz_using_indices(xyz_dict=xyz, indices=atom_map)
+    return xyz
+    # r1_atoms_num = len(rmg_reactant_mol.atoms)
+    # r2_atoms_num = len(xyz['symbols']) - r1_atoms_num
+    # symbols, coords, isotopes = list(), list(), list()
+    # for i in range(r1_atoms_num):
+    #     symbols.append(xyz['symbols'][i + r2_atoms_num])
+    #     coords.append(xyz['coords'][i + r2_atoms_num])
+    #     isotopes.append(xyz['isotopes'][i + r2_atoms_num])
+    # for i in range(r2_atoms_num):
+    #     symbols.append(xyz['symbols'][i])
+    #     coords.append(xyz['coords'][i])
+    #     isotopes.append(xyz['isotopes'][i])
+    # return xyz_from_data(symbols=symbols, coords=coords, isotopes=isotopes)
 
 
 def find_distant_neighbor(rmg_mol: 'Molecule',
