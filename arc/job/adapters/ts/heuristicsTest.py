@@ -485,31 +485,52 @@ H       0.99232452    1.08896899    0.06242974"""
         self.assertEqual(new_vars, expected_new_vars)
         self.assertEqual(new_map, expected_new_map)
 
+    def test_reorder_ts_xyz_guess(self):
+        """Test the reorder_ts_xyz_guess() function"""
+        # Test OH + NH3
+        xyz_1 = {'symbols': ('N', 'H', 'H', 'H', 'O', 'H'), 'isotopes': (7, 1, 1, 1, 8, 1),
+                 'coords': ((0, 0, 0), (1, 0, 0), (2, 0, 0), (3, 0, 0), (4, 0, 0), (5, 0, 0))}
+        xyz = reorder_ts_xyz_guess(xyz=xyz_1,
+                                   reactants_reversed=True,
+                                   atom_map=[0, 1, 2, 3, 4, 5],  # Relates to OH-NH3 (reversed).
+                                   rmg_reactant_mol=Molecule(smiles='N'),
+                                   )
+        expected_xyz_1 = {'symbols': ('O', 'H', 'N', 'H', 'H', 'H'), 'isotopes': (8, 1, 7, 1, 1, 1),
+                          'coords': ((4, 0, 0), (5, 0, 0), (0, 0, 0), (1, 0, 0), (2, 0, 0), (3, 0, 0))}
+        self.assertEqual(xyz, expected_xyz_1)
+
+        # Test NH3 + OH
+        xyz = reorder_ts_xyz_guess(xyz=xyz_1,
+                                   reactants_reversed=False,
+                                   atom_map=[0, 1, 2, 3, 4, 5],
+                                   rmg_reactant_mol=Molecule(smiles='N'),
+                                   )
+        self.assertEqual(xyz, xyz_1)
+
+        # Test NH2 + H2O
+        xyz_2 = {'symbols': ('H', 'O', 'H', 'N', 'H', 'H'), 'isotopes': (1, 8, 1, 7, 1, 1),
+                 'coords': ((0, 0, 0), (1, 0, 0), (2, 0, 0), (3, 0, 0), (4, 0, 0), (5, 0, 0))}
+        xyz = reorder_ts_xyz_guess(xyz=xyz_2,
+                                   reactants_reversed=True,
+                                   atom_map=[0, 1, 2, 5, 3, 4],  # maps the reaction, doesn't know of the TS reverse order. does not map R to P, maps the wierd TS order to Rs
+                                   rmg_reactant_mol=Molecule(smiles='O'),
+                                   )
+        expected_xyz_2 = {'symbols': ('N', 'H', 'H', 'O', 'H', 'H'), 'isotopes': (7, 1, 1, 8, 1, 1),
+                          'coords': ((3, 0, 0), (4, 0, 0), (5, 0, 0), (1, 0, 0), (0, 0, 0), (2, 0, 0))}
+        print(xyz)
+        self.assertEqual(xyz, expected_xyz_2)
+
     def test_reverse_xyz(self):
         """Test the reverse_xyz() function."""
-        xyz = {'symbols': ('S', 'O', 'N', 'C', 'H', 'H', 'H'),
-               'isotopes': (32, 16, 14, 12, 1, 1, 1),
-               'coords': ((1.02558264, -0.04344404, -0.07343859),
-                          (-0.25448248, 1.10710477, 0.18359696),
-                          (-1.30762173, 0.15796567, -0.1048929),
-                          (-0.49011438, -1.0370438, 0.15365747),
-                          (-0.6486995, -1.85796321, -0.54773423),
-                          (-0.60359153, -1.37304859, 1.18613964),
-                          (-1.43009127, 0.23517346, -1.11797908))}
-        reversed_xyz_1 = reverse_xyz(xyz=xyz, reactants_reversed=False, rmg_reactant_mol=Molecule(smiles='[CH3]'))
-        self.assertEqual(reversed_xyz_1, xyz)
-
-        expected_xyz_2 = {'symbols': ('C', 'H', 'H', 'H', 'S', 'O', 'N'),
-                          'isotopes': (12, 1, 1, 1, 32, 16, 14),
-                          'coords': ((-0.49011438, -1.0370438, 0.15365747),
-                                     (-0.6486995, -1.85796321, -0.54773423),
-                                     (-0.60359153, -1.37304859, 1.18613964),
-                                     (-1.43009127, 0.23517346, -1.11797908),
-                                     (1.02558264, -0.04344404, -0.07343859),
-                                     (-0.25448248, 1.10710477, 0.18359696),
-                                     (-1.30762173, 0.15796567, -0.1048929))}
-        reversed_xyz_2 = reverse_xyz(xyz=xyz, reactants_reversed=True, rmg_reactant_mol=Molecule(smiles='[CH3]'))
-        self.assertEqual(reversed_xyz_2, expected_xyz_2)
+        # Test OH + NH3
+        xyz_1 = {'symbols': ('O', 'H', 'N', 'H', 'H', 'H'), 'isotopes': (8, 1, 7, 1, 1, 1),
+                 'coords': ((0, 0, 0), (1, 0, 0), (2, 0, 0), (3, 0, 0), (4, 0, 0), (5, 0, 0))}
+        xyz = reverse_xyz(xyz=xyz_1, reactants_reversed=True, rmg_reactant_mol=Molecule(smiles='N'))
+        expected_xyz_1 = {'symbols': ('N', 'H', 'H', 'H', 'O', 'H'), 'isotopes': (7, 1, 1, 1, 8, 1),
+                          'coords': ((2, 0, 0), (3, 0, 0), (4, 0, 0), (5, 0, 0), (0, 0, 0), (1, 0, 0))}
+        self.assertEqual(xyz, expected_xyz_1)
+        xyz = reverse_xyz(xyz=xyz_1, reactants_reversed=False, rmg_reactant_mol=Molecule(smiles='N'))
+        self.assertEqual(xyz, xyz_1)
 
     def test_find_distant_neighbor(self):
         """Test the find_distant_neighbor() function."""
