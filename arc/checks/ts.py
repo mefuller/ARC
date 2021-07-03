@@ -60,7 +60,6 @@ def check_ts(reaction: 'ARCReaction',
         check_ts_energy(reaction=reaction, verbose=verbose, parameter=parameter)
 
     if 'freq' in checks or (not reaction.ts_species.ts_checks['normal_mode_displacement'] and job is not None):
-        print('checking freq in ts L62')
         check_normal_mode_displacement(reaction, job=job)
 
     # if 'IRC' in checks or (not self.ts_species.ts_checks['IRC'] and IRC_wells is not None):
@@ -444,19 +443,15 @@ def get_atom_indices_of_labeled_atoms_in_an_rmg_reaction(arc_reaction: 'ARCReact
     reactant_atoms, product_atoms = list(), list()
     rmg_reactant_order = [val[0] for key, val in sorted(r_map.items(), key=lambda item: item[0])]
     rmg_product_order = [val[0] for key, val in sorted(p_map.items(), key=lambda item: item[0])]
-    print(f'adding atoms from RMG species in order:')
     for i in rmg_reactant_order:
-        print(i)
         reactant_atoms.extend([atom for atom in rmg_reaction.reactants[i].atoms])
     for i in rmg_product_order:
-        print(i)
         product_atoms.extend([atom for atom in rmg_reaction.products[i].atoms])
     for labeled_atom in rmg_reaction.labeledAtoms:
         for i, atom in enumerate(reactant_atoms):
             if atom.id == labeled_atom[1].id:
                 index_dict[labeled_atom[0]] = i
                 break
-    print(f'index_dict: {index_dict}')
     return index_dict
 
 
@@ -481,17 +476,10 @@ def map_arc_rmg_species(arc_reaction: 'ARCReaction',
         for i, arc_spc in enumerate(arc_species):
             for j, rmg_spc in enumerate(rmg_species):
                 if rmg_spc.is_isomorphic(arc_spc.mol, save_order=True):
-                    print(f'{arc_spc.label} is isomorphic with {rmg_spc.copy()}')
                     if i in spc_map.keys():
                         spc_map[i].append(j)
                     else:
                         spc_map[i] = [j]
-                    break
-    print(f'ARC reaction label: {arc_reaction.label}')
-    print(f'reactants order in ARC: {[spc.label for spc in arc_reaction.r_species]}')
-    print(f'reactants order in RMG: {[spc.copy() for spc in rmg_reaction.reactants]}')
-    print(f'r_map: {r_map}')
-    print(f'p_map: {p_map}')
     return r_map, p_map
 
 
