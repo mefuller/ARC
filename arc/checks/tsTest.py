@@ -36,6 +36,7 @@ class TestChecks(unittest.TestCase):
         cls.maxDiff = None
         cls.rmgdb = rmgdb.make_rmg_database_object()
         rmgdb.load_families_only(cls.rmgdb)
+
         cls.rms_list_1 = [0.01414213562373095, 0.05, 0.04, 0.5632938842203065, 0.7993122043357026, 0.08944271909999159,
                           0.10677078252031312, 0.09000000000000001, 0.05, 0.09433981132056604]
         path_1 = os.path.join(ts.ARC_PATH, 'arc', 'testing', 'freq', 'C3H7_intra_h_TS.out')
@@ -116,6 +117,24 @@ H                 -1.28677889    1.04716138   -1.01532486"""
                                 p_species=[ARCSpecies(label='NH2', smiles='[NH2]'), ARCSpecies(label='H2', smiles='[H][H]')])
         cls.rxn_3.ts_species = ARCSpecies(label='TS3', is_ts=True,
                                           xyz=os.path.join(ts.ARC_PATH, 'arc', 'testing', 'freq', 'TS_NH3+H=NH2+H2.out'))
+
+        ccooj_xyz = {'symbols': ('C', 'C', 'O', 'O', 'H', 'H', 'H', 'H', 'H'),
+                     'isotopes': (12, 12, 16, 16, 1, 1, 1, 1, 1),
+                     'coords': ((-1.10653, -0.06552, 0.042602),
+                                (0.385508, 0.205048, 0.049674),
+                                (0.759622, 1.114927, -1.032928),
+                                (0.675395, 0.525342, -2.208593),
+                                (-1.671503, 0.860958, 0.166273),
+                                (-1.396764, -0.534277, -0.898851),
+                                (-1.36544, -0.740942, 0.862152),
+                                (0.97386, -0.704577, -0.082293),
+                                (0.712813, 0.732272, 0.947293),
+                                )}
+        ccooj = ARCSpecies(label='CCOOj', smiles='CCO[O]', xyz=ccooj_xyz)
+        cls.rxn_4 = ARCReaction(r_species=[ccooj, ARCSpecies(label='CC', smiles='CC')],
+                                p_species=[ARCSpecies(label='CCOOH', smiles='CCOO'), ARCSpecies(label='CCj', smiles='[CH2]C')])
+        cls.rxn_4.ts_species = ARCSpecies(label='TS4', is_ts=True,
+                                          xyz=os.path.join(ts.ARC_PATH, 'arc', 'testing', 'composite', 'TS0_composite7690.out'))
 
     def test_check_ts(self):
         """Test the check_ts() function."""
@@ -311,6 +330,14 @@ H                 -1.28677889    1.04716138   -1.01532486"""
         ts.check_normal_mode_displacement(reaction=self.rxn_3, job=self.job1)
         self.assertTrue(self.rxn_3.ts_species.ts_checks['normal_mode_displacement'])
 
+        # todo: fix test, the problem is a mismatch of the inputs, get a new composite created according to the reactants atom order
+
+        self.job1.local_path_to_output_file = os.path.join(ts.ARC_PATH, 'arc', 'testing', 'composite',
+                                                           'TS0_composite7690.out')  # CCO[O] + CC <=> CCOO + [CH2]C
+        self.rxn_4.ts_species.populate_ts_checks()
+        ts.check_normal_mode_displacement(reaction=self.rxn_4, job=self.job1)
+        self.assertTrue(self.rxn_4.ts_species.ts_checks['normal_mode_displacement'])
+
     def test_invalidate_rotors_with_both_pivots_in_a_reactive_zone(self):
         """Test the invalidate_rotors_with_both_pivots_in_a_reactive_zone() function"""
         ts_spc_1 = ARCSpecies(label='TS', is_ts=True, xyz=self.ts_xyz_1)
@@ -459,11 +486,12 @@ H                 -1.28677889    1.04716138   -1.01532486"""
 
         rmg_reaction = Reaction(reactants=[Species(smiles='[CH3]'), Species(smiles='[CH3]')],
                                 products=[Species(smiles='CC')])
-        arc_reaction = ARCReaction(r_species=[ARCSpecies(label='CH3', smiles='[CH3]'), ARCSpecies(label='CH3', smiles='[CH3]')],
+        arc_reaction = ARCReaction(r_species=[ARCSpecies(label='CH3', smiles='[CH3]'),
+                                              ARCSpecies(label='CH3', smiles='[CH3]')],
                                    p_species=[ARCSpecies(label='C2H6', smiles='CC')])
 
         r_map, p_map = ts.map_arc_rmg_species(rmg_reaction=rmg_reaction, arc_reaction=arc_reaction)
-        self.assertEqual(r_map, {0: [0, 1]})
+        self.assertEqual(r_map, {0: [0, 1], 1: [0, 1]})
         self.assertEqual(p_map, {0: [0]})
 
     def test_determine_family(self):
