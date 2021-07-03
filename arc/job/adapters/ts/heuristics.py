@@ -790,40 +790,14 @@ def h_abstraction(arc_reaction: 'ARCReaction',
                 else:
                     # This TS is unique, and has no atom collisions.
                     zmats.append(zmat_guess)
-                    xyz_guess = reorder_ts_xyz_guess(xyz=xyz_guess,
-                                                     reactants_reversed=reactants_reversed,
-                                                     atom_map=arc_reaction.atom_map,
-                                                     rmg_reactant_mol=rmg_reactant_mol,
-                                                     )
+                    xyz_guess = reverse_xyz(xyz=xyz_guess,
+                                            reactants_reversed=reactants_reversed,
+                                            rmg_reactant_mol=rmg_reactant_mol,
+                                            )
                     xyz_guesses.append(xyz_guess)
 
     # Todo: Learn bond stretches and the A-H-B angle for different atom types.
     return xyz_guesses
-
-
-def reorder_ts_xyz_guess(xyz: dict,
-                         reactants_reversed: bool,
-                         atom_map: List[int],
-                         rmg_reactant_mol: 'Molecule',
-                         ) -> dict:
-    """
-    Reorder the TS xyz guess to align with the atom order of the reactants.
-
-    Args:
-        xyz (dict): The TS xyz guess.
-        reactants_reversed (bool): Whether the reactants were reversed when generating the TS guess.
-        atom_map (List[int]): The corresponding reaction atom map.
-        rmg_reactant_mol ('Molecule'): The Molecule object instance describing the first reactant in the reaction
-                                       according to the RMG family template, the (*1)R-(*2)H species.
-
-    Returns:
-        dict: The sorted TS xyz guess.
-    """
-    r1_atom_num = len(rmg_reactant_mol.atoms)
-    atom_map = atom_map[r1_atom_num:] + atom_map[:r1_atom_num] if reactants_reversed else atom_map
-    xyz = sort_xyz_using_indices(xyz_dict=xyz, indices=atom_map)
-    return xyz
-
 
 
 def reverse_xyz(xyz: dict,
@@ -848,18 +822,6 @@ def reverse_xyz(xyz: dict,
     atom_map = list(range(r3_atom_num, len(xyz['symbols']))) + list(range(r3_atom_num))
     xyz = sort_xyz_using_indices(xyz_dict=xyz, indices=atom_map)
     return xyz
-    # r1_atoms_num = len(rmg_reactant_mol.atoms)
-    # r2_atoms_num = len(xyz['symbols']) - r1_atoms_num
-    # symbols, coords, isotopes = list(), list(), list()
-    # for i in range(r1_atoms_num):
-    #     symbols.append(xyz['symbols'][i + r2_atoms_num])
-    #     coords.append(xyz['coords'][i + r2_atoms_num])
-    #     isotopes.append(xyz['isotopes'][i + r2_atoms_num])
-    # for i in range(r2_atoms_num):
-    #     symbols.append(xyz['symbols'][i])
-    #     coords.append(xyz['coords'][i])
-    #     isotopes.append(xyz['isotopes'][i])
-    # return xyz_from_data(symbols=symbols, coords=coords, isotopes=isotopes)
 
 
 def find_distant_neighbor(rmg_mol: 'Molecule',
