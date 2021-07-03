@@ -300,7 +300,6 @@ H       0.99232452    1.08896899    0.06242974"""
 
     def test_keeping_atom_order_in_ts(self):
         """Test that the generated TS has the same atom order as in the reactants"""
-        from arc.species.converter import xyz_to_str
         ccooj_xyz = {'symbols': ('C', 'C', 'O', 'O', 'H', 'H', 'H', 'H', 'H'),
                      'isotopes': (12, 12, 16, 16, 1, 1, 1, 1, 1),
                      'coords': ((-1.10653, -0.06552, 0.042602), (0.385508, 0.205048, 0.049674),
@@ -322,9 +321,7 @@ H       0.99232452    1.08896899    0.06242974"""
         heuristics_1.execute_incore()
         for tsg in rxn_1.ts_species.ts_guesses:
             self.assertEqual(tsg.initial_xyz['symbols'],
-                             ('C', 'O', 'O', 'H', 'H', 'H', 'H', 'H', 'C', 'C', 'H', 'H', 'H', 'H', 'H', 'H', 'C'))
-        print(xyz_to_str(rxn_1.ts_species.ts_guesses[0].initial_xyz))
-        raise
+                             ('C', 'C', 'O', 'O', 'H', 'H', 'H', 'H', 'H', 'C', 'C', 'H', 'H', 'H', 'H', 'H', 'H'))
 
     def test_generate_the_two_constrained_zmats(self):
         """Test the generate_the_two_constrained_zmats() function."""
