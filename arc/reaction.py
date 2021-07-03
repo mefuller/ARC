@@ -659,14 +659,14 @@ class ARCReaction(object):
             if arc:
                 reactants.extend([r_spc] * self.get_species_count(species=r_spc, well=0))
             else:
-                reactants.extend([Species(label=r_spc.label, molecule=[r_spc.mol])] * self.get_species_count(
-                    species=r_spc, well=0))
+                reactants.extend([Species(label=r_spc.label, molecule=[r_spc.mol])] *
+                                 self.get_species_count(species=r_spc, well=0))
         for p_spc in self.p_species:
             if arc:
                 products.extend([p_spc] * self.get_species_count(species=p_spc, well=1))
             else:
-                products.extend([Species(label=p_spc.label, molecule=[p_spc.mol])] * self.get_species_count(
-                    species=p_spc, well=1))
+                products.extend([Species(label=p_spc.label, molecule=[p_spc.mol])] *
+                                self.get_species_count(species=p_spc, well=1))
         return reactants, products
 
     # todo: sort the atom map methods + tests
