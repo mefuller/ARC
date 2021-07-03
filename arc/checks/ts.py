@@ -6,7 +6,7 @@ import logging
 import os
 
 import numpy as np
-from typing import TYPE_CHECKING, Dict, List, Optional, Tuple
+from typing import TYPE_CHECKING, Dict, List, Optional, Tuple, Union
 
 from rmgpy.exceptions import ActionError
 
@@ -21,6 +21,7 @@ from arc.common import (ARC_PATH,
 
 if TYPE_CHECKING:
     from rmgpy.data.kinetics.family import TemplateReaction
+    from rmgpy.reaction import Reaction
     from arc.job.adapter import JobAdapter
     from arc.species.species import ARCSpecies, TSGuess
     from arc.reaction import ARCReaction
@@ -32,28 +33,40 @@ def check_ts(reaction: 'ARCReaction',
              verbose: bool = True,
              parameter: str = 'E0',
              job: Optional['JobAdapter'] = None,
+             checks: Optional[List[str]] = None,
              ):
     """
     Check the TS in terms of energy, normal mode displacement, and IRC.
     Populates the ``TS.ts_checks`` dictionary.
     Note that the 'freq' check is done in Scheduler.check_negative_freq() and not here.
 
+    Todo:
+        check IRC
+        add tests
+
     Args:
         reaction ('ARCReaction'): The reaction for which the TS is checked.
         verbose (bool, optional): Whether to print logging messages.
         parameter (str, optional): The energy parameter to consider ('E0' or 'e_elect').
         job ('JobAdapter', optional): The frequency job object instance.
+        checks (List[str], optional): Specific checks to run. Optional values: 'energy', 'freq', 'IRC', 'rotors'.
     """
-    if not reaction.ts_species.ts_checks['E0'] and not reaction.ts_species.ts_checks['e_elect']:
+    checks = checks or list()
+    for entry in checks:
+        if entry not in ['energy', 'freq', 'IRC', 'rotors']:
+            raise ValueError(f"Requested checks could be 'energy', 'freq', 'IRC', or 'rotors', got:\n{checks}")
+
+    if 'energy' in checks or (not reaction.ts_species.ts_checks['E0'] and not reaction.ts_species.ts_checks['e_elect']):
         check_ts_energy(reaction=reaction, verbose=verbose, parameter=parameter)
 
-    if not reaction.ts_species.ts_checks['normal_mode_displacement'] and job is not None:
+    if 'freq' in checks or (not reaction.ts_species.ts_checks['normal_mode_displacement'] and job is not None):
         check_normal_mode_displacement(reaction, job=job)
 
-    # if not self.ts_species.ts_checks['IRC'] and IRC_wells is not None:
+    # if 'IRC' in checks or (not self.ts_species.ts_checks['IRC'] and IRC_wells is not None):
     #     self.check_irc()
 
-    if ts_passed_all_checks(species=reaction.ts_species, exemptions=['E0', 'warnings', 'IRC']) and job is not None:
+    if 'rotors' in checks or (ts_passed_all_checks(species=reaction.ts_species, exemptions=['E0', 'warnings', 'IRC'])
+                              and job is not None):
         invalidate_rotors_with_both_pivots_in_a_reactive_zone(reaction, job)
 
 
@@ -167,29 +180,52 @@ def check_normal_mode_displacement(reaction: 'ARCReaction',
     """
     if job is None:
         return
+    print('checking NDM in ts L 183')
+    print(reaction)
+    print(job.local_path_to_output_file)
+
+    xyz = parser.parse_geometry(job.local_path_to_output_file)
+    import pprint
+    print('TS xyz:')
+    pprint.pprint(xyz)
+
     determine_family(reaction)
     rxn_zone_atom_indices = rxn_zone_atom_indices or get_rxn_zone_atom_indices(reaction, job)
     reaction.ts_species.ts_checks['normal_mode_displacement'] = False
     rmg_rxn = reaction.rmg_reaction.copy()
+    print('reactants xyz:')
+    for r in reaction.r_species:
+        pprint.pprint(r.get_xyz())
+    print('reactants atoms:')
+    for r in rmg_rxn.reactants:
+        print(r.molecule[0].atoms)
     try:
         reaction.family.add_atom_labels_for_reaction(reaction=rmg_rxn, output_with_resonance=False, save_order=True)
     except (ActionError, ValueError):
+        print('exception!!!')
         reaction.ts_species.ts_checks['warnings'] += 'Could not determine atom labels from RMG, ' \
                                                      'cannot check normal mode displacement; '
         reaction.ts_species.ts_checks['normal_mode_displacement'] = True
     else:
         equivalent_indices = find_equivalent_atoms_in_reactants(reaction)
         found_positions = list()
+        print(f'equivalent_indices: {equivalent_indices}')
         for rxn_zone_atom_index in rxn_zone_atom_indices:
             atom_found = False
+            print(f'rxn_zone_atom_index: {rxn_zone_atom_index}')
             for i, entry in enumerate(equivalent_indices):
+                print(f'{i}: looking at {entry}')
                 if rxn_zone_atom_index in entry and i not in found_positions:
                     atom_found = True
                     found_positions.append(i)
                     break
             if not atom_found:
+                print(f'\n\nequivalent_indices: {equivalent_indices}')
+                print(f'found_positions: {found_positions}')
+                print(f'rxn_zone_atom_index: {rxn_zone_atom_index}. atom {entry} was not found')
                 break
         else:
+            print('marking normal_mode_displacement as True !!!!!!!!!!')
             reaction.ts_species.ts_checks['normal_mode_displacement'] = True
 
 
@@ -211,16 +247,14 @@ def invalidate_rotors_with_both_pivots_in_a_reactive_zone(reaction: 'ARCReaction
         reaction.ts_species.determine_rotors()
     rxn_zone_atom_indices_1 = convert_list_index_0_to_1(rxn_zone_atom_indices)
     for key, rotor in reaction.ts_species.rotors_dict.items():
-        print(f"pivots: {rotor['pivots']}, rxn_zone_atom_indices_1: {rxn_zone_atom_indices_1}")
         if rotor['pivots'][0] in rxn_zone_atom_indices_1 and rotor['pivots'][1] in rxn_zone_atom_indices_1:
-            print(f'in: {rotor["pivots"]}')
             rotor['success'] = False
             if 'pivTS' not in rotor['invalidation_reason']:
                 rotor['invalidation_reason'] += 'Pivots participate in the TS reaction zone (code: pivTS). '
                 logging.info(f"\nNot considering rotor {key} with pivots {rotor['pivots']} in TS {reaction.ts_species.label}\n")
 
 
-def get_rxn_zone_atom_indices(reaction: 'ARCReaction',
+def get_rxn_zone_atom_indices(reaction: 'ARCReaction',  # todo check_ts_freq_job in scheduler, and test this
                               job: 'JobAdapter',
                               ) -> List[int]:
     """
@@ -237,11 +271,10 @@ def get_rxn_zone_atom_indices(reaction: 'ARCReaction',
     freqs, normal_mode_disp = parser.parse_normal_mode_displacement(path=job.local_path_to_output_file,
                                                                     raise_error=False)
     normal_disp_mode_rms = get_rms_from_normal_mode_disp(normal_mode_disp, freqs)
-    num_of_atoms = get_expected_num_atoms_with_largest_normal_mode_disp(
-        reaction=reaction,
-        normal_disp_mode_rms=normal_disp_mode_rms,
-        ts_guesses=reaction.ts_species.ts_guesses,
-    )
+    num_of_atoms = get_expected_num_atoms_with_largest_normal_mode_disp(normal_disp_mode_rms=normal_disp_mode_rms,
+                                                                        ts_guesses=reaction.ts_species.ts_guesses,
+                                                                        reaction=reaction,
+                                                                        )
     return sorted(range(len(normal_disp_mode_rms)), key=lambda i: normal_disp_mode_rms[i], reverse=True)[:num_of_atoms]
 
 
@@ -282,8 +315,8 @@ def get_index_of_abs_largest_neg_freq(freqs: np.ndarray) -> Optional[int]:
 
 
 def get_expected_num_atoms_with_largest_normal_mode_disp(normal_disp_mode_rms: List[float],
-                                                         reaction: 'ARCReaction',
                                                          ts_guesses: List['TSGuess'],
+                                                         reaction: Optional['ARCReaction'] = None,
                                                          ) -> int:
     """
     Get the number of atoms that are expected to have the largest normal mode displacement for the TS
@@ -292,8 +325,8 @@ def get_expected_num_atoms_with_largest_normal_mode_disp(normal_disp_mode_rms: L
 
     Args:
         normal_disp_mode_rms (List[float]): The RMS of the normal displacement modes.
-        reaction ('ARCReaction'): The respective reaction object instance.
         ts_guesses (List['TSGuess']): The TSGuess objects of a TS species.
+        reaction ('ARCReaction'): The respective reaction object instance.
 
     Returns:
         int: The number of atoms to consider that have a significant motions in the normal mode displacement.
@@ -326,7 +359,7 @@ def get_rxn_normal_mode_disp_atom_number(rxn_family: Optional[str] = None,
     Returns:
         int: The respective number of atoms.
     """
-    DEFAULT = 3
+    default = 3
     if rms_list is not None \
             and (not isinstance(rms_list, list) or not all(isinstance(entry, float) for entry in rms_list)):
         raise TypeError(f'rms_list must be a non empty list, got {rms_list} of type {type(rms_list)}.')
@@ -334,10 +367,10 @@ def get_rxn_normal_mode_disp_atom_number(rxn_family: Optional[str] = None,
     if family is None and reaction is not None and reaction.family is not None:
         family = reaction.family.label
     if family is None:
-        logger.warning(f'Cannot deduce a reaction family for {reaction}, assuming {DEFAULT} atoms in the reaction zone.')
-        return DEFAULT
+        logger.warning(f'Cannot deduce a reaction family for {reaction}, assuming {default} atoms in the reaction zone.')
+        return default
     content = read_yaml_file(os.path.join(ARC_PATH, 'data', 'rxn_normal_mode_disp.yml'))
-    number_by_family = content.get(rxn_family, DEFAULT)
+    number_by_family = content.get(rxn_family, default)
     if rms_list is None or not len(rms_list):
         return number_by_family
     entry = None
@@ -373,7 +406,9 @@ def find_equivalent_atoms_in_reactants(reaction: 'ARCReaction') -> Optional[List
                                                        prod_resonance=True,
                                                        delete_labels=False,
                                                        )
-    dicts = [get_atom_indices_of_labeled_atoms_in_an_rmg_reaction(rmg_reaction) for rmg_reaction in rmg_reactions]
+    dicts = [get_atom_indices_of_labeled_atoms_in_an_rmg_reaction(rmg_reaction=rmg_reaction,
+                                                                  arc_reaction=reaction)
+             for rmg_reaction in rmg_reactions]
     equivalence_map = dict()
     for index_dict in dicts:
         for key, value in index_dict.items():
@@ -385,31 +420,67 @@ def find_equivalent_atoms_in_reactants(reaction: 'ARCReaction') -> Optional[List
     return equivalent_indices
 
 
-def get_atom_indices_of_labeled_atoms_in_an_rmg_reaction(reaction: 'TemplateReaction') -> Optional[Dict[str, int]]:
+def get_atom_indices_of_labeled_atoms_in_an_rmg_reaction(arc_reaction: 'ARCReaction',
+                                                         rmg_reaction: 'TemplateReaction',
+                                                         ) -> Optional[Dict[str, int]]:
     """
     Get the RMG reaction labels and the corresponding 0-indexed atom indices
     for all labeled atoms in an TemplateReaction.
 
     Args:
-        reaction ('TemplateReaction'): An RMG family TemplateReaction object instance.
+        arc_reaction ('ARCReaction'): An ARCReaction object instance.
+        rmg_reaction ('TemplateReaction'): A respective RMG family TemplateReaction object instance.
 
     Returns:
         Optional[Dict[str, int]]: Keys are labels (e.g., '*1'), values are corresponding 0-indices atoms.
     """
-    if not hasattr(reaction, 'labeledAtoms') or not len(reaction.labeledAtoms):
+    if not hasattr(rmg_reaction, 'labeledAtoms') or not len(rmg_reaction.labeledAtoms):
         return None
+
+    r_map, p_map = map_arc_rmg_species(arc_reaction=arc_reaction, rmg_reaction=rmg_reaction)
+
     index_dict = dict()
     reactant_atoms, product_atoms = list(), list()
-    for mol in reaction.reactants:
-        reactant_atoms.extend([atom for atom in mol.atoms])
-    for mol in reaction.products:
-        product_atoms.extend([atom for atom in mol.atoms])
-    for labeled_atom in reaction.labeledAtoms:
+    rmg_reactant_order = [val[0] for key, val in sorted(r_map.items(), key=lambda item: item[0])]
+    rmg_product_order = [val[0] for key, val in sorted(p_map.items(), key=lambda item: item[0])]
+    for i in rmg_reactant_order:
+        reactant_atoms.extend([atom for atom in rmg_reaction.reactants[i].atoms])
+    for i in rmg_product_order:
+        product_atoms.extend([atom for atom in rmg_reaction.products[i].atoms])
+    for labeled_atom in rmg_reaction.labeledAtoms:
         for i, atom in enumerate(reactant_atoms):
             if atom.id == labeled_atom[1].id:
                 index_dict[labeled_atom[0]] = i
                 break
     return index_dict
+
+
+def map_arc_rmg_species(arc_reaction: 'ARCReaction',
+                        rmg_reaction: Union['Reaction', 'TemplateReaction'],
+                        ) -> Tuple[Dict[int, int], Dict[int, int]]:
+    """
+    Map the species pairs in an ARC reaction to those in a respective RMG reaction.
+
+    Args:
+        arc_reaction ('ARCReaction'): An ARCReaction object instance.
+        rmg_reaction (Union['Reaction', 'TemplateReaction']): A respective RMG family TemplateReaction object instance.
+
+    Returns:
+        Tuple[Dict[int, int], Dict[int, int]]: Keys are specie indices in the ARC reaction,
+                                               values are respective indices in the RMG reaction.
+                                               The first tuple entry refers to reactants, the second to products.
+    """
+    r_map, p_map = dict(), dict()
+    for spc_map, rmg_species, arc_species in [(r_map, rmg_reaction.reactants, arc_reaction.r_species),
+                                              (p_map, rmg_reaction.products, arc_reaction.p_species)]:
+        for i, arc_spc in enumerate(arc_species):
+            for j, rmg_spc in enumerate(rmg_species):
+                if rmg_spc.is_isomorphic(arc_spc.mol, save_order=True):
+                    if i in spc_map.keys():
+                        spc_map[i].append(j)
+                    else:
+                        spc_map[i] = [j]
+    return r_map, p_map
 
 
 def determine_family(reaction: 'ARCReaction'):
