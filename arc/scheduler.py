@@ -2087,7 +2087,8 @@ class Scheduler(object):
                     execution_time = execution_time[:execution_time.index('.') + 2] \
                         if '.' in execution_time else execution_time
                     logger.info(f'TS guess {tsg.index} for {label}. Method: {tsg.method}, relative energy: '
-                                f'{tsg.energy:.2f} kJ/mol, guess execution time: {execution_time}{im_freqs}')
+                                f'{tsg.energy:.2f} kJ/mol, guess execution time: {execution_time}{im_freqs} '
+                                f'{tsg.errors}')
                     # for TSs, only use `draw_3d()`, not `show_sticks()` which gets connectivity wrong:
                     plotter.draw_structure(xyz=tsg.initial_xyz, method='draw_3d')
             logger.info('\n')
@@ -3144,6 +3145,8 @@ class Scheduler(object):
                          )
         for output_error in output_errors:
             self.output[label]['errors'] += output_error
+            if 'Could not troubleshoot' in output_error and self.species_dict[label].is_ts:
+                self.species_dict[label].ts_guesses[self.species_dict[label].chosen_ts].errors.append(output_error)
         if remove_checkfile:
             self.species_dict[label].checkfile = None
         job.ess_trsh_methods = ess_trsh_methods
