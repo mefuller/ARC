@@ -12,6 +12,7 @@ Todo:
 import datetime
 import itertools
 import os
+import pprint
 from typing import TYPE_CHECKING, List, Optional, Tuple, Union
 
 from rmgpy.exceptions import ActionError
@@ -22,8 +23,7 @@ from arc.job.adapter import JobAdapter
 from arc.job.adapters.common import check_argument_consistency, ts_adapters_by_rmg_family
 from arc.job.factory import register_job_adapter
 from arc.plotter import save_geo
-from arc.species.converter import compare_zmats, zmat_from_xyz, zmat_to_xyz
-from arc.species.converter import xyz_from_data
+from arc.species.converter import compare_zmats, sort_xyz_using_indices, xyz_from_data, zmat_from_xyz, zmat_to_xyz, xyz_to_str
 from arc.species.species import ARCSpecies, TSGuess
 from arc.species.zmat import get_parameter_from_atom_indices, is_angle_linear, up_param
 
@@ -151,7 +151,7 @@ class HeuristicsAdapter(JobAdapter):
         self.job_num = job_num
         self.job_server_name = job_server_name
         self.job_status = job_status \
-            or ['initializing', {'status': 'initializing', 'keywords': list(), 'error': '', 'line': ''}]
+                          or ['initializing', {'status': 'initializing', 'keywords': list(), 'error': '', 'line': ''}]
         self.level = level
         self.max_job_time = max_job_time
         self.reactions = [reactions] if reactions is not None and not isinstance(reactions, list) else reactions
@@ -315,7 +315,8 @@ class HeuristicsAdapter(JobAdapter):
                              )
 
             if len(self.reactions) < 5:
-                successes = len([tsg for tsg in rxn.ts_species.ts_guesses if tsg.success and 'heuristics' in tsg.method])
+                successes = len(
+                    [tsg for tsg in rxn.ts_species.ts_guesses if tsg.success and 'heuristics' in tsg.method])
                 if successes:
                     logger.info(f'Heuristics successfully found {successes} TS guesses for {rxn.label}.')
                 else:
@@ -440,95 +441,211 @@ def combine_coordinates_with_redundant_atoms(xyz1,
     if c is not None and d == b:
         raise ValueError(f'The value for d ({d}) is invalid (it represents atom B, not atom D)')
 
-    # generate the two constrained zmats
-    constraints1 = {'R_atom': [(h1, a)]}
-    zmat1 = zmat_from_xyz(xyz=xyz1, mol=mol1, constraints=constraints1, consolidate=False)
+    zmat1, zmat2 = generate_the_two_constrained_zmats(xyz1, xyz2, mol1, mol2, h1, h2, a, b, d)
 
-    constraints2 = {'A_group': [(d, b, h2)]} if d is not None else {'R_group': [(b, h2)]}
-    zmat2 = zmat_from_xyz(xyz=xyz2, mol=mol2, constraints=constraints2, consolidate=False)
+    # Stretch the A--H1 and B--H2 bonds.
+    stretch_zmat_bond(zmat=zmat1, indices=(h1, a), stretch=r1_stretch)
+    stretch_zmat_bond(zmat=zmat2, indices=(b, h2), stretch=r2_stretch)
 
-    # stretch the A--H1 and B--H2 bonds
-    r_a_h1_param = get_parameter_from_atom_indices(zmat=zmat1, indices=(h1, a), xyz_indexed=True)
-    r_b_h2_param = get_parameter_from_atom_indices(zmat=zmat2, indices=(b, h2), xyz_indexed=True)
-    zmat1['vars'][r_a_h1_param] *= r1_stretch
-    zmat2['vars'][r_b_h2_param] *= r2_stretch
+    glue_params = determine_glue_params_to_combine_zmats(zmat=zmat1,
+                                                         is_a2_linear=is_a2_linear,
+                                                         a=a,
+                                                         c=c,
+                                                         d=d,
+                                                         d3=d3,
+                                                         )
 
-    # determine the "glue" parameters
-    num_atoms_1 = len(zmat1['symbols'])  # the number of atoms in zmat1, used to increment the atom indices in zmat2
-    zh = num_atoms_1 - 1  # the atom index of H in the combined zmat
-    za = key_by_val(zmat1['map'], a)  # the atom index of A in the combined zmat
-    zb = num_atoms_1 + int(is_a2_linear)  # the atom index of B in the combined zmat, if a2=180, consider the dummy atom
-    zc = key_by_val(zmat1['map'], c) if c is not None else None
-    zd = num_atoms_1 + 1 + int(is_a2_linear) if d is not None else None  # the atom index of B in the combined zmat
+    new_coords, new_vars, new_map = get_modified_params_from_zmat2(zmat1=zmat1,
+                                                                   zmat2=zmat2,
+                                                                   is_a2_linear=is_a2_linear,
+                                                                   glue_params=glue_params,
+                                                                   a2=a2,
+                                                                   c=c,
+                                                                   d2=d2,
+                                                                   d3=d3,
+                                                                   )
+
+    combined_zmat = dict()
+    combined_zmat['symbols'] = tuple(zmat1['symbols'] + zmat2['symbols'][1:])
+    # print(f"zmat1 has {len(zmat1['symbols'])} symbols, zmat2 has {len(zmat2['symbols'])} symbols, combined has "
+    #       f"{len(combined_zmat['symbols'])} symbols")
+    combined_zmat['coords'] = tuple(list(zmat1['coords']) + new_coords)
+    combined_zmat['vars'] = {**zmat1['vars'], **new_vars}  # Combine the two dicts.
+    combined_zmat['map'] = new_map
+    # print(zmat1['map'])
+    # print(zmat2['map'])
+    # print(combined_zmat['map'])
+    for i, coords in enumerate(combined_zmat['coords']):
+        if i > 2 and None in coords:
+            raise ValueError(f'Could not combine zmats, got a None parameter beyond the 3rd row:\n{combined_zmat}')
+    ts_xyz = zmat_to_xyz(zmat=combined_zmat, keep_dummy=keep_dummy)
+    return ts_xyz
+
+
+def generate_the_two_constrained_zmats(xyz1: dict,
+                                       xyz2: dict,
+                                       mol1: 'Molecule',
+                                       mol2: 'Molecule',
+                                       h1: int,
+                                       h2: int,
+                                       a: int,
+                                       b: int,
+                                       d: int,
+                                       ) -> Tuple[dict, dict]:
+    """
+    Generate the two constrained zmats required for combining coordinates with a redundant atom.
+
+    Args:
+        xyz1 (dict): The Cartesian coordinates of molecule 1 (including the redundant atom).
+        xyz2 (dict): The Cartesian coordinates of molecule 2 (including the redundant atom).
+        mol1 (Molecule): The Molecule instance corresponding to ``xyz1``.
+        mol2 (Molecule): The Molecule instance corresponding to ``xyz2``.
+        h1 (int): The 0-index of a terminal redundant H atom in ``xyz1`` (atom H1).
+        h2 (int): The 0-index of a terminal redundant H atom in ``xyz2`` (atom H2).
+        a (int): The 0-index of an atom in ``xyz1`` connected to H1 (atom A).
+        b (int): The 0-index of an atom in ``xyz2`` connected to H2 (atom B).
+        d (int): The 0-index of an atom in ``xyz2`` connected to either B or H2 which is neither B nor H2 (atom D).
+
+    Returns:
+        Tuple[dict, dict]: The two zmats.
+    """
+    zmat1 = zmat_from_xyz(xyz=xyz1,
+                          mol=mol1,
+                          constraints={'R_atom': [(h1, a)]},
+                          consolidate=False,
+                          )
+    zmat2 = zmat_from_xyz(xyz=xyz2,
+                          mol=mol2,
+                          constraints={'A_group': [(d, b, h2)]} if d is not None else {'R_group': [(b, h2)]},
+                          consolidate=False,
+                          )
+    return zmat1, zmat2
+
+
+def stretch_zmat_bond(zmat: dict,
+                      indices: Tuple[int, int],
+                      stretch: float):
+    """
+    Stretch a bond in a zmat.
+
+    Args:
+        zmat: THe zmat to process.
+        indices (tuple): A length 2 tuple with the 0-indices of the xyz (not zmat) atoms representing the bond to stretch.
+        stretch (float): The factor by which to multiply (stretch/shrink) the bond length.
+    """
+    param = get_parameter_from_atom_indices(zmat=zmat, indices=indices, xyz_indexed=True)
+    zmat['vars'][param] *= stretch
+
+
+def determine_glue_params_to_combine_zmats(zmat: dict,
+                                           is_a2_linear: bool,
+                                           a: int,
+                                           c: Optional[int],
+                                           d: Optional[int],
+                                           d3: Optional[int],
+                                           ):
+    """
+    Determine glue parameters for combining two zmats.
+    Modifies the ``zmat`` argument if a dummy atom needs to be added.
+
+    Args:
+        zmat (dict): The first zmat onto which the second zmat will be glued.
+        is_a2_linear (bool): Whether angle B-H-A is linear.
+        a (int): The 0-index of atom A.
+        c (int): The 0-index of atom C.
+        d (int): The 0-index of atom D.
+        d3 (float): The dihedral angel (in degrees) between atoms D-B-H-A.
+
+    Returns:
+        Tuple[str, str, str]: The a2, d2, and d3 zmat glue parameters.
+    """
+    num_atoms_1 = len(zmat['symbols'])  # The number of atoms in zmat1, used to increment the atom indices in zmat2.
+    zh = num_atoms_1 - 1  # The atom index of H in the combined zmat.
+    za = key_by_val(zmat['map'], a)  # The atom index of A in the combined zmat.
+    zb = num_atoms_1 + int(
+        is_a2_linear)  # The atom index of B in the combined zmat, if a2=180, consider the dummy atom.
+    zc = key_by_val(zmat['map'], c) if c is not None else None
+    zd = num_atoms_1 + 1 + int(is_a2_linear) if d is not None else None  # The atom index of D in the combined zmat.
     param_a2 = f'A_{zb}_{zh}_{za}'  # B-H-A
     param_d2 = f'D_{zb}_{zh}_{za}_{zc}' if zc is not None else None  # B-H-A-C
     if is_a2_linear:
-        # add a dummy atom
+        # Add a dummy atom.
+        zmat['map'][len(zmat['symbols'])] = f"X{len(zmat['symbols'])}"
         zx = num_atoms_1
         num_atoms_1 += 1
-        zmat1['symbols'] = tuple(list(zmat1['symbols']) + ['X'])
+        zmat['symbols'] = tuple(list(zmat['symbols']) + ['X'])
         r_str = f'RX_{zx}_{zh}'
         a_str = f'AX_{zx}_{zh}_{za}'
         d_str = f'DX_{zx}_{zh}_{za}_{zc}' if zc is not None else None  # X-H-A-C
-        zmat1['coords'] = tuple(list(zmat1['coords']) + [(r_str, a_str, d_str)])  # the coords of the dummy atom
-        zmat1['vars'][r_str] = 1.0
-        zmat1['vars'][a_str] = 90.0
+        zmat['coords'] = tuple(list(zmat['coords']) + [(r_str, a_str, d_str)])  # The coords of the dummy atom.
+        zmat['vars'][r_str] = 1.0
+        zmat['vars'][a_str] = 90.0
         if d_str is not None:
-            zmat1['vars'][d_str] = 0
+            zmat['vars'][d_str] = 0
         param_a2 = f'A_{zb}_{zh}_{zx}'  # B-H-X
         param_d2 = f'D_{zb}_{zh}_{zx}_{za}' if zc is not None else None  # B-H-X-A
-    if d3 is not None and zd is not None:
-        param_d3 = f'D_{zd}_{zb}_{zh}_{za}'  # D-B-H-A
-    else:
-        param_d3 = None
+    param_d3 = f'D_{zd}_{zb}_{zh}_{za}' if d3 is not None and d is not None else None  # D-B-H-A
+    return param_a2, param_d2, param_d3
 
-    # generate a modified zmat2: remove the first atom, change all existing parameter indices, add "glue" parameters
-    new_coords, new_vars = list(), dict()
+
+def get_modified_params_from_zmat2(zmat1: dict,
+                                   zmat2: dict,
+                                   is_a2_linear: bool,
+                                   glue_params: Tuple[str, str, str],
+                                   a2: float,
+                                   c: Optional[int],
+                                   d2: Optional[float],
+                                   d3: Optional[float],
+                                   ):
+    """
+    Generate a modified zmat2: remove the first atom, change all existing parameter indices, add "glue" parameters.
+
+    Args:
+        zmat1 (dict): The zmat describing R1H.
+        zmat2 (dict): The zmat describing R2H.
+        is_a2_linear (bool): Whether angle B-H-A is linear.
+        glue_params (Tuple[str, str, str]): param_a2, param_d2, param_d3.
+        a2 (float): The angle (in degrees) in the combined structure between atoms B-H-A (angle B-H-A).
+        c (int): The 0-index of an atom in ``xyz1`` connected to either A or H1 which is neither A nor H1 (atom C).
+        d2 (float): The dihedral angle (in degrees) between atoms B-H-A-C (dihedral B-H-A-C).
+        d3 (float): The dihedral angel (in degrees) between atoms D-B-H-A (dihedral D-B-H-A).
+
+    Returns:
+        Tuple[list, dict, dict]: new_coords, new_vars, new_map.
+    """
+    new_coords, new_vars, new_map = list(), dict(), zmat1['map'].copy()
+    param_a2, param_d2, param_d3 = glue_params
+    num_atoms_1 = len(zmat1['symbols'])  # The number of atoms in zmat1, used to increment the atom indices in zmat2.
+    r2_index_of_redundant_h = zmat2['map'][0]
     for i, coords in enumerate(zmat2['coords'][1:]):
+        new_map[i + len(zmat1['symbols'])] = len(zmat1['symbols']) + zmat2['map'][i + 1]
         new_coord = list()
         for j, param in enumerate(coords):
             if param is not None:
                 if i == 0 and is_a2_linear:
-                    # atom B should refer to H, not X
+                    # Atom B should refer to H, not X.
                     new_param = up_param(param=param, increment_list=[num_atoms_1 - 1, num_atoms_1 - 2])
                 else:
                     new_param = up_param(param=param, increment=num_atoms_1 - 1)
                 new_coord.append(new_param)
-                new_vars[new_param] = zmat2['vars'][param]  # keep the original parameter R/A/D values
+                new_vars[new_param] = zmat2['vars'][param]  # Keep the original parameter R/A/D values.
             else:
                 if i == 0 and j == 1:
-                    # this is a2
+                    # This is a2.
                     new_coord.append(param_a2)
                     new_vars[param_a2] = a2 + 90 if is_a2_linear else a2
                 elif i == 0 and j == 2 and c is not None:
-                    # this is d2
+                    # This is d2.
                     new_coord.append(param_d2)
                     new_vars[param_d2] = 0 if is_a2_linear else d2
                 elif i == 1 and j == 2 and param_d3 is not None:
-                    # this is d3
+                    # This is d3.
                     new_coord.append(param_d3)
                     new_vars[param_d3] = d3
                 else:
                     new_coord.append(None)
         new_coords.append(tuple(new_coord))
-
-    combined_zmat = dict()
-    combined_zmat['symbols'] = tuple(zmat1['symbols'] + zmat2['symbols'][1:])
-    combined_zmat['coords'] = tuple(list(zmat1['coords']) + new_coords)
-    combined_zmat['vars'] = {**zmat1['vars'], **new_vars}  # combine the two dicts
-    combined_zmat['map'] = dict()
-    x_occurrences = 0
-    for i, symbol in enumerate(combined_zmat['symbols']):
-        if symbol == 'X':
-            combined_zmat['map'][i] = 'X'
-            x_occurrences += 1
-        else:
-            combined_zmat['map'][i] = i - x_occurrences
-
-    for i, coords in enumerate(combined_zmat['coords']):
-        if i > 2 and None in coords:
-            raise ValueError(f'Could not combine zmats, got a None parameter above the 3rd row:\n{combined_zmat}')
-    return zmat_to_xyz(zmat=combined_zmat, keep_dummy=keep_dummy)
+    return new_coords, new_vars, new_map
 
 
 def label_molecules(reactants: List['Molecule'],
@@ -623,7 +740,7 @@ def h_abstraction(arc_reaction: 'ARCReaction',
 
         # d2 describes the B-H-A-C dihedral, populate d2_values if C exists and the B-H-A angle is not linear.
         d2_values = list(range(0, 360, dihedral_increment)) if len(rmg_reactant_mol.atoms) > 2 \
-            and not is_angle_linear(a2) else list()
+                                                               and not is_angle_linear(a2) else list()
 
         # d3 describes the D-B-H-A dihedral, populate d3_values if D exists.
         d3_values = list(range(0, 360, dihedral_increment)) if len(rmg_product_mol.atoms) > 2 else list()
@@ -674,11 +791,41 @@ def h_abstraction(arc_reaction: 'ARCReaction',
                 else:
                     # This TS is unique, and has no atom collisions.
                     zmats.append(zmat_guess)
-                    xyz_guess = reverse_xyz(xyz_guess, reactants_reversed, rmg_reactant_mol)
+                    xyz_guess = reorder_ts_xyz_guess(xyz=xyz_guess,
+                                                     reaction=arc_reaction,
+                                                     reactants_reversed=reactants_reversed,
+                                                     rmg_reactant_mol=rmg_reactant_mol,
+                                                     )
                     xyz_guesses.append(xyz_guess)
 
     # Todo: Learn bond stretches and the A-H-B angle for different atom types.
     return xyz_guesses
+
+
+def reorder_ts_xyz_guess(xyz: dict,
+                         reaction: 'ARCReaction',  # todo: change to the atom map?
+                         reactants_reversed: bool,
+                         rmg_reactant_mol: 'Molecule',
+                         ) -> dict:
+    """
+    Reorder the TS xyz guess to align with the atom order of the reactants.
+
+    Args:
+        xyz (dict): The TS xyz guess.
+        reaction (ARCReaction): The corresponding ARCReaction object instance.
+        reactants_reversed (bool): Whether the reactants were reversed when generating the TS guess.
+        rmg_reactant_mol ('Molecule'): The Molecule object instance describing the first reactant in the
+                                       according to the RMG family template.
+
+    Returns:
+        dict: The sorted TS xyz guess.
+    """
+    # todo: sort the atom order that stemmed from the product, call reverse_xyz()
+    return reverse_xyz(xyz=xyz,
+                       reactants_reversed=reactants_reversed,
+                       rmg_reactant_mol=rmg_reactant_mol,
+                       )
+
 
 
 def reverse_xyz(xyz: dict,
@@ -686,7 +833,7 @@ def reverse_xyz(xyz: dict,
                 rmg_reactant_mol: 'Molecule',
                 ) -> dict:
     """
-    Sort the atoms order in a TS xyz guess according to the reactants order in the reaction.
+    Sort the atom order in a TS xyz guess according to the reactants order in the reaction.
 
     Args:
         xyz (dict): The TS xyz guess.
