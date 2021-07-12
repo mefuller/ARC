@@ -49,7 +49,7 @@ class TestRMGDB(unittest.TestCase):
         rxn = ARCReaction(r_species=[ARCSpecies(label='CH2CH2CH3', smiles='[CH2]CC')],
                           p_species=[ARCSpecies(label='CH3CHCH3', smiles='C[CH]C')])
         self.assertIsNone(rxn.family)
-        rmgdb.determine_family(rxn)
+        rmgdb.determine_family(rxn, db=None)
         self.assertEqual(rxn.family.label, 'intra_H_migration')
 
         rxn = ARCReaction(r_species=[ARCSpecies(label='C2H6', smiles='CC'),
@@ -57,7 +57,7 @@ class TestRMGDB(unittest.TestCase):
                           p_species=[ARCSpecies(label='water', smiles='O'),
                                      ARCSpecies(label='C2H5', smiles='[CH2]C')])
         self.assertIsNone(rxn.family)
-        rmgdb.determine_family(rxn)
+        rmgdb.determine_family(rxn, db=self.rmgdb)
         self.assertEqual(rxn.family.label, 'H_Abstraction')
 
         r_1 = ARCSpecies(label='C3H6O', smiles='CCC=O')
@@ -67,7 +67,7 @@ class TestRMGDB(unittest.TestCase):
         rxn = ARCReaction(reactants=['C3H6O', 'C4H9O'], products=['C3H5O', 'C4H10O'],
                           r_species=[r_1, r_2], p_species=[p_1, p_2])
         self.assertIsNone(rxn.family)
-        rmgdb.determine_family(rxn)
+        rmgdb.determine_family(rxn, db=self.rmgdb)
         self.assertEqual(rxn.family.label, 'H_Abstraction')
 
     def test_determining_rmg_kinetics(self):
