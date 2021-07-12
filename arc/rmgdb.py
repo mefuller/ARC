@@ -216,16 +216,19 @@ def loop_families(rmgdb: RMGDatabase,
                   reaction: Reaction,
                   ) -> List[Tuple['KineticsFamily', list]]:
     """
-    Loop through kinetic families and return a list of tuples of (family, degenerate_reactions).
+    Loop through kinetic families and return a list of tuples of (family, degenerate_reactions)
+    corresponding to ``reaction``.
 
     Args:
         rmgdb (RMGDatabase): The RMG database instance.
-        reaction (Reaction): The RMG Reaction object.
+        reaction (Reaction): The RMG Reaction object instance.
 
     Returns: List[Tuple['KineticsFamily', list]]
         Entries are tuples of a corresponding RMG KineticsFamily instance and a list of degenerate reactions.
     """
     reaction = reaction.copy()  # use a copy to avoid changing atom order in the molecules by RMG
+    for spc in reaction.reactants + reaction.products:
+        spc.generate_resonance_structures()
     fam_list = list()
     for family in rmgdb.kinetics.families.values():
         family.save_order = True
