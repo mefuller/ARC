@@ -228,7 +228,7 @@ def loop_families(rmgdb: RMGDatabase,
     """
     reaction = reaction.copy()  # use a copy to avoid changing atom order in the molecules by RMG
     for spc in reaction.reactants + reaction.products:
-        spc.generate_resonance_structures()
+        spc.generate_resonance_structures(save_order=True)
     fam_list = list()
     for family in rmgdb.kinetics.families.values():
         family.save_order = True
