@@ -7,10 +7,7 @@ from typing import TYPE_CHECKING, Dict, List, Optional, Tuple, Union
 from qcelemental.exceptions import ValidationError
 from qcelemental.models.molecule import Molecule as QCMolecule
 
-from rmgpy.data.kinetics.family import TemplateReaction
-from rmgpy.exceptions import ForbiddenStructureException
 from rmgpy.molecule import Molecule
-from rmgpy.reaction import same_species_lists
 from rmgpy.species import Species
 
 import arc.rmgdb as rmgdb
@@ -20,25 +17,29 @@ from arc.species.converter import translate_xyz, xyz_to_str
 
 
 if TYPE_CHECKING:
-    from rmgpy.data.kinetics.family import KineticsFamily
+    from rmgpy.data.kinetics.family import TemplateReaction
+    from rmgpy.data.rmg import RMGDatabase
     from rmgpy.reaction import Reaction
     from arc.reaction import ARCReaction
 
 
-def map_h_abstraction(rxn: 'ARCReaction') -> Optional[List[int]]:
+def map_h_abstraction(rxn: 'ARCReaction',
+                      db: Optional['RMGDatabase'] = None,
+                      ) -> Optional[List[int]]:
     """
     Map a hydrogen abstraction reaction.
     This function does not populate the rxn.family attribute, but does checks and expects it to be populated.
 
     Args:
         rxn (ARCReaction): An ARCReaction object instance that belongs to the RMG H_Abstraction reaction family.
+        db (RMGDatabase, optional): The RMG database instance.
 
     Returns:
         Optional[List[int]]:
             Entry values are atom indices in the products mapped to the respective reactant atom (entry index).
     """
     if rxn.family is None:
-        rmgdb.determine_family(rxn)
+        rmgdb.determine_family(reaction=rxn, db=db)
     if rxn.family is None:
         return None
     if rxn.family.label != 'H_Abstraction':
@@ -181,10 +182,10 @@ def create_qc_mol(species: Union[ARCSpecies, Species, Molecule, List[Union[ARCSp
 
 
 def get_atom_indices_of_labeled_atoms_in_an_rmg_reaction(arc_reaction: 'ARCReaction',
-                                                         rmg_reaction: TemplateReaction,
+                                                         rmg_reaction: 'TemplateReaction',
                                                          ) -> Tuple[Optional[Dict[str, int]], Optional[Dict[str, int]]]:
     """
-    Get the RMG reaction labels and the corresponding 0-indexed atom indices
+    Get the RMG reaction atom labels and the corresponding 0-indexed atom indices
     for all labeled atoms in a TemplateReaction.
 
     Args:
@@ -196,7 +197,7 @@ def get_atom_indices_of_labeled_atoms_in_an_rmg_reaction(arc_reaction: 'ARCReact
             The tuple entries relate to reactants and products.
             Keys are labels (e.g., '*1'), values are corresponding 0-indices atoms.
     """
-    if not hasattr(rmg_reaction, 'labeledAtoms') or not rmg_reaction.labeledAtoms:
+    if not hasattr(rmg_reaction, 'labeled_reactant_atoms') or not len(rmg_reaction.labeled_reactant_atoms):
         return None, None
 
     for mol in rmg_reaction.reactants + rmg_reaction.products:
@@ -212,35 +213,21 @@ def get_atom_indices_of_labeled_atoms_in_an_rmg_reaction(arc_reaction: 'ARCReact
         reactant_atoms.extend([atom for atom in rmg_reaction.reactants[i].atoms])
     for i in rmg_product_order:
         product_atoms.extend([atom for atom in rmg_reaction.products[i].atoms])
-    for reactant in rmg_reaction.reactants:
-        print('r labeled atoms:')
-        print(rmg_reaction.labeledAtoms)
-        for label, atom in rmg_reaction.labeledAtoms['reactants']:
-            for i, reactant_atom in enumerate(reactant_atoms):
-                if reactant_atom.id == atom.id:
-                    reactant_index_dict[label] = i
-    for product in rmg_reaction.products:
-        print('p labeled atoms:')
-        print(product.get_all_labeled_atoms())
-        for label, atom in rmg_reaction.labeledAtoms['products']:
-            for i, product_atom in enumerate(product_atoms):
-                if product_atom.id == atom.id:
-                    product_index_dict[label] = i
 
-
-    # for labeled_atom in rmg_reaction.labeledAtoms:
-    #     print(labeled_atom)
-    #     for atom_list, index_dict in zip([reactant_atoms, product_atoms], [reactant_index_dict, product_index_dict]):
-    #         for i, atom in enumerate(atom_list):
-    #             if atom.id == labeled_atom[1].id:
-    #                 print(atom.id, labeled_atom[0])
-    #                 index_dict[labeled_atom[0]] = i
-    #                 break
+    for labeled_atom_tuples, atom_list, index_dict in zip([rmg_reaction.labeled_reactant_atoms,
+                                                           rmg_reaction.labeled_product_atoms],
+                                                          [reactant_atoms, product_atoms],
+                                                          [reactant_index_dict, product_index_dict]):
+        for labeled_atom_tuple in labeled_atom_tuples:
+            for i, atom in enumerate(atom_list):
+                if atom.id == labeled_atom_tuple[1].id:
+                    index_dict[labeled_atom_tuple[0]] = i
+                    break
     return reactant_index_dict, product_index_dict
 
 
 def map_arc_rmg_species(arc_reaction: 'ARCReaction',
-                        rmg_reaction: Union['Reaction', TemplateReaction],
+                        rmg_reaction: Union['Reaction', 'TemplateReaction'],
                         concatenate: bool = True,
                         ) -> Tuple[Dict[int, Union[List[int], int]], Dict[int, Union[List[int], int]]]:
     """
@@ -306,6 +293,7 @@ def find_equivalent_atoms_in_reactants(arc_reaction: 'ARCReaction') -> Optional[
     dicts = [get_atom_indices_of_labeled_atoms_in_an_rmg_reaction(rmg_reaction=rmg_reaction,
                                                                   arc_reaction=arc_reaction)[0]
              for rmg_reaction in rmg_reactions]
+    print(dicts)
     equivalence_map = dict()
     for index_dict in dicts:
         for key, value in index_dict.items():
@@ -317,33 +305,32 @@ def find_equivalent_atoms_in_reactants(arc_reaction: 'ARCReaction') -> Optional[
     return equivalent_indices
 
 
-def _get_rmg_reactions_from_arc_reaction(arc_reaction: 'ARCReaction') -> Optional[List[TemplateReaction]]:
+def _get_rmg_reactions_from_arc_reaction(arc_reaction: 'ARCReaction',
+                                         db: Optional['RMGDatabase'] = None,
+                                         ) -> Optional[List['TemplateReaction']]:
     """
     A helper function for getting RMG reactions from an ARC reaction.
 
     Args:
         arc_reaction (ARCReaction): The ARCReaction object instance.
+        db (RMGDatabase, optional): The RMG database instance.
 
     Returns:
         Optional[List[TemplateReaction]]:
             The respective RMG TemplateReaction object instances (considering resonance structures).
     """
     if arc_reaction.family is None:
-        rmgdb.determine_family(arc_reaction)
+        rmgdb.determine_family(reaction=arc_reaction, db=db)
     if arc_reaction.family is None:
         return None
-    rmg_reactions = generate_reactions(family=arc_reaction.family,
-                                       reactants=[spc.mol for spc in arc_reaction.r_species],
-                                       products=[spc.mol for spc in arc_reaction.p_species],
-                                       prod_resonance=True,
-                                       )
+    rmg_reactions = arc_reaction.family.generate_reactions(reactants=[spc.mol for spc in arc_reaction.r_species],
+                                                           products=[spc.mol for spc in arc_reaction.p_species],
+                                                           prod_resonance=True,
+                                                           delete_labels=False,
+                                                           relabel_atoms=False,
+                                                           )
     for rmg_reaction in rmg_reactions:
-        for reactant in rmg_reaction.reactants:
-            print([atom.label for atom in reactant.atoms])
-        for product in rmg_reaction.products:
-            print([atom.label for atom in product.atoms])
         r_map, p_map = map_arc_rmg_species(arc_reaction=arc_reaction, rmg_reaction=rmg_reaction, concatenate=False)
-        print(r_map, p_map)
         ordered_rmg_reactants = [rmg_reaction.reactants[r_map[i]] for i in range(len(rmg_reaction.reactants))]
         ordered_rmg_products = [rmg_reaction.products[p_map[i]] for i in range(len(rmg_reaction.products))]
         mapped_rmg_reactants, mapped_rmg_products = list(), list()
@@ -363,301 +350,3 @@ def _get_rmg_reactions_from_arc_reaction(arc_reaction: 'ARCReaction') -> Optiona
         rmg_reaction.reactants, rmg_reaction.products = mapped_rmg_reactants, mapped_rmg_products
     return rmg_reactions
 
-
-def generate_reactions(family: 'KineticsFamily',
-                       reactants: Union[List[Molecule], List[List[Molecule]]],
-                       products: Optional[Union[List[Molecule], List[List[Molecule]]]] = None,
-                       prod_resonance: bool = True,
-                       ) -> List[TemplateReaction]:
-    """
-    Generate all reactions between the provided list of one, two, or three
-    ``reactants``, which should be either single :class:`Molecule` objects
-    or lists of same. Does not estimate the kinetics of these reactions
-    at this time. Returns a list of :class:TemplateReaction objects
-    using :class:`Molecule` objects for both reactants and products
-    The reactions are constructed such that the forward direction is
-    consistent with the template of this reaction family.
-
-    This function was inspired by RMG's KineticsFamily.generate_reactions().
-
-    Args:
-        family (KineticsFamily): THe KineticsFamily object instance corresponding to the desired reaction family.
-        reactants (Union[List[Molecule], List[List[Molecule]]]): Entries are reactant Molecule object instances.
-        products (Union[List[Molecule], List[List[Molecule]]], optional): Entries are product Molecule object instances.
-        prod_resonance (bool, optional): Whether to generate resonance structures for product checking.
-
-    Returns:
-        List[TemplateReaction]: Entries are all the reactions containing the ``Molecule`` object instances with the
-                                specified reactants (and products, if requested) within the relevant ``family``.
-                                Degenerate reactions are returned as separate reactions.
-    """
-    reaction_list = list()
-    reactants = [reactant if isinstance(reactant, list) else [reactant] for reactant in reactants]
-    reaction_list.extend(_generate_reactions(family=family,
-                                             reactants=reactants,
-                                             products=products,
-                                             forward=True,
-                                             prod_resonance=prod_resonance,
-                                             ))
-    if not family.own_reverse and family.reversible:
-        reaction_list.extend(_generate_reactions(family=family,
-                                                 reactants=reactants,
-                                                 products=products,
-                                                 forward=False,
-                                                 prod_resonance=prod_resonance,
-                                                 ))
-    return reaction_list
-
-
-def _generate_reactions(family: 'KineticsFamily',
-                        reactants: List[List[Molecule]],
-                        products: Optional[List[List[Molecule]]] = None,
-                        forward: bool = True,
-                        prod_resonance: bool = True,
-                        ) -> List[TemplateReaction]:
-    """
-    Generate a list of all the possible reactions of a certain ``family`` between
-    the list of ``reactants`` that yield the ``products``. The number of reactants
-    provided must match the number of reactants expected by the template, or an
-    empty list is returned. Each item in the list of reactants should
-    be a list of :class:`Molecule` objects, each representing a resonance
-    structure of the species of interest.
-
-    This function returns all reactions, and degenerate reactions can then be
-    found using ``rmgpy.data.kinetics.common.find_degenerate_reactions``.
-
-    This function was inspired by RMG's KineticsFamily._generate_reactions().
-
-    Args:
-        family (KineticsFamily): THe KineticsFamily object instance corresponding to the desired reaction family.
-        reactants (List[List[Molecule]]): Entries are lists of reactant Molecule object instances.
-        products (List[List[Molecule]], optional): Entries are lists of product Molecule object instances.
-        forward (bool, optional): Whether the forward or reverse reaction template should be applied.
-        prod_resonance (bool, optional): Whether to generate resonance structures for product checking.
-
-    Returns:
-        List[TemplateReaction]: Entries are all the reactions containing the ``Molecule`` object instances with the
-                                specified reactants (and products, if requested) within the relevant ``family``.
-                                Degenerate reactions are returned as separate reactions.
-    """
-    rxn_list = list()
-
-    if not forward and family.reverse_template is None:
-        return list()
-    template = family.forward_template if forward else family.reverse_template
-    reactant_num = family.reactant_num if forward else family.product_num
-
-    if family.auto_generated and reactant_num != len(reactants):
-        return list()
-
-    if len(reactants) > len(template.reactants):
-        # if the family has one template and is bimolecular, split template into multiple reactants
-        try:
-            groups = template.reactants[0].item.split()
-            template_reactants = list()
-            for group in groups:
-                template_reactants.append(group)
-        except AttributeError:
-            template_reactants = [x.item for x in template.reactants]
-    else:
-        template_reactants = [x.item for x in template.reactants]
-
-    # Unimolecular reactants: A --> products
-    if len(reactants) == 1 and len(template_reactants) == 1:
-        for molecule in reactants[0]:
-            mappings = family._match_reactant_to_template(molecule, template_reactants[0])
-            for mapping in mappings:
-                reactant_structures = [molecule]
-                try:
-                    product_structures = family._generate_product_structures(reactant_structures=reactant_structures,
-                                                                             maps=[mapping],
-                                                                             forward=forward,
-                                                                             relabel_atoms=False,
-                                                                             )
-                except ForbiddenStructureException:
-                    pass
-                else:
-                    if product_structures is not None:
-                        rxn = create_reaction(family=family,
-                                              reactants=reactant_structures,
-                                              products=product_structures,
-                                              forward=forward,
-                                              )
-                        if rxn is not None:
-                            rxn_list.append(rxn)
-
-    # Bimolecular reactants: A + B --> products
-    elif len(reactants) == 2 and len(template_reactants) == 2:
-        molecules_a, molecules_b = reactants[0], reactants[1]
-        for molecule_a in molecules_a:
-            for molecule_b in molecules_b:
-                # Reactants stored as A + B
-                mappings_a = family._match_reactant_to_template(molecule_a, template_reactants[0])
-                mappings_b = family._match_reactant_to_template(molecule_b, template_reactants[1])
-
-                for map_a in mappings_a:
-                    for map_b in mappings_b:
-                        # Reverse the order of reactants in case we have a family with only one reactant tree
-                        # that can produce different products depending on the order of reactants.
-                        reactant_structures = [molecule_b, molecule_a]
-                        try:
-                            product_structures = family._generate_product_structures(reactant_structures=reactant_structures,
-                                                                                     maps=[map_b, map_a],
-                                                                                     forward=forward,
-                                                                                     relabel_atoms=False,
-                                                                                     )
-                        except ForbiddenStructureException:
-                            pass
-                        else:
-                            if product_structures is not None:
-                                rxn = create_reaction(family=family,
-                                                      reactants=reactant_structures,
-                                                      products=product_structures,
-                                                      forward=forward,
-                                                      )
-                                if rxn is not None:
-                                    rxn_list.append(rxn)
-
-                # Only check for swapped reactants if they are different.
-                if reactants[0] is not reactants[1]:
-                    # Reactants stored as B + A.
-                    mappings_a = family._match_reactant_to_template(molecule_a, template_reactants[1])
-                    mappings_b = family._match_reactant_to_template(molecule_b, template_reactants[0])
-                    # Iterate over each pair of matches (A, B).
-                    for map_a in mappings_a:
-                        for map_b in mappings_b:
-                            reactant_structures = [molecule_a, molecule_b]
-                            try:
-                                product_structures = family._generate_product_structures(reactant_structures=reactant_structures,
-                                                                                         maps=[map_a, map_b],
-                                                                                         forward=forward,
-                                                                                         relabel_atoms=False,
-                                                                                         )
-                            except ForbiddenStructureException:
-                                pass
-                            else:
-                                if product_structures is not None:
-                                    rxn = create_reaction(family=family,
-                                                          reactants=reactant_structures,
-                                                          products=product_structures,
-                                                          forward=forward,
-                                                          )
-                                    if rxn is not None:
-                                        rxn_list.append(rxn)
-
-    elif len(reactants) == 3 and len(template_reactants) == 3:
-            molecules_a, molecules_b, molecules_c = reactants[0], reactants[1], reactants[2]
-            for molecule_a in molecules_a:
-                for molecule_b in molecules_b:
-                    for molecule_c in molecules_c:
-                        def generate_products_and_reactions(order):
-                            """
-                            A helper function to generate products and reactions.
-                            If ``order`` is (0, 1, 2), it corresponds to reactants stored as A + B + C, etc.
-                            """
-                            _mappings_a = family._match_reactant_to_template(molecule_a, template_reactants[order[0]])
-                            _mappings_b = family._match_reactant_to_template(molecule_b, template_reactants[order[1]])
-                            _mappings_c = family._match_reactant_to_template(molecule_c, template_reactants[order[2]])
-
-                            # Iterate over each pair of matches (A, B, C)
-                            for _map_a in _mappings_a:
-                                for _map_b in _mappings_b:
-                                    for _map_c in _mappings_c:
-                                        _reactant_structures = [molecule_a, molecule_b, molecule_c]
-                                        _maps = [_map_a, _map_b, _map_c]
-                                        # Reorder reactants in case we have a family with fewer reactant trees than
-                                        # reactants and different reactant orders can produce different products
-                                        _reactant_structures = [_reactant_structures[_i] for _i in order]
-                                        _maps = [_maps[_i] for _i in order]
-                                        try:
-                                            _product_structures = family._generate_product_structures(
-                                                reactant_structures=_reactant_structures,
-                                                maps=_maps,
-                                                forward=forward,
-                                                relabel_atoms=False,
-                                            )
-                                        except ForbiddenStructureException:
-                                            pass
-                                        else:
-                                            if _product_structures is not None:
-                                                _rxn = create_reaction(family=family,
-                                                                       reactants=_reactant_structures,
-                                                                       products=_product_structures,
-                                                                       forward=forward,
-                                                                       )
-                                                if _rxn is not None:
-                                                    rxn_list.append(_rxn)
-
-                        # Reactants stored as A + B + C
-                        generate_products_and_reactions((0, 1, 2))
-                        # Only check for swapped reactants if they are different
-                        if reactants[1] is not reactants[2]:
-                            # Reactants stored as A + C + B
-                            generate_products_and_reactions((0, 2, 1))
-                        if reactants[0] is not reactants[1]:
-                            # Reactants stored as B + A + C
-                            generate_products_and_reactions((1, 0, 2))
-                        if reactants[0] is not reactants[2]:
-                            # Reactants stored as C + B + A
-                            generate_products_and_reactions((2, 1, 0))
-                            if reactants[0] is not reactants[1] and reactants[1] is not reactants[2]:
-                                # Reactants stored as C + A + B
-                                generate_products_and_reactions((2, 0, 1))
-                                # Reactants stored as B + C + A
-                                generate_products_and_reactions((1, 2, 0))
-
-    # If ``products`` is given, remove reactions from the reaction list that don't generate the requested products.
-    if products is not None:
-        rxn_list_0 = rxn_list[:]
-        rxn_list = list()
-        for reaction in rxn_list_0:
-            products_0 = reaction.products if forward else reaction.reactants
-            # Only keep reactions which give the requested products
-            # If prod_resonance=True, then use strict=False to consider all resonance structures
-            if same_species_lists(products, products_0, strict=not prod_resonance, save_order=True):
-                rxn_list.append(reaction)
-
-    for reaction in rxn_list:
-        # # Restore the labeled atoms long enough to generate some metadata
-        # for reactant in reaction.reactants:
-        #     reactant.clear_labeled_atoms()
-        # for label, atom in reaction.labeledAtoms:
-        #     if isinstance(atom, list):
-        #         for atm in atom:
-        #             atm.label = label
-        #     else:
-        #         atom.label = label
-        reaction.reversible = family.reversible
-
-    return rxn_list
-
-
-def create_reaction(family: 'KineticsFamily',
-                    reactants: List[Molecule],
-                    products: List[Molecule] = None,
-                    forward: bool = True,
-                    ) -> Optional[TemplateReaction]:
-    """
-    Create and return a new ``TemplateReaction`` object instance containing the
-    provided ``reactants`` and ``products``.
-
-    This function was inspired by RMG's KineticsFamily._create_reaction().
-    """
-    if same_species_lists(reactants, products, save_order=True):
-        return None
-    reaction = TemplateReaction(
-        reactants=reactants if forward else products,
-        products=products if forward else reactants,
-        degeneracy=1,
-        reversible=family.reversible,
-        family=family.label,
-        is_forward=forward,
-    )
-    reaction.labeledAtoms = {'reactants': list(), 'products': list()}
-    for reactant in reaction.reactants:
-        for label, atom in reactant.get_all_labeled_atoms().items():
-            reaction.labeledAtoms['reactants'].append((label, atom))
-    for product in reaction.products:
-        for label, atom in product.get_all_labeled_atoms().items():
-            reaction.labeledAtoms['products'].append((label, atom))
-    return reaction
