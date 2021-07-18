@@ -411,49 +411,37 @@ class TestMapping(unittest.TestCase):
         self.assertEqual(p_dict['*2'], 2)
         self.assertIn(p_dict['*3'], [3, 4, 5])
 
-        print([atom.radical_electrons for atom in self.rxn_2a.p_species[0].mol.atoms])
         determine_family(self.rxn_2a)
         for atom, symbol in zip(self.rxn_2a.r_species[0].mol.atoms, ['C', 'C', 'C', 'H', 'H', 'H', 'H', 'H', 'H', 'H']):
             self.assertEqual(atom.symbol, symbol)
         self.assertEqual(self.rxn_2a.r_species[0].mol.atoms[0].radical_electrons, 0)
         self.assertEqual(self.rxn_2a.r_species[0].mol.atoms[1].radical_electrons, 1)
         self.assertEqual(self.rxn_2a.r_species[0].mol.atoms[2].radical_electrons, 0)
+        self.assertEqual(self.rxn_2a.p_species[0].mol.atoms[0].radical_electrons, 0)
         self.assertEqual(self.rxn_2a.p_species[0].mol.atoms[1].radical_electrons, 0)
-        print([atom.radical_electrons for atom in self.rxn_2a.p_species[0].mol.atoms])
-        rmg_reactions = self.rxn_2a.family.generate_reactions(reactants=[spc.mol for spc in self.rxn_2a.r_species],
-                                                              products=[spc.mol for spc in self.rxn_2a.p_species],
-                                                              prod_resonance=True,
-                                                              delete_labels=False,
-                                                              )
-        print([atom.radical_electrons for atom in self.rxn_2a.p_species[0].mol.atoms])
-        r_dict, p_dict = mapping.get_atom_indices_of_labeled_atoms_in_an_rmg_reaction(rmg_reaction=rmg_reactions[0],
-                                                                                      arc_reaction=self.rxn_2a)
-        print([atom.radical_electrons for atom in self.rxn_2a.p_species[0].mol.atoms])
-        print(r_dict, p_dict)
-        print([atom.radical_electrons for atom in self.rxn_2a.p_species[0].mol.atoms])
+        self.assertEqual(self.rxn_2a.p_species[0].mol.atoms[2].radical_electrons, 1)
+        rmg_reactions = mapping._get_rmg_reactions_from_arc_reaction(arc_reaction=self.rxn_2a, db=self.rmgdb)
+        r_dict, p_dict = mapping.get_atom_indices_of_labeled_atoms_in_an_rmg_reaction(arc_reaction=self.rxn_2a,
+                                                                                      rmg_reaction=rmg_reactions[0])
         self.assertEqual(r_dict['*1'], 1)
         self.assertIn(r_dict['*2'], [0, 2])
         self.assertIn(r_dict['*3'], [4, 5, 6, 7, 8, 9])
         self.assertEqual(p_dict['*1'], 1)
         self.assertEqual(p_dict['*2'], 2)
         self.assertIn(p_dict['*3'], [3, 6])
-        print([atom.radical_electrons for atom in self.rxn_2a.p_species[0].mol.atoms])
-
-
-
 
         determine_family(self.rxn_2b)
         for atom, symbol in zip(self.rxn_2b.r_species[0].mol.atoms, ['C', 'C', 'H', 'H', 'H', 'H', 'C', 'H', 'H', 'H']):
             self.assertEqual(atom.symbol, symbol)
-        rmg_reactions = self.rxn_2b.family.generate_reactions(reactants=[spc.mol for spc in self.rxn_2b.r_species],
-                                                              products=[spc.mol for spc in self.rxn_2b.p_species],
-                                                              prod_resonance=True,
-                                                              delete_labels=False,
-                                                              )
-        r_dict, p_dict = mapping.get_atom_indices_of_labeled_atoms_in_an_rmg_reaction(rmg_reaction=rmg_reactions[0],
-                                                                                      arc_reaction=self.rxn_2a)
-        self.assertEqual(r_dict, {'*2': 0, '*1': 1, '*3': 3})
-        self.assertEqual(p_dict, {'*2': 2, '*1': 0, '*3': 4})
+        rmg_reactions = mapping._get_rmg_reactions_from_arc_reaction(arc_reaction=self.rxn_2b, db=self.rmgdb)
+        r_dict, p_dict = mapping.get_atom_indices_of_labeled_atoms_in_an_rmg_reaction(arc_reaction=self.rxn_2b,
+                                                                                      rmg_reaction=rmg_reactions[0])
+        self.assertEqual(r_dict['*1'], 1)
+        self.assertIn(r_dict['*2'], [0, 6])
+        self.assertIn(r_dict['*3'], [3, 4, 5, 7, 8, 9])
+        self.assertEqual(p_dict['*1'], 1)
+        self.assertEqual(p_dict['*2'], 2)
+        self.assertIn(p_dict['*3'], [3, 6])
 
         # C3H6O + C4H9O <=> C3H5O + C4H10O
         r_1 = ARCSpecies(label='C3H6O', smiles='CCC=O')
@@ -463,12 +451,7 @@ class TestMapping(unittest.TestCase):
         rxn_1 = ARCReaction(reactants=['C3H6O', 'C4H9O'], products=['C3H5O', 'C4H10O'],
                             r_species=[r_1, r_2], p_species=[p_1, p_2])
         determine_family(rxn_1)
-        rmg_reactions = rxn_1.family.generate_reactions(
-            reactants=[spc.mol for spc in rxn_1.r_species],
-            products=[spc.mol for spc in rxn_1.p_species],
-            prod_resonance=True,
-            delete_labels=False,
-        )
+        rmg_reactions = mapping._get_rmg_reactions_from_arc_reaction(arc_reaction=rxn_1, db=self.rmgdb)
         for rmg_reaction in rmg_reactions:
             r_dict, p_dict = mapping.get_atom_indices_of_labeled_atoms_in_an_rmg_reaction(arc_reaction=rxn_1,
                                                                                           rmg_reaction=rmg_reaction)
@@ -482,12 +465,7 @@ class TestMapping(unittest.TestCase):
         rxn_2 = ARCReaction(reactants=['C3H6O', 'C4H9O'], products=['C3H5O', 'C4H10O'],
                             r_species=[r_1, r_2], p_species=[p_1, p_2])
         determine_family(rxn_2)
-        rmg_reactions = rxn_2.family.generate_reactions(
-            reactants=[spc.mol for spc in rxn_2.r_species],
-            products=[spc.mol for spc in rxn_2.p_species],
-            prod_resonance=True,
-            delete_labels=False,
-        )
+        rmg_reactions = mapping._get_rmg_reactions_from_arc_reaction(arc_reaction=rxn_2, db=self.rmgdb)
         for rmg_reaction in rmg_reactions:
             r_dict, p_dict = mapping.get_atom_indices_of_labeled_atoms_in_an_rmg_reaction(arc_reaction=rxn_2,
                                                                                           rmg_reaction=rmg_reaction)
@@ -496,10 +474,6 @@ class TestMapping(unittest.TestCase):
                 keys = list(d.keys())
                 for label in ['*1', '*2', '*3']:
                     self.assertIn(label, keys)
-
-
-
-
 
         # C3H6O + C4H9O <=> C3H5O + C4H10O
         c3h6o_xyz = {'coords': ((-1.0614352911982476, -0.35086070951203013, 0.3314546936475969),
@@ -562,11 +536,14 @@ class TestMapping(unittest.TestCase):
         r_2 = ARCSpecies(label='C4H9O', smiles='[CH2]C(C)CO', xyz=c4h9o_xyz)
         p_1 = ARCSpecies(label='C3H5O', smiles='C[CH]C=O', xyz=c3h5o_xyz)
         p_2 = ARCSpecies(label='C4H10O', smiles='CC(C)CO', xyz=c4h10o_xyz)
-        rxn = ARCReaction(reactants=['C3H6O', 'C4H9O'], products=['C3H5O', 'C4H10O'],
-                          r_species=[r_1, r_2], p_species=[p_1, p_2])  # todo ?????????????????????????????
-
-
-
+        rxn_3 = ARCReaction(reactants=['C3H6O', 'C4H9O'], products=['C3H5O', 'C4H10O'],
+                            r_species=[r_1, r_2], p_species=[p_1, p_2])
+        determine_family(rxn_3)
+        rmg_reactions = mapping._get_rmg_reactions_from_arc_reaction(arc_reaction=rxn_3, db=self.rmgdb)
+        r_dict, p_dict = mapping.get_atom_indices_of_labeled_atoms_in_an_rmg_reaction(arc_reaction=rxn_3,
+                                                                                      rmg_reaction=rmg_reactions[0])
+        self.assertEqual(r_dict, {'*3': 10, '*1': 1, '*2': 7})
+        self.assertEqual(p_dict, {'*1': 1, '*3': 9, '*2': 16})
 
     def test_map_arc_rmg_species(self):
         """Test the map_arc_rmg_species() function."""
@@ -635,6 +612,7 @@ class TestMapping(unittest.TestCase):
         self.assertEqual(equivalence_map_1, [[0, 2], [1], [4, 5, 6, 7, 8, 9]])
         equivalence_map_2 = mapping.find_equivalent_atoms_in_reactants(arc_reaction=self.rxn_2b)
         self.assertEqual(equivalence_map_2, [[0, 6], [1], [3, 4, 5, 7, 8, 9]])
+
 
 if __name__ == '__main__':
     unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))
