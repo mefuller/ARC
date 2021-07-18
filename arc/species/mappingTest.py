@@ -9,12 +9,11 @@ import unittest
 
 from qcelemental.models.molecule import Molecule as QCMolecule
 
-from rmgpy.data.kinetics.family import TemplateReaction
 from rmgpy.reaction import Reaction
 from rmgpy.species import Species
 
 import arc.species.mapping as mapping
-from arc.rmgdb import determine_family
+from arc.rmgdb import determine_family, load_families_only, make_rmg_database_object
 from arc.species.species import ARCSpecies
 from arc.reaction import ARCReaction
 
@@ -30,6 +29,8 @@ class TestMapping(unittest.TestCase):
         A method that is run before all unit tests in this class.
         """
         cls.maxDiff = None
+        cls.rmgdb = make_rmg_database_object()
+        load_families_only(cls.rmgdb)
         cls.arc_reaction_1 = ARCReaction(label='CH4 + OH <=> CH3 + H2O',
                                          r_species=[ARCSpecies(label='CH4', smiles='C',
                                                                xyz="""C      -0.00000000    0.00000000    0.00000000
@@ -187,8 +188,15 @@ class TestMapping(unittest.TestCase):
         p_1 = ARCSpecies(label='CH3', smiles='[CH3]', xyz=ch3_xyz)
         p_2 = ARCSpecies(label='H2O', smiles='O', xyz=h2o_xyz)
         rxn = ARCReaction(r_species=[r_1, r_2], p_species=[p_1, p_2])
-        atom_map = mapping.map_h_abstraction(rxn)
-        self.assertEqual(atom_map, [0, 6, 3, 1, 2, 4, 5])
+        atom_map = mapping.map_h_abstraction(rxn=rxn, db=self.rmgdb)
+        self.assertEqual(atom_map[0], 0)
+        self.assertIn(atom_map[1], [1, 2, 3, 5, 6])
+        self.assertIn(atom_map[2], [1, 2, 3, 5, 6])
+        self.assertIn(atom_map[3], [1, 2, 3, 5, 6])
+        self.assertIn(atom_map[4], [1, 2, 3, 5, 6])
+        self.assertEqual(atom_map[5], 4)
+        self.assertIn(atom_map[6], [5, 6])
+        self.assertTrue(any(atom_map[r_index] in [5, 6] for r_index in [1, 2, 3, 4]))
 
         # NH2 + N2H4 <=> NH3 + N2H3
         nh2_xyz = """N       0.00022972    0.40059496    0.00000000
@@ -214,13 +222,23 @@ class TestMapping(unittest.TestCase):
         p_1 = ARCSpecies(label='NH3', smiles='N', xyz=nh3_xyz)
         p_2 = ARCSpecies(label='N2H3', smiles='N[NH]', xyz=n2h3_xyz)
         rxn = ARCReaction(r_species=[r_1, r_2], p_species=[p_1, p_2])
-        atom_map = mapping.map_h_abstraction(rxn)
-        self.assertEqual(atom_map, [0, 1, 2, 5, 4, 3, 8, 7, 6])
+        atom_map = mapping.map_h_abstraction(rxn=rxn, db=self.rmgdb)
+        self.assertEqual(atom_map[0], 0)
+        self.assertIn(atom_map[1], [1, 2, 3])
+        self.assertIn(atom_map[2], [1, 2, 3])
+        self.assertIn(atom_map[3], [4, 5])
+        self.assertIn(atom_map[4], [4, 5])
+        self.assertTrue(any(atom_map[r_index] in [1, 2, 3] for r_index in [5, 6, 7, 8]))
 
         # NH2 + N2H4 <=> N2H3 + NH3
         rxn = ARCReaction(r_species=[r_1, r_2], p_species=[p_2, p_1])
-        atom_map = mapping.map_h_abstraction(rxn)
-        self.assertEqual(atom_map, [5, 6, 7, 1, 0, 8, 4, 3, 2])
+        atom_map = mapping.map_h_abstraction(rxn=rxn, db=self.rmgdb)
+        self.assertEqual(atom_map[0], 5)
+        self.assertIn(atom_map[1], [6, 7, 8])
+        self.assertIn(atom_map[2], [6, 7, 8])
+        self.assertIn(atom_map[3], [0, 1])
+        self.assertIn(atom_map[4], [0, 1])
+        self.assertTrue(any(atom_map[r_index] in [6, 7, 8] for r_index in [5, 6, 7, 8]))
 
         # C3H6O + C4H9O <=> C3H5O + C4H10O
         c3h6o_xyz = {'coords': ((-1.0614352911982476, -0.35086070951203013, 0.3314546936475969),
@@ -285,9 +303,8 @@ class TestMapping(unittest.TestCase):
         p_2 = ARCSpecies(label='C4H10O', smiles='CC(C)CO', xyz=c4h10o_xyz)
         rxn = ARCReaction(reactants=['C3H6O', 'C4H9O'], products=['C3H5O', 'C4H10O'],
                           r_species=[r_1, r_2], p_species=[p_1, p_2])
-        atom_map = mapping.map_h_abstraction(rxn)
-        print(atom_map)
-        raise
+        atom_map = mapping.map_h_abstraction(rxn=rxn, db=self.rmgdb)
+        self.assertEqual(atom_map, [0, 1, 3, 4, 5, 7, 6, 16, 2, 8, 9, 15, 14, 10, 11, 12, 13, 18, 21, 20, 22, 19, 17, 23])
 
     def test_create_qc_mol(self):
         """Test the create_qc_mol() function."""
@@ -362,7 +379,7 @@ class TestMapping(unittest.TestCase):
     def test_get_atom_indices_of_labeled_atoms_in_an_rmg_reaction(self):
         """Test the get_atom_indices_of_labeled_atoms_in_an_rmg_reaction() function."""
         determine_family(self.arc_reaction_1)
-        rmg_reactions = mapping._get_rmg_reactions_from_arc_reaction(self.arc_reaction_1)
+        rmg_reactions = mapping._get_rmg_reactions_from_arc_reaction(arc_reaction=self.arc_reaction_1, db=self.rmgdb)
         r_dict, p_dict = mapping.get_atom_indices_of_labeled_atoms_in_an_rmg_reaction(arc_reaction=self.arc_reaction_1,
                                                                                       rmg_reaction=rmg_reactions[0])
         self.assertEqual(r_dict['*1'], 0)
@@ -373,7 +390,7 @@ class TestMapping(unittest.TestCase):
         self.assertEqual(p_dict['*3'], 4)
 
         determine_family(self.arc_reaction_2)
-        rmg_reactions = mapping._get_rmg_reactions_from_arc_reaction(self.arc_reaction_2)
+        rmg_reactions = mapping._get_rmg_reactions_from_arc_reaction(arc_reaction=self.arc_reaction_2, db=self.rmgdb)
         r_dict, p_dict = mapping.get_atom_indices_of_labeled_atoms_in_an_rmg_reaction(arc_reaction=self.arc_reaction_2,
                                                                                       rmg_reaction=rmg_reactions[0])
         self.assertIn(r_dict['*1'], [0, 2])
@@ -384,7 +401,7 @@ class TestMapping(unittest.TestCase):
         self.assertEqual(p_dict['*3'], 10)
 
         determine_family(self.arc_reaction_4)
-        rmg_reactions = mapping._get_rmg_reactions_from_arc_reaction(self.arc_reaction_4)
+        rmg_reactions = mapping._get_rmg_reactions_from_arc_reaction(arc_reaction=self.arc_reaction_4, db=self.rmgdb)
         r_dict, p_dict = mapping.get_atom_indices_of_labeled_atoms_in_an_rmg_reaction(arc_reaction=self.arc_reaction_4,
                                                                                       rmg_reaction=rmg_reactions[0])
         self.assertEqual(r_dict['*1'], 0)
@@ -417,9 +434,9 @@ class TestMapping(unittest.TestCase):
         self.assertEqual(r_dict['*1'], 1)
         self.assertIn(r_dict['*2'], [0, 2])
         self.assertIn(r_dict['*3'], [4, 5, 6, 7, 8, 9])
-        # self.assertEqual(p_dict['*1'], 1)
-        # self.assertEqual(p_dict['*2'], 2)
-        # self.assertIn(p_dict['*3'], [3, 6])
+        self.assertEqual(p_dict['*1'], 1)
+        self.assertEqual(p_dict['*2'], 2)
+        self.assertIn(p_dict['*3'], [3, 6])
         print([atom.radical_electrons for atom in self.rxn_2a.p_species[0].mol.atoms])
 
 
@@ -553,10 +570,13 @@ class TestMapping(unittest.TestCase):
 
     def test_map_arc_rmg_species(self):
         """Test the map_arc_rmg_species() function."""
-
-
-        #     todo: test with an isomerization rxn (self.arc_reactio4) see that two {0:0} dicts are returned
-
+        r_map, p_map = mapping.map_arc_rmg_species(arc_reaction=ARCReaction(r_species=[ARCSpecies(label='CCjC', smiles='C[CH]C')],
+                                                                            p_species=[ARCSpecies(label='CjCC', smiles='[CH2]CC')]),
+                                                   rmg_reaction=Reaction(reactants=[Species(smiles='C[CH]C')],
+                                                                         products=[Species(smiles='[CH2]CC')]),
+                                                   concatenate=False)
+        self.assertEqual(r_map, {0: 0})
+        self.assertEqual(p_map, {0: 0})
 
         r_map, p_map = mapping.map_arc_rmg_species(arc_reaction=ARCReaction(r_species=[ARCSpecies(label='CCjC', smiles='C[CH]C')],
                                                                             p_species=[ARCSpecies(label='CjCC', smiles='[CH2]CC')]),
@@ -610,13 +630,11 @@ class TestMapping(unittest.TestCase):
 
     def test_find_equivalent_atoms_in_reactants_and_products(self):
         """Test the find_equivalent_atoms_in_reactants_and_products() function"""
-        # Calling find_equivalent_atoms_in_reactants() also determined the family, important for additional unit tests.
         equivalence_map_1 = mapping.find_equivalent_atoms_in_reactants(arc_reaction=self.rxn_2a)
         # Both C 0 and C 2 are equivalent, C 1 is unique, and H 4-9 are equivalent as well.
         self.assertEqual(equivalence_map_1, [[0, 2], [1], [4, 5, 6, 7, 8, 9]])
         equivalence_map_2 = mapping.find_equivalent_atoms_in_reactants(arc_reaction=self.rxn_2b)
         self.assertEqual(equivalence_map_2, [[0, 6], [1], [3, 4, 5, 7, 8, 9]])
-
 
 if __name__ == '__main__':
     unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))
