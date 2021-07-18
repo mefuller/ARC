@@ -349,4 +349,3 @@ def _get_rmg_reactions_from_arc_reaction(arc_reaction: 'ARCReaction',
                 mapped_mols.append(rmg_mol)
         rmg_reaction.reactants, rmg_reaction.products = mapped_rmg_reactants, mapped_rmg_products
     return rmg_reactions
-
