@@ -23,12 +23,76 @@ if TYPE_CHECKING:
     from arc.reaction import ARCReaction
 
 
-def map_h_abstraction(rxn: 'ARCReaction',
-                      db: Optional['RMGDatabase'] = None,
-                      ) -> Optional[List[int]]:
+def map_reaction(rxn: 'ARCReaction',
+                 db: Optional['RMGDatabase'] = None,
+                 ) -> Optional[List[int]]:
     """
-    Map a hydrogen abstraction reaction.
-    This function does not populate the rxn.family attribute, but does checks and expects it to be populated.
+    Map a reaction.
+
+    Args:
+        rxn (ARCReaction): An ARCReaction object instance.
+        db (RMGDatabase, optional): The RMG database instance.
+
+    Returns:
+        Optional[List[int]]:
+            Entry indices are running atom indices of the reactants, entry values are running atom indices of the products.
+    """
+    if rxn.family is None:
+        rmgdb.determine_family(reaction=rxn, db=db)
+    if rxn.family is None:
+        return None
+
+    fam_func_dict = {'H_Abstraction': map_h_abstraction,
+                     'intra_H_migration': map_intra_h_migration,
+                     }
+
+    map_func = fam_func_dict.get(rxn.family,
+                                 default=map_general_isomerization_rxn if rxn.is_isomerization() else map_general_rxn)
+
+    return map_func(rxn, db)
+
+
+def map_general_rxn(rxn: 'ARCReaction',
+                    db: Optional['RMGDatabase'] = None,
+                    ) -> Optional[List[int]]:
+    """
+    Map a general reaction (one that was not categorized into a reaction family by RMG).
+
+    Args:
+        rxn (ARCReaction): An ARCReaction object instance.
+        db (RMGDatabase, optional): Not used, kept to retain the same function inputs to facilitate a generic use.
+
+    Returns:
+        Optional[List[int]]:
+            Entry indices are running atom indices of the reactants, entry values are running atom indices of the products.
+    """
+    # Todo !!!!!!!!!!!
+
+
+def map_general_isomerization_rxn(rxn: 'ARCReaction',
+                                  db: Optional['RMGDatabase'] = None,
+                                  ) -> Optional[List[int]]:
+    """
+    Map a general reaction (one that was not categorized into a reaction family by RMG).
+
+    Args:
+        rxn (ARCReaction): An ARCReaction object instance.
+        db (RMGDatabase, optional): Not used, kept to retain the same function inputs to facilitate a generic use.
+
+    Returns:
+        Optional[List[int]]:
+            Entry indices are atom indices of the reactants, entry values are atom indices of the products.
+    """
+    return map_two_species(rxn.r_species[0], rxn.p_species[0], map_type='list')
+
+
+def map_intra_h_migration(rxn: 'ARCReaction',
+                          db: Optional['RMGDatabase'] = None,
+                          ) -> Optional[List[int]]:
+    """
+    Map an intra hydrogen migration reaction.
+    Strategy: remove the *3 H atom from both the reactant and product to have the same backbone.
+    Map the backbone and add the (known) *3 H atom.
 
     Args:
         rxn (ARCReaction): An ARCReaction object instance that belongs to the RMG H_Abstraction reaction family.
@@ -36,7 +100,60 @@ def map_h_abstraction(rxn: 'ARCReaction',
 
     Returns:
         Optional[List[int]]:
-            Entry values are atom indices in the products mapped to the respective reactant atom (entry index).
+            Entry indices are running atom indices of the reactants, entry values are running atom indices of the products.
+    """
+    if rxn.family is None:
+        rmgdb.determine_family(reaction=rxn, db=db)
+    if rxn.family is None:
+        return None
+    if rxn.family.label != 'intra_H_migration':
+        raise ValueError(f'Only intra_H_migration reactions are supported by this function, got a {rxn.family} reaction.')
+
+    rmg_reactions = _get_rmg_reactions_from_arc_reaction(arc_reaction=rxn)
+    r_label_dict, p_label_dict = get_atom_indices_of_labeled_atoms_in_an_rmg_reaction(arc_reaction=rxn,
+                                                                                      rmg_reaction=rmg_reactions[0])
+
+    r_h_index = r_label_dict['*3']
+    p_h_index = p_label_dict['*3']
+
+    spc_r = ARCSpecies(label='R',
+                       mol=rxn.r_species[0].mol,
+                       xyz=rxn.r_species[0].get_xyz(),
+                       bdes=[(r_label_dict['*2'], r_label_dict['*3'])],  # Mark the R(*2)-H(*3) bond for scission.
+                       )
+    spc_r.final_xyz = spc_r.get_xyz()  # Scissors require the .final_xyz attribute to be populated.
+    spc_r_dot = [spc for spc in spc_r.scissors() if spc.label != 'H'][0]
+    spc_p = ARCSpecies(label='P',
+                       mol=rxn.p_species[0].mol,
+                       xyz=rxn.p_species[0].get_xyz(),
+                       bdes=[(p_label_dict['*1'], p_label_dict['*3'])],  # Mark the R(*1)-H(*3) bond for scission.
+                       )
+    spc_p.final_xyz = spc_p.get_xyz()  # Scissors require the .final_xyz attribute to be populated.
+    spc_p_dot = [spc for spc in spc_p.scissors() if spc.label != 'H'][0]
+    map_ = map_two_species(spc_r_dot, spc_p_dot)
+
+    new_map = list()
+    for i, entry in enumerate(map_):
+        if i == r_h_index:
+            new_map.append(p_h_index)
+        new_map.append(entry)
+    return new_map
+
+
+def map_h_abstraction(rxn: 'ARCReaction',
+                      db: Optional['RMGDatabase'] = None,
+                      ) -> Optional[List[int]]:
+    """
+    Map a hydrogen abstraction reaction.
+    Strategy: Map R(*1)-H(*2) to R(*1)j and map R*3)j to R(*3)-H(*2). Use scissors to map the backbone.
+
+    Args:
+        rxn (ARCReaction): An ARCReaction object instance that belongs to the RMG H_Abstraction reaction family.
+        db (RMGDatabase, optional): The RMG database instance.
+
+    Returns:
+        Optional[List[int]]:
+            Entry indices are running atom indices of the reactants, entry values are running atom indices of the products.
     """
     if rxn.family is None:
         rmgdb.determine_family(reaction=rxn, db=db)
@@ -46,11 +163,11 @@ def map_h_abstraction(rxn: 'ARCReaction',
         raise ValueError(f'Only H_Abstraction reactions are supported by this function, got a {rxn.family} reaction.')
 
     rmg_reactions = _get_rmg_reactions_from_arc_reaction(arc_reaction=rxn)
-    r_dict, p_dict = get_atom_indices_of_labeled_atoms_in_an_rmg_reaction(arc_reaction=rxn,
-                                                                          rmg_reaction=rmg_reactions[0])
-
-    r_h_index = r_dict['*2']
-    p_h_index = p_dict['*2']
+    r_label_dict, p_label_dict = get_atom_indices_of_labeled_atoms_in_an_rmg_reaction(arc_reaction=rxn,
+                                                                                      rmg_reaction=rmg_reactions[0])
+    print(r_label_dict, p_label_dict)
+    r_h_index = r_label_dict['*2']
+    p_h_index = p_label_dict['*2']
     len_r1, len_p1 = rxn.r_species[0].number_of_atoms, rxn.p_species[0].number_of_atoms
     r1_h2 = 0 if r_h_index < len_r1 else 1  # Identify R(*1)-H(*2), it's either reactant 0 or reactant 1.
     r3 = 0 if r1_h2 else 1  # Identify R(*3) in the reactants.
@@ -60,16 +177,16 @@ def map_h_abstraction(rxn: 'ARCReaction',
     spc_r1_h2 = ARCSpecies(label='R1-H2',
                            mol=rxn.r_species[r1_h2].mol,
                            xyz=rxn.r_species[r1_h2].get_xyz(),
-                           bdes=[(r_dict['*1'] - r1_h2 * len_r1 + 1,
-                                  r_dict['*2'] - r1_h2 * len_r1 + 1)],  # Mark the R(*1)-H(*2) bond for scission.
+                           bdes=[(r_label_dict['*1'] - r1_h2 * len_r1 + 1,
+                                  r_label_dict['*2'] - r1_h2 * len_r1 + 1)],  # Mark the R(*1)-H(*2) bond for scission.
                            )
     spc_r1_h2.final_xyz = spc_r1_h2.get_xyz()  # Scissors require the .final_xyz attribute to be populated.
     spc_r1_h2_cut = [spc for spc in spc_r1_h2.scissors() if spc.label != 'H'][0]
     spc_r3_h2 = ARCSpecies(label='R3-H2',
                            mol=rxn.p_species[r3_h2].mol,
                            xyz=rxn.p_species[r3_h2].get_xyz(),
-                           bdes=[(p_dict['*3'] - r3_h2 * len_p1 + 1,
-                                  p_dict['*2'] - r3_h2 * len_p1 + 1)],  # Mark the R(*3)-H(*2) bond for scission.
+                           bdes=[(p_label_dict['*3'] - r3_h2 * len_p1 + 1,
+                                  p_label_dict['*2'] - r3_h2 * len_p1 + 1)],  # Mark the R(*3)-H(*2) bond for scission.
                            )
     spc_r3_h2.final_xyz = spc_r3_h2.get_xyz()  # Scissors require the .final_xyz attribute to be populated.
     spc_r3_h2_cut = [spc for spc in spc_r3_h2.scissors() if spc.label != 'H'][0]
@@ -111,8 +228,8 @@ def map_two_species(spc_1: Union[ARCSpecies, Species, Molecule],
     Returns:
         Optional[Union[List[int], Dict[int, int]]]:
             The atom map. By default, a list is returned.
-            If the map is of list type, entry indices are atom indices of ``spc_1``, entry values are atom indices of ``spc_2``.
-            If the map is of dict type, keys are atom indices of ``spc_1``, values are atom indices of ``spc_2``.
+            If the map is of ``list`` type, entry indices are atom indices of ``spc_1``, entry values are atom indices of ``spc_2``.
+            If the map is of ``dict`` type, keys are atom indices of ``spc_1``, values are atom indices of ``spc_2``.
     """
     qcmol_1 = create_qc_mol(species=spc_1.copy())
     qcmol_2 = create_qc_mol(species=spc_2.copy())
@@ -121,8 +238,8 @@ def map_two_species(spc_1: Union[ARCSpecies, Species, Molecule],
     if len(qcmol_1.symbols) != len(qcmol_2.symbols):
         raise ValueError(f'The number of atoms in spc1 ({spc_1.number_of_atoms}) must be equal '
                          f'to the number of atoms in spc1 ({spc_2.number_of_atoms}).')
-    data = qcmol_2.align(ref_mol=qcmol_1, verbose=0)[1]  # not problematic
-    atom_map = data['mill'].atommap.tolist()  # not problematic
+    data = qcmol_2.align(ref_mol=qcmol_1, verbose=0)[1]
+    atom_map = data['mill'].atommap.tolist()
     if map_type == 'dict':  # ** Todo: test
         atom_map = {key: val for key, val in enumerate(atom_map)}
     return atom_map
@@ -197,7 +314,7 @@ def get_atom_indices_of_labeled_atoms_in_an_rmg_reaction(arc_reaction: 'ARCReact
             The tuple entries relate to reactants and products.
             Keys are labels (e.g., '*1'), values are corresponding 0-indices atoms.
     """
-    if not hasattr(rmg_reaction, 'labeled_reactant_atoms') or not len(rmg_reaction.labeled_reactant_atoms):
+    if not hasattr(rmg_reaction, 'labeled_atoms') or not rmg_reaction.labeled_atoms:
         return None, None
 
     for mol in rmg_reaction.reactants + rmg_reaction.products:
@@ -214,14 +331,14 @@ def get_atom_indices_of_labeled_atoms_in_an_rmg_reaction(arc_reaction: 'ARCReact
     for i in rmg_product_order:
         product_atoms.extend([atom for atom in rmg_reaction.products[i].atoms])
 
-    for labeled_atom_tuples, atom_list, index_dict in zip([rmg_reaction.labeled_reactant_atoms,
-                                                           rmg_reaction.labeled_product_atoms],
+    for labeled_atom_dict, atom_list, index_dict in zip([rmg_reaction.labeled_atoms['reactants'],
+                                                           rmg_reaction.labeled_atoms['products']],
                                                           [reactant_atoms, product_atoms],
                                                           [reactant_index_dict, product_index_dict]):
-        for labeled_atom_tuple in labeled_atom_tuples:
-            for i, atom in enumerate(atom_list):
-                if atom.id == labeled_atom_tuple[1].id:
-                    index_dict[labeled_atom_tuple[0]] = i
+        for label, atom_1 in labeled_atom_dict.items():
+            for i, atom_2 in enumerate(atom_list):
+                if atom_1.id == atom_2.id:
+                    index_dict[label] = i
                     break
     return reactant_index_dict, product_index_dict
 
