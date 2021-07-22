@@ -165,6 +165,20 @@ class TestMapping(unittest.TestCase):
         cls.rxn_2b = ARCReaction(r_species=[cls.reactant_2b], p_species=[cls.product_2])
         cls.rxn_2b.ts_species = cls.ts_spc_2
 
+    def test_map_intra_h_migration(self):
+        """Test the map_intra_h_migration() function."""
+        atom_map = mapping.map_intra_h_migration(self.arc_reaction_4)
+        print(atom_map)
+        self.assertEqual(atom_map[0], 0)
+        self.assertEqual(atom_map[1], 1)
+        self.assertEqual(atom_map[2], 2)
+        self.assertIn(atom_map[3], [3, 4, 5])
+        self.assertIn(atom_map[4], [3, 4, 5])
+        self.assertIn(atom_map[5], [6, 7])
+        self.assertIn(atom_map[6], [6, 7])
+        self.assertIn(atom_map[7], [3, 4, 5, 8])
+        self.assertIn(atom_map[8], [3, 4, 5, 8])
+
     def test_map_h_abstraction(self):
         """Test the map_h_abstraction() function."""
 
