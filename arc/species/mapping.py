@@ -119,14 +119,14 @@ def map_intra_h_migration(rxn: 'ARCReaction',
     spc_r = ARCSpecies(label='R',
                        mol=rxn.r_species[0].mol,
                        xyz=rxn.r_species[0].get_xyz(),
-                       bdes=[(r_label_dict['*2'], r_label_dict['*3'])],  # Mark the R(*2)-H(*3) bond for scission.
+                       bdes=[(r_label_dict['*2'] + 1, r_label_dict['*3'] + 1)],  # Mark the R(*2)-H(*3) bond for scission.
                        )
     spc_r.final_xyz = spc_r.get_xyz()  # Scissors require the .final_xyz attribute to be populated.
     spc_r_dot = [spc for spc in spc_r.scissors() if spc.label != 'H'][0]
     spc_p = ARCSpecies(label='P',
                        mol=rxn.p_species[0].mol,
                        xyz=rxn.p_species[0].get_xyz(),
-                       bdes=[(p_label_dict['*1'], p_label_dict['*3'])],  # Mark the R(*1)-H(*3) bond for scission.
+                       bdes=[(p_label_dict['*1'] + 1, p_label_dict['*3'] + 1)],  # Mark the R(*1)-H(*3) bond for scission.
                        )
     spc_p.final_xyz = spc_p.get_xyz()  # Scissors require the .final_xyz attribute to be populated.
     spc_p_dot = [spc for spc in spc_p.scissors() if spc.label != 'H'][0]
@@ -136,7 +136,7 @@ def map_intra_h_migration(rxn: 'ARCReaction',
     for i, entry in enumerate(map_):
         if i == r_h_index:
             new_map.append(p_h_index)
-        new_map.append(entry)
+        new_map.append(entry if entry < p_h_index else entry + 1)
     return new_map
 
 
