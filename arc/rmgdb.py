@@ -164,7 +164,7 @@ def load_rmg_database(rmgdb: RMGDatabase,
 
 
 def determine_family(reaction: 'ARCReaction',
-                     db: Optional['RMGDatabase'] = None,
+                     db: Optional[RMGDatabase] = None,
                      ):
     """
     Determine the RMG reaction family for an ARC reaction.
@@ -239,14 +239,18 @@ def loop_families(rmgdb: RMGDatabase,
         if len(reaction.reactants) == 1:
             for reactant0 in reaction.reactants[0].molecule:
                 fam_rxn = family.generate_reactions(reactants=[reactant0],
-                                                    products=reaction.products)
+                                                    products=reaction.products,
+                                                    delete_labels=False,
+                                                    )
                 if fam_rxn:
                     family_reactions_by_r.extend(fam_rxn)
         elif len(reaction.reactants) == 2:
             for reactant0 in reaction.reactants[0].molecule:
                 for reactant1 in reaction.reactants[1].molecule:
                     fam_rxn = family.generate_reactions(reactants=[reactant0, reactant1],
-                                                        products=reaction.products)
+                                                        products=reaction.products,
+                                                        delete_labels=False,
+                                                        )
                     if fam_rxn:
                         family_reactions_by_r.extend(fam_rxn)
         elif len(reaction.reactants) == 3:
@@ -254,7 +258,9 @@ def loop_families(rmgdb: RMGDatabase,
                 for reactant1 in reaction.reactants[1].molecule:
                     for reactant2 in reaction.reactants[2].molecule:
                         fam_rxn = family.generate_reactions(reactants=[reactant0, reactant1, reactant2],
-                                                            products=reaction.products)
+                                                            products=reaction.products,
+                                                            delete_labels=False,
+                                                            )
                         if fam_rxn:
                             family_reactions_by_r.extend(fam_rxn)
 
