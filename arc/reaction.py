@@ -5,8 +5,6 @@ A module for representing a reaction.
 from typing import TYPE_CHECKING, List, Optional, Tuple, Union
 
 import numpy as np
-from qcelemental.exceptions import ValidationError
-from qcelemental.models.molecule import Molecule as QCMolecule
 
 from rmgpy.reaction import Reaction
 from rmgpy.species import Species
@@ -15,6 +13,7 @@ import arc.rmgdb as rmgdb
 from arc.common import get_logger
 from arc.exceptions import ReactionError, InputError
 from arc.species.converter import check_xyz_dict, str_to_xyz, xyz_to_str
+from arc.species.mapping import map_reaction
 from arc.species.species import ARCSpecies, check_atom_balance, check_label
 
 if TYPE_CHECKING:
@@ -150,7 +149,7 @@ class ARCReaction(object):
         """The reactants to products atom map"""
         if self._atom_map is None \
                 and all(species.get_xyz(generate=False) is not None for species in self.r_species + self.p_species):
-            self._atom_map = self.get_atom_map(direction=1)
+            self._atom_map = map_reaction(rxn=self)
         return self._atom_map
 
     @atom_map.setter
@@ -294,6 +293,15 @@ class ARCReaction(object):
         """
         return True if len(self.r_species) == 1 and len(self.p_species) == 1 else False
 
+    def is_isomerization(self):
+        """
+        Determine whether this is an isomerization reaction.
+
+        Returns:
+            bool: Whether this is an isomerization reaction.
+        """
+        return True if len(self.r_species) == 1 and len(self.p_species) == 1 else False
+
     def set_label_reactants_products(self, species_list: Optional[List[ARCSpecies]] = None):
         """A helper function for settings the label, reactants, and products attributes for a Reaction"""
         # First make sure that reactants and products labels are defined (most often used).
@@ -372,14 +380,14 @@ class ARCReaction(object):
                 if len(self.reactants) > i:
                     label = self.reactants[i]
                 else:
-                    label = rmg_reactant.label or rmg_reactant.molecule[0].to_smiles()
+                    label = rmg_reactant.label or rmg_reactant.molecule[0].copy(deep=True).to_smiles()
                 label = check_label(label)[0]
                 self.r_species.append(ARCSpecies(label=label, mol=rmg_reactant.molecule[0]))
             for i, rmg_product in enumerate(self.rmg_reaction.products):
                 if len(self.products) > i:
                     label = self.products[i]
                 else:
-                    label = rmg_product.label or rmg_product.molecule[0].to_smiles()
+                    label = rmg_product.label or rmg_product.molecule[0].copy(deep=True).to_smiles()
                 label = check_label(label)[0]
                 self.p_species.append(ARCSpecies(label=label, mol=rmg_product.molecule[0]))
 
@@ -461,7 +469,7 @@ class ARCReaction(object):
         """
         Determine the RMG family.
         Populates the .family, and .family_own_reverse attributes.
-        A wrapper for rmgdb determine_reaction_family() function.
+        A wrapper for the rmgdb determine_reaction_family() function.
 
         Args:
             rmg_database (RMGDatabase): The RMGDatabase object instance.
@@ -691,55 +699,7 @@ class ARCReaction(object):
                                 self.get_species_count(species=p_spc, well=1))
         return reactants, products
 
-    # todo: sort the atom map methods + tests
-
-    def get_atom_map(self,
-                     verbose: int = 0,
-                     direction: int = 1,
-                     ) -> Optional[List[int]]:
-        """
-        Get the atom mapping of the reactant atoms to the product atoms.
-        I.e., an atom map of [0, 2, 1] means that reactant atom 0 matches product atom 0,
-        reactant atom 1 matches product atom 2, and reactant atom 2 matches product atom 1.
-        All indices are 0-indexed.
-
-        Employs the Kabsch, Hungarian, and Uno algorithms to exhaustively locate
-        the best alignment for non-oriented, non-ordered 3D structures.
-
-        Args:
-            verbose (int, optional): The verbosity level (0-4).
-            direction (int, optional): Whether to map reactants to products (1) or products to reactants (-1).
-
-        Returns: Optional[List[int]]
-            The atom map, entry indices correspond to reactant indices, entry values correspond to product indices.
-        """
-        atom_map = None
-        try:
-            reactants = QCMolecule.from_data(
-                data='\n--\n'.join(xyz_to_str(reactant.get_xyz()) for reactant in self.r_species),
-                molecular_charge=self.charge,
-                molecular_multiplicity=self.multiplicity,
-                fragment_charges=[reactant.charge for reactant in self.r_species],
-                fragment_multiplicities=[reactant.multiplicity for reactant in self.r_species],
-                orient=False,
-            )
-            products = QCMolecule.from_data(
-                data='\n--\n'.join(xyz_to_str(product.get_xyz()) for product in self.p_species),
-                molecular_charge=self.charge,
-                molecular_multiplicity=self.multiplicity,
-                fragment_charges=[product.charge for product in self.p_species],
-                fragment_multiplicities=[product.multiplicity for product in self.p_species],
-                orient=False,
-            )
-        except ValidationError as e:
-            logger.warning(f'Could not get atom map for {self}, got:\n{e}')
-        else:
-            if direction != -1:
-                data = products.align(ref_mol=reactants, verbose=verbose)[1]
-            else:
-                data = reactants.align(ref_mol=products, verbose=verbose)[1]
-            atom_map = data['mill'].atommap.tolist()
-        return atom_map
+    # Todo: sort the atom map methods + tests
 
     def get_mapped_product_xyz(self):
         """

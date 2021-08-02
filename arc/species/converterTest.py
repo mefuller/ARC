@@ -890,6 +890,20 @@ X      -0.52389885    0.72654241   -1.86620254"""
                                    (0.035099262340543336, 0.232696924337356, 4.0056654348243015))}
         self.assertEqual(converter.remove_dummies(xyz), expected_xyz)
 
+    # def test_zmat_from_xyz(self):
+    #     """Test the zmat_from_xyz() function."""
+    #     ccooh_xyz = {'symbols': ('C', 'C', 'O', 'O', 'H', 'H', 'H', 'H', 'H', 'H'),
+    #                  'isotopes': (12, 12, 16, 16, 1, 1, 1, 1, 1, 1),
+    #                  'coords': ((-1.34047, -0.03188, 0.16703), (0.07658, -0.19298, -0.34334),
+    #                             (0.27374, 0.70670, -1.43275), (1.64704, 0.49781, -1.86879),
+    #                             (-2.06314, -0.24194, -0.62839), (-1.53242, -0.70687, 1.00574),
+    #                             (-1.51781, 0.99794, 0.49424), (0.24018, -1.21958, -0.68782),
+    #                             (0.79344, 0.03863, 0.45152), (1.95991, 1.39912, -1.67215))}
+    #     zmat = converter.zmat_from_xyz(xyz=ccooh_xyz)
+    #     expected_zmat = {}
+    #     print(zmat)
+    #     self.assertEqual(zmat, expected_zmat)
+
     def test_zmat_to_xyz(self):
         """Check refolding a zmat into cartesian coordinates"""
         co3 = {'symbols': ('O', 'O', 'O'), 'isotopes': (16, 16, 16),
@@ -3257,6 +3271,20 @@ H      -4.07566100   -0.52115800    0.00003300"""
                                                           [-0.6300326, -0.6300326, 0.6300326],
                                                           [-0.6300326, 0.6300326, -0.6300326],
                                                           [0.6300326, -0.6300326, -0.6300326]])
+
+    def test_translate_xyz(self):
+        """Test the translate_xyz() function."""
+        self.assertEqual(self.xyz1['dict'], converter.translate_xyz(xyz_dict=self.xyz1['dict'], translation=(0, 0, 0)))
+
+        expected_xyz = {'symbols': ('C', 'H', 'H', 'H', 'H'),
+                        'isotopes': (12, 1, 1, 1, 1),
+                        'coords': ((1.0, 0.0, 3.0),
+                                   (1.6300326, 0.6300326, 3.6300326),
+                                   (0.36996739999999995, -0.6300326, 3.6300326),
+                                   (0.36996739999999995, 0.6300326, 2.3699674),
+                                   (1.6300326, -0.6300326, 2.3699674)),
+                        }
+        self.assertEqual(expected_xyz, converter.translate_xyz(xyz_dict=self.xyz1['dict'], translation=(1, 0, 3)))
 
     def check_atom_connectivity_in_rd_mol_block(self, rmg_mol, rd_mol_block):
         """A helper function for testing"""

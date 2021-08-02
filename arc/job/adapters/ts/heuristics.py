@@ -12,7 +12,7 @@ Todo:
 import datetime
 import itertools
 import os
-from typing import TYPE_CHECKING, List, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Dict, List, Optional, Tuple, Union
 
 from rmgpy.exceptions import ActionError
 from rmgpy.reaction import Reaction
@@ -345,6 +345,8 @@ def combine_coordinates_with_redundant_atoms(xyz1,
                                              d2=None,
                                              d3=None,
                                              keep_dummy=False,
+                                             reactants_reversed=False,
+                                             atom_map: Optional[List[int]] = None,
                                              ) -> dict:
     """
     Combine two coordinates that share an atom.
@@ -402,6 +404,8 @@ def combine_coordinates_with_redundant_atoms(xyz1,
         d3 (float, optional): The dihedral angel (in degrees) between atoms D-B-H-A (dihedral D-B-H-A).
                               This parameter is mandatory only if atom D exists (i.e., if ``mol2`` has 3 or more atoms).
         keep_dummy (bool, optional): Whether to keep a dummy atom if added, ``True`` to keep, ``False`` by default.
+        reactants_reversed (bool): Whether the reactants were reversed when generating the TS guess.
+        atom_map (List[int], optional): The ARCReaction atom_map.
 
     Returns:
         dict: The combined Cartesian coordinates.
@@ -442,6 +446,12 @@ def combine_coordinates_with_redundant_atoms(xyz1,
 
     zmat1, zmat2 = generate_the_two_constrained_zmats(xyz1, xyz2, mol1, mol2, h1, h2, a, b, d)
 
+    if atom_map is not None:
+        # Re-map zmat2, which is based on a product structure, back to the reactant atoms (expect for the redundant H).
+        atom_map = atom_map[:len(zmat2['symbols']) - 1] if reactants_reversed else atom_map[len(zmat1['symbols']):]
+        for reactant_index, product_index in enumerate(atom_map):
+            zmat2['map'][key_by_val(dictionary=zmat2['map'], value=product_index)] = reactant_index
+
     # Stretch the A--H1 and B--H2 bonds.
     stretch_zmat_bond(zmat=zmat1, indices=(h1, a), stretch=r1_stretch)
     stretch_zmat_bond(zmat=zmat2, indices=(b, h2), stretch=r2_stretch)
@@ -462,18 +472,15 @@ def combine_coordinates_with_redundant_atoms(xyz1,
                                                                    c=c,
                                                                    d2=d2,
                                                                    d3=d3,
+                                                                   reactants_reversed=reactants_reversed,
                                                                    )
 
     combined_zmat = dict()
-    combined_zmat['symbols'] = tuple(zmat1['symbols'] + zmat2['symbols'][1:])
-    # print(f"zmat1 has {len(zmat1['symbols'])} symbols, zmat2 has {len(zmat2['symbols'])} symbols, combined has "
-    #       f"{len(combined_zmat['symbols'])} symbols")
+    # Remove the redundant H from zmat2, it's the first atom.
+    combined_zmat['symbols'] = tuple(zmat1['symbols'] + zmat2['symbols'][1:])  # todo: map it to products if needed (if its there?)
     combined_zmat['coords'] = tuple(list(zmat1['coords']) + new_coords)
     combined_zmat['vars'] = {**zmat1['vars'], **new_vars}  # Combine the two dicts.
     combined_zmat['map'] = new_map
-    # print(zmat1['map'])
-    # print(zmat2['map'])
-    # print(combined_zmat['map'])
     for i, coords in enumerate(combined_zmat['coords']):
         if i > 2 and None in coords:
             raise ValueError(f'Could not combine zmats, got a None parameter beyond the 3rd row:\n{combined_zmat}')
@@ -497,8 +504,8 @@ def generate_the_two_constrained_zmats(xyz1: dict,
     Args:
         xyz1 (dict): The Cartesian coordinates of molecule 1 (including the redundant atom).
         xyz2 (dict): The Cartesian coordinates of molecule 2 (including the redundant atom).
-        mol1 (Molecule): The Molecule instance corresponding to ``xyz1``.
-        mol2 (Molecule): The Molecule instance corresponding to ``xyz2``.
+        mol1 (Molecule): The RMG Molecule instance corresponding to ``xyz1``.
+        mol2 (Molecule): The RMG Molecule instance corresponding to ``xyz2``.
         h1 (int): The 0-index of a terminal redundant H atom in ``xyz1`` (atom H1).
         h2 (int): The 0-index of a terminal redundant H atom in ``xyz2`` (atom H2).
         a (int): The 0-index of an atom in ``xyz1`` connected to H1 (atom A).
@@ -542,7 +549,7 @@ def determine_glue_params_to_combine_zmats(zmat: dict,
                                            c: Optional[int],
                                            d: Optional[int],
                                            d3: Optional[int],
-                                           ):
+                                           ) -> Tuple[str, str, str]:
     """
     Determine glue parameters for combining two zmats.
     Modifies the ``zmat`` argument if a dummy atom needs to be added.
@@ -561,8 +568,7 @@ def determine_glue_params_to_combine_zmats(zmat: dict,
     num_atoms_1 = len(zmat['symbols'])  # The number of atoms in zmat1, used to increment the atom indices in zmat2.
     zh = num_atoms_1 - 1  # The atom index of H in the combined zmat.
     za = key_by_val(zmat['map'], a)  # The atom index of A in the combined zmat.
-    zb = num_atoms_1 + int(
-        is_a2_linear)  # The atom index of B in the combined zmat, if a2=180, consider the dummy atom.
+    zb = num_atoms_1 + int(is_a2_linear)  # The atom index of B in the combined zmat, if a2=180, consider the dummy atom.
     zc = key_by_val(zmat['map'], c) if c is not None else None
     zd = num_atoms_1 + 1 + int(is_a2_linear) if d is not None else None  # The atom index of D in the combined zmat.
     param_a2 = f'A_{zb}_{zh}_{za}'  # B-H-A
@@ -595,9 +601,10 @@ def get_modified_params_from_zmat2(zmat1: dict,
                                    c: Optional[int],
                                    d2: Optional[float],
                                    d3: Optional[float],
+                                   reactants_reversed=False,
                                    ):
     """
-    Generate a modified zmat2: remove the first atom, change all existing parameter indices, add "glue" parameters.
+    Generate a modified zmat2: Remove the first atom, change all existing parameter indices, add "glue" parameters.
 
     Args:
         zmat1 (dict): The zmat describing R1H.
@@ -608,16 +615,18 @@ def get_modified_params_from_zmat2(zmat1: dict,
         c (int): The 0-index of an atom in ``xyz1`` connected to either A or H1 which is neither A nor H1 (atom C).
         d2 (float): The dihedral angle (in degrees) between atoms B-H-A-C (dihedral B-H-A-C).
         d3 (float): The dihedral angel (in degrees) between atoms D-B-H-A (dihedral D-B-H-A).
+        reactants_reversed (bool): Whether the reactants were reversed when generating the TS guess.
 
     Returns:
         Tuple[list, dict, dict]: new_coords, new_vars, new_map.
+
+
+        todo: use reactants_reversed to manipulate new_coords, new_vars, new_map
     """
-    new_coords, new_vars, new_map = list(), dict(), zmat1['map'].copy()
+    new_coords, new_vars = list(), dict()
     param_a2, param_d2, param_d3 = glue_params
-    num_atoms_1 = len(zmat1['symbols'])  # The number of atoms in zmat1, used to increment the atom indices in zmat2.
-    r2_index_of_redundant_h = zmat2['map'][0]
+    num_atoms_1 = len(zmat1['symbols'])
     for i, coords in enumerate(zmat2['coords'][1:]):
-        new_map[i + len(zmat1['symbols'])] = len(zmat1['symbols']) + zmat2['map'][i + 1]
         new_coord = list()
         for j, param in enumerate(coords):
             if param is not None:
@@ -644,7 +653,45 @@ def get_modified_params_from_zmat2(zmat1: dict,
                 else:
                     new_coord.append(None)
         new_coords.append(tuple(new_coord))
+    new_map = get_new_zmat2_map(zmat1=zmat1, zmat2=zmat2, reactants_reversed=reactants_reversed)
     return new_coords, new_vars, new_map
+
+
+def get_new_zmat2_map(zmat1: dict,
+                      zmat2: dict,
+                      reactants_reversed=False,
+                      ) -> Dict[int, Union[int, str]]:
+    """
+    Get the map of the combined zmat.
+
+    Args:
+        zmat1 (dict): The zmat describing R1H.
+        zmat2 (dict): The zmat describing R2H.
+        reactants_reversed (bool): Whether the reactants were reversed when generating the TS guess.
+
+    Returns:
+        dict: The combined zmat map element.
+    """
+    new_map = dict()
+    num_atoms_1 = len(zmat1['symbols'])
+    # Exclude the redundant H atom if the reactants were reversed.
+    num_atoms = num_atoms_1 if not reactants_reversed else num_atoms_1 - 1
+    num_atoms -= sum([1 for val in zmat1['map'].values() if isinstance(val, str) and 'X' in val])
+    for key, val in zmat1['map'].items():
+        if key < num_atoms:
+            new_map[key] = val
+        if key == num_atoms and reactants_reversed:
+            # This is the redundant H atom; map it correctly to R2 since the reactants are reversed.
+            pass  # todo
+
+        elif isinstance(val, str) and 'X' in val:
+            len_new_map = len(list(new_map.values()))
+            new_map[len_new_map] = f'X{len_new_map}'
+
+    len_new_map = len(list(new_map.values()))
+    for key, val in zmat2['map'].items():
+        new_map[key + len_new_map] = val + len_new_map
+    return new_map
 
 
 def label_molecules(reactants: List['Molecule'],
@@ -777,6 +824,8 @@ def h_abstraction(arc_reaction: 'ARCReaction',
                                                                      a2=a2,
                                                                      d2=d2,
                                                                      d3=d3,
+                                                                     reactants_reversed=reactants_reversed,
+                                                                     atom_map=arc_reaction.atom_map,
                                                                      )
             except ValueError as e:
                 logger.error(f'Could not generate a guess using Heuristics for H abstraction reaction, got:\n{e}')

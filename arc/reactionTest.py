@@ -291,6 +291,14 @@ class TestARCReaction(unittest.TestCase):
         rxn_2 = ARCReaction(rmg_reaction=rmg_rxn_2)
         self.assertEqual(rxn_2.label, 'OH + OH <=> O + H2O')
 
+    def test_is_isomerization(self):
+        """Test the is_isomerization() method"""
+        self.assertFalse(self.rxn1.is_isomerization())
+        self.assertFalse(self.rxn2.is_isomerization())
+        self.assertTrue(self.rxn3.is_isomerization())
+        self.assertFalse(self.rxn4.is_isomerization())
+        self.assertFalse(self.rxn5.is_isomerization())
+
     def test_from_rmg_reaction(self):
         """Test setting up an ARCReaction from an RMG Reaction"""
         rmg_rxn_1 = Reaction(reactants=[Species(label='nC3H7', smiles='[CH2]CC')],
@@ -895,7 +903,7 @@ class TestARCReaction(unittest.TestCase):
         p_2 = ARCSpecies(label='NH2OH', smiles='NO', xyz=nh2oh_xyz)
         rxn = ARCReaction(reactants=['NHOH', 'HO2'], products=['O2', 'NH2OH'],
                           r_species=[r_1, r_2], p_species=[p_1, p_2])
-        self.assertEqual(rxn.atom_map, [2, 6, 0, 5, 3, 1, 4])
+        self.assertEqual(rxn.atom_map, [2, 6, 0, 5, 3, 1, 4])  # todo: incorrect map!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         self.assertTrue(check_atom_map(rxn))
 
         # HO2_Elimination_from_PeroxyRadical: C2H5O3 <=> C2H4O + HO2
@@ -1290,13 +1298,17 @@ H       1.25408721   -0.86065907   -0.09003883"""
                               (0.0558910, 0.7272050, 0.0000000),
                               (-0.8942590, -0.8537420, 0.0000000)),
                    'isotopes': (16, 16, 1),
-                   'symbols': ('O', 'O', 'H')}
+                   'symbols': ('O', 'O', 'H')}  # 3, 4, 9
         r_1 = ARCSpecies(label='C2H5O3', smiles='CC(O)O[O]', xyz=c2h5o3_xyz)
         p_1 = ARCSpecies(label='C2H4O', smiles='CC=O', xyz=c2h4o_xyz)
         p_2 = ARCSpecies(label='HO2', smiles='O[O]', xyz=ho2_xyz)
         rxn = ARCReaction(reactants=['C2H5O3'], products=['HO2', 'C2H4O'],
                           r_species=[r_1], p_species=[p_1, p_2])
-        self.assertEqual(rxn.atom_map, [0, 1, 2, 8, 7, 4, 9, 5, 3, 6])
+        self.assertEqual(rxn.atom_map, [0, 1, 2, 8, 7, 3, 4, 5, 6, 9])  # [3, 4, 5] are identical in 2D
+        self.assertTrue(check_atom_map(rxn))
+        rxn = ARCReaction(reactants=['HO2', 'C2H4O'], products=['C2H5O3'],
+                          r_species=[p_1, p_2], p_species=[r_1])
+        self.assertEqual(rxn.atom_map, [0, 1, 2, 8, 7, 3, 4, 5, 6, 9])  # [3, 4, 5] are identical in 2D
         self.assertTrue(check_atom_map(rxn))
 
         # H_Abstraction: C3H6O + C4H9O <=> C3H5O + C4H10O
@@ -1362,8 +1374,8 @@ H       1.25408721   -0.86065907   -0.09003883"""
         p_2 = ARCSpecies(label='C4H10O', smiles='CC(C)CO', xyz=c4h10o_xyz)
         rxn = ARCReaction(reactants=['C3H6O', 'C4H9O'], products=['C3H5O', 'C4H10O'],
                           r_species=[r_1, r_2], p_species=[p_1, p_2])
-        self.assertEqual(rxn.atom_map, [12, 1, 11, 13, 2, 19, 6, 7, 14, 21, 9, 15,
-                                        8, 10, 0, 3, 4, 20, 17, 16, 5, 23, 18, 22])
+        self.assertEqual(rxn.atom_map, [0, 1, 3, 5, 6, 7, 2, 5+9, 8, 0+9, 6+9, 7+9, 1+9, 2+9, 3+9, 4+9, 8+9, 9+9,
+                                        10+9, 11+9, 12+9, 13+9])
         self.assertTrue(check_atom_map(rxn))
 
         # H_Abstraction: NH + N2H3 <=> NH2 + N2H2(T)

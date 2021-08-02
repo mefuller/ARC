@@ -18,10 +18,9 @@ from arc.common import (ARC_PATH,
                         get_logger,
                         read_yaml_file,
                         )
+from arc.species.mapping import find_equivalent_atoms_in_reactants
 
 if TYPE_CHECKING:
-    from rmgpy.data.kinetics.family import TemplateReaction
-    from rmgpy.reaction import Reaction
     from arc.job.adapter import JobAdapter
     from arc.species.species import ARCSpecies, TSGuess
     from arc.reaction import ARCReaction
@@ -180,52 +179,30 @@ def check_normal_mode_displacement(reaction: 'ARCReaction',
     """
     if job is None:
         return
-    print('checking NDM in ts L 183')
-    print(reaction)
-    print(job.local_path_to_output_file)
 
-    xyz = parser.parse_geometry(job.local_path_to_output_file)
-    import pprint
-    print('TS xyz:')
-    pprint.pprint(xyz)
-
-    determine_family(reaction)
+    rmgdb.determine_family(reaction)
     rxn_zone_atom_indices = rxn_zone_atom_indices or get_rxn_zone_atom_indices(reaction, job)
     reaction.ts_species.ts_checks['normal_mode_displacement'] = False
     rmg_rxn = reaction.rmg_reaction.copy()
-    print('reactants xyz:')
-    for r in reaction.r_species:
-        pprint.pprint(r.get_xyz())
-    print('reactants atoms:')
-    for r in rmg_rxn.reactants:
-        print(r.molecule[0].atoms)
     try:
         reaction.family.add_atom_labels_for_reaction(reaction=rmg_rxn, output_with_resonance=False, save_order=True)
     except (ActionError, ValueError):
-        print('exception!!!')
         reaction.ts_species.ts_checks['warnings'] += 'Could not determine atom labels from RMG, ' \
                                                      'cannot check normal mode displacement; '
         reaction.ts_species.ts_checks['normal_mode_displacement'] = True
     else:
-        equivalent_indices = find_equivalent_atoms_in_reactants(reaction)
+        equivalent_indices = find_equivalent_atoms_in_reactants(arc_reaction=reaction)
         found_positions = list()
-        print(f'equivalent_indices: {equivalent_indices}')
         for rxn_zone_atom_index in rxn_zone_atom_indices:
             atom_found = False
-            print(f'rxn_zone_atom_index: {rxn_zone_atom_index}')
             for i, entry in enumerate(equivalent_indices):
-                print(f'{i}: looking at {entry}')
                 if rxn_zone_atom_index in entry and i not in found_positions:
                     atom_found = True
                     found_positions.append(i)
                     break
             if not atom_found:
-                print(f'\n\nequivalent_indices: {equivalent_indices}')
-                print(f'found_positions: {found_positions}')
-                print(f'rxn_zone_atom_index: {rxn_zone_atom_index}. atom {entry} was not found')
                 break
         else:
-            print('marking normal_mode_displacement as True !!!!!!!!!!')
             reaction.ts_species.ts_checks['normal_mode_displacement'] = True
 
 
@@ -383,114 +360,3 @@ def get_rxn_normal_mode_disp_atom_number(rxn_family: Optional[str] = None,
             if (entry - rms) / entry < 0.12:
                 number_by_family += 1
     return number_by_family
-
-
-def find_equivalent_atoms_in_reactants(reaction: 'ARCReaction') -> Optional[List[List[int]]]:
-    """
-    Find atom indices that are equivalent in the reactants of an ARCReaction
-    in the sense that they represent degenerate reaction sites that are indifferentiable in 2D.
-    Bridges between RMG reaction templates and ARC's 3D TS structures.
-    Running indices in the returned structure relate to reactant_0 + reactant_1 + ...
-
-    Args:
-        reaction ('ARCReaction'): An ARCReaction object instance.
-
-    Returns:
-        Optional[List[List[int]]]: Entries are lists of 0-indices, each such list represents equivalent atoms.
-    """
-    determine_family(reaction)
-    if reaction.family is None:
-        return None
-    rmg_reactions = reaction.family.generate_reactions(reactants=[spc.mol for spc in reaction.r_species],
-                                                       products=[spc.mol for spc in reaction.p_species],
-                                                       prod_resonance=True,
-                                                       delete_labels=False,
-                                                       )
-    dicts = [get_atom_indices_of_labeled_atoms_in_an_rmg_reaction(rmg_reaction=rmg_reaction,
-                                                                  arc_reaction=reaction)
-             for rmg_reaction in rmg_reactions]
-    equivalence_map = dict()
-    for index_dict in dicts:
-        for key, value in index_dict.items():
-            if key in equivalence_map:
-                equivalence_map[key].append(value)
-            else:
-                equivalence_map[key] = [value]
-    equivalent_indices = list(list(set(equivalent_list)) for equivalent_list in equivalence_map.values())
-    return equivalent_indices
-
-
-def get_atom_indices_of_labeled_atoms_in_an_rmg_reaction(arc_reaction: 'ARCReaction',
-                                                         rmg_reaction: 'TemplateReaction',
-                                                         ) -> Optional[Dict[str, int]]:
-    """
-    Get the RMG reaction labels and the corresponding 0-indexed atom indices
-    for all labeled atoms in an TemplateReaction.
-
-    Args:
-        arc_reaction ('ARCReaction'): An ARCReaction object instance.
-        rmg_reaction ('TemplateReaction'): A respective RMG family TemplateReaction object instance.
-
-    Returns:
-        Optional[Dict[str, int]]: Keys are labels (e.g., '*1'), values are corresponding 0-indices atoms.
-    """
-    if not hasattr(rmg_reaction, 'labeledAtoms') or not len(rmg_reaction.labeledAtoms):
-        return None
-
-    r_map, p_map = map_arc_rmg_species(arc_reaction=arc_reaction, rmg_reaction=rmg_reaction)
-
-    index_dict = dict()
-    reactant_atoms, product_atoms = list(), list()
-    rmg_reactant_order = [val[0] for key, val in sorted(r_map.items(), key=lambda item: item[0])]
-    rmg_product_order = [val[0] for key, val in sorted(p_map.items(), key=lambda item: item[0])]
-    for i in rmg_reactant_order:
-        reactant_atoms.extend([atom for atom in rmg_reaction.reactants[i].atoms])
-    for i in rmg_product_order:
-        product_atoms.extend([atom for atom in rmg_reaction.products[i].atoms])
-    for labeled_atom in rmg_reaction.labeledAtoms:
-        for i, atom in enumerate(reactant_atoms):
-            if atom.id == labeled_atom[1].id:
-                index_dict[labeled_atom[0]] = i
-                break
-    return index_dict
-
-
-def map_arc_rmg_species(arc_reaction: 'ARCReaction',
-                        rmg_reaction: Union['Reaction', 'TemplateReaction'],
-                        ) -> Tuple[Dict[int, int], Dict[int, int]]:
-    """
-    Map the species pairs in an ARC reaction to those in a respective RMG reaction.
-
-    Args:
-        arc_reaction ('ARCReaction'): An ARCReaction object instance.
-        rmg_reaction (Union['Reaction', 'TemplateReaction']): A respective RMG family TemplateReaction object instance.
-
-    Returns:
-        Tuple[Dict[int, int], Dict[int, int]]: Keys are specie indices in the ARC reaction,
-                                               values are respective indices in the RMG reaction.
-                                               The first tuple entry refers to reactants, the second to products.
-    """
-    r_map, p_map = dict(), dict()
-    for spc_map, rmg_species, arc_species in [(r_map, rmg_reaction.reactants, arc_reaction.r_species),
-                                              (p_map, rmg_reaction.products, arc_reaction.p_species)]:
-        for i, arc_spc in enumerate(arc_species):
-            for j, rmg_spc in enumerate(rmg_species):
-                if rmg_spc.is_isomorphic(arc_spc.mol, save_order=True):
-                    if i in spc_map.keys():
-                        spc_map[i].append(j)
-                    else:
-                        spc_map[i] = [j]
-    return r_map, p_map
-
-
-def determine_family(reaction: 'ARCReaction'):
-    """
-    Determine the RMG reaction family for an ARC reaction.
-
-    Args:
-        reaction ('ARCReaction'): An ARCReaction object instance.
-    """
-    if reaction.family is None:
-        db = rmgdb.make_rmg_database_object()
-        rmgdb.load_families_only(db)
-        reaction.determine_family(db)
