@@ -5,8 +5,6 @@ A module for representing a reaction.
 from typing import TYPE_CHECKING, List, Optional, Tuple, Union
 
 import numpy as np
-from qcelemental.exceptions import ValidationError
-from qcelemental.models.molecule import Molecule as QCMolecule
 
 from rmgpy.reaction import Reaction
 from rmgpy.species import Species
@@ -14,7 +12,7 @@ from rmgpy.species import Species
 import arc.rmgdb as rmgdb
 from arc.common import get_logger
 from arc.exceptions import ReactionError, InputError
-from arc.species.converter import check_xyz_dict, str_to_xyz, translate_xyz, xyz_to_str
+from arc.species.converter import check_xyz_dict, str_to_xyz, xyz_to_str
 from arc.species.mapping import map_reaction
 from arc.species.species import ARCSpecies, check_atom_balance, check_label
 
@@ -57,7 +55,7 @@ class ARCReaction(object):
     Attributes:
         label (str): The reaction's label in the format `r1 + r2 <=> p1 + p2`
                      (or unimolecular on either side, as appropriate).
-        family (KineticsFamily, str): The RMG kinetic family, if applicable.
+        family (KineticsFamily): The RMG kinetic family, if applicable.
         family_own_reverse (bool): Whether the RMG family is its own reverse.
         reactants (list): A list of reactants labels corresponding to an :ref:`ARCSpecies <species>`.
         products (list): A list of products labels corresponding to an :ref:`ARCSpecies <species>`.
