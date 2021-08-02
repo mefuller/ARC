@@ -282,7 +282,7 @@ def xyz_to_dmat(xyz_dict: dict) -> Optional[np.array]:
     Convert Cartesian coordinates to a distance matrix.
 
     Args:
-        xyz_dict (dict): The Cartesian coordinates,
+        xyz_dict (dict): The Cartesian coordinates.
 
     Returns: Optional[np.array]
         The distance matrix.
@@ -417,6 +417,31 @@ def xyz_to_ase(xyz_dict: dict) -> Atoms:
         Type[Atoms]: The corresponding ASE Atom object.
     """
     return Atoms(xyz_dict['symbols'], xyz_dict['coords'])
+
+
+def translate_xyz(xyz_dict: dict,
+                  translation: Tuple[float, float, float],
+                  ) -> dict:
+    """
+    Translate xyz.
+
+    Args:
+        xyz_dict (dict): The ARC xyz format.
+        translation (Tuple[float, float, float]): The x, y, z translation vector.
+
+    Returns:
+        dict: The translated xyz.
+    """
+    if all(t == 0 for t in translation):
+        return xyz_dict
+    coords = list()
+    for coord in xyz_dict['coords']:
+        coords.append(tuple(coord[i] + translation[i] for i in range(3)))
+    new_xyz = {'symbols': xyz_dict['symbols'],
+               'isotopes': xyz_dict['isotopes'],
+               'coords': tuple(coords),
+               }
+    return new_xyz
 
 
 def rmg_conformer_to_xyz(conformer):
@@ -632,14 +657,13 @@ def zmat_from_xyz(xyz, mol=None, constraints=None, consolidate=True, consolidati
         consolidation_tols (dict, optional): Keys are 'R', 'A', 'D', values are floats representing absolute tolerance
                                              for consolidating almost equal internal coordinates.
 
+    Raises:
+        InputError: If ``xyz`` if of a wrong type.
+
     Returns:
         dict: The Z matrix.
-
-    Raises:
-        InputError: If ``xyz`` if of wrong type.
     """
-    if isinstance(xyz, str):
-        xyz = str_to_xyz(xyz)
+    xyz = str_to_xyz(xyz) if isinstance(xyz, str) else xyz
     if not isinstance(xyz, dict):
         raise InputError(f'xyz must be a dictionary, got {type(xyz)}')
     xyz = remove_dummies(xyz)

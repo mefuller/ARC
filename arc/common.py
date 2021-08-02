@@ -1220,7 +1220,7 @@ def torsions_to_scans(descriptor: Optional[List[List[int]]],
     return new_descriptor
 
 
-def convert_list_index_0_to_1(_list: list, direction: int = 1) -> list:
+def convert_list_index_0_to_1(_list: Union[list, tuple], direction: int = 1) -> Union[list, tuple]:
     """
     Convert a list from 0-indexed to 1-indexed, or vice versa.
     Ensures positive values in the resulting list.
@@ -1233,9 +1233,11 @@ def convert_list_index_0_to_1(_list: list, direction: int = 1) -> list:
         ValueError: If the new list contains negative values.
 
     Returns:
-        list: The converted indices.
+        Union[list, tuple]: The converted indices.
     """
     new_list = [item + direction for item in _list]
     if any(val < 0 for val in new_list):
         raise ValueError(f'The resulting list from converting {_list} has negative values:\n{new_list}')
+    if isinstance(_list, tuple):
+        new_list = tuple(new_list)
     return new_list

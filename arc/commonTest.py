@@ -671,7 +671,6 @@ H       1.98414750   -0.79355889   -0.24492049"""  # colliding atoms
         time.sleep(0.5)
         delta = datetime.datetime.now() - t0
         str_delta = str(delta)
-        print(str_delta)
         self.assertIn('0:00:00.5', str_delta)
         reconstructed_delta = common.timedelta_from_str(str_delta)
         self.assertIsInstance(reconstructed_delta, datetime.timedelta)
@@ -694,6 +693,7 @@ H       1.98414750   -0.79355889   -0.24492049"""  # colliding atoms
         self.assertEqual(common.convert_list_index_0_to_1([1], direction=-1), [0])
         self.assertEqual(common.convert_list_index_0_to_1([0, 5, 8]), [1, 6, 9])
         self.assertEqual(common.convert_list_index_0_to_1([0, 5, 8]), [1, 6, 9])
+        self.assertEqual(common.convert_list_index_0_to_1((0, 5, 8)), (1, 6, 9))
         with self.assertRaises(ValueError):
             common.convert_list_index_0_to_1([-9])
         with self.assertRaises(ValueError):

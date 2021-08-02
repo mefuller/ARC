@@ -304,57 +304,81 @@ class TestMapping(unittest.TestCase):
         rxn = ARCReaction(reactants=['C3H6O', 'C4H9O'], products=['C3H5O', 'C4H10O'],
                           r_species=[r_1, r_2], p_species=[p_1, p_2])
         atom_map = mapping.map_h_abstraction(rxn=rxn, db=self.rmgdb)
-        self.assertEqual(atom_map, [0, 1, 3, 4, 5, 7, 6, 16, 2, 8, 9, 15, 14, 10, 11, 12, 13, 18, 21, 20, 22, 19, 17, 23])
+        self.assertEqual(atom_map[0], 0)
+        self.assertEqual(atom_map[1], 1)
+        self.assertEqual(atom_map[2], 3)
+        self.assertEqual(atom_map[3], 4)
+        self.assertIn(atom_map[4], [5, 6, 7])
+        self.assertIn(atom_map[5], [5, 6, 7])
+        self.assertIn(atom_map[6], [5, 6, 7])
+        self.assertIn(atom_map[7], [2, 14, 15, 16, 18, 19, 20])
+        self.assertIn(atom_map[8], [2, 14, 15, 16, 18, 19, 20])
+        self.assertTrue(any(entry == 2 for entry in [atom_map[7], atom_map[8]]))
+        self.assertEqual(atom_map[9], 8)
+        self.assertIn(atom_map[10], [9, 11])
+        self.assertIn(atom_map[11], [14, 15, 16, 18, 19, 20])
+        self.assertIn(atom_map[12], [14, 15, 16, 18, 19, 20])
+        self.assertEqual(atom_map[13], 10)
+        self.assertIn(atom_map[14], [9, 11])
+        self.assertEqual(atom_map[15], 12)
+        self.assertEqual(atom_map[16], 13)
+        self.assertEqual(atom_map[17], 17)
+        self.assertIn(atom_map[18], [14, 15, 16, 18, 19, 20])
+        self.assertIn(atom_map[19], [14, 15, 16, 18, 19, 20])
+        self.assertIn(atom_map[20], [14, 15, 16, 18, 19, 20])
+        self.assertIn(atom_map[21], [21, 22])
+        self.assertIn(atom_map[22], [21, 22])
+        self.assertEqual(atom_map[23], 23)
 
-    # def test_map_ho2_elimination_from_peroxy_radical(self):
-    #     """Test the map_ho2_elimination_from_peroxy_radical() function."""
-    #     r_xyz = """N      -0.82151000   -0.98211000   -0.58727000
-    #                C      -0.60348000    0.16392000    0.30629000
-    #                C       0.85739000    0.41515000    0.58956000
-    #                C       1.91892000   -0.27446000    0.14220000
-    #                O      -1.16415000    1.38916000   -0.20784000
-    #                O      -2.39497344    1.57487672    0.46214548
-    #                H      -0.50088000   -0.69919000   -1.51181000
-    #                H      -1.83926000   -1.03148000   -0.69340000
-    #                H      -1.09049000   -0.04790000    1.26633000
-    #                H       1.04975000    1.25531000    1.25575000
-    #                H       2.92700000    0.00462000    0.43370000
-    #                H       1.81273000   -1.13911000   -0.50660000"""  # NC(C=C)O[O]
-    #     p_1_xyz = """N       1.16378795    1.46842703   -0.82620909
-    #                  C       0.75492192    0.42940001   -0.18269967
-    #                  C      -0.66835457    0.05917401   -0.13490822
-    #                  C      -1.06020680   -1.02517494    0.54162130
-    #                  H       2.18280085    1.55132949   -0.73741996
-    #                  H       1.46479392   -0.22062618    0.35707573
-    #                  H      -1.36374229    0.69906451   -0.66578157
-    #                  H      -2.11095970   -1.29660899    0.57562763
-    #                  H      -0.36304116   -1.66498540    1.07269317"""  # N=CC=C
-    #     p_2_xyz = """N      -1.60333711   -0.23049987   -0.35673484
-    #                  C      -0.63074775    0.59837442    0.08043329
-    #                  C       0.59441219    0.18489797    0.16411656
-    #                  C       1.81978128   -0.23541908    0.24564488
-    #                  H      -2.56057110    0.09083582   -0.42266843
-    #                  H      -1.37296018   -1.18147301   -0.62077856
-    #                  H      -0.92437032    1.60768040    0.35200716
-    #                  H       2.49347824   -0.13648710   -0.59717108
-    #                  H       2.18431385   -0.69791121    1.15515621"""  # NC=C=C
-    #     ho2_xyz = """O      -0.18935000    0.42639000    0.00000000
-    #                  O       1.07669000   -0.17591000    0.00000000
-    #                  H      -0.88668000   -0.25075000    0.00000000"""  # O[O]
-    #     rxn_1 = ARCReaction(r_species=[ARCSpecies(label='R', smiles='NC(C=C)O[O]', xyz=r_xyz)],
-    #                         p_species=[ARCSpecies(label='P1', smiles='N=CC=C', xyz=p_1_xyz),
-    #                                    ARCSpecies(label='HO2', smiles='O[O]', xyz=ho2_xyz)])
-    #     atom_map = mapping.map_ho2_elimination_from_peroxy_radical(rxn_1)
-    #     print(atom_map)  # [0, 1, 2, 3, 10, 4, 9, 6, 11, 7, 5, 8]
-    #     self.assertEqual(atom_map[:6], [0, 1, 2, 3, 10, 9])
-    #     self.assertIn(atom_map[6], [4, 11])
-    #     self.assertIn(atom_map[7], [4, 11])
-    #     self.assertEqual(atom_map[8], 5)
-    #     self.assertEqual(atom_map[9], 6)
-    #     self.assertIn(atom_map[10], [7, 8])
-    #     self.assertIn(atom_map[11], [7, 8])
-    #
-    #     # Todo: also test (and write func) in reverse, also test the other rxn in both dirs
+    def test_map_ho2_elimination_from_peroxy_radical(self):
+        """Test the map_ho2_elimination_from_peroxy_radical() function."""
+        r_xyz = """N      -0.82151000   -0.98211000   -0.58727000
+                   C      -0.60348000    0.16392000    0.30629000
+                   C       0.85739000    0.41515000    0.58956000
+                   C       1.91892000   -0.27446000    0.14220000
+                   O      -1.16415000    1.38916000   -0.20784000
+                   O      -2.39497344    1.57487672    0.46214548
+                   H      -0.50088000   -0.69919000   -1.51181000
+                   H      -1.83926000   -1.03148000   -0.69340000
+                   H      -1.09049000   -0.04790000    1.26633000
+                   H       1.04975000    1.25531000    1.25575000
+                   H       2.92700000    0.00462000    0.43370000
+                   H       1.81273000   -1.13911000   -0.50660000"""  # NC(C=C)O[O]
+        p_1_xyz = """N       1.16378795    1.46842703   -0.82620909
+                     C       0.75492192    0.42940001   -0.18269967
+                     C      -0.66835457    0.05917401   -0.13490822
+                     C      -1.06020680   -1.02517494    0.54162130
+                     H       2.18280085    1.55132949   -0.73741996
+                     H       1.46479392   -0.22062618    0.35707573
+                     H      -1.36374229    0.69906451   -0.66578157
+                     H      -2.11095970   -1.29660899    0.57562763
+                     H      -0.36304116   -1.66498540    1.07269317"""  # N=CC=C
+        p_2_xyz = """N      -1.60333711   -0.23049987   -0.35673484
+                     C      -0.63074775    0.59837442    0.08043329
+                     C       0.59441219    0.18489797    0.16411656
+                     C       1.81978128   -0.23541908    0.24564488
+                     H      -2.56057110    0.09083582   -0.42266843
+                     H      -1.37296018   -1.18147301   -0.62077856
+                     H      -0.92437032    1.60768040    0.35200716
+                     H       2.49347824   -0.13648710   -0.59717108
+                     H       2.18431385   -0.69791121    1.15515621"""  # NC=C=C
+        ho2_xyz = """O      -0.18935000    0.42639000    0.00000000
+                     O       1.07669000   -0.17591000    0.00000000
+                     H      -0.88668000   -0.25075000    0.00000000"""  # O[O]
+        rxn_1 = ARCReaction(r_species=[ARCSpecies(label='R', smiles='NC(C=C)O[O]', xyz=r_xyz)],
+                            p_species=[ARCSpecies(label='P1', smiles='N=CC=C', xyz=p_1_xyz),
+                                       ARCSpecies(label='HO2', smiles='O[O]', xyz=ho2_xyz)])
+        atom_map = mapping.map_ho2_elimination_from_peroxy_radical(rxn_1)
+        print(atom_map)  # [0, 1, 2, 3, 10, 4, 9, 6, 11, 7, 5, 8]
+        self.assertEqual(atom_map[:6], [0, 1, 2, 3, 10, 9])
+        self.assertIn(atom_map[6], [4, 11])
+        self.assertIn(atom_map[7], [4, 11])
+        self.assertEqual(atom_map[8], 5)
+        self.assertEqual(atom_map[9], 6)
+        self.assertIn(atom_map[10], [7, 8])
+        self.assertIn(atom_map[11], [7, 8])
+
+        # Todo: also test (and write func) in reverse, also test the other rxn in both dirs
 
     def test_map_intra_h_migration(self):
         """Test the map_intra_h_migration() function."""

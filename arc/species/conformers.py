@@ -54,7 +54,7 @@ from rmgpy.molecule.converter import to_ob_mol
 from rmgpy.molecule.molecule import Atom, Bond, Molecule
 from rmgpy.molecule.element import C as C_ELEMENT, H as H_ELEMENT, F as F_ELEMENT, Cl as Cl_ELEMENT, I as I_ELEMENT
 
-from arc.common import logger, determine_top_group_indices
+from arc.common import logger, convert_list_index_0_to_1, determine_top_group_indices
 from arc.exceptions import ConformerError, InputError
 import arc.plotter
 from arc.species import converter, vectors
@@ -1476,7 +1476,7 @@ def find_internal_rotors(mol):
             for atom2, bond in atom1.edges.items():
                 if atom2.is_non_hydrogen() and mol.vertices.index(atom1) < mol.vertices.index(atom2) \
                         and (bond.is_single() or bond.is_hydrogen_bond()) and not mol.is_bond_in_cycle(bond):
-                    if len(atom1.edges) > 1 and len(atom2.edges) > 1:  # none of the pivotal atoms are terminal
+                    if len(atom1.edges) > 1 and len(atom2.edges) > 1:  # None of the pivotal atoms are terminal.
                         rotor = dict()
                         # pivots:
                         rotor['pivots'] = [mol.vertices.index(atom1) + 1, mol.vertices.index(atom2) + 1]
@@ -1496,7 +1496,7 @@ def find_internal_rotors(mol):
                         rotor['scan'] = [determine_smallest_atom_index_in_scan(atom1=atom1, atom2=atom2, mol=mol)]
                         rotor['scan'].extend([mol.vertices.index(atom1) + 1, mol.vertices.index(atom2) + 1])
                         rotor['scan'].append(determine_smallest_atom_index_in_scan(atom1=atom2, atom2=atom1, mol=mol))
-                        rotor['torsion'] = [s - 1 for s in rotor['scan']]
+                        rotor['torsion'] = convert_list_index_0_to_1(rotor['scan'], direction=-1)
 
                         # other keys:
                         rotor['number_of_running_jobs'] = 0
@@ -1520,7 +1520,7 @@ def determine_smallest_atom_index_in_scan(atom1: Atom,
                                           mol: Molecule,
                                           ) -> int:
     """
-    Determine the smallest atom index in mol connected to ``atom1`` which is not ``atom2``.
+    Determine the smallest atom index in ``mol`` connected to ``atom1`` which is not ``atom2``.
     Returns a heavy atom if available, otherwise a hydrogen atom.
     Useful for deterministically determining the indices of four atom in a scan.
     This function assumes there ARE additional atoms connected to ``atom1``, and that ``atom2`` is not a hydrogen atom.

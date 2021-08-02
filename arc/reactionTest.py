@@ -88,11 +88,58 @@ class TestARCReaction(unittest.TestCase):
                                         'is_ts': False,
                                         'label': 'CH3',
                                         'long_thermo_description': "Bond corrections: {'C-H': 3}\n",
-                                        'mol': 'multiplicity 2\n'
-                                               '1 C u1 p0 c0 {2,S} {3,S} {4,S}\n'
-                                               '2 H u0 p0 c0 {1,S}\n'
-                                               '3 H u0 p0 c0 {1,S}\n'
-                                               '4 H u0 p0 c0 {1,S}\n',
+                                        'mol': {'atoms': [{'charge': 0,
+                                                           'edges': {-28406: 1.0,
+                                                                     -28405: 1.0,
+                                                                     -28404: 1.0},
+                                                           'element': {'isotope': -1,
+                                                                       'mass': 0.01201064046472311,
+                                                                       'name': 'carbon',
+                                                                       'number': 6,
+                                                                       'symbol': 'C'},
+                                                           'id': -28407,
+                                                           'label': '',
+                                                           'lone_pairs': 0,
+                                                           'props': {'inRing': False},
+                                                           'radical_electrons': 1},
+                                                          {'charge': 0,
+                                                           'edges': {-28407: 1.0},
+                                                           'element': {'isotope': -1,
+                                                                       'mass': 0.0010079710045829415,
+                                                                       'name': 'hydrogen',
+                                                                       'number': 1,
+                                                                       'symbol': 'H'},
+                                                           'id': -28406,
+                                                           'label': '',
+                                                           'lone_pairs': 0,
+                                                           'props': {'inRing': False},
+                                                           'radical_electrons': 0},
+                                                          {'charge': 0,
+                                                           'edges': {-28407: 1.0},
+                                                           'element': {'isotope': -1,
+                                                                       'mass': 0.0010079710045829415,
+                                                                       'name': 'hydrogen',
+                                                                       'number': 1,
+                                                                       'symbol': 'H'},
+                                                           'id': -28405,
+                                                           'label': '',
+                                                           'lone_pairs': 0,
+                                                           'props': {'inRing': False},
+                                                           'radical_electrons': 0},
+                                                          {'charge': 0,
+                                                           'edges': {-28407: 1.0},
+                                                           'element': {'isotope': -1,
+                                                                       'mass': 0.0010079710045829415,
+                                                                       'name': 'hydrogen',
+                                                                       'number': 1,
+                                                                       'symbol': 'H'},
+                                                           'id': -28404,
+                                                           'label': '',
+                                                           'lone_pairs': 0,
+                                                           'props': {'inRing': False},
+                                                           'radical_electrons': 0}],
+                                                'multiplicity': 2,
+                                                'props': {}},
                                         'multiplicity': 2,
                                         'number_of_rotors': 0},
                                        {'arkane_file': None,
@@ -107,9 +154,44 @@ class TestARCReaction(unittest.TestCase):
                                         'is_ts': False,
                                         'label': 'H2O',
                                         'long_thermo_description': "Bond corrections: {'H-O': 2}\n",
-                                        'mol': '1 O u0 p2 c0 {2,S} {3,S}\n'
-                                               '2 H u0 p0 c0 {1,S}\n'
-                                               '3 H u0 p0 c0 {1,S}\n',
+                                        'mol': {'atoms': [{'charge': 0,
+                                                           'edges': {-28402: 1.0, -28401: 1.0},
+                                                           'element': {'isotope': -1,
+                                                                       'mass': 0.01599939912557602,
+                                                                       'name': 'oxygen',
+                                                                       'number': 8,
+                                                                       'symbol': 'O'},
+                                                           'id': -28403,
+                                                           'label': '',
+                                                           'lone_pairs': 2,
+                                                           'props': {'inRing': False},
+                                                           'radical_electrons': 0},
+                                                          {'charge': 0,
+                                                           'edges': {-28403: 1.0},
+                                                           'element': {'isotope': -1,
+                                                                       'mass': 0.0010079710045829415,
+                                                                       'name': 'hydrogen',
+                                                                       'number': 1,
+                                                                       'symbol': 'H'},
+                                                           'id': -28402,
+                                                           'label': '',
+                                                           'lone_pairs': 0,
+                                                           'props': {'inRing': False},
+                                                           'radical_electrons': 0},
+                                                          {'charge': 0,
+                                                           'edges': {-28403: 1.0},
+                                                           'element': {'isotope': -1,
+                                                                       'mass': 0.0010079710045829415,
+                                                                       'name': 'hydrogen',
+                                                                       'number': 1,
+                                                                       'symbol': 'H'},
+                                                           'id': -28401,
+                                                           'label': '',
+                                                           'lone_pairs': 0,
+                                                           'props': {'inRing': False},
+                                                           'radical_electrons': 0}],
+                                                'multiplicity': 1,
+                                                'props': {}},
                                         'multiplicity': 1,
                                         'number_of_rotors': 0}],
                          'products': ['CH3', 'H2O'],
@@ -127,11 +209,71 @@ class TestARCReaction(unittest.TestCase):
                                         'is_ts': False,
                                         'label': 'CH4',
                                         'long_thermo_description': "Bond corrections: {'C-H': 4}\n",
-                                        'mol': '1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}\n'
-                                               '2 H u0 p0 c0 {1,S}\n'
-                                               '3 H u0 p0 c0 {1,S}\n'
-                                               '4 H u0 p0 c0 {1,S}\n'
-                                               '5 H u0 p0 c0 {1,S}\n',
+                                        'mol': {'atoms': [{'charge': 0,
+                                                           'edges': {-28413: 1.0,
+                                                                     -28412: 1.0,
+                                                                     -28411: 1.0,
+                                                                     -28410: 1.0},
+                                                           'element': {'isotope': -1,
+                                                                       'mass': 0.01201064046472311,
+                                                                       'name': 'carbon',
+                                                                       'number': 6,
+                                                                       'symbol': 'C'},
+                                                           'id': -28414,
+                                                           'label': '',
+                                                           'lone_pairs': 0,
+                                                           'props': {'inRing': False},
+                                                           'radical_electrons': 0},
+                                                          {'charge': 0,
+                                                           'edges': {-28414: 1.0},
+                                                           'element': {'isotope': -1,
+                                                                       'mass': 0.0010079710045829415,
+                                                                       'name': 'hydrogen',
+                                                                       'number': 1,
+                                                                       'symbol': 'H'},
+                                                           'id': -28413,
+                                                           'label': '',
+                                                           'lone_pairs': 0,
+                                                           'props': {'inRing': False},
+                                                           'radical_electrons': 0},
+                                                          {'charge': 0,
+                                                           'edges': {-28414: 1.0},
+                                                           'element': {'isotope': -1,
+                                                                       'mass': 0.0010079710045829415,
+                                                                       'name': 'hydrogen',
+                                                                       'number': 1,
+                                                                       'symbol': 'H'},
+                                                           'id': -28412,
+                                                           'label': '',
+                                                           'lone_pairs': 0,
+                                                           'props': {'inRing': False},
+                                                           'radical_electrons': 0},
+                                                          {'charge': 0,
+                                                           'edges': {-28414: 1.0},
+                                                           'element': {'isotope': -1,
+                                                                       'mass': 0.0010079710045829415,
+                                                                       'name': 'hydrogen',
+                                                                       'number': 1,
+                                                                       'symbol': 'H'},
+                                                           'id': -28411,
+                                                           'label': '',
+                                                           'lone_pairs': 0,
+                                                           'props': {'inRing': False},
+                                                           'radical_electrons': 0},
+                                                          {'charge': 0,
+                                                           'edges': {-28414: 1.0},
+                                                           'element': {'isotope': -1,
+                                                                       'mass': 0.0010079710045829415,
+                                                                       'name': 'hydrogen',
+                                                                       'number': 1,
+                                                                       'symbol': 'H'},
+                                                           'id': -28410,
+                                                           'label': '',
+                                                           'lone_pairs': 0,
+                                                           'props': {'inRing': False},
+                                                           'radical_electrons': 0}],
+                                                'multiplicity': 1,
+                                                'props': {}},
                                         'multiplicity': 1,
                                         'number_of_rotors': 0},
                                        {'arkane_file': None,
@@ -145,9 +287,32 @@ class TestARCReaction(unittest.TestCase):
                                         'is_ts': False,
                                         'label': 'OH',
                                         'long_thermo_description': "Bond corrections: {'H-O': 1}\n",
-                                        'mol': 'multiplicity 2\n'
-                                               '1 O u1 p2 c0 {2,S}\n'
-                                               '2 H u0 p0 c0 {1,S}\n',
+                                        'mol': {'atoms': [{'charge': 0,
+                                                           'edges': {-28408: 1.0},
+                                                           'element': {'isotope': -1,
+                                                                       'mass': 0.01599939912557602,
+                                                                       'name': 'oxygen',
+                                                                       'number': 8,
+                                                                       'symbol': 'O'},
+                                                           'id': -28409,
+                                                           'label': '',
+                                                           'lone_pairs': 2,
+                                                           'props': {'inRing': False},
+                                                           'radical_electrons': 1},
+                                                          {'charge': 0,
+                                                           'edges': {-28409: 1.0},
+                                                           'element': {'isotope': -1,
+                                                                       'mass': 0.0010079710045829415,
+                                                                       'name': 'hydrogen',
+                                                                       'number': 1,
+                                                                       'symbol': 'H'},
+                                                           'id': -28408,
+                                                           'label': '',
+                                                           'lone_pairs': 0,
+                                                           'props': {'inRing': False},
+                                                           'radical_electrons': 0}],
+                                                'multiplicity': 2,
+                                                'props': {}},
                                         'multiplicity': 2,
                                         'number_of_rotors': 0}],
                          'reactants': ['CH4', 'OH'],
@@ -160,6 +325,14 @@ class TestARCReaction(unittest.TestCase):
         rxn_dict = self.rxn1.as_dict()
         rxn = ARCReaction(reaction_dict=rxn_dict)
         self.assertEqual(rxn.label, 'CH4 + OH <=> CH3 + H2O')
+
+    def test_is_isomerization(self):
+        """Test the is_isomerization() method"""
+        self.assertFalse(self.rxn1.is_isomerization())
+        self.assertFalse(self.rxn2.is_isomerization())
+        self.assertTrue(self.rxn3.is_isomerization())
+        self.assertFalse(self.rxn4.is_isomerization())
+        self.assertFalse(self.rxn5.is_isomerization())
 
     def test_from_rmg_reaction(self):
         """Test setting up an ARCReaction from an RMG Reaction"""
@@ -786,7 +959,7 @@ class TestARCReaction(unittest.TestCase):
         p_2 = ARCSpecies(label='NH2OH', smiles='NO', xyz=nh2oh_xyz)
         rxn = ARCReaction(reactants=['NHOH', 'HO2'], products=['O2', 'NH2OH'],
                           r_species=[r_1, r_2], p_species=[p_1, p_2])
-        self.assertEqual(rxn.atom_map, [2, 6, 0, 5, 3, 1, 4])
+        self.assertEqual(rxn.atom_map, [2, 6, 0, 5, 3, 1, 4])  # todo: incorrect map!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         self.assertTrue(check_atom_map(rxn))
 
         # HO2_Elimination_from_PeroxyRadical: C2H5O3 <=> C2H4O + HO2
@@ -1181,13 +1354,17 @@ H       1.25408721   -0.86065907   -0.09003883"""
                               (0.0558910, 0.7272050, 0.0000000),
                               (-0.8942590, -0.8537420, 0.0000000)),
                    'isotopes': (16, 16, 1),
-                   'symbols': ('O', 'O', 'H')}
+                   'symbols': ('O', 'O', 'H')}  # 3, 4, 9
         r_1 = ARCSpecies(label='C2H5O3', smiles='CC(O)O[O]', xyz=c2h5o3_xyz)
         p_1 = ARCSpecies(label='C2H4O', smiles='CC=O', xyz=c2h4o_xyz)
         p_2 = ARCSpecies(label='HO2', smiles='O[O]', xyz=ho2_xyz)
         rxn = ARCReaction(reactants=['C2H5O3'], products=['HO2', 'C2H4O'],
                           r_species=[r_1], p_species=[p_1, p_2])
-        self.assertEqual(rxn.atom_map, [0, 1, 2, 8, 7, 4, 9, 5, 3, 6])
+        self.assertEqual(rxn.atom_map, [0, 1, 2, 8, 7, 3, 4, 5, 6, 9])  # [3, 4, 5] are identical in 2D
+        self.assertTrue(check_atom_map(rxn))
+        rxn = ARCReaction(reactants=['HO2', 'C2H4O'], products=['C2H5O3'],
+                          r_species=[p_1, p_2], p_species=[r_1])
+        self.assertEqual(rxn.atom_map, [0, 1, 2, 8, 7, 3, 4, 5, 6, 9])  # [3, 4, 5] are identical in 2D
         self.assertTrue(check_atom_map(rxn))
 
         # H_Abstraction: C3H6O + C4H9O <=> C3H5O + C4H10O
@@ -1253,8 +1430,8 @@ H       1.25408721   -0.86065907   -0.09003883"""
         p_2 = ARCSpecies(label='C4H10O', smiles='CC(C)CO', xyz=c4h10o_xyz)
         rxn = ARCReaction(reactants=['C3H6O', 'C4H9O'], products=['C3H5O', 'C4H10O'],
                           r_species=[r_1, r_2], p_species=[p_1, p_2])
-        self.assertEqual(rxn.atom_map, [12, 1, 11, 13, 2, 19, 6, 7, 14, 21, 9, 15,
-                                        8, 10, 0, 3, 4, 20, 17, 16, 5, 23, 18, 22])
+        self.assertEqual(rxn.atom_map, [0, 1, 3, 5, 6, 7, 2, 5+9, 8, 0+9, 6+9, 7+9, 1+9, 2+9, 3+9, 4+9, 8+9, 9+9,
+                                        10+9, 11+9, 12+9, 13+9])
         self.assertTrue(check_atom_map(rxn))
 
         # H_Abstraction: NH + N2H3 <=> NH2 + N2H2(T)

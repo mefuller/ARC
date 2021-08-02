@@ -544,14 +544,42 @@ H      -1.67091600   -1.35164600   -0.93286400"""
         expected_dict = {'number_of_rotors': 0,
                          'multiplicity': 1,
                          'arkane_file': None,
-                         'mol': """1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
-2 N u0 p1 c0 {1,S} {6,S} {7,S}
-3 H u0 p0 c0 {1,S}
-4 H u0 p0 c0 {1,S}
-5 H u0 p0 c0 {1,S}
-6 H u0 p0 c0 {2,S}
-7 H u0 p0 c0 {2,S}
-""",
+                         'mol': {'atoms':
+                                 [{'element': {'number': 6, 'symbol': 'C', 'name': 'carbon',
+                                               'mass': 0.01201064046472311, 'isotope': -1},
+                                   'radical_electrons': 0, 'charge': 0, 'label': '', 'lone_pairs': 0,
+                                   'id': -32756, 'props': {'inRing': False},
+                                   'edges': {-32755: 1.0, -32754: 1.0, -32753: 1.0, -32752: 1.0}},
+                                  {'element': {'number': 7, 'symbol': 'N', 'name': 'nitrogen',
+                                               'mass': 0.014006859622895718, 'isotope': -1},
+                                   'radical_electrons': 0, 'charge': 0, 'label': '', 'lone_pairs': 1,
+                                   'id': -32755, 'props': {'inRing': False},
+                                   'edges': {-32756: 1.0, -32751: 1.0, -32750: 1.0}},
+                                  {'element': {'number': 1, 'symbol': 'H', 'name': 'hydrogen',
+                                               'mass': 0.0010079710045829415, 'isotope': -1},
+                                   'radical_electrons': 0, 'charge': 0, 'label': '', 'lone_pairs': 0,
+                                   'id': -32754, 'props': {'inRing': False},
+                                   'edges': {-32756: 1.0}},
+                                  {'element': {'number': 1, 'symbol': 'H', 'name': 'hydrogen',
+                                               'mass': 0.0010079710045829415, 'isotope': -1},
+                                   'radical_electrons': 0, 'charge': 0, 'label': '', 'lone_pairs': 0,
+                                   'id': -32753, 'props': {'inRing': False},
+                                   'edges': {-32756: 1.0}},
+                                  {'element': {'number': 1, 'symbol': 'H', 'name': 'hydrogen',
+                                               'mass': 0.0010079710045829415, 'isotope': -1},
+                                   'radical_electrons': 0, 'charge': 0, 'label': '', 'lone_pairs': 0,
+                                   'id': -32752, 'props': {'inRing': False},
+                                   'edges': {-32756: 1.0}},
+                                  {'element': {'number': 1, 'symbol': 'H', 'name': 'hydrogen',
+                                               'mass': 0.0010079710045829415, 'isotope': -1},
+                                   'radical_electrons': 0, 'charge': 0, 'label': '', 'lone_pairs': 0,
+                                   'id': -32751, 'props': {'inRing': False},
+                                   'edges': {-32755: 1.0}},
+                                  {'element': {'number': 1, 'symbol': 'H', 'name': 'hydrogen',
+                                               'mass': 0.0010079710045829415, 'isotope': -1},
+                                   'radical_electrons': 0, 'charge': 0, 'label': '', 'lone_pairs': 0,
+                                   'id': -32750, 'props': {'inRing': False},
+                                   'edges': {-32755: 1.0}}], 'multiplicity': 1, 'props': {}},
                          'compute_thermo': True,
                          'label': 'methylamine',
                          'long_thermo_description': spc_dict['long_thermo_description'],
@@ -571,6 +599,29 @@ H      -1.67091600   -1.35164600   -0.93286400"""
         self.assertEqual(spc.label, 'OH')
         self.assertEqual(spc.mol.to_smiles(), '[OH]')
         self.assertFalse(spc.is_ts)
+
+    def test_copy(self):
+        """Test the copy() method."""
+        spc_copy = self.spc6.copy()
+        self.assertEqual(spc_copy.multiplicity, self.spc6.multiplicity)
+        self.assertEqual(spc_copy.mol.to_smiles(), self.spc6.mol.to_smiles())
+
+    def test_mol_dict_repr_round_trip(self):
+        """Test that a Molecule object survives the as_dict() and from_dict() round trip with emphasis on atom IDs."""
+        mol = Molecule(smiles='NCC')
+        mol.assign_atom_ids()
+        original_symbols = [atom.element.symbol for atom in mol.atoms]
+        original_ids = [atom.id for atom in mol.atoms]
+        original_adjlist = mol.to_adjacency_list()
+        spc = ARCSpecies(label='EA', mol=mol)
+        species_dict = spc.as_dict()
+        new_spc = ARCSpecies(species_dict=species_dict)
+        new_symbols = [atom.element.symbol for atom in new_spc.mol.atoms]
+        new_ids = [atom.id for atom in new_spc.mol.atoms]
+        new_adjlist = new_spc.mol.to_adjacency_list()
+        self.assertEqual(original_symbols, new_symbols)
+        self.assertEqual(original_ids, new_ids)
+        self.assertEqual(original_adjlist, new_adjlist)
 
     def test_determine_rotor_type(self):
         """Test that we correctly determine whether a rotor is FreeRotor or HinderedRotor"""
