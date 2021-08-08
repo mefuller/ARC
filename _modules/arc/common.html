@@ -172,6 +172,7 @@
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">pprint</span>
+<span class="kn">import</span> <span class="nn">re</span>
 <span class="kn">import</span> <span class="nn">shutil</span>
 <span class="kn">import</span> <span class="nn">subprocess</span>
 <span class="kn">import</span> <span class="nn">sys</span>
@@ -288,7 +289,7 @@
 <span class="sd">    Returns: str</span>
 <span class="sd">        The ESS log class from Arkane.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">log</span> <span class="o">=</span> <span class="n">ess_factory</span><span class="p">(</span><span class="n">log_file</span><span class="p">)</span>
+    <span class="n">log</span> <span class="o">=</span> <span class="n">ess_factory</span><span class="p">(</span><span class="n">log_file</span><span class="p">,</span> <span class="n">check_for_errors</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">log</span><span class="p">,</span> <span class="n">GaussianLog</span><span class="p">):</span>
         <span class="k">return</span> <span class="s1">&#39;gaussian&#39;</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">log</span><span class="p">,</span> <span class="n">MolproLog</span><span class="p">):</span>
@@ -331,9 +332,9 @@
                                 <span class="sa">f</span><span class="s1">&#39;strings. Got: </span><span class="si">{</span><span class="n">server_list</span><span class="si">}</span><span class="s1"> which is a </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">server_list</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
     <span class="c1"># run checks:</span>
     <span class="k">for</span> <span class="n">ess</span><span class="p">,</span> <span class="n">server_list</span> <span class="ow">in</span> <span class="n">settings_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-        <span class="k">if</span> <span class="n">ess</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;gaussian&#39;</span><span class="p">,</span> <span class="s1">&#39;qchem&#39;</span><span class="p">,</span> <span class="s1">&#39;molpro&#39;</span><span class="p">,</span> <span class="s1">&#39;orca&#39;</span><span class="p">,</span> <span class="s1">&#39;terachem&#39;</span><span class="p">,</span> <span class="s1">&#39;onedmin&#39;</span><span class="p">]:</span>
-            <span class="k">raise</span> <span class="n">SettingsError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Recognized ESS software are Gaussian, QChem, Molpro, Orca, TeraChem or OneDMin. &#39;</span>
-                                <span class="sa">f</span><span class="s1">&#39;Got: </span><span class="si">{</span><span class="n">ess</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">ess</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;gaussian&#39;</span><span class="p">,</span> <span class="s1">&#39;qchem&#39;</span><span class="p">,</span> <span class="s1">&#39;molpro&#39;</span><span class="p">,</span> <span class="s1">&#39;orca&#39;</span><span class="p">,</span> <span class="s1">&#39;terachem&#39;</span><span class="p">,</span> <span class="s1">&#39;onedmin&#39;</span><span class="p">,</span> <span class="s1">&#39;psi4&#39;</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="n">SettingsError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Recognized ESS software are Gaussian, QChem, Molpro, Orca, TeraChem, Psi4, &#39;</span>
+                                <span class="sa">f</span><span class="s1">&#39;or OneDMin. Got: </span><span class="si">{</span><span class="n">ess</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">server</span> <span class="ow">in</span> <span class="n">server_list</span><span class="p">:</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">server</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span> <span class="ow">and</span> <span class="n">server</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">not</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">servers</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
                 <span class="n">server_names</span> <span class="o">=</span> <span class="p">[</span><span class="n">name</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">servers</span><span class="o">.</span><span class="n">keys</span><span class="p">()]</span>
@@ -432,7 +433,6 @@
     <span class="n">logger</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">level</span><span class="p">,</span> <span class="s1">&#39;###############################################################&#39;</span><span class="p">)</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">level</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
 
-
     <span class="n">paths_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;ARC&#39;</span><span class="p">:</span> <span class="n">ARC_PATH</span><span class="p">,</span> <span class="s1">&#39;RMG-Py&#39;</span><span class="p">:</span> <span class="n">RMG_PATH</span><span class="p">,</span> <span class="s1">&#39;RMG-database&#39;</span><span class="p">:</span> <span class="n">RMG_DATABASE_PATH</span><span class="p">}</span>
     <span class="k">for</span> <span class="n">repo</span><span class="p">,</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">paths_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
         <span class="c1"># Extract HEAD git commit</span>
@@ -446,7 +446,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">level</span><span class="p">,</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
 
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Starting project </span><span class="si">{</span><span class="n">project</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span></div>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Starting project </span><span class="si">{</span><span class="n">project</span><span class="si">}</span><span class="se">\n\n</span><span class="s1">&#39;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="log_footer"><a class="viewcode-back" href="../../api/common.html#arc.common.log_footer">[docs]</a><span class="k">def</span> <span class="nf">log_footer</span><span class="p">(</span><span class="n">execution_time</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -537,10 +537,10 @@
 
 
 <div class="viewcode-block" id="save_yaml_file"><a class="viewcode-back" href="../../api/common.html#arc.common.save_yaml_file">[docs]</a><span class="k">def</span> <span class="nf">save_yaml_file</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-                   <span class="n">content</span><span class="p">:</span> <span class="nb">list</span> <span class="ow">or</span> <span class="nb">dict</span><span class="p">,</span>
+                   <span class="n">content</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">list</span><span class="p">,</span> <span class="nb">dict</span><span class="p">],</span>
                    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Save a YAML file (usually an input / restart file, but also conformers file)</span>
+<span class="sd">    Save a YAML file (usually an input / restart file, but also conformers file).</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        path (str): The YAML file path to save.</span>
@@ -548,13 +548,27 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
         <span class="k">raise</span> <span class="n">InputError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;path must be a string, got </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s1"> which is a </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
-    <span class="n">yaml</span><span class="o">.</span><span class="n">add_representer</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">string_representer</span><span class="p">)</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Creating a restart file...&#39;</span><span class="p">)</span>
-    <span class="n">content</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">content</span><span class="p">)</span>
+    <span class="n">yaml_str</span> <span class="o">=</span> <span class="n">to_yaml</span><span class="p">(</span><span class="n">py_content</span><span class="o">=</span><span class="n">content</span><span class="p">)</span>
     <span class="k">if</span> <span class="s1">&#39;/&#39;</span> <span class="ow">in</span> <span class="n">path</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">path</span><span class="p">)):</span>
         <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">path</span><span class="p">))</span>
     <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">content</span><span class="p">)</span></div>
+        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">yaml_str</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="to_yaml"><a class="viewcode-back" href="../../api/common.html#arc.common.to_yaml">[docs]</a><span class="k">def</span> <span class="nf">to_yaml</span><span class="p">(</span><span class="n">py_content</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">list</span><span class="p">,</span> <span class="nb">dict</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convert a Python list or dictionary to a YAML string format.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        py_content (list, dict): The Python content to save.</span>
+
+<span class="sd">    Returns: str</span>
+<span class="sd">        The corresponding YAML representation.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">yaml</span><span class="o">.</span><span class="n">add_representer</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">string_representer</span><span class="p">)</span>
+    <span class="n">yaml_str</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">py_content</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">yaml_str</span></div>
 
 
 <div class="viewcode-block" id="globalize_paths"><a class="viewcode-back" href="../../api/common.html#arc.common.globalize_paths">[docs]</a><span class="k">def</span> <span class="nf">globalize_paths</span><span class="p">(</span><span class="n">file_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -643,6 +657,19 @@
     <span class="k">if</span> <span class="n">number</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">ordinal_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
         <span class="k">return</span> <span class="n">ordinal_dict</span><span class="p">[</span><span class="n">number</span><span class="p">]</span>
     <span class="k">return</span> <span class="s1">&#39;th&#39;</span></div>
+
+
+<div class="viewcode-block" id="get_number_with_ordinal_indicator"><a class="viewcode-back" href="../../api/common.html#arc.common.get_number_with_ordinal_indicator">[docs]</a><span class="k">def</span> <span class="nf">get_number_with_ordinal_indicator</span><span class="p">(</span><span class="n">number</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Returns the number as a string with the ordinal indicator.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        number (int): An integer for which the ordinal indicator will be determined.</span>
+
+<span class="sd">    Returns: str</span>
+<span class="sd">        The number with the respective ordinal indicator.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">number</span><span class="si">}{</span><span class="n">get_ordinal_indicator</span><span class="p">(</span><span class="n">number</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span></div>
 
 
 <div class="viewcode-block" id="get_atom_radius"><a class="viewcode-back" href="../../api/common.html#arc.common.get_atom_radius">[docs]</a><span class="k">def</span> <span class="nf">get_atom_radius</span><span class="p">(</span><span class="n">symbol</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
@@ -809,11 +836,12 @@
     <span class="k">return</span> <span class="n">top</span><span class="p">,</span> <span class="ow">not</span> <span class="n">atom2</span><span class="o">.</span><span class="n">is_hydrogen</span><span class="p">()</span></div>
 
 
-<div class="viewcode-block" id="extermum_list"><a class="viewcode-back" href="../../api/common.html#arc.common.extermum_list">[docs]</a><span class="k">def</span> <span class="nf">extermum_list</span><span class="p">(</span><span class="n">lst</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
+<div class="viewcode-block" id="extremum_list"><a class="viewcode-back" href="../../api/common.html#arc.common.extremum_list">[docs]</a><span class="k">def</span> <span class="nf">extremum_list</span><span class="p">(</span><span class="n">lst</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
                   <span class="n">return_min</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-                  <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+                  <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="kc">None</span><span class="p">]]:</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    A helper function for finding the minimum of a list of numbers (int/float) where some of the entries might be None.</span>
+<span class="sd">    A helper function for finding the extremum (either minimum or maximum) of a list of numbers (int/float)</span>
+<span class="sd">    where some of the entries might be ``None``.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        lst (list): The list.</span>
@@ -821,7 +849,7 @@
 <span class="sd">                                    ``True`` for minimum, ``False`` for maximum, ``True`` by default.</span>
 
 <span class="sd">    Returns: int</span>
-<span class="sd">        The entry with the minimal value.</span>
+<span class="sd">        The entry with the minimal/maximal value.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">lst</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">None</span>
@@ -900,7 +928,7 @@
 <span class="sd">        The key.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">dictionary</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-        <span class="k">if</span> <span class="n">val</span> <span class="o">==</span> <span class="n">value</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">val</span> <span class="o">==</span> <span class="n">value</span> <span class="ow">or</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">and</span> <span class="n">val</span> <span class="o">==</span> <span class="sa">f</span><span class="s1">&#39;X</span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">):</span>
             <span class="k">return</span> <span class="n">key</span>
     <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Could not find value </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s1"> in the dictionary</span><span class="se">\n</span><span class="si">{</span><span class="n">dictionary</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span></div>
 
@@ -954,6 +982,8 @@
 <span class="sd">    Returns: bool</span>
 <span class="sd">        ``True`` if they are almost equal, ``False`` otherwise.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">xyz1</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">xyz2</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;xyz1 and xyz2 must be dictionaries, got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">xyz1</span><span class="p">)</span><span class="si">}</span><span class="s1"> and </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">xyz2</span><span class="p">)</span><span class="si">}</span><span class="s1">:</span><span class="se">\n</span><span class="si">{</span><span class="n">xyz1</span><span class="si">}</span><span class="se">\n</span><span class="si">{</span><span class="n">xyz2</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">xyz_coord1</span><span class="p">,</span> <span class="n">xyz_coord2</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">xyz1</span><span class="p">[</span><span class="s1">&#39;coords&#39;</span><span class="p">],</span> <span class="n">xyz2</span><span class="p">[</span><span class="s1">&#39;coords&#39;</span><span class="p">]):</span>
         <span class="k">for</span> <span class="n">xyz1_c</span><span class="p">,</span> <span class="n">xyz2_c</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">xyz_coord1</span><span class="p">,</span> <span class="n">xyz_coord2</span><span class="p">):</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">([</span><span class="n">xyz1_c</span><span class="p">],</span> <span class="p">[</span><span class="n">xyz2_c</span><span class="p">],</span> <span class="n">rtol</span><span class="o">=</span><span class="n">rtol</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="n">atol</span><span class="p">):</span>
@@ -1011,7 +1041,7 @@
         <span class="k">return</span> <span class="kc">False</span>  <span class="c1"># Probably standard Python interpreter</span></div>
 
 
-<div class="viewcode-block" id="is_str_float"><a class="viewcode-back" href="../../api/common.html#arc.common.is_str_float">[docs]</a><span class="k">def</span> <span class="nf">is_str_float</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<div class="viewcode-block" id="is_str_float"><a class="viewcode-back" href="../../api/common.html#arc.common.is_str_float">[docs]</a><span class="k">def</span> <span class="nf">is_str_float</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Check whether a string can be converted to a floating number.</span>
 
@@ -1024,11 +1054,11 @@
     <span class="k">try</span><span class="p">:</span>
         <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
         <span class="k">return</span> <span class="kc">True</span>
-    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">):</span>
         <span class="k">return</span> <span class="kc">False</span></div>
 
 
-<div class="viewcode-block" id="is_str_int"><a class="viewcode-back" href="../../api/common.html#arc.common.is_str_int">[docs]</a><span class="k">def</span> <span class="nf">is_str_int</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<div class="viewcode-block" id="is_str_int"><a class="viewcode-back" href="../../api/common.html#arc.common.is_str_int">[docs]</a><span class="k">def</span> <span class="nf">is_str_int</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Check whether a string can be converted to an integer.</span>
 
@@ -1041,7 +1071,7 @@
     <span class="k">try</span><span class="p">:</span>
         <span class="nb">int</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
         <span class="k">return</span> <span class="kc">True</span>
-    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">):</span>
         <span class="k">return</span> <span class="kc">False</span></div>
 
 
@@ -1261,7 +1291,7 @@
                     <span class="n">keys</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="o">...</span><span class="p">]],</span>
                     <span class="n">tolerance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span><span class="p">,</span>
                     <span class="n">raise_error</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-                    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]]:</span>
+                    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="o">...</span><span class="p">]]:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Get a key from a list of keys close in value to the given key.</span>
 <span class="sd">    Even if just one of the items in the key has a close match, use the close value.</span>
@@ -1301,6 +1331,81 @@
         <span class="c1"># couldn&#39;t find a close key</span>
         <span class="k">return</span> <span class="kc">None</span>
     <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Could not locate a key close to </span><span class="si">{</span><span class="n">key_1</span><span class="si">}</span><span class="s1"> within the tolerance </span><span class="si">{</span><span class="n">tolerance</span><span class="si">}</span><span class="s1"> in the given keys list.&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="timedelta_from_str"><a class="viewcode-back" href="../../api/common.html#arc.common.timedelta_from_str">[docs]</a><span class="k">def</span> <span class="nf">timedelta_from_str</span><span class="p">(</span><span class="n">time_str</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get a datetime.timedelta object from its str() representation</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        time_str (str): The string representation of a datetime.timedelta object.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        datetime.timedelta: The corresponding timedelta object.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">regex</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;((?P&lt;hours&gt;\d+?)hr)?((?P&lt;minutes&gt;\d+?)m)?((?P&lt;seconds&gt;\d+?)s)?&#39;</span><span class="p">)</span>
+
+    <span class="n">parts</span> <span class="o">=</span> <span class="n">regex</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">time_str</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">parts</span><span class="p">:</span>
+        <span class="k">return</span>
+    <span class="n">parts</span> <span class="o">=</span> <span class="n">parts</span><span class="o">.</span><span class="n">groupdict</span><span class="p">()</span>
+    <span class="n">time_params</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">param</span><span class="p">)</span> <span class="ow">in</span> <span class="n">parts</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">param</span><span class="p">:</span>
+            <span class="n">time_params</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">param</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="o">**</span><span class="n">time_params</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="torsions_to_scans"><a class="viewcode-back" href="../../api/common.html#arc.common.torsions_to_scans">[docs]</a><span class="k">def</span> <span class="nf">torsions_to_scans</span><span class="p">(</span><span class="n">descriptor</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]]],</span>
+                      <span class="n">direction</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+                      <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]]]:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convert torsions to scans or vice versa.</span>
+<span class="sd">    In ARC we define a torsion as a list of four atoms with 0-indices.</span>
+<span class="sd">    We define a scan  as a list of four atoms with 1-indices.</span>
+<span class="sd">    This function converts one format to the other.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        descriptor (list): The torsions or scans list.</span>
+<span class="sd">        direction (int, optional): 1: Convert torsions to scans; -1: Convert scans to torsions.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Optional[List[List[int]]]: The converted indices.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">descriptor</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">descriptor</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Expected a list, got </span><span class="si">{</span><span class="n">descriptor</span><span class="si">}</span><span class="s1"> which is a </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">descriptor</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">descriptor</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
+        <span class="n">descriptor</span> <span class="o">=</span> <span class="p">[</span><span class="n">descriptor</span><span class="p">]</span>
+    <span class="n">direction</span> <span class="o">=</span> <span class="n">direction</span> <span class="k">if</span> <span class="n">direction</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="o">-</span><span class="mi">1</span>  <span class="c1"># anything other than 1 is translated to -1</span>
+    <span class="n">new_descriptor</span> <span class="o">=</span> <span class="p">[</span><span class="n">convert_list_index_0_to_1</span><span class="p">(</span><span class="n">entry</span><span class="p">,</span> <span class="n">direction</span><span class="p">)</span> <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">descriptor</span><span class="p">]</span>
+    <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="nb">any</span><span class="p">(</span><span class="n">item</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">entry</span><span class="p">)</span> <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">new_descriptor</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Got an illegal value when converting:</span><span class="se">\n</span><span class="si">{</span><span class="n">descriptor</span><span class="si">}</span><span class="se">\n</span><span class="s1">into:</span><span class="se">\n</span><span class="si">{</span><span class="n">new_descriptor</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">new_descriptor</span></div>
+
+
+<div class="viewcode-block" id="convert_list_index_0_to_1"><a class="viewcode-back" href="../../api/common.html#arc.common.convert_list_index_0_to_1">[docs]</a><span class="k">def</span> <span class="nf">convert_list_index_0_to_1</span><span class="p">(</span><span class="n">_list</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">],</span> <span class="n">direction</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convert a list from 0-indexed to 1-indexed, or vice versa.</span>
+<span class="sd">    Ensures positive values in the resulting list.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        _list (list): The list to be converted.</span>
+<span class="sd">        direction (int, optional): Either 1 or -1 to convert 0-indexed to 1-indexed or vice versa, respectively.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError: If the new list contains negative values.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Union[list, tuple]: The converted indices.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">new_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">item</span> <span class="o">+</span> <span class="n">direction</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">_list</span><span class="p">]</span>
+    <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">val</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">new_list</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;The resulting list from converting </span><span class="si">{</span><span class="n">_list</span><span class="si">}</span><span class="s1"> has negative values:</span><span class="se">\n</span><span class="si">{</span><span class="n">new_list</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">_list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+        <span class="n">new_list</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">new_list</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">new_list</span></div>
 </pre></div>
 
            </div>

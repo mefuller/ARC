@@ -192,14 +192,12 @@
 <h2 id="_">_</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/reaction.html#arc.reaction.ARCReaction._atom_map">_atom_map (arc.reaction.ARCReaction attribute)</a>
-</li>
       <li><a href="api/species.html#arc.species.species.ARCSpecies._number_of_atoms">_number_of_atoms (arc.species.species.ARCSpecies attribute)</a>
+</li>
+      <li><a href="api/species.html#arc.species.species.ARCSpecies._radius">_radius (arc.species.species.ARCSpecies attribute)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/species.html#arc.species.species.ARCSpecies._radius">_radius (arc.species.species.ARCSpecies attribute)</a>
-</li>
       <li><a href="api/ssh.html#arc.job.ssh.SSHClient._sftp">_sftp (arc.job.ssh.SSHClient attribute)</a>
 </li>
       <li><a href="api/ssh.html#arc.job.ssh.SSHClient._ssh">_ssh (arc.job.ssh.SSHClient attribute)</a>
@@ -407,7 +405,9 @@
         <li><a href="api/species.html#arc.species.species.TSGuess.as_dict">(arc.species.species.TSGuess method)</a>
 </li>
       </ul></li>
-      <li><a href="api/reaction.html#arc.reaction.ARCReaction.atom_map">atom_map() (arc.reaction.ARCReaction property)</a>
+      <li><a href="api/reaction.html#arc.reaction.ARCReaction.atom_map">atom_map (arc.reaction.ARCReaction attribute)</a>
+</li>
+      <li><a href="api/reaction.html#id0">atom_map() (arc.reaction.ARCReaction property)</a>
 </li>
       <li><a href="api/species.html#arc.species.species.TSGuess.autotst">autotst() (arc.species.species.TSGuess method)</a>
 </li>
@@ -467,6 +467,8 @@
         <li><a href="api/species.html#arc.species.species.ARCSpecies.charge">(arc.species.species.ARCSpecies attribute)</a>
 </li>
       </ul></li>
+      <li><a href="api/reaction.html#id1">charge() (arc.reaction.ARCReaction property)</a>
+</li>
       <li><a href="api/species.html#arc.species.species.ARCSpecies.cheap_conformer">cheap_conformer (arc.species.species.ARCSpecies attribute)</a>
 </li>
       <li><a href="api/scheduler.html#arc.scheduler.Scheduler.check_all_done">check_all_done() (arc.scheduler.Scheduler method)</a>
@@ -492,6 +494,8 @@
       <li><a href="api/scheduler.html#arc.scheduler.Scheduler.check_directed_scan">check_directed_scan() (arc.scheduler.Scheduler method)</a>
 </li>
       <li><a href="api/scheduler.html#arc.scheduler.Scheduler.check_directed_scan_job">check_directed_scan_job() (arc.scheduler.Scheduler method)</a>
+</li>
+      <li><a href="api/reaction.html#arc.reaction.ARCReaction.check_done_opt_r_n_p">check_done_opt_r_n_p() (arc.reaction.ARCReaction method)</a>
 </li>
       <li><a href="api/common.html#arc.common.check_ess_settings">check_ess_settings() (in module arc.common)</a>
 </li>
@@ -621,8 +625,14 @@
 </li>
       <li><a href="api/zmat.html#arc.species.zmat.consolidate_zmat">consolidate_zmat() (in module arc.species.zmat)</a>
 </li>
-      <li><a href="api/level.html#arc.level.Level.copy">copy() (arc.level.Level method)</a>
+      <li><a href="api/common.html#arc.common.convert_list_index_0_to_1">convert_list_index_0_to_1() (in module arc.common)</a>
 </li>
+      <li><a href="api/level.html#arc.level.Level.copy">copy() (arc.level.Level method)</a>
+
+      <ul>
+        <li><a href="api/species.html#arc.species.species.ARCSpecies.copy">(arc.species.species.ARCSpecies method)</a>
+</li>
+      </ul></li>
       <li><a href="api/job.html#arc.job.job.Job.cpu_cores">cpu_cores (arc.job.job.Job attribute)</a>
 </li>
       <li><a href="api/species.html#arc.species.species.cyclic_index_i_minus_1">cyclic_index_i_minus_1() (in module arc.species.species)</a>
@@ -688,7 +698,11 @@
       <li><a href="api/trsh.html#arc.job.trsh.determine_ess_status">determine_ess_status() (in module arc.job.trsh)</a>
 </li>
       <li><a href="api/reaction.html#arc.reaction.ARCReaction.determine_family">determine_family() (arc.reaction.ARCReaction method)</a>
+
+      <ul>
+        <li><a href="api/rmgdb.html#arc.rmgdb.determine_family">(in module arc.rmgdb)</a>
 </li>
+      </ul></li>
       <li><a href="api/job.html#arc.job.job.Job.determine_job_status">determine_job_status() (arc.job.job.Job method)</a>
 </li>
       <li><a href="api/scheduler.html#arc.scheduler.Scheduler.determine_most_likely_ts_conformer">determine_most_likely_ts_conformer() (arc.scheduler.Scheduler method)</a>
@@ -697,12 +711,16 @@
 </li>
       <li><a href="api/species.html#arc.species.species.ARCSpecies.determine_multiplicity">determine_multiplicity() (arc.species.species.ARCSpecies method)</a>
 </li>
+      <li><a href="api/species.html#arc.species.species.ARCSpecies.determine_multiplicity_from_descriptors">determine_multiplicity_from_descriptors() (arc.species.species.ARCSpecies method)</a>
+</li>
+      <li><a href="api/species.html#arc.species.species.ARCSpecies.determine_multiplicity_from_xyz">determine_multiplicity_from_xyz() (arc.species.species.ARCSpecies method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/conformers.html#arc.species.conformers.determine_number_of_conformers_to_generate">determine_number_of_conformers_to_generate() (in module arc.species.conformers)</a>
 </li>
       <li><a href="api/species.html#arc.species.species.determine_occ">determine_occ() (in module arc.species.species)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/zmat.html#arc.species.zmat.determine_r_atoms">determine_r_atoms() (in module arc.species.zmat)</a>
 </li>
       <li><a href="api/rmgdb.html#arc.rmgdb.determine_reaction_family">determine_reaction_family() (in module arc.rmgdb)</a>
@@ -720,10 +738,6 @@
 </li>
       </ul></li>
       <li><a href="api/job.html#arc.job.job.Job.determine_run_time">determine_run_time() (arc.job.job.Job method)</a>
-</li>
-      <li><a href="api/reaction.html#arc.reaction.ARCReaction.determine_rxn_charge">determine_rxn_charge() (arc.reaction.ARCReaction method)</a>
-</li>
-      <li><a href="api/reaction.html#arc.reaction.ARCReaction.determine_rxn_multiplicity">determine_rxn_multiplicity() (arc.reaction.ARCReaction method)</a>
 </li>
       <li><a href="api/scale.html#arc.utils.scale.determine_scaling_factors">determine_scaling_factors() (in module arc.utils.scale)</a>
 </li>
@@ -754,6 +768,8 @@
       <li><a href="api/job.html#arc.job.job.Job.directed_scan_type">directed_scan_type (arc.job.job.Job attribute)</a>
 </li>
       <li><a href="api/job.html#arc.job.job.Job.directed_scans">directed_scans (arc.job.job.Job attribute)</a>
+</li>
+      <li><a href="api/reaction.html#arc.reaction.ARCReaction.done_opt_r_n_p">done_opt_r_n_p (arc.reaction.ARCReaction attribute)</a>
 </li>
       <li><a href="api/main.html#arc.main.ARC.dont_gen_confs">dont_gen_confs (arc.main.ARC attribute)</a>
 
@@ -827,9 +843,9 @@
         <li><a href="api/species.html#arc.species.species.TSGuess.execution_time">(arc.species.species.TSGuess attribute)</a>
 </li>
       </ul></li>
-      <li><a href="api/common.html#arc.common.extermum_list">extermum_list() (in module arc.common)</a>
-</li>
       <li><a href="api/species.html#arc.species.species.ARCSpecies.external_symmetry">external_symmetry (arc.species.species.ARCSpecies attribute)</a>
+</li>
+      <li><a href="api/common.html#arc.common.extremum_list">extremum_list() (in module arc.common)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -941,6 +957,8 @@
 </li>
       <li><a href="api/vectors.html#arc.species.vectors.get_dihedral">get_dihedral() (in module arc.species.vectors)</a>
 </li>
+      <li><a href="api/rmgdb.html#arc.rmgdb.get_family">get_family() (in module arc.rmgdb)</a>
+</li>
       <li><a href="api/conformers.html#arc.species.conformers.get_force_field_energies">get_force_field_energies() (in module arc.species.conformers)</a>
 </li>
       <li><a href="api/common.html#arc.common.get_git_branch">get_git_branch() (in module arc.common)</a>
@@ -949,12 +967,12 @@
 </li>
       <li><a href="api/local.html#arc.job.local.get_last_modified_time">get_last_modified_time() (in module arc.job.local)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/common.html#arc.common.get_logger">get_logger() (in module arc.common)</a>
 </li>
       <li><a href="api/conformers.html#arc.species.conformers.get_lowest_confs">get_lowest_confs() (in module arc.species.conformers)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/conformers.html#arc.species.conformers.get_lowest_diastereomers">get_lowest_diastereomers() (in module arc.species.conformers)</a>
 </li>
       <li><a href="api/vectors.html#arc.species.vectors.get_lp_vector">get_lp_vector() (in module arc.species.vectors)</a>
@@ -967,11 +985,21 @@
 </li>
       <li><a href="api/conformers.html#arc.species.conformers.get_number_of_chiral_centers">get_number_of_chiral_centers() (in module arc.species.conformers)</a>
 </li>
+      <li><a href="api/common.html#arc.common.get_number_with_ordinal_indicator">get_number_with_ordinal_indicator() (in module arc.common)</a>
+</li>
       <li><a href="api/common.html#arc.common.get_ordered_intersection_of_two_lists">get_ordered_intersection_of_two_lists() (in module arc.common)</a>
 </li>
       <li><a href="api/common.html#arc.common.get_ordinal_indicator">get_ordinal_indicator() (in module arc.common)</a>
 </li>
       <li><a href="api/zmat.html#arc.species.zmat.get_parameter_from_atom_indices">get_parameter_from_atom_indices() (in module arc.species.zmat)</a>
+</li>
+      <li><a href="api/reaction.html#arc.reaction.ARCReaction.get_products_xyz">get_products_xyz() (arc.reaction.ARCReaction method)</a>
+</li>
+      <li><a href="api/reaction.html#arc.reaction.ARCReaction.get_reactants_and_products">get_reactants_and_products() (arc.reaction.ARCReaction method)</a>
+</li>
+      <li><a href="api/reaction.html#arc.reaction.ARCReaction.get_rxn_charge">get_rxn_charge() (arc.reaction.ARCReaction method)</a>
+</li>
+      <li><a href="api/reaction.html#arc.reaction.ARCReaction.get_rxn_multiplicity">get_rxn_multiplicity() (arc.reaction.ARCReaction method)</a>
 </li>
       <li><a href="api/scheduler.html#arc.scheduler.Scheduler.get_servers_jobs_ids">get_servers_jobs_ids() (arc.scheduler.Scheduler method)</a>
 </li>
@@ -1062,6 +1090,8 @@
       <li><a href="api/zmat.html#arc.species.zmat.is_atom_in_new_fragment">is_atom_in_new_fragment() (in module arc.species.zmat)</a>
 </li>
       <li><a href="api/zmat.html#arc.species.zmat.is_dummy">is_dummy() (in module arc.species.zmat)</a>
+</li>
+      <li><a href="api/reaction.html#arc.reaction.ARCReaction.is_isomerization">is_isomerization() (arc.reaction.ARCReaction method)</a>
 </li>
       <li><a href="api/common.html#arc.common.is_notebook">is_notebook() (in module arc.common)</a>
 </li>
@@ -1288,6 +1318,8 @@
         <li><a href="api/species.html#arc.species.species.ARCSpecies.multiplicity">(arc.species.species.ARCSpecies attribute)</a>
 </li>
       </ul></li>
+      <li><a href="api/reaction.html#id3">multiplicity() (arc.reaction.ARCReaction property)</a>
+</li>
   </ul></td>
 </tr></table>
 
@@ -1329,7 +1361,11 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/job.html#arc.job.job.Job.occ">occ (arc.job.job.Job attribute)</a>
+
+      <ul>
+        <li><a href="api/species.html#arc.species.species.ARCSpecies.occ">(arc.species.species.ARCSpecies attribute)</a>
 </li>
+      </ul></li>
       <li><a href="api/conformers.html#arc.species.conformers.openbabel_force_field">openbabel_force_field() (in module arc.species.conformers)</a>
 </li>
       <li><a href="api/conformers.html#arc.species.conformers.openbabel_force_field_on_rdkit_conformers">openbabel_force_field_on_rdkit_conformers() (in module arc.species.conformers)</a>
@@ -1359,6 +1395,8 @@
       <li><a href="api/converter.html#arc.species.converter.order_atoms_in_mol_list">order_atoms_in_mol_list() (in module arc.species.converter)</a>
 </li>
       <li><a href="api/zmat.html#arc.species.zmat.order_fragments_by_constraints">order_fragments_by_constraints() (in module arc.species.zmat)</a>
+</li>
+      <li><a href="api/species.html#arc.species.species.ARCSpecies.original_label">original_label (arc.species.species.ARCSpecies attribute)</a>
 </li>
       <li><a href="api/main.html#arc.main.ARC.output">output (arc.main.ARC attribute)</a>
 
@@ -1524,6 +1562,12 @@
 </li>
       <li><a href="api/converter.html#arc.species.converter.remove_dummies">remove_dummies() (in module arc.species.converter)</a>
 </li>
+      <li><a href="api/reaction.html#arc.reaction.ARCReaction.remove_dup_species">remove_dup_species() (arc.reaction.ARCReaction method)</a>
+
+      <ul>
+        <li><a href="api/reaction.html#arc.reaction.remove_dup_species">(in module arc.reaction)</a>
+</li>
+      </ul></li>
       <li><a href="api/scale.html#arc.utils.scale.rename_level">rename_level() (in module arc.utils.scale)</a>
 </li>
       <li><a href="api/local.html#arc.job.local.rename_output">rename_output() (in module arc.job.local)</a>
@@ -1612,6 +1656,8 @@
         <li><a href="api/scheduler.html#arc.scheduler.Scheduler.running_jobs">(arc.scheduler.Scheduler attribute)</a>
 </li>
       </ul></li>
+      <li><a href="api/species.html#arc.species.species.ARCSpecies.rxn_index">rxn_index (arc.species.species.ARCSpecies attribute)</a>
+</li>
       <li><a href="api/species.html#arc.species.species.ARCSpecies.rxn_label">rxn_label (arc.species.species.ARCSpecies attribute)</a>
 </li>
       <li><a href="api/scheduler.html#arc.scheduler.Scheduler.rxn_list">rxn_list (arc.scheduler.Scheduler attribute)</a>
@@ -1714,6 +1760,8 @@
 </li>
       <li><a href="api/common.html#arc.common.sort_two_lists_by_the_first">sort_two_lists_by_the_first() (in module arc.common)</a>
 </li>
+      <li><a href="api/converter.html#arc.species.converter.sort_xyz_using_indices">sort_xyz_using_indices() (in module arc.species.converter)</a>
+</li>
       <li><a href="api/main.html#arc.main.ARC.sp_level">sp_level (arc.main.ARC attribute)</a>
 
       <ul>
@@ -1804,11 +1852,17 @@
 </li>
       <li><a href="api/common.html#arc.common.time_lapse">time_lapse() (in module arc.common)</a>
 </li>
+      <li><a href="api/common.html#arc.common.timedelta_from_str">timedelta_from_str() (in module arc.common)</a>
+</li>
       <li><a href="api/level.html#arc.level.Level.to_arkane_level_of_theory">to_arkane_level_of_theory() (arc.level.Level method)</a>
 </li>
       <li><a href="api/conformers.html#arc.species.conformers.to_group">to_group() (in module arc.species.conformers)</a>
 </li>
       <li><a href="api/converter.html#arc.species.converter.to_rdkit_mol">to_rdkit_mol() (in module arc.species.converter)</a>
+</li>
+      <li><a href="api/common.html#arc.common.to_yaml">to_yaml() (in module arc.common)</a>
+</li>
+      <li><a href="api/common.html#arc.common.torsions_to_scans">torsions_to_scans() (in module arc.common)</a>
 </li>
       <li><a href="api/job.html#arc.job.job.Job.total_job_memory_gb">total_job_memory_gb (arc.job.job.Job attribute)</a>
 </li>
@@ -1822,10 +1876,10 @@
 </li>
       <li><a href="api/scheduler.html#arc.scheduler.Scheduler.troubleshoot_conformer_isomorphism">troubleshoot_conformer_isomorphism() (arc.scheduler.Scheduler method)</a>
 </li>
-      <li><a href="api/scheduler.html#arc.scheduler.Scheduler.troubleshoot_ess">troubleshoot_ess() (arc.scheduler.Scheduler method)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/scheduler.html#arc.scheduler.Scheduler.troubleshoot_ess">troubleshoot_ess() (arc.scheduler.Scheduler method)</a>
+</li>
       <li><a href="api/scheduler.html#arc.scheduler.Scheduler.troubleshoot_negative_freq">troubleshoot_negative_freq() (arc.scheduler.Scheduler method)</a>
 </li>
       <li><a href="api/scheduler.html#arc.scheduler.Scheduler.troubleshoot_opt_jobs">troubleshoot_opt_jobs() (arc.scheduler.Scheduler method)</a>
@@ -1856,6 +1910,8 @@
       </ul></li>
       <li><a href="api/species.html#arc.species.species.ARCSpecies.ts_guesses">ts_guesses (arc.species.species.ARCSpecies attribute)</a>
 </li>
+      <li><a href="api/species.html#arc.species.species.ARCSpecies.ts_guesses_exhausted">ts_guesses_exhausted (arc.species.species.ARCSpecies attribute)</a>
+</li>
       <li><a href="api/reaction.html#arc.reaction.ARCReaction.ts_label">ts_label (arc.reaction.ARCReaction attribute)</a>
 </li>
       <li><a href="api/reaction.html#arc.reaction.ARCReaction.ts_methods">ts_methods (arc.reaction.ARCReaction attribute)</a>
@@ -1871,6 +1927,8 @@
       <li><a href="api/reaction.html#arc.reaction.ARCReaction.ts_species">ts_species (arc.reaction.ARCReaction attribute)</a>
 </li>
       <li><a href="api/reaction.html#arc.reaction.ARCReaction.ts_xyz_guess">ts_xyz_guess (arc.reaction.ARCReaction attribute)</a>
+</li>
+      <li><a href="api/species.html#arc.species.species.ARCSpecies.tsg_spawned">tsg_spawned (arc.species.species.ARCSpecies attribute)</a>
 </li>
       <li><a href="api/species.html#arc.species.species.TSGuess">TSGuess (class in arc.species.species)</a>
 </li>
@@ -1890,6 +1948,8 @@
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/zmat.html#arc.species.zmat.up_param">up_param() (in module arc.species.zmat)</a>
+</li>
       <li><a href="api/conformers.html#arc.species.conformers.update_mol">update_mol() (in module arc.species.conformers)</a>
 </li>
       <li><a href="api/converter.html#arc.species.converter.update_molecule">update_molecule() (in module arc.species.converter)</a>
@@ -1935,6 +1995,8 @@
       <li><a href="api/converter.html#arc.species.converter.xyz_to_coords_list">xyz_to_coords_list() (in module arc.species.converter)</a>
 </li>
       <li><a href="api/converter.html#arc.species.converter.xyz_to_dmat">xyz_to_dmat() (in module arc.species.converter)</a>
+</li>
+      <li><a href="api/converter.html#arc.species.converter.xyz_to_np_array">xyz_to_np_array() (in module arc.species.converter)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>

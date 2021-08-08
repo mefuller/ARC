@@ -190,15 +190,32 @@
 <span id="arc-rmgdb"></span><span id="rmgdb"></span><h1>arc.rmgdb<a class="headerlink" href="#module-arc.rmgdb" title="Permalink to this headline">¶</a></h1>
 <p>A module for working with the RMG database.</p>
 <dl class="py function">
+<dt id="arc.rmgdb.determine_family">
+<code class="sig-prename descclassname">arc.rmgdb.</code><code class="sig-name descname">determine_family</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">reaction</span><span class="p">:</span> <span class="n">ARCReaction</span></em>, <em class="sig-param"><span class="n">db</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>rmgpy.data.rmg.RMGDatabase<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/rmgdb.html#determine_family"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.rmgdb.determine_family" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine the RMG reaction family for an ARC reaction.
+A wrapper for ARCReaction.determine_family().
+This wrapper is useful because it makes a new instance of the rmgdb if needed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>reaction</strong> (<em>'ARCReaction'</em>) – An ARCReaction object instance.</p></li>
+<li><p><strong>db</strong> (<em>RMGDatabase</em><em>, </em><em>optional</em>) – The RMG database instance.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt id="arc.rmgdb.determine_reaction_family">
-<code class="sig-prename descclassname">arc.rmgdb.</code><code class="sig-name descname">determine_reaction_family</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">rmgdb</span><span class="p">:</span> <span class="n">rmgpy.data.rmg.RMGDatabase</span></em>, <em class="sig-param"><span class="n">reaction</span><span class="p">:</span> <span class="n">rmgpy.reaction.Reaction</span></em><span class="sig-paren">)</span> &#x2192; Tuple<span class="p">[</span>Optional<span class="p">[</span>KineticsFamily<span class="p">]</span><span class="p">, </span>bool<span class="p">]</span><a class="reference internal" href="../_modules/arc/rmgdb.html#determine_reaction_family"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.rmgdb.determine_reaction_family" title="Permalink to this definition">¶</a></dt>
-<dd><p>Determine the RMG kinetic family for a given ARCReaction object.
-Returns None if no family found or more than one family found.</p>
+<code class="sig-prename descclassname">arc.rmgdb.</code><code class="sig-name descname">determine_reaction_family</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">rmgdb</span><span class="p">:</span> <span class="n">rmgpy.data.rmg.RMGDatabase</span></em>, <em class="sig-param"><span class="n">reaction</span><span class="p">:</span> <span class="n">rmgpy.reaction.Reaction</span></em>, <em class="sig-param"><span class="n">save_order</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em><span class="sig-paren">)</span> &#x2192; Tuple<span class="p">[</span>Optional<span class="p">[</span>KineticsFamily<span class="p">]</span><span class="p">, </span>bool<span class="p">]</span><a class="reference internal" href="../_modules/arc/rmgdb.html#determine_reaction_family"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.rmgdb.determine_reaction_family" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine the RMG kinetic family for a given <code class="docutils literal notranslate"><span class="pre">ARCReaction</span></code> object instance.
+Returns <code class="docutils literal notranslate"><span class="pre">None</span></code> if no family found or more than one family found.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>rmgdb</strong> (<em>RMGDatabase</em>) – The RMG database instance.</p></li>
 <li><p><strong>reaction</strong> (<em>Reaction</em>) – The RMG Reaction object.</p></li>
+<li><p><strong>save_order</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to retain atomic order of the RMG <code class="docutils literal notranslate"><span class="pre">reaction</span></code> object instance.</p></li>
 </ul>
 </dd>
 </dl>
@@ -232,6 +249,26 @@ Assigns a list of all matching entries from both libraries and families.</p>
 </dd></dl>
 
 <dl class="py function">
+<dt id="arc.rmgdb.get_family">
+<code class="sig-prename descclassname">arc.rmgdb.</code><code class="sig-name descname">get_family</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">rmgdb</span><span class="p">:</span> <span class="n">rmgpy.data.rmg.RMGDatabase</span></em>, <em class="sig-param"><span class="n">label</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span> &#x2192; Optional<span class="p">[</span>KineticsFamily<span class="p">]</span><a class="reference internal" href="../_modules/arc/rmgdb.html#get_family"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.rmgdb.get_family" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a KineticsFamily object instance corresponding to the input family <code class="docutils literal notranslate"><span class="pre">label</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>rmgdb</strong> (<em>RMGDatabase</em>) – The RMG database instance.</p></li>
+<li><p><strong>label</strong> (<em>str</em>) – The label of the desired family.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The desired family object instance.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Optional[‘KineticsFamily’]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt id="arc.rmgdb.load_families_only">
 <code class="sig-prename descclassname">arc.rmgdb.</code><code class="sig-name descname">load_families_only</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">rmgdb</span><span class="p">:</span> <span class="n">rmgpy.data.rmg.RMGDatabase</span></em>, <em class="sig-param"><span class="n">kinetics_families</span><span class="p">:</span> <span class="n">Union<span class="p">[</span>str<span class="p">, </span>list<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">'default'</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/rmgdb.html#load_families_only"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.rmgdb.load_families_only" title="Permalink to this definition">¶</a></dt>
 <dd><p>A helper function for loading kinetic families from RMG’s database.</p>
@@ -239,7 +276,7 @@ Assigns a list of all matching entries from both libraries and families.</p>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>rmgdb</strong> (<em>RMGDatabase</em>) – The RMG database instance.</p></li>
-<li><p><strong>kinetics_families</strong> (<em>str</em><em>, </em><em>list</em><em>, </em><em>optional</em>) – Specific kinetics families to load.</p></li>
+<li><p><strong>kinetics_families</strong> (<em>Union</em><em>[</em><em>str</em><em>, </em><em>list</em><em>]</em><em>, </em><em>optional</em>) – Specific kinetics families to load.</p></li>
 </ul>
 </dd>
 </dl>
@@ -268,20 +305,19 @@ Assigns a list of all matching entries from both libraries and families.</p>
 
 <dl class="py function">
 <dt id="arc.rmgdb.loop_families">
-<code class="sig-prename descclassname">arc.rmgdb.</code><code class="sig-name descname">loop_families</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">rmgdb</span><span class="p">:</span> <span class="n">rmgpy.data.rmg.RMGDatabase</span></em>, <em class="sig-param"><span class="n">reaction</span><span class="p">:</span> <span class="n">rmgpy.reaction.Reaction</span></em><span class="sig-paren">)</span> &#x2192; List<span class="p">[</span>KineticsFamily<span class="p">]</span><a class="reference internal" href="../_modules/arc/rmgdb.html#loop_families"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.rmgdb.loop_families" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">arc.rmgdb.</code><code class="sig-name descname">loop_families</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">rmgdb</span><span class="p">:</span> <span class="n">rmgpy.data.rmg.RMGDatabase</span></em>, <em class="sig-param"><span class="n">reaction</span><span class="p">:</span> <span class="n">rmgpy.reaction.Reaction</span></em><span class="sig-paren">)</span> &#x2192; List<span class="p">[</span>Tuple<span class="p">[</span>KineticsFamily<span class="p">, </span>list<span class="p">]</span><span class="p">]</span><a class="reference internal" href="../_modules/arc/rmgdb.html#loop_families"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.rmgdb.loop_families" title="Permalink to this definition">¶</a></dt>
 <dd><p>Loop through kinetic families and return a list of tuples of (family, degenerate_reactions)
-<cite>reaction</cite> is an RMG Reaction object.
-Returns a list of (family, degenerate_reactions) tuples.</p>
+corresponding to <code class="docutils literal notranslate"><span class="pre">reaction</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>rmgdb</strong> (<em>RMGDatabase</em>) – The RMG database instance.</p></li>
-<li><p><strong>reaction</strong> (<em>Reaction</em>) – The RMG Reaction object.</p></li>
+<li><p><strong>reaction</strong> (<em>Reaction</em>) – The RMG Reaction object instance.</p></li>
 </ul>
 </dd>
 </dl>
 <dl class="simple">
-<dt>Returns: List[KineticsFamily]</dt><dd><p>Entries are corresponding RMG KineticsFamily instances.</p>
+<dt>Returns: List[Tuple[‘KineticsFamily’, list]]</dt><dd><p>Entries are tuples of a corresponding RMG KineticsFamily instance and a list of degenerate reactions.</p>
 </dd>
 </dl>
 </dd></dl>

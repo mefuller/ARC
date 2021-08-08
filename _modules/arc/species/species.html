@@ -174,8 +174,9 @@
 <span class="kn">import</span> <span class="nn">rmgpy.molecule.element</span> <span class="k">as</span> <span class="nn">elements</span>
 <span class="kn">from</span> <span class="nn">arkane.common</span> <span class="kn">import</span> <span class="n">ArkaneSpecies</span><span class="p">,</span> <span class="n">symbol_by_number</span>
 <span class="kn">from</span> <span class="nn">arkane.statmech</span> <span class="kn">import</span> <span class="n">is_linear</span>
-<span class="kn">from</span> <span class="nn">rmgpy.exceptions</span> <span class="kn">import</span> <span class="n">AtomTypeError</span><span class="p">,</span> <span class="n">InvalidAdjacencyListError</span><span class="p">,</span> <span class="n">ILPSolutionError</span><span class="p">,</span> <span class="n">ResonanceError</span>
-<span class="kn">from</span> <span class="nn">rmgpy.molecule.molecule</span> <span class="kn">import</span> <span class="n">Atom</span><span class="p">,</span> <span class="n">Molecule</span>
+<span class="kn">from</span> <span class="nn">rmgpy.exceptions</span> <span class="kn">import</span> <span class="n">AtomTypeError</span><span class="p">,</span> <span class="n">ILPSolutionError</span><span class="p">,</span> <span class="n">InvalidAdjacencyListError</span><span class="p">,</span> <span class="n">ResonanceError</span>
+<span class="kn">from</span> <span class="nn">rmgpy.molecule.element</span> <span class="kn">import</span> <span class="n">Element</span>
+<span class="kn">from</span> <span class="nn">rmgpy.molecule.molecule</span> <span class="kn">import</span> <span class="n">Atom</span><span class="p">,</span> <span class="n">Bond</span><span class="p">,</span> <span class="n">Molecule</span>
 <span class="kn">from</span> <span class="nn">rmgpy.molecule.resonance</span> <span class="kn">import</span> <span class="n">generate_kekule_structure</span>
 <span class="kn">from</span> <span class="nn">rmgpy.reaction</span> <span class="kn">import</span> <span class="n">Reaction</span>
 <span class="kn">from</span> <span class="nn">rmgpy.species</span> <span class="kn">import</span> <span class="n">Species</span>
@@ -183,11 +184,13 @@
 <span class="kn">from</span> <span class="nn">rmgpy.transport</span> <span class="kn">import</span> <span class="n">TransportData</span>
 
 <span class="kn">from</span> <span class="nn">arc.common</span> <span class="kn">import</span> <span class="p">(</span><span class="n">colliding_atoms</span><span class="p">,</span>
+                        <span class="n">convert_list_index_0_to_1</span><span class="p">,</span>
                         <span class="n">determine_symmetry</span><span class="p">,</span>
                         <span class="n">determine_top_group_indices</span><span class="p">,</span>
                         <span class="n">get_logger</span><span class="p">,</span>
-                        <span class="n">get_single_bond_length</span><span class="p">)</span>
-<span class="kn">from</span> <span class="nn">arc.exceptions</span> <span class="kn">import</span> <span class="n">SpeciesError</span><span class="p">,</span> <span class="n">RotorError</span><span class="p">,</span> <span class="n">InputError</span><span class="p">,</span> <span class="n">TSError</span>
+                        <span class="n">get_single_bond_length</span><span class="p">,</span>
+                        <span class="p">)</span>
+<span class="kn">from</span> <span class="nn">arc.exceptions</span> <span class="kn">import</span> <span class="n">InputError</span><span class="p">,</span> <span class="n">RotorError</span><span class="p">,</span> <span class="n">SpeciesError</span><span class="p">,</span> <span class="n">TSError</span>
 <span class="kn">from</span> <span class="nn">arc.imports</span> <span class="kn">import</span> <span class="n">settings</span>
 <span class="kn">from</span> <span class="nn">arc.level</span> <span class="kn">import</span> <span class="n">Level</span>
 <span class="kn">from</span> <span class="nn">arc.parser</span> <span class="kn">import</span> <span class="p">(</span><span class="n">parse_1d_scan_energies</span><span class="p">,</span>
@@ -227,10 +230,10 @@
 <span class="sd">    A class for representing stationary points.</span>
 
 <span class="sd">    Structures (rotors_dict is initialized in conformers.find_internal_rotors; pivots/scan/top values are 1-indexed)::</span>
-
-<span class="sd">            rotors_dict: {0: {&#39;pivots&#39;: ``list``,</span>
-<span class="sd">                              &#39;top&#39;: ``list``,</span>
-<span class="sd">                              &#39;scan&#39;: ``list``,</span>
+<span class="sd">            rotors_dict: {0: {&#39;pivots&#39;: ``List[int]``,  # 1-indexed</span>
+<span class="sd">                              &#39;top&#39;: ``List[int]``,  # 1-indexed</span>
+<span class="sd">                              &#39;scan&#39;: ``List[int]``,  # 1-indexed</span>
+<span class="sd">                              &#39;torsion&#39;: ``List[int]``,  # 0-indexed</span>
 <span class="sd">                              &#39;number_of_running_jobs&#39;: ``int``,</span>
 <span class="sd">                              &#39;success&#39;: ``bool``,</span>
 <span class="sd">                              &#39;invalidation_reason&#39;: ``str``,</span>
@@ -279,6 +282,7 @@
 <span class="sd">        ts_number (int, optional): An auto-generated number associating the TS ARCSpecies object with the corresponding</span>
 <span class="sd">                                   :ref:`ARCReaction &lt;reaction&gt;` object.</span>
 <span class="sd">        rxn_label (str, optional): The reaction string (relevant for TSs).</span>
+<span class="sd">        rxn_index (int, optional): The reaction index which is the respective key to the Scheduler rxn_dict.</span>
 <span class="sd">        external_symmetry (int, optional): The external symmetry of the species (not including rotor symmetries).</span>
 <span class="sd">        optical_isomers (int, optional): Whether (=2) or not (=1) the species has chiral center/s.</span>
 <span class="sd">        run_time (timedelta, optional): Overall species execution time.</span>
@@ -314,8 +318,8 @@
 <span class="sd">                                Specifying &#39;_diagonal&#39; will increment all the respective dihedrals together,</span>
 <span class="sd">                                resulting in a 1D scan instead of an ND scan.</span>
 <span class="sd">                                Values are nested lists. Each value is a list where the entries are either pivot lists</span>
-<span class="sd">                                (e.g., [1,5]) or lists of pivot lists (e.g., [[1,5], [6,8]]), or a mix</span>
-<span class="sd">                                (e.g., [[4,8], [[6,9], [3, 4]]). The requested directed scan type will be executed</span>
+<span class="sd">                                (e.g., [1, 5]) or lists of pivot lists (e.g., [[1, 5], [6, 8]]), or a mix</span>
+<span class="sd">                                (e.g., [[4, 8], [[6, 9], [3, 4]]). The requested directed scan type will be executed</span>
 <span class="sd">                                separately for each list entry in the value. A list entry that contains only two pivots</span>
 <span class="sd">                                will result in a 1D scan, while a list entry with N pivots will consider all of them,</span>
 <span class="sd">                                and will result in an ND scan if &#39;_diagonal&#39; is not specified.</span>
@@ -339,9 +343,11 @@
 <span class="sd">        fragments (Optional[List[List[int]]]):</span>
 <span class="sd">            Fragments represented by this species, i.e., as in a VdW well or a TS.</span>
 <span class="sd">            Entries are atom index lists of all atoms in a fragment, each list represents a different fragment.</span>
+<span class="sd">        occ (int, optional): The number of occupied orbitals (core + val) from a molpro CCSD sp calc.</span>
 
 <span class="sd">    Attributes:</span>
 <span class="sd">        label (str): The species&#39; label.</span>
+<span class="sd">        original_label (str): The species&#39; label prior to modifications (removing fornidden characters).</span>
 <span class="sd">        multiplicity (int): The species&#39; electron spin multiplicity. Can be determined from the adjlist/smiles/xyz</span>
 <span class="sd">                            (If unspecified, assumed to be either a singlet or a doublet).</span>
 <span class="sd">        charge (int): The species&#39; net charge. Assumed to be 0 if unspecified.</span>
@@ -379,7 +385,7 @@
 <span class="sd">        e0_only (bool): Whether to only run statmech (w/o thermo) to compute E0.</span>
 <span class="sd">        thermo (HeatCapacityModel): The thermodata calculated by ARC.</span>
 <span class="sd">        rmg_thermo (HeatCapacityModel): The thermodata generated by RMG for comparison.</span>
-<span class="sd">        long_thermo_description (str): A description for the species entry in the thermo library outputed.</span>
+<span class="sd">        long_thermo_description (str): A description for the species entry in the thermo library outputted.</span>
 <span class="sd">        ts_methods (list): Methods to try for generating TS guesses. If Species is a TS and `ts_methods` is an empty</span>
 <span class="sd">                           list, then xyz (user guess) must be given. If `ts_methods` is None, it will be set to the</span>
 <span class="sd">                           default methods.</span>
@@ -390,10 +396,14 @@
 <span class="sd">        chosen_ts_method (str): The TS method that was actually used for optimization.</span>
 <span class="sd">        ts_conf_spawned (bool): Whether conformers were already spawned for the Species (representing a TS) based on its</span>
 <span class="sd">                                TSGuess objects.</span>
+<span class="sd">        tsg_spawned (bool): If this species is a TS, this attribute describes whether TS guess jobs were already spawned.</span>
+<span class="sd">        ts_guesses_exhausted (bool): Whether all TS guesses were tried out with no luck</span>
+<span class="sd">                                     (``True`` if no convergence achieved).</span>
 <span class="sd">        ts_number (int): An auto-generated number associating the TS ARCSpecies object with the corresponding</span>
 <span class="sd">                         :ref:`ARCReaction &lt;reaction&gt;` object.</span>
 <span class="sd">        ts_report (str): A description of all methods used for guessing a TS and their ranking.</span>
 <span class="sd">        rxn_label (str): The reaction string (relevant for TSs).</span>
+<span class="sd">        rxn_index (int): The reaction index which is the respective key to the Scheduler rxn_dict.</span>
 <span class="sd">        arkane_file (str): Path to the Arkane Species file generated in processor.</span>
 <span class="sd">        yml_path (str): Path to an Arkane YAML file representing a species (for loading the object).</span>
 <span class="sd">        checkfile (str): The local path to the latest checkfile by Gaussian for the species.</span>
@@ -416,7 +426,7 @@
 <span class="sd">                     Entries are bonded atom indices tuples (1-indexed). An &#39;all_h&#39; string entry is also allowed,</span>
 <span class="sd">                     triggering BDE calculations for all hydrogen atoms in the molecule.</span>
 <span class="sd">        directed_rotors (dict): Execute a directed internal rotation scan (i.e., a series of constrained optimizations).</span>
-<span class="sd">                                Data is in 3 levels of nested lists, converted from pivots to four-atom scan indices.</span>
+<span class="sd">                                Data is in 3 levels of nested lists, converted from pivots to four-atom torsion indices.</span>
 <span class="sd">        consider_all_diastereomers (bool, optional): Whether to consider all different chiralities (tetrahydral carbon</span>
 <span class="sd">                                                     centers, nitrogen inversions, and cis/trans double bonds) when</span>
 <span class="sd">                                                     generating conformers. ``True`` to consider all.</span>
@@ -426,6 +436,7 @@
 <span class="sd">        fragments (Optional[List[List[int]]]):</span>
 <span class="sd">            Fragments represented by this species, i.e., as in a VdW well or a TS.</span>
 <span class="sd">            Entries are atom index lists of all atoms in a fragment, each list represents a different fragment.</span>
+<span class="sd">        occ (int): The number of occupied orbitals (core + val) from a molpro CCSD sp calc.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
@@ -447,11 +458,13 @@
                  <span class="n">mol</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Molecule</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">multiplicity</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">number_of_radicals</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">occ</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">optical_isomers</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">preserve_param_in_scan</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">list</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">rmg_species</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Species</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">run_time</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">rxn_label</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">rxn_index</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">smiles</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
                  <span class="n">species_dict</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">ts_methods</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -480,6 +493,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">multiplicity</span> <span class="o">=</span> <span class="n">multiplicity</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">number_of_radicals</span> <span class="o">=</span> <span class="n">number_of_radicals</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">external_symmetry</span> <span class="o">=</span> <span class="n">external_symmetry</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">occ</span> <span class="o">=</span> <span class="n">occ</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">optical_isomers</span> <span class="o">=</span> <span class="n">optical_isomers</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">charge</span> <span class="o">=</span> <span class="n">charge</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">run_time</span> <span class="o">=</span> <span class="n">run_time</span>
@@ -487,6 +501,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">transport_data</span> <span class="o">=</span> <span class="n">TransportData</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">yml_path</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fragments</span> <span class="o">=</span> <span class="n">fragments</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">original_label</span> <span class="o">=</span> <span class="kc">None</span>
 
         <span class="k">if</span> <span class="n">species_dict</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="c1"># Reading from a dictionary (it&#39;s possible that the dict contain only a &#39;yml_path&#39; argument, check first)</span>
@@ -525,6 +540,7 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">ts_methods</span> <span class="o">=</span> <span class="kc">None</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">rxn_label</span> <span class="o">=</span> <span class="n">rxn_label</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rxn_index</span> <span class="o">=</span> <span class="n">rxn_index</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">successful_methods</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">unsuccessful_methods</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">chosen_ts_method</span> <span class="o">=</span> <span class="kc">None</span>
@@ -539,6 +555,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">number_of_rotors</span> <span class="o">=</span> <span class="mi">0</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">rotors_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">rmg_species</span> <span class="o">=</span> <span class="n">rmg_species</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tsg_spawned</span> <span class="o">=</span> <span class="kc">False</span>
             <span class="k">if</span> <span class="n">bond_corrections</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">bond_corrections</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
             <span class="k">else</span><span class="p">:</span>
@@ -599,9 +616,9 @@
                         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">bond_corrections</span><span class="p">:</span>
                             <span class="bp">self</span><span class="o">.</span><span class="n">long_thermo_description</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;Bond corrections: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">bond_corrections</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span>
 
-            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">bond_corrections</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_thermo</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">bond_corrections</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_thermo</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">number_of_atoms</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
                 <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Cannot determine bond additivity corrections (BAC) for species </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="si">}</span><span class="s1"> based on &#39;</span>
-                               <span class="sa">f</span><span class="s1">&#39;xyz coordinates only. For better thermoproperties, provide bond corrections.&#39;</span><span class="p">)</span>
+                               <span class="sa">f</span><span class="s1">&#39;xyz coordinates only. For better thermodynamic properties, provide bond corrections.&#39;</span><span class="p">)</span>
 
             <span class="bp">self</span><span class="o">.</span><span class="n">neg_freqs_trshed</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
 
@@ -633,7 +650,7 @@
                                        <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">preserve_param_in_scan</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
                 <span class="k">if</span> <span class="mi">0</span> <span class="ow">in</span> <span class="n">entry</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="n">SpeciesError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;preserve_param_in_scan must be 1-indexed, got:</span><span class="se">\n</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">preserve_param_in_scan</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">label</span> <span class="o">=</span> <span class="n">check_label</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">original_label</span> <span class="o">=</span> <span class="n">check_label</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="p">)</span>
         <span class="n">allowed_keys</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;brute_force_sp&#39;</span><span class="p">,</span> <span class="s1">&#39;brute_force_opt&#39;</span><span class="p">,</span> <span class="s1">&#39;cont_opt&#39;</span><span class="p">,</span> <span class="s1">&#39;ess&#39;</span><span class="p">,</span>
                         <span class="s1">&#39;brute_force_sp_diagonal&#39;</span><span class="p">,</span> <span class="s1">&#39;brute_force_opt_diagonal&#39;</span><span class="p">,</span> <span class="s1">&#39;cont_opt_diagonal&#39;</span><span class="p">]</span>
         <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">directed_rotors</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
@@ -697,8 +714,8 @@
 <span class="sd">        Determine the largest distance from the coordinate system origin attributed to one of the molecule&#39;s</span>
 <span class="sd">        atoms in 3D space.</span>
 
-<span class="sd">        Returns: float</span>
-<span class="sd">            The radius in Angstrom.</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            float: The radius in Angstrom.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_radius</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_radius</span> <span class="o">=</span> <span class="n">get_xyz_radius</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_xyz</span><span class="p">())</span>
@@ -709,6 +726,16 @@
     <span class="k">def</span> <span class="nf">radius</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Allow setting the radius&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_radius</span> <span class="o">=</span> <span class="n">value</span>
+
+<div class="viewcode-block" id="ARCSpecies.copy"><a class="viewcode-back" href="../../../api/species.html#arc.species.species.ARCSpecies.copy">[docs]</a>    <span class="k">def</span> <span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get a copy of this object instance.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            ARCSpecies: A copy of this object instance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">species_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">as_dict</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">ARCSpecies</span><span class="p">(</span><span class="n">species_dict</span><span class="o">=</span><span class="n">species_dict</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="ARCSpecies.as_dict"><a class="viewcode-back" href="../../../api/species.html#arc.species.species.ARCSpecies.as_dict">[docs]</a>    <span class="k">def</span> <span class="nf">as_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;A helper function for dumping this object as a dictionary in a YAML file for restarting ARC&quot;&quot;&quot;</span>
@@ -736,13 +763,17 @@
             <span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;ts_methods&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ts_methods</span>
             <span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;ts_guesses&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">tsg</span><span class="o">.</span><span class="n">as_dict</span><span class="p">()</span> <span class="k">for</span> <span class="n">tsg</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ts_guesses</span><span class="p">]</span>
             <span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;ts_conf_spawned&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ts_conf_spawned</span>
+            <span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;ts_guesses_exhausted&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ts_guesses_exhausted</span>
             <span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;ts_number&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ts_number</span>
             <span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;ts_report&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ts_report</span>
             <span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;rxn_label&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rxn_label</span>
+            <span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;rxn_index&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rxn_index</span>
             <span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;successful_methods&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">successful_methods</span>
             <span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;unsuccessful_methods&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">unsuccessful_methods</span>
             <span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;chosen_ts_method&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">chosen_ts_method</span>
             <span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;chosen_ts&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">chosen_ts</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">original_label</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;original_label&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">original_label</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">e_elect</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;e_elect&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">e_elect</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">fragments</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -751,6 +782,8 @@
             <span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;e0&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">e0</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">e0_only</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">False</span><span class="p">:</span>
             <span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;e0_only&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">e0_only</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tsg_spawned</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">False</span><span class="p">:</span>
+            <span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;tsg_spawned&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tsg_spawned</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">yml_path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;yml_path&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">yml_path</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -766,7 +799,24 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">bond_corrections</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;bond_corrections&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bond_corrections</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mol</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;mol&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mol</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">deep</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">to_adjacency_list</span><span class="p">()</span>
+            <span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;mol&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;atoms&#39;</span><span class="p">:</span> <span class="p">[{</span><span class="s1">&#39;element&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;number&#39;</span><span class="p">:</span> <span class="n">atom</span><span class="o">.</span><span class="n">element</span><span class="o">.</span><span class="n">number</span><span class="p">,</span>
+                                                          <span class="s1">&#39;symbol&#39;</span><span class="p">:</span>  <span class="n">atom</span><span class="o">.</span><span class="n">element</span><span class="o">.</span><span class="n">symbol</span><span class="p">,</span>
+                                                          <span class="s1">&#39;name&#39;</span><span class="p">:</span>  <span class="n">atom</span><span class="o">.</span><span class="n">element</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                                                          <span class="s1">&#39;mass&#39;</span><span class="p">:</span>  <span class="n">atom</span><span class="o">.</span><span class="n">element</span><span class="o">.</span><span class="n">mass</span><span class="p">,</span>
+                                                          <span class="s1">&#39;isotope&#39;</span><span class="p">:</span>  <span class="n">atom</span><span class="o">.</span><span class="n">element</span><span class="o">.</span><span class="n">isotope</span><span class="p">,</span>
+                                                          <span class="p">},</span>
+                                              <span class="s1">&#39;radical_electrons&#39;</span><span class="p">:</span> <span class="n">atom</span><span class="o">.</span><span class="n">radical_electrons</span><span class="p">,</span>
+                                              <span class="s1">&#39;charge&#39;</span><span class="p">:</span> <span class="n">atom</span><span class="o">.</span><span class="n">charge</span><span class="p">,</span>
+                                              <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="n">atom</span><span class="o">.</span><span class="n">label</span><span class="p">,</span>
+                                              <span class="s1">&#39;lone_pairs&#39;</span><span class="p">:</span> <span class="n">atom</span><span class="o">.</span><span class="n">lone_pairs</span><span class="p">,</span>
+                                              <span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="n">atom</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+                                              <span class="s1">&#39;props&#39;</span><span class="p">:</span> <span class="n">atom</span><span class="o">.</span><span class="n">props</span><span class="p">,</span>
+                                              <span class="s1">&#39;edges&#39;</span><span class="p">:</span> <span class="p">{</span><span class="n">atom_2</span><span class="o">.</span><span class="n">id</span><span class="p">:</span> <span class="n">bond</span><span class="o">.</span><span class="n">order</span>
+                                                        <span class="k">for</span> <span class="n">atom_2</span><span class="p">,</span> <span class="n">bond</span> <span class="ow">in</span> <span class="n">atom</span><span class="o">.</span><span class="n">edges</span><span class="o">.</span><span class="n">items</span><span class="p">()},</span>
+                                              <span class="p">}</span> <span class="k">for</span> <span class="n">atom</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">mol</span><span class="o">.</span><span class="n">atoms</span><span class="p">],</span>
+                                   <span class="s1">&#39;multiplicity&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">mol</span><span class="o">.</span><span class="n">multiplicity</span><span class="p">,</span>
+                                   <span class="s1">&#39;props&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">mol</span><span class="o">.</span><span class="n">props</span><span class="p">,</span>
+                                   <span class="p">}</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial_xyz</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;initial_xyz&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">xyz_to_str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">initial_xyz</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">final_xyz</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -775,10 +825,12 @@
             <span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;zmat&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">zmat</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">checkfile</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;checkfile&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">checkfile</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">occ</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;occ&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">occ</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">most_stable_conformer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;most_stable_conformer&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">most_stable_conformer</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cheap_conformer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;cheap_conformer&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cheap_conformer</span>
+            <span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;cheap_conformer&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">xyz_to_str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cheap_conformer</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">recent_md_conformer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;recent_md_conformer&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">xyz_to_str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">recent_md_conformer</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_radius</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -827,16 +879,20 @@
         <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">InputError</span><span class="p">(</span><span class="s1">&#39;All species must have a label&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">run_time</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;run_time&#39;</span><span class="p">])</span> <span class="k">if</span> <span class="s1">&#39;run_time&#39;</span> <span class="ow">in</span> <span class="n">species_dict</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">original_label</span> <span class="o">=</span> <span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;original_label&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="s1">&#39;original_label&#39;</span> <span class="ow">in</span> <span class="n">species_dict</span> <span class="k">else</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">t1</span> <span class="o">=</span> <span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;t1&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="s1">&#39;t1&#39;</span> <span class="ow">in</span> <span class="n">species_dict</span> <span class="k">else</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">e_elect</span> <span class="o">=</span> <span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;e_elect&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="s1">&#39;e_elect&#39;</span> <span class="ow">in</span> <span class="n">species_dict</span> <span class="k">else</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">e0</span> <span class="o">=</span> <span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;e0&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="s1">&#39;e0&#39;</span> <span class="ow">in</span> <span class="n">species_dict</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tsg_spawned</span> <span class="o">=</span> <span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;tsg_spawned&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="s1">&#39;tsg_spawned&#39;</span> <span class="ow">in</span> <span class="n">species_dict</span> <span class="k">else</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">occ</span> <span class="o">=</span> <span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;occ&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="s1">&#39;occ&#39;</span> <span class="ow">in</span> <span class="n">species_dict</span> <span class="k">else</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">arkane_file</span> <span class="o">=</span> <span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;arkane_file&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="s1">&#39;arkane_file&#39;</span> <span class="ow">in</span> <span class="n">species_dict</span> <span class="k">else</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">yml_path</span> <span class="o">=</span> <span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;yml_path&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="s1">&#39;yml_path&#39;</span> <span class="ow">in</span> <span class="n">species_dict</span> <span class="k">else</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">rxn_label</span> <span class="o">=</span> <span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;rxn_label&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="s1">&#39;rxn_label&#39;</span> <span class="ow">in</span> <span class="n">species_dict</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rxn_index</span> <span class="o">=</span> <span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;rxn_index&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="s1">&#39;rxn_index&#39;</span> <span class="ow">in</span> <span class="n">species_dict</span> <span class="k">else</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_radius</span> <span class="o">=</span> <span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;radius&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="s1">&#39;radius&#39;</span> <span class="ow">in</span> <span class="n">species_dict</span> <span class="k">else</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">most_stable_conformer</span> <span class="o">=</span> <span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;most_stable_conformer&#39;</span><span class="p">]</span> \
             <span class="k">if</span> <span class="s1">&#39;most_stable_conformer&#39;</span> <span class="ow">in</span> <span class="n">species_dict</span> <span class="k">else</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">cheap_conformer</span> <span class="o">=</span> <span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;cheap_conformer&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="s1">&#39;cheap_conformer&#39;</span> <span class="ow">in</span> <span class="n">species_dict</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cheap_conformer</span> <span class="o">=</span> <span class="n">check_xyz_dict</span><span class="p">(</span><span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;cheap_conformer&#39;</span><span class="p">])</span> <span class="k">if</span> <span class="s1">&#39;cheap_conformer&#39;</span> <span class="ow">in</span> <span class="n">species_dict</span> <span class="k">else</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">recent_md_conformer</span> <span class="o">=</span> <span class="n">str_to_xyz</span><span class="p">(</span><span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;recent_md_conformer&#39;</span><span class="p">])</span> \
             <span class="k">if</span> <span class="s1">&#39;recent_md_conformer&#39;</span> <span class="ow">in</span> <span class="n">species_dict</span> <span class="k">else</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fragments</span> <span class="o">=</span> <span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;fragments&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="s1">&#39;fragments&#39;</span> <span class="ow">in</span> <span class="n">species_dict</span> <span class="k">else</span> <span class="kc">None</span>
@@ -848,9 +904,11 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">conf_is_isomorphic</span> <span class="o">=</span> <span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;conf_is_isomorphic&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="s1">&#39;conf_is_isomorphic&#39;</span> <span class="ow">in</span> <span class="n">species_dict</span> <span class="k">else</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">zmat</span> <span class="o">=</span> <span class="n">check_zmat_dict</span><span class="p">(</span><span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;zmat&#39;</span><span class="p">])</span> <span class="k">if</span> <span class="s1">&#39;zmat&#39;</span> <span class="ow">in</span> <span class="n">species_dict</span> <span class="k">else</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">is_ts</span> <span class="o">=</span> <span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;is_ts&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="s1">&#39;is_ts&#39;</span> <span class="ow">in</span> <span class="n">species_dict</span> <span class="k">else</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ts_conf_spawned</span> <span class="o">=</span> <span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;ts_conf_spawned&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="s1">&#39;ts_conf_spawned&#39;</span> <span class="ow">in</span> <span class="n">species_dict</span> \
+            <span class="k">else</span> <span class="kc">False</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_ts</span> <span class="k">else</span> <span class="kc">None</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_ts</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">ts_conf_spawned</span> <span class="o">=</span> <span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;ts_conf_spawned&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="s1">&#39;ts_conf_spawned&#39;</span> <span class="ow">in</span> <span class="n">species_dict</span> <span class="k">else</span> <span class="kc">False</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">ts_number</span> <span class="o">=</span> <span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;ts_number&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="s1">&#39;ts_number&#39;</span> <span class="ow">in</span> <span class="n">species_dict</span> <span class="k">else</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ts_guesses_exhausted</span> <span class="o">=</span> <span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;ts_guesses_exhausted&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="s1">&#39;ts_guesses_exhausted&#39;</span> <span class="ow">in</span> <span class="n">species_dict</span> <span class="k">else</span> <span class="kc">False</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">ts_report</span> <span class="o">=</span> <span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;ts_report&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="s1">&#39;ts_report&#39;</span> <span class="ow">in</span> <span class="n">species_dict</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span>
             <span class="n">ts_methods</span> <span class="o">=</span> <span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;ts_methods&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="s1">&#39;ts_methods&#39;</span> <span class="ow">in</span> <span class="n">species_dict</span> <span class="k">else</span> <span class="kc">None</span>
             <span class="k">if</span> <span class="n">ts_methods</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -887,12 +945,41 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">optical_isomers</span> <span class="o">=</span> <span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;optical_isomers&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="s1">&#39;optical_isomers&#39;</span> <span class="ow">in</span> <span class="n">species_dict</span> <span class="k">else</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">neg_freqs_trshed</span> <span class="o">=</span> <span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;neg_freqs_trshed&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="s1">&#39;neg_freqs_trshed&#39;</span> <span class="ow">in</span> <span class="n">species_dict</span> <span class="k">else</span> <span class="nb">list</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">bond_corrections</span> <span class="o">=</span> <span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;bond_corrections&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="s1">&#39;bond_corrections&#39;</span> <span class="ow">in</span> <span class="n">species_dict</span> <span class="k">else</span> <span class="nb">dict</span><span class="p">()</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">mol</span> <span class="o">=</span> <span class="n">Molecule</span><span class="p">()</span><span class="o">.</span><span class="n">from_adjacency_list</span><span class="p">(</span><span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;mol&#39;</span><span class="p">],</span> <span class="n">raise_atomtype_exception</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                                                      <span class="n">raise_charge_exception</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="k">if</span> <span class="s1">&#39;mol&#39;</span> <span class="ow">in</span> <span class="n">species_dict</span> <span class="k">else</span> <span class="kc">None</span>
-        <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="n">AtomTypeError</span><span class="p">,</span> <span class="n">InvalidAdjacencyListError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Could not read RMG adjacency list </span><span class="si">{</span><span class="n">species_dict</span><span class="p">[</span><span class="s2">&quot;mol&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="s2">&quot;mol&quot;</span> <span class="ow">in</span> <span class="n">species_dict</span> <span class="k">else</span> <span class="kc">None</span><span class="si">}</span><span class="s1">. &#39;</span>
-                         <span class="sa">f</span><span class="s1">&#39;Got:</span><span class="se">\n</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s1">&#39;mol&#39;</span> <span class="ow">in</span> <span class="n">species_dict</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;mol&#39;</span><span class="p">],</span> <span class="nb">str</span><span class="p">):</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">mol</span> <span class="o">=</span> <span class="n">Molecule</span><span class="p">()</span><span class="o">.</span><span class="n">from_adjacency_list</span><span class="p">(</span><span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;mol&#39;</span><span class="p">],</span>
+                                                              <span class="n">raise_atomtype_exception</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                                                              <span class="n">raise_charge_exception</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="n">AtomTypeError</span><span class="p">,</span> <span class="n">InvalidAdjacencyListError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Could not read RMG adjacency list </span><span class="si">{</span><span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;mol&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">.</span><span class="se">\n</span><span class="s2">Got:</span><span class="se">\n</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">mol</span> <span class="o">=</span> <span class="n">Molecule</span><span class="p">(</span><span class="n">multiplicity</span><span class="o">=</span><span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;mol&#39;</span><span class="p">][</span><span class="s1">&#39;multiplicity&#39;</span><span class="p">],</span>
+                                    <span class="n">props</span><span class="o">=</span><span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;mol&#39;</span><span class="p">][</span><span class="s1">&#39;props&#39;</span><span class="p">])</span>
+                <span class="n">atoms</span> <span class="o">=</span> <span class="p">[</span><span class="n">Atom</span><span class="p">(</span><span class="n">element</span><span class="o">=</span><span class="n">Element</span><span class="p">(</span><span class="n">number</span><span class="o">=</span><span class="n">atom_dict</span><span class="p">[</span><span class="s1">&#39;element&#39;</span><span class="p">][</span><span class="s1">&#39;number&#39;</span><span class="p">],</span>
+                                              <span class="n">symbol</span><span class="o">=</span><span class="n">atom_dict</span><span class="p">[</span><span class="s1">&#39;element&#39;</span><span class="p">][</span><span class="s1">&#39;symbol&#39;</span><span class="p">],</span>
+                                              <span class="n">name</span><span class="o">=</span><span class="n">atom_dict</span><span class="p">[</span><span class="s1">&#39;element&#39;</span><span class="p">][</span><span class="s1">&#39;name&#39;</span><span class="p">],</span>
+                                              <span class="n">mass</span><span class="o">=</span><span class="n">atom_dict</span><span class="p">[</span><span class="s1">&#39;element&#39;</span><span class="p">][</span><span class="s1">&#39;mass&#39;</span><span class="p">],</span>
+                                              <span class="n">isotope</span><span class="o">=</span><span class="n">atom_dict</span><span class="p">[</span><span class="s1">&#39;element&#39;</span><span class="p">][</span><span class="s1">&#39;isotope&#39;</span><span class="p">],</span>
+                                              <span class="p">),</span>
+                              <span class="n">radical_electrons</span><span class="o">=</span><span class="n">atom_dict</span><span class="p">[</span><span class="s1">&#39;radical_electrons&#39;</span><span class="p">],</span>
+                              <span class="n">charge</span><span class="o">=</span><span class="n">atom_dict</span><span class="p">[</span><span class="s1">&#39;charge&#39;</span><span class="p">],</span>
+                              <span class="n">lone_pairs</span><span class="o">=</span><span class="n">atom_dict</span><span class="p">[</span><span class="s1">&#39;lone_pairs&#39;</span><span class="p">],</span>
+                              <span class="nb">id</span><span class="o">=</span><span class="n">atom_dict</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">],</span>
+                              <span class="n">props</span><span class="o">=</span><span class="n">atom_dict</span><span class="p">[</span><span class="s1">&#39;props&#39;</span><span class="p">],</span>
+                              <span class="p">)</span> <span class="k">for</span> <span class="n">atom_dict</span> <span class="ow">in</span> <span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;mol&#39;</span><span class="p">][</span><span class="s1">&#39;atoms&#39;</span><span class="p">]]</span>
+                <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">atom</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">atoms</span><span class="p">):</span>
+                    <span class="n">edges</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+                    <span class="k">for</span> <span class="n">atom_2_id</span><span class="p">,</span> <span class="n">bond_order</span> <span class="ow">in</span> <span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;mol&#39;</span><span class="p">][</span><span class="s1">&#39;atoms&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;edges&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                        <span class="k">for</span> <span class="n">atom_2</span> <span class="ow">in</span> <span class="n">atoms</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="n">atom_2</span><span class="o">.</span><span class="n">id</span> <span class="o">==</span> <span class="n">atom_2_id</span><span class="p">:</span>
+                                <span class="k">break</span>
+                        <span class="n">edges</span><span class="p">[</span><span class="n">atom_2</span><span class="p">]</span> <span class="o">=</span> <span class="n">Bond</span><span class="p">(</span><span class="n">atom</span><span class="p">,</span> <span class="n">atom_2</span><span class="p">,</span> <span class="n">bond_order</span><span class="p">)</span>
+                    <span class="n">atom</span><span class="o">.</span><span class="n">edges</span> <span class="o">=</span> <span class="n">edges</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">mol</span><span class="o">.</span><span class="n">atoms</span> <span class="o">=</span> <span class="n">atoms</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">mol</span><span class="o">.</span><span class="n">update_atomtypes</span><span class="p">(</span><span class="n">raise_exception</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">mol</span><span class="o">.</span><span class="n">identify_ring_membership</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">mol</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="n">smiles</span> <span class="o">=</span> <span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;smiles&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="s1">&#39;smiles&#39;</span> <span class="ow">in</span> <span class="n">species_dict</span> <span class="k">else</span> <span class="kc">None</span>
         <span class="n">inchi</span> <span class="o">=</span> <span class="n">species_dict</span><span class="p">[</span><span class="s1">&#39;inchi&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="s1">&#39;inchi&#39;</span> <span class="ow">in</span> <span class="n">species_dict</span> <span class="k">else</span> <span class="kc">None</span>
@@ -1009,14 +1096,17 @@
 <div class="viewcode-block" id="ARCSpecies.set_mol_list"><a class="viewcode-back" href="../../../api/species.html#arc.species.species.ARCSpecies.set_mol_list">[docs]</a>    <span class="k">def</span> <span class="nf">set_mol_list</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Set the .mol_list attribute from self.mol by generating resonance structures, preserving atom order.</span>
-<span class="sd">        The mol_list attribute is used for identifying rotors and generating conformers,</span>
+<span class="sd">        The mol_list attribute is used for identifying rotors and generating conformers.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mol</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">mol</span><span class="o">.</span><span class="n">assign_atom_ids</span><span class="p">()</span>
+            <span class="k">if</span> <span class="nb">all</span><span class="p">([</span><span class="n">atom</span><span class="o">.</span><span class="n">id</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span> <span class="k">for</span> <span class="n">atom</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">mol</span><span class="o">.</span><span class="n">atoms</span><span class="p">]):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">mol</span><span class="o">.</span><span class="n">assign_atom_ids</span><span class="p">()</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_ts</span><span class="p">:</span>
                 <span class="k">try</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">mol_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mol</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">deep</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">generate_resonance_structures</span><span class="p">(</span><span class="n">keep_isomorphic</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                                                                                           <span class="n">filter_structures</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                                                                                           <span class="n">filter_structures</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                                                                                           <span class="n">save_order</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                                                                                           <span class="p">)</span>
                 <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="n">ILPSolutionError</span><span class="p">,</span> <span class="n">ResonanceError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                     <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Could not generate resonance structures for species </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="si">}</span><span class="s1">. Got: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">mol_list</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">mol</span><span class="p">]</span>
@@ -1027,7 +1117,10 @@
                 <span class="c1"># try sorting by IDs, repeat object creation to make sure the original instances remain unchanged</span>
                 <span class="n">mol_copy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mol</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">deep</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
                 <span class="n">mol_copy</span><span class="o">.</span><span class="n">assign_atom_ids</span><span class="p">()</span>
-                <span class="n">mol_list</span> <span class="o">=</span> <span class="n">mol_copy</span><span class="o">.</span><span class="n">generate_resonance_structures</span><span class="p">(</span><span class="n">keep_isomorphic</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">filter_structures</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="n">mol_list</span> <span class="o">=</span> <span class="n">mol_copy</span><span class="o">.</span><span class="n">generate_resonance_structures</span><span class="p">(</span><span class="n">keep_isomorphic</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                                                                  <span class="n">filter_structures</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                                                                  <span class="n">save_order</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                                                                  <span class="p">)</span>
                 <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">mol_list</span><span class="p">)):</span>
                     <span class="n">mol</span> <span class="o">=</span> <span class="n">mol_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>  <span class="c1"># not looping with mol so the iterator won&#39;t change within the loop</span>
                     <span class="n">atoms</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
@@ -1043,11 +1136,11 @@
                             <span class="n">plot_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                             <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Generate conformers</span>
+<span class="sd">        Generate conformers.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            n_confs (int, optional): The max number of conformers to store in the .conformers attribute</span>
-<span class="sd">                                            that will later be DFT&#39;ed at the conformers_level.</span>
+<span class="sd">                                     that will later be DFT&#39;ed at the conformers_level.</span>
 <span class="sd">            e_confs (float, optional): The energy threshold in kJ/mol above the lowest energy conformer below which all</span>
 <span class="sd">                                       (unique) generated conformers will be stored in the .conformers attribute.</span>
 <span class="sd">            plot_path (str, optional): A folder path in which the plot will be saved.</span>
@@ -1133,36 +1226,42 @@
                         <span class="n">xyz</span> <span class="o">=</span> <span class="n">ts_guess</span><span class="o">.</span><span class="n">opt_xyz</span> <span class="ow">or</span> <span class="n">ts_guess</span><span class="o">.</span><span class="n">initial_xyz</span>
                         <span class="k">return</span> <span class="n">xyz</span>
                 <span class="k">return</span> <span class="kc">None</span>
-            <span class="k">elif</span> <span class="n">generate</span><span class="p">:</span>
+            <span class="k">elif</span> <span class="n">generate</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mol</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">mol_list</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">get_cheap_conformer</span><span class="p">()</span>
-                <span class="n">xyz</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cheap_conformer</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cheap_conformer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">xyz</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cheap_conformer</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">generate_conformers</span><span class="p">(</span><span class="n">n_confs</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">conformers</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="n">xyz</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">conformers</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="k">return</span> <span class="n">xyz</span></div>
 
 <div class="viewcode-block" id="ARCSpecies.determine_rotors"><a class="viewcode-back" href="../../../api/species.html#arc.species.species.ARCSpecies.determine_rotors">[docs]</a>    <span class="k">def</span> <span class="nf">determine_rotors</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Determine possible unique rotors in the species to be treated as hindered rotors,</span>
 <span class="sd">        taking into account all localized structures.</span>
-<span class="sd">        The resulting rotors are saved in {&#39;pivots&#39;: [1, 3], &#39;top&#39;: [3, 7], &#39;scan&#39;: [2, 1, 3, 7]} format</span>
-<span class="sd">        in self.species_dict[species.label][&#39;rotors_dict&#39;]. Also updates &#39;number_of_rotors&#39;.</span>
+<span class="sd">        The resulting rotors are saved in a ``{&#39;pivots&#39;: [1, 3], &#39;top&#39;: [3, 7], &#39;scan&#39;: [2, 1, 3, 7]}`` format</span>
+<span class="sd">        in ``self.rotors_dict``. Also updates ``self.number_of_rotors``.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">rotors_dict</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="c1"># this species was marked to skip rotor scans (.rotors_dict is not initialized as an empty dict but as None)</span>
+            <span class="c1"># This species was marked to skip rotor scans.</span>
             <span class="k">return</span>
         <span class="n">mol_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mol_list</span> <span class="ow">or</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">mol</span><span class="p">]</span>
-        <span class="k">for</span> <span class="n">mol</span> <span class="ow">in</span> <span class="n">mol_list</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">mol</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">continue</span>
-            <span class="n">rotors</span> <span class="o">=</span> <span class="n">conformers</span><span class="o">.</span><span class="n">find_internal_rotors</span><span class="p">(</span><span class="n">mol</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">new_rotor</span> <span class="ow">in</span> <span class="n">rotors</span><span class="p">:</span>
-                <span class="k">for</span> <span class="n">existing_rotor</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">rotors_dict</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
-                    <span class="k">if</span> <span class="n">existing_rotor</span><span class="p">[</span><span class="s1">&#39;pivots&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">new_rotor</span><span class="p">[</span><span class="s1">&#39;pivots&#39;</span><span class="p">]:</span>
-                        <span class="k">break</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">rotors_dict</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">number_of_rotors</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_rotor</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">number_of_rotors</span> <span class="o">+=</span> <span class="mi">1</span>
-        <span class="k">if</span> <span class="p">(</span><span class="n">mol_list</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">mol_list</span> <span class="ow">or</span> <span class="nb">all</span><span class="p">([</span><span class="n">mol</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">mol</span> <span class="ow">in</span> <span class="n">mol_list</span><span class="p">]))</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_ts</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Could not determine rotors for </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="si">}</span><span class="s1"> without a 2D graph structure&#39;</span><span class="p">)</span>
-
+        <span class="k">if</span> <span class="n">mol_list</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">mol_list</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">all</span><span class="p">([</span><span class="n">mol</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">mol</span> <span class="ow">in</span> <span class="n">mol_list</span><span class="p">]):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_ts</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Could not determine rotors for </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="si">}</span><span class="s1"> without a 2D graph structure&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">mol</span> <span class="ow">in</span> <span class="n">mol_list</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">mol</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="n">rotors</span> <span class="o">=</span> <span class="n">conformers</span><span class="o">.</span><span class="n">find_internal_rotors</span><span class="p">(</span><span class="n">mol</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
+                <span class="k">for</span> <span class="n">new_rotor</span> <span class="ow">in</span> <span class="n">rotors</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">existing_rotor</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">rotors_dict</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+                        <span class="k">if</span> <span class="n">existing_rotor</span><span class="p">[</span><span class="s1">&#39;pivots&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">new_rotor</span><span class="p">[</span><span class="s1">&#39;pivots&#39;</span><span class="p">]:</span>
+                            <span class="k">break</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">rotors_dict</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">number_of_rotors</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_rotor</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">number_of_rotors</span> <span class="o">+=</span> <span class="mi">1</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">number_of_rotors</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Found one possible rotor for </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">number_of_rotors</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
@@ -1170,37 +1269,14 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">number_of_rotors</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Pivot list(s) for </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="si">}</span><span class="s1">: &#39;</span>
                         <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">rotors_dict</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s2">&quot;pivots&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">number_of_rotors</span><span class="p">)]</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
-
         <span class="bp">self</span><span class="o">.</span><span class="n">initialize_directed_rotors</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="ARCSpecies.initialize_directed_rotors"><a class="viewcode-back" href="../../../api/species.html#arc.species.species.ARCSpecies.initialize_directed_rotors">[docs]</a>    <span class="k">def</span> <span class="nf">initialize_directed_rotors</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Initialize self.directed_rotors, correcting the input to nested lists and to scans instead of pivots.</span>
+<span class="sd">        Initialize self.directed_rotors, correcting the input to nested lists and to torsions instead of pivots.</span>
 <span class="sd">        Also modifies self.rotors_dict to remove respective 1D rotors dicts if appropriate and adds ND rotors dicts.</span>
 <span class="sd">        Principally, from this point we don&#39;t really need self.directed_rotors, self.rotors_dict should have all</span>
 <span class="sd">        relevant rotors info for the species, including directed and ND rotors.</span>
-
-<span class="sd">        Dictionary structure (initialized in conformers.find_internal_rotors)::</span>
-
-<span class="sd">                rotors_dict: {1: {&#39;pivots&#39;: ``list``,</span>
-<span class="sd">                                  &#39;top&#39;: ``list``,</span>
-<span class="sd">                                  &#39;scan&#39;: ``list``,</span>
-<span class="sd">                                  &#39;number_of_running_jobs&#39;: ``int``,</span>
-<span class="sd">                                  &#39;success&#39;: ``bool``,</span>
-<span class="sd">                                  &#39;invalidation_reason&#39;: ``str``,</span>
-<span class="sd">                                  &#39;times_dihedral_set&#39;: ``int``,</span>
-<span class="sd">                                  &#39;scan_path&#39;: &lt;path to scan output file&gt;,</span>
-<span class="sd">                                  &#39;max_e&#39;: ``float``,  # in kJ/mol,</span>
-<span class="sd">                                  &#39;symmetry&#39;: ``int``,</span>
-<span class="sd">                                  &#39;dimensions&#39;: ``int``,</span>
-<span class="sd">                                  &#39;original_dihedrals&#39;: ``list``,</span>
-<span class="sd">                                  &#39;cont_indices&#39;: ``list``,</span>
-<span class="sd">                                  &#39;directed_scan_type&#39;: ``str``,</span>
-<span class="sd">                                  &#39;directed_scan&#39;: ``dict``,  # keys: tuples of dihedrals as strings,</span>
-<span class="sd">                                                              # values: dicts of energy, xyz, is_isomorphic, trsh</span>
-<span class="sd">                                 }</span>
-<span class="sd">                              2: {}, ...</span>
-<span class="sd">                             }</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">            SpeciesError: If the pivots don&#39;t represent a dihedral in the species.</span>
@@ -1209,13 +1285,13 @@
             <span class="n">all_pivots</span> <span class="o">=</span> <span class="p">[</span><span class="n">rotor_dict</span><span class="p">[</span><span class="s1">&#39;pivots&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">rotor_dict</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">rotors_dict</span><span class="o">.</span><span class="n">values</span><span class="p">()]</span>
             <span class="n">directed_rotors</span><span class="p">,</span> <span class="n">directed_rotors_scans</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(),</span> <span class="nb">dict</span><span class="p">()</span>
             <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">vals</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">directed_rotors</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                <span class="c1"># reformat as nested lists</span>
+                <span class="c1"># Reformat as nested lists.</span>
                 <span class="n">directed_rotors</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
                 <span class="k">for</span> <span class="n">val1</span> <span class="ow">in</span> <span class="n">vals</span><span class="p">:</span>
                     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">val1</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span> <span class="ow">and</span> <span class="n">val1</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;all&#39;</span><span class="p">]]:</span>
                         <span class="k">raise</span> <span class="n">SpeciesError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;directed_scan pivots must be lists of length 2, got </span><span class="si">{</span><span class="n">val1</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">)</span>
                     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val1</span><span class="p">,</span> <span class="p">(</span><span class="nb">tuple</span><span class="p">,</span> <span class="nb">list</span><span class="p">))</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val1</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">int</span><span class="p">):</span>
-                        <span class="n">corrected_val</span> <span class="o">=</span> <span class="n">val1</span> <span class="k">if</span> <span class="nb">list</span><span class="p">(</span><span class="n">val1</span><span class="p">)</span> <span class="ow">in</span> <span class="n">all_pivots</span> <span class="k">else</span> <span class="p">[</span><span class="n">val1</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">val1</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+                        <span class="n">corrected_val</span> <span class="o">=</span> <span class="n">val1</span> <span class="k">if</span> <span class="nb">list</span><span class="p">(</span><span class="n">val1</span><span class="p">)</span> <span class="ow">in</span> <span class="n">all_pivots</span> <span class="k">else</span> <span class="p">[</span><span class="n">val1</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">val1</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>  <span class="c1"># re-order if needed</span>
                         <span class="n">directed_rotors</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="nb">list</span><span class="p">(</span><span class="n">corrected_val</span><span class="p">)])</span>
                     <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val1</span><span class="p">,</span> <span class="p">(</span><span class="nb">tuple</span><span class="p">,</span> <span class="nb">list</span><span class="p">))</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val1</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="p">(</span><span class="nb">tuple</span><span class="p">,</span> <span class="nb">list</span><span class="p">)):</span>
                         <span class="n">directed_rotors</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="nb">list</span><span class="p">(</span><span class="n">val2</span> <span class="k">if</span> <span class="nb">list</span><span class="p">(</span><span class="n">val2</span><span class="p">)</span> <span class="ow">in</span> <span class="n">all_pivots</span> <span class="k">else</span> <span class="p">[</span><span class="n">val2</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">val2</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span>
@@ -1236,14 +1312,15 @@
                             <span class="k">raise</span> <span class="n">SpeciesError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;The pivots </span><span class="si">{</span><span class="n">val</span><span class="si">}</span><span class="s1"> do not represent a rotor in species </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="si">}</span><span class="s1">. &#39;</span>
                                                <span class="sa">f</span><span class="s1">&#39;Valid rotor pivots are: </span><span class="si">{</span><span class="n">all_pivots</span><span class="si">}</span><span class="se">\n\n</span><span class="s1">&#39;</span>
                                                <span class="sa">f</span><span class="s1">&#39;Species coordinates:</span><span class="se">\n</span><span class="si">{</span><span class="n">xyz_to_str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_xyz</span><span class="p">())</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
-            <span class="c1"># Modify self.rotors_dict to remove respective 1D rotors dicts and add ND rotors dicts</span>
+            <span class="c1"># Modify self.rotors_dict to remove respective 1D rotors dicts and add ND rotors dicts.</span>
             <span class="n">rotor_indices_to_del</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
             <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">vals</span> <span class="ow">in</span> <span class="n">directed_rotors</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                <span class="c1"># an independent loop, so 1D *directed* scans won&#39;t be deleted (treated above)</span>
+                <span class="c1"># An independent loop, so 1D *directed* scans won&#39;t be deleted (treated above).</span>
                 <span class="k">for</span> <span class="n">pivots_list</span> <span class="ow">in</span> <span class="n">vals</span><span class="p">:</span>
-                    <span class="n">new_rotor</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;pivots&#39;</span><span class="p">:</span> <span class="n">pivots_list</span><span class="p">,</span>
-                                 <span class="s1">&#39;top&#39;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(),</span>
-                                 <span class="s1">&#39;scan&#39;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(),</span>
+                    <span class="n">new_rotor</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;pivots&#39;</span><span class="p">:</span> <span class="n">pivots_list</span><span class="p">,</span>  <span class="c1"># 1-indexed</span>
+                                 <span class="s1">&#39;top&#39;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(),</span>  <span class="c1"># 1-indexed</span>
+                                 <span class="s1">&#39;scan&#39;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(),</span>  <span class="c1"># 1-indexed</span>
+                                 <span class="s1">&#39;torsion&#39;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(),</span>  <span class="c1"># 0-indexed</span>
                                  <span class="s1">&#39;number_of_running_jobs&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
                                  <span class="s1">&#39;success&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
                                  <span class="s1">&#39;invalidation_reason&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
@@ -1257,13 +1334,14 @@
                                  <span class="s1">&#39;cont_indices&#39;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(),</span>
                                  <span class="p">}</span>
                     <span class="k">for</span> <span class="n">pivots</span> <span class="ow">in</span> <span class="n">pivots_list</span><span class="p">:</span>
-                        <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">rotors_dict</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">rotors_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                            <span class="k">if</span> <span class="n">rotors_dict</span><span class="p">[</span><span class="s1">&#39;pivots&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">pivots</span><span class="p">:</span>
-                                <span class="n">new_rotor</span><span class="p">[</span><span class="s1">&#39;top&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rotors_dict</span><span class="p">[</span><span class="s1">&#39;top&#39;</span><span class="p">])</span>
-                                <span class="n">new_rotor</span><span class="p">[</span><span class="s1">&#39;scan&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rotors_dict</span><span class="p">[</span><span class="s1">&#39;scan&#39;</span><span class="p">])</span>
+                        <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">rotor_dict</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">rotors_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                            <span class="k">if</span> <span class="n">rotor_dict</span><span class="p">[</span><span class="s1">&#39;pivots&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">pivots</span><span class="p">:</span>
+                                <span class="n">new_rotor</span><span class="p">[</span><span class="s1">&#39;top&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rotor_dict</span><span class="p">[</span><span class="s1">&#39;top&#39;</span><span class="p">])</span>
+                                <span class="n">new_rotor</span><span class="p">[</span><span class="s1">&#39;scan&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rotor_dict</span><span class="p">[</span><span class="s1">&#39;scan&#39;</span><span class="p">])</span>
+                                <span class="n">new_rotor</span><span class="p">[</span><span class="s1">&#39;torsion&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rotor_dict</span><span class="p">[</span><span class="s1">&#39;torsion&#39;</span><span class="p">])</span>
                                 <span class="n">new_rotor</span><span class="p">[</span><span class="s1">&#39;dimensions&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
-                                <span class="k">if</span> <span class="ow">not</span> <span class="n">rotors_dict</span><span class="p">[</span><span class="s1">&#39;directed_scan_type&#39;</span><span class="p">]</span> <span class="ow">and</span> <span class="n">index</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">rotor_indices_to_del</span><span class="p">:</span>
-                                    <span class="c1"># remove this rotor dict, an ND one will be created instead</span>
+                                <span class="k">if</span> <span class="ow">not</span> <span class="n">rotor_dict</span><span class="p">[</span><span class="s1">&#39;directed_scan_type&#39;</span><span class="p">]</span> <span class="ow">and</span> <span class="n">index</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">rotor_indices_to_del</span><span class="p">:</span>
+                                    <span class="c1"># Remove this rotor dict, an ND one will be created instead.</span>
                                     <span class="n">rotor_indices_to_del</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
                                 <span class="k">break</span>
                     <span class="k">if</span> <span class="n">new_rotor</span><span class="p">[</span><span class="s1">&#39;dimensions&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
@@ -1271,16 +1349,16 @@
                     <span class="bp">self</span><span class="o">.</span><span class="n">rotors_dict</span><span class="p">[</span><span class="nb">max</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rotors_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_rotor</span>
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">set</span><span class="p">(</span><span class="n">rotor_indices_to_del</span><span class="p">):</span>
                 <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">rotors_dict</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;directed_scan_type&#39;</span><span class="p">]:</span>
-                    <span class="k">del</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rotors_dict</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+                    <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">rotors_dict</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
 
-            <span class="c1"># renumber the keys so iterative looping will make sense</span>
+            <span class="c1"># Renumber the keys so iterative looping will make sense.</span>
             <span class="n">new_rotors_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
             <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">rotor_dict</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rotors_dict</span><span class="o">.</span><span class="n">values</span><span class="p">())):</span>
                 <span class="n">new_rotors_dict</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">rotor_dict</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">rotors_dict</span> <span class="o">=</span> <span class="n">new_rotors_dict</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">number_of_rotors</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span>
 
-            <span class="c1"># replace pivots with four-atom scans</span>
+            <span class="c1"># Replace pivots with four-atom scans.</span>
             <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">vals</span> <span class="ow">in</span> <span class="n">directed_rotors</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
                 <span class="n">directed_rotors_scans</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
                 <span class="k">for</span> <span class="n">pivots_list</span> <span class="ow">in</span> <span class="n">vals</span><span class="p">:</span>
@@ -1372,47 +1450,72 @@
 <div class="viewcode-block" id="ARCSpecies.determine_multiplicity"><a class="viewcode-back" href="../../../api/species.html#arc.species.species.ARCSpecies.determine_multiplicity">[docs]</a>    <span class="k">def</span> <span class="nf">determine_multiplicity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                                <span class="n">smiles</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
                                <span class="n">adjlist</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-                               <span class="n">mol</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Molecule</span><span class="p">]):</span>
+                               <span class="n">mol</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Molecule</span><span class="p">],</span>
+                               <span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Determine the spin multiplicity of the species</span>
+<span class="sd">        Determine the spin multiplicity of the species.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            smiles (str): The SMILES descriptor .</span>
+<span class="sd">            adjlist (str): The adjacency list descriptor.</span>
+<span class="sd">            mol (Molecule): The respective RMG Molecule object.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">get_mul_from_xyz</span> <span class="o">=</span> <span class="kc">True</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">charge</span> <span class="o">!=</span> <span class="mi">0</span> <span class="k">else</span> <span class="kc">False</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">get_mul_from_xyz</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">mol</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">mol</span><span class="o">.</span><span class="n">multiplicity</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">multiplicity</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">multiplicity</span>
-            <span class="k">elif</span> <span class="n">adjlist</span><span class="p">:</span>
-                <span class="n">mol</span> <span class="o">=</span> <span class="n">Molecule</span><span class="p">()</span><span class="o">.</span><span class="n">from_adjacency_list</span><span class="p">(</span><span class="n">adjlist</span><span class="p">,</span> <span class="n">raise_atomtype_exception</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                                                     <span class="n">raise_charge_exception</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">multiplicity</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">multiplicity</span>
-            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">mol</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">mol</span><span class="o">.</span><span class="n">multiplicity</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">multiplicity</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mol</span><span class="o">.</span><span class="n">multiplicity</span>
-            <span class="k">elif</span> <span class="n">smiles</span><span class="p">:</span>
-                <span class="n">mol</span> <span class="o">=</span> <span class="n">Molecule</span><span class="p">(</span><span class="n">smiles</span><span class="o">=</span><span class="n">smiles</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">multiplicity</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">multiplicity</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">multiplicity</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">multiplicity</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
-                <span class="n">get_mul_from_xyz</span> <span class="o">=</span> <span class="kc">True</span>
-        <span class="k">if</span> <span class="n">get_mul_from_xyz</span><span class="p">:</span>
-            <span class="n">xyz</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_xyz</span><span class="p">()</span>
-            <span class="k">if</span> <span class="n">xyz</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conformers</span><span class="p">):</span>
-                <span class="n">xyz</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">conformers</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-            <span class="k">if</span> <span class="n">xyz</span><span class="p">:</span>
-                <span class="n">electrons</span> <span class="o">=</span> <span class="mi">0</span>
-                <span class="k">for</span> <span class="n">symbol</span> <span class="ow">in</span> <span class="n">xyz</span><span class="p">[</span><span class="s1">&#39;symbols&#39;</span><span class="p">]:</span>
-                    <span class="k">for</span> <span class="n">number</span><span class="p">,</span> <span class="n">symb</span> <span class="ow">in</span> <span class="n">symbol_by_number</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                        <span class="k">if</span> <span class="n">symbol</span> <span class="o">==</span> <span class="n">symb</span><span class="p">:</span>
-                            <span class="n">electrons</span> <span class="o">+=</span> <span class="n">number</span>
-                            <span class="k">break</span>
-                    <span class="k">else</span><span class="p">:</span>
-                        <span class="k">raise</span> <span class="n">SpeciesError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Could not identify atom symbol </span><span class="si">{</span><span class="n">symbol</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
-                <span class="n">electrons</span> <span class="o">-=</span> <span class="bp">self</span><span class="o">.</span><span class="n">charge</span>
-                <span class="k">if</span> <span class="n">electrons</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">multiplicity</span> <span class="o">=</span> <span class="mi">2</span>
-                    <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Multiplicity not specified for </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="si">}</span><span class="s1">, assuming a value of 2&#39;</span><span class="p">)</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">multiplicity</span> <span class="o">=</span> <span class="mi">1</span>
-                    <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Multiplicity not specified for </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="si">}</span><span class="s1">, assuming a value of 1&#39;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">multiplicity</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">charge</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">determine_multiplicity_from_descriptors</span><span class="p">(</span><span class="n">smiles</span><span class="o">=</span><span class="n">smiles</span><span class="p">,</span> <span class="n">adjlist</span><span class="o">=</span><span class="n">adjlist</span><span class="p">,</span> <span class="n">mol</span><span class="o">=</span><span class="n">mol</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">multiplicity</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">multiplicity</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">determine_multiplicity_from_xyz</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">multiplicity</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_ts</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">SpeciesError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Could not determine multiplicity for species </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ARCSpecies.determine_multiplicity_from_descriptors"><a class="viewcode-back" href="../../../api/species.html#arc.species.species.ARCSpecies.determine_multiplicity_from_descriptors">[docs]</a>    <span class="k">def</span> <span class="nf">determine_multiplicity_from_descriptors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                                                <span class="n">smiles</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                                                <span class="n">adjlist</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                                                <span class="n">mol</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Molecule</span><span class="p">]):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Determine the spin multiplicity of the species from the chemical descriptors.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            smiles (str): The SMILES descriptor .</span>
+<span class="sd">            adjlist (str): The adjacency list descriptor.</span>
+<span class="sd">            adjlist (str): The adjacency list descriptor.</span>
+<span class="sd">            mol (Molecule): The respective RMG Molecule object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">mol</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">mol</span><span class="o">.</span><span class="n">multiplicity</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">multiplicity</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">multiplicity</span>
+        <span class="k">elif</span> <span class="n">adjlist</span><span class="p">:</span>
+            <span class="n">mol</span> <span class="o">=</span> <span class="n">Molecule</span><span class="p">()</span><span class="o">.</span><span class="n">from_adjacency_list</span><span class="p">(</span><span class="n">adjlist</span><span class="p">,</span>
+                                                 <span class="n">raise_atomtype_exception</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                                                 <span class="n">raise_charge_exception</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">multiplicity</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">multiplicity</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">mol</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">mol</span><span class="o">.</span><span class="n">multiplicity</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">multiplicity</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mol</span><span class="o">.</span><span class="n">multiplicity</span>
+        <span class="k">elif</span> <span class="n">smiles</span><span class="p">:</span>
+            <span class="n">mol</span> <span class="o">=</span> <span class="n">Molecule</span><span class="p">(</span><span class="n">smiles</span><span class="o">=</span><span class="n">smiles</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">multiplicity</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">multiplicity</span></div>
+
+<div class="viewcode-block" id="ARCSpecies.determine_multiplicity_from_xyz"><a class="viewcode-back" href="../../../api/species.html#arc.species.species.ARCSpecies.determine_multiplicity_from_xyz">[docs]</a>    <span class="k">def</span> <span class="nf">determine_multiplicity_from_xyz</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Determine the spin multiplicity of the species from the xyz.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">xyz</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_xyz</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">xyz</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conformers</span><span class="p">):</span>
+            <span class="n">xyz</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">conformers</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">xyz</span><span class="p">:</span>
+            <span class="n">electrons</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">for</span> <span class="n">symbol</span> <span class="ow">in</span> <span class="n">xyz</span><span class="p">[</span><span class="s1">&#39;symbols&#39;</span><span class="p">]:</span>
+                <span class="k">for</span> <span class="n">number</span><span class="p">,</span> <span class="n">symb</span> <span class="ow">in</span> <span class="n">symbol_by_number</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="k">if</span> <span class="n">symbol</span> <span class="o">==</span> <span class="n">symb</span><span class="p">:</span>
+                        <span class="n">electrons</span> <span class="o">+=</span> <span class="n">number</span>
+                        <span class="k">break</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">SpeciesError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Could not identify atom symbol </span><span class="si">{</span><span class="n">symbol</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="n">electrons</span> <span class="o">-=</span> <span class="bp">self</span><span class="o">.</span><span class="n">charge</span>
+            <span class="k">if</span> <span class="n">electrons</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">multiplicity</span> <span class="o">=</span> <span class="mi">2</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Multiplicity not specified for </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="si">}</span><span class="s1">, assuming a value of 2&#39;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">multiplicity</span> <span class="o">=</span> <span class="mi">1</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Multiplicity not specified for </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="si">}</span><span class="s1">, assuming a value of 1&#39;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="ARCSpecies.make_ts_report"><a class="viewcode-back" href="../../../api/species.html#arc.species.species.ARCSpecies.make_ts_report">[docs]</a>    <span class="k">def</span> <span class="nf">make_ts_report</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;A helper function to write content into the .ts_report attribute&quot;&quot;&quot;</span>
@@ -1440,7 +1543,6 @@
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Make sure atom order in self.mol corresponds to xyz.</span>
 <span class="sd">        Important for TS discovery and for identifying rotor indices.</span>
-
 <span class="sd">        This works by generating a molecule from xyz and using the</span>
 <span class="sd">        2D structure to confirm that the perceived molecule is correct.</span>
 <span class="sd">        If ``xyz`` is not given, the species xyz attribute will be used.</span>
@@ -1632,7 +1734,7 @@
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Check whether the perception of self.final_xyz or ``xyz`` is isomorphic with self.mol.</span>
 <span class="sd">        If it is not isomorphic, compliant coordinates will be checked (equivalent to checking isomorphism without</span>
-<span class="sd">        bond order information, only does not necessitates a molecule object, directly checks bond lengths)</span>
+<span class="sd">        bond order information, only does not necessitates a molecule object, directly checks bond lengths).</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            mol (Molecule, optional): A molecule to check instead of self.mol.</span>
@@ -1707,7 +1809,7 @@
 <div class="viewcode-block" id="ARCSpecies.scissors"><a class="viewcode-back" href="../../../api/species.html#arc.species.species.ARCSpecies.scissors">[docs]</a>    <span class="k">def</span> <span class="nf">scissors</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Cut chemical bonds to create new species from the original one according to the .bdes attribute,</span>
-<span class="sd">        preserving the 3D geometry other than the splitted bond.</span>
+<span class="sd">        preserving the 3D geometry other than the scissioned bond.</span>
 <span class="sd">        If one of the scission-resulting species is a hydrogen atom, it will be returned last, labeled as &#39;H&#39;.</span>
 <span class="sd">        Other species labels will be &lt;original species label&gt;_BDE_index1_index2_X, where &quot;X&quot; is either &quot;A&quot; or &quot;B&quot;,</span>
 <span class="sd">        and the indices are 1-indexed.</span>
@@ -1739,7 +1841,7 @@
             <span class="n">new_species_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scissors</span><span class="p">(</span><span class="n">indices</span><span class="o">=</span><span class="n">index_tuple</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">new_species</span> <span class="ow">in</span> <span class="n">new_species_list</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">new_species</span><span class="o">.</span><span class="n">label</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="n">existing_species</span><span class="o">.</span><span class="n">label</span> <span class="k">for</span> <span class="n">existing_species</span> <span class="ow">in</span> <span class="n">resulting_species</span><span class="p">]:</span>
-                    <span class="c1"># mainly checks that the H species doesn&#39;t already exist</span>
+                    <span class="c1"># Mainly checks that the H species doesn&#39;t already exist.</span>
                     <span class="n">resulting_species</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_species</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">resulting_species</span></div>
 
@@ -1754,12 +1856,12 @@
 <span class="sd">            The scission-resulting species.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">any</span><span class="p">([</span><span class="n">i</span> <span class="o">&lt;</span> <span class="mi">1</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">indices</span><span class="p">]):</span>
-            <span class="k">raise</span> <span class="n">SpeciesError</span><span class="p">(</span><span class="s1">&#39;Indices must be larger than 0&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">SpeciesError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Scissors indices must be larger than 0 (1-indexed). Got: </span><span class="si">{</span><span class="n">indices</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">([</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">indices</span><span class="p">]):</span>
-            <span class="k">raise</span> <span class="n">SpeciesError</span><span class="p">(</span><span class="s1">&#39;Indices must be integers&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">SpeciesError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Scissors indices must be integers. Got: </span><span class="si">{</span><span class="n">indices</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">final_xyz</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">SpeciesError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Cannot use scissors without the .final_xyz attribute of species </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
-        <span class="n">indices</span> <span class="o">=</span> <span class="p">(</span><span class="n">indices</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">indices</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>  <span class="c1"># convert to 0-indexed atoms</span>
+        <span class="n">indices</span> <span class="o">=</span> <span class="n">convert_list_index_0_to_1</span><span class="p">(</span><span class="n">indices</span><span class="p">,</span> <span class="n">direction</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># Convert to 0-indexed atoms.</span>
         <span class="n">atom1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mol</span><span class="o">.</span><span class="n">atoms</span><span class="p">[</span><span class="n">indices</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
         <span class="n">atom2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mol</span><span class="o">.</span><span class="n">atoms</span><span class="p">[</span><span class="n">indices</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
         <span class="k">if</span> <span class="n">atom1</span><span class="o">.</span><span class="n">is_hydrogen</span><span class="p">():</span>
@@ -1769,7 +1871,7 @@
             <span class="n">top2</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">mol</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">atom2</span><span class="p">)]</span>
             <span class="n">top1</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mol</span><span class="o">.</span><span class="n">atoms</span><span class="p">))</span> <span class="k">if</span> <span class="n">i</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">top2</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="c1"># for robustness, only use the smaller top,</span>
+            <span class="c1"># For robustness, only use the smaller top,</span>
             <span class="c1"># determine_top_group_indices() might get confused for (large) convolved tops.</span>
             <span class="n">top1</span> <span class="o">=</span> <span class="n">determine_top_group_indices</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mol</span><span class="p">,</span> <span class="n">atom1</span><span class="p">,</span> <span class="n">atom2</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
             <span class="n">top2</span> <span class="o">=</span> <span class="n">determine_top_group_indices</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mol</span><span class="p">,</span> <span class="n">atom2</span><span class="p">,</span> <span class="n">atom1</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
@@ -2208,7 +2310,7 @@
 
 
 <div class="viewcode-block" id="determine_rotor_symmetry"><a class="viewcode-back" href="../../../api/species.html#arc.species.species.determine_rotor_symmetry">[docs]</a><span class="k">def</span> <span class="nf">determine_rotor_symmetry</span><span class="p">(</span><span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-                             <span class="n">pivots</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">list</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span>
+                             <span class="n">pivots</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="nb">str</span><span class="p">],</span>
                              <span class="n">rotor_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
                              <span class="n">energies</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">list</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                              <span class="n">return_num_wells</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
@@ -2224,7 +2326,7 @@
 
 <span class="sd">    Args:</span>
 <span class="sd">        label (str): The species label (used for error messages).</span>
-<span class="sd">        pivots (list, str, optional): A list of two atom indices representing the torsion pivots.</span>
+<span class="sd">        pivots (list): A list of two atom indices representing the pivots.</span>
 <span class="sd">        rotor_path (str): The path to an ESS output rotor scan file.</span>
 <span class="sd">        energies (list, optional): The list of energies in the scan in kJ/mol.</span>
 <span class="sd">        return_num_wells (bool, optional): Whether to also return the number of wells, ``True`` to return,</span>
@@ -2286,7 +2388,7 @@
     <span class="c1"># something seriously wrong with the scan</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">peaks</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">valleys</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">log</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Rotor of species </span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s1"> between pivots </span><span class="si">{</span><span class="n">pivots</span><span class="si">}</span><span class="s1"> does not have the same number &#39;</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Rotor of species </span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s1"> in pivots </span><span class="si">{</span><span class="n">pivots</span><span class="si">}</span><span class="s1"> does not have the same number &#39;</span>
                          <span class="sa">f</span><span class="s1">&#39;of peaks (</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">peaks</span><span class="p">)</span><span class="si">}</span><span class="s1">) and valleys (</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">valleys</span><span class="p">)</span><span class="si">}</span><span class="s1">).&#39;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">return_num_wells</span><span class="p">:</span>
             <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">peaks</span><span class="p">),</span> <span class="n">max_e</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">peaks</span><span class="p">)</span>  <span class="c1"># this works for CC(=O)[O]</span>
@@ -2316,10 +2418,10 @@
         <span class="n">reason</span> <span class="o">=</span> <span class="s1">&#39;number of peaks and valleys, all within the determined resolution criteria&#39;</span>
     <span class="k">if</span> <span class="n">log</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">symmetry</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Determined symmetry number </span><span class="si">{</span><span class="n">symmetry</span><span class="si">}</span><span class="s1"> for rotor of species </span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s1"> between pivots </span><span class="si">{</span><span class="n">pivots</span><span class="si">}</span><span class="s1">; &#39;</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Determined symmetry number </span><span class="si">{</span><span class="n">symmetry</span><span class="si">}</span><span class="s1"> for rotor of species </span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s1"> in pivots </span><span class="si">{</span><span class="n">pivots</span><span class="si">}</span><span class="s1">; &#39;</span>
                         <span class="sa">f</span><span class="s1">&#39;you should make sure this makes sense.&#39;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Determined a symmetry number of </span><span class="si">{</span><span class="n">symmetry</span><span class="si">}</span><span class="s1"> for rotor of species </span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s1"> between pivots &#39;</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Determined a symmetry number of </span><span class="si">{</span><span class="n">symmetry</span><span class="si">}</span><span class="s1"> for rotor of species </span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s1"> in pivots &#39;</span>
                         <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">pivots</span><span class="si">}</span><span class="s1"> based on the </span><span class="si">{</span><span class="n">reason</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">return_num_wells</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">symmetry</span><span class="p">,</span> <span class="n">max_e</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">peaks</span><span class="p">)</span>
@@ -2342,7 +2444,7 @@
 <div class="viewcode-block" id="determine_rotor_type"><a class="viewcode-back" href="../../../api/species.html#arc.species.species.determine_rotor_type">[docs]</a><span class="k">def</span> <span class="nf">determine_rotor_type</span><span class="p">(</span><span class="n">rotor_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Determine whether this rotor should be treated as a HinderedRotor of a FreeRotor</span>
-<span class="sd">    according to it&#39;s maximum peak</span>
+<span class="sd">    according to its maximum peak.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">energies</span> <span class="o">=</span> <span class="n">parse_1d_scan_energies</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="n">rotor_path</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">max_val</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">energies</span><span class="p">)</span>
@@ -2428,32 +2530,50 @@
     <span class="k">return</span> <span class="kc">True</span></div>
 
 
-<div class="viewcode-block" id="check_label"><a class="viewcode-back" href="../../../api/species.html#arc.species.species.check_label">[docs]</a><span class="k">def</span> <span class="nf">check_label</span><span class="p">(</span><span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<div class="viewcode-block" id="check_label"><a class="viewcode-back" href="../../../api/species.html#arc.species.species.check_label">[docs]</a><span class="k">def</span> <span class="nf">check_label</span><span class="p">(</span><span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]]:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Check whether a species (or reaction) label is illegal, modify it if needed.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        label (str): A label.</span>
+<span class="sd">        verbose (str, optional): Whether to log errors.</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        str: a legal label.</span>
+<span class="sd">    Returns: Tuple[str, Optional[str]]</span>
+<span class="sd">        - A legal label.</span>
+<span class="sd">        - The original label if the label was modified, else ``None``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">char_replacement</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;#&#39;</span><span class="p">:</span> <span class="s1">&#39;t&#39;</span><span class="p">}</span>
+    <span class="n">char_replacement</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;#&#39;</span><span class="p">:</span> <span class="s1">&#39;t&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;=&#39;</span><span class="p">:</span> <span class="s1">&#39;d&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;(&#39;</span><span class="p">:</span> <span class="s1">&#39;[&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;)&#39;</span><span class="p">:</span> <span class="s1">&#39;]&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39; &#39;</span><span class="p">:</span> <span class="s1">&#39;_&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;%&#39;</span><span class="p">:</span> <span class="s1">&#39;c&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;$&#39;</span><span class="p">:</span> <span class="s1">&#39;d&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;*&#39;</span><span class="p">:</span> <span class="s1">&#39;s&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;@&#39;</span><span class="p">:</span> <span class="s1">&#39;a&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;+&#39;</span><span class="p">:</span> <span class="s1">&#39;p&#39;</span><span class="p">,</span>
+                        <span class="p">}</span>
     <span class="n">modified</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="n">original_label</span> <span class="o">=</span> <span class="n">label</span>
     <span class="k">for</span> <span class="n">char</span> <span class="ow">in</span> <span class="n">original_label</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">char</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">valid_chars</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Label </span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s1"> contains an invalid character: &quot;</span><span class="si">{</span><span class="n">char</span><span class="si">}</span><span class="s1">&quot;&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Label </span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s1"> contains an invalid character: &quot;</span><span class="si">{</span><span class="n">char</span><span class="si">}</span><span class="s1">&quot;&#39;</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">char</span> <span class="ow">in</span> <span class="n">char_replacement</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
                 <span class="n">label</span> <span class="o">=</span> <span class="n">label</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">char</span><span class="p">,</span> <span class="n">char_replacement</span><span class="p">[</span><span class="n">char</span><span class="p">])</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">label</span> <span class="o">=</span> <span class="n">label</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">char</span><span class="p">,</span> <span class="s1">&#39;_&#39;</span><span class="p">)</span>
             <span class="n">modified</span> <span class="o">=</span> <span class="kc">True</span>
     <span class="k">if</span> <span class="n">modified</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Replaced species label.</span><span class="se">\n</span><span class="s1">&#39;</span>
-                       <span class="sa">f</span><span class="s1">&#39;Original label was: &quot;</span><span class="si">{</span><span class="n">original_label</span><span class="si">}</span><span class="s1">&quot;.</span><span class="se">\n</span><span class="s1">&#39;</span>
-                       <span class="sa">f</span><span class="s1">&#39;New label is: &quot;</span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s1">&quot;&#39;</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">label</span></div>
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Replaced species label.</span><span class="se">\n</span><span class="s1">&#39;</span>
+                           <span class="sa">f</span><span class="s1">&#39;Original label was: &quot;</span><span class="si">{</span><span class="n">original_label</span><span class="si">}</span><span class="s1">&quot;.</span><span class="se">\n</span><span class="s1">&#39;</span>
+                           <span class="sa">f</span><span class="s1">&#39;New label is: &quot;</span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s1">&quot;&#39;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">original_label</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">return</span> <span class="n">label</span><span class="p">,</span> <span class="n">original_label</span></div>
 
 
 <div class="viewcode-block" id="check_atom_balance"><a class="viewcode-back" href="../../../api/species.html#arc.species.species.check_atom_balance">[docs]</a><span class="k">def</span> <span class="nf">check_atom_balance</span><span class="p">(</span><span class="n">entry_1</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="n">Molecule</span><span class="p">],</span>

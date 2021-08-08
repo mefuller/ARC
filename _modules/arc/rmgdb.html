@@ -177,6 +177,7 @@
 
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
     <span class="kn">from</span> <span class="nn">rmgpy.data.kinetics.family</span> <span class="kn">import</span> <span class="n">KineticsFamily</span>
+    <span class="kn">from</span> <span class="nn">arc.reaction</span> <span class="kn">import</span> <span class="n">ARCReaction</span>
 
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">get_logger</span><span class="p">()</span>
@@ -202,7 +203,7 @@
 
 <span class="sd">    Args:</span>
 <span class="sd">        rmgdb (RMGDatabase): The RMG database instance.</span>
-<span class="sd">        kinetics_families (str, list, optional): Specific kinetics families to load.</span>
+<span class="sd">        kinetics_families (Union[str, list], optional): Specific kinetics families to load.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">kinetics_families</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;default&#39;</span><span class="p">,</span> <span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="s1">&#39;none&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">kinetics_families</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
         <span class="k">raise</span> <span class="n">InputError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;kinetics families should be either &#39;default&#39;, &#39;all&#39;, &#39;none&#39;, or a list of names, e.g.,&quot;</span>
@@ -316,22 +317,46 @@
         <span class="k">try</span><span class="p">:</span>
             <span class="n">family</span><span class="o">.</span><span class="n">add_rules_from_training</span><span class="p">(</span><span class="n">thermo_database</span><span class="o">=</span><span class="n">rmgdb</span><span class="o">.</span><span class="n">thermo</span><span class="p">)</span>
         <span class="k">except</span> <span class="n">KineticsError</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Could not train family </span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">family</span><span class="p">))</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Could not train family </span><span class="si">{</span><span class="n">family</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">family</span><span class="o">.</span><span class="n">fill_rules_by_averaging_up</span><span class="p">(</span><span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">family</span><span class="o">.</span><span class="n">save_order</span> <span class="o">=</span> <span class="kc">True</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n\n</span><span class="s1">&#39;</span><span class="p">)</span></div>
 
 
+<div class="viewcode-block" id="determine_family"><a class="viewcode-back" href="../../api/rmgdb.html#arc.rmgdb.determine_family">[docs]</a><span class="k">def</span> <span class="nf">determine_family</span><span class="p">(</span><span class="n">reaction</span><span class="p">:</span> <span class="s1">&#39;ARCReaction&#39;</span><span class="p">,</span>
+                     <span class="n">db</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">RMGDatabase</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                     <span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Determine the RMG reaction family for an ARC reaction.</span>
+<span class="sd">    A wrapper for ARCReaction.determine_family().</span>
+<span class="sd">    This wrapper is useful because it makes a new instance of the rmgdb if needed.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        reaction (&#39;ARCReaction&#39;): An ARCReaction object instance.</span>
+<span class="sd">        db (RMGDatabase, optional): The RMG database instance.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">reaction</span><span class="o">.</span><span class="n">family</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">db</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">db</span> <span class="o">=</span> <span class="n">make_rmg_database_object</span><span class="p">()</span>
+            <span class="n">load_families_only</span><span class="p">(</span><span class="n">db</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">reaction</span><span class="o">.</span><span class="n">rmg_reaction</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">reaction</span><span class="o">.</span><span class="n">rmg_reaction_from_arc_species</span><span class="p">()</span>
+        <span class="n">reaction</span><span class="o">.</span><span class="n">determine_family</span><span class="p">(</span><span class="n">db</span><span class="p">)</span></div>
+
+
 <div class="viewcode-block" id="determine_reaction_family"><a class="viewcode-back" href="../../api/rmgdb.html#arc.rmgdb.determine_reaction_family">[docs]</a><span class="k">def</span> <span class="nf">determine_reaction_family</span><span class="p">(</span><span class="n">rmgdb</span><span class="p">:</span> <span class="n">RMGDatabase</span><span class="p">,</span>
-                              <span class="n">reaction</span><span class="p">:</span><span class="n">Reaction</span><span class="p">,</span>
+                              <span class="n">reaction</span><span class="p">:</span> <span class="n">Reaction</span><span class="p">,</span>
+                              <span class="n">save_order</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
                               <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="s1">&#39;KineticsFamily&#39;</span><span class="p">],</span> <span class="nb">bool</span><span class="p">]:</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Determine the RMG kinetic family for a given ARCReaction object.</span>
-<span class="sd">    Returns None if no family found or more than one family found.</span>
+<span class="sd">    Determine the RMG kinetic family for a given ``ARCReaction`` object instance.</span>
+<span class="sd">    Returns ``None`` if no family found or more than one family found.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        rmgdb (RMGDatabase): The RMG database instance.</span>
 <span class="sd">        reaction (Reaction): The RMG Reaction object.</span>
+<span class="sd">        save_order (bool, optional): Whether to retain atomic order of the RMG ``reaction`` object instance.</span>
 
 <span class="sd">    Returns: Tuple[Optional[KineticsFamily], bool]</span>
 <span class="sd">        - The corresponding RMG reaction&#39;s family. ``None`` if no family was found or more than one family were found.</span>
@@ -340,44 +365,53 @@
     <span class="n">fam_list</span> <span class="o">=</span> <span class="n">loop_families</span><span class="p">(</span><span class="n">rmgdb</span><span class="o">=</span><span class="n">rmgdb</span><span class="p">,</span> <span class="n">reaction</span><span class="o">=</span><span class="n">reaction</span><span class="p">)</span>
     <span class="n">families</span> <span class="o">=</span> <span class="p">[</span><span class="n">fam_l</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">fam_l</span> <span class="ow">in</span> <span class="n">fam_list</span><span class="p">]</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">families</span><span class="p">))</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">families</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">families</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">own_reverse</span>
+        <span class="n">family</span> <span class="o">=</span> <span class="n">families</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">save_order</span><span class="p">:</span>
+            <span class="n">family</span><span class="o">.</span><span class="n">save_order</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="n">family</span><span class="p">,</span> <span class="n">family</span><span class="o">.</span><span class="n">own_reverse</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">False</span></div>
 
 
 <div class="viewcode-block" id="loop_families"><a class="viewcode-back" href="../../api/rmgdb.html#arc.rmgdb.loop_families">[docs]</a><span class="k">def</span> <span class="nf">loop_families</span><span class="p">(</span><span class="n">rmgdb</span><span class="p">:</span> <span class="n">RMGDatabase</span><span class="p">,</span>
                   <span class="n">reaction</span><span class="p">:</span> <span class="n">Reaction</span><span class="p">,</span>
-                  <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="s1">&#39;KineticsFamily&#39;</span><span class="p">]:</span>
+                  <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="s1">&#39;KineticsFamily&#39;</span><span class="p">,</span> <span class="nb">list</span><span class="p">]]:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Loop through kinetic families and return a list of tuples of (family, degenerate_reactions)</span>
-<span class="sd">    `reaction` is an RMG Reaction object.</span>
-<span class="sd">    Returns a list of (family, degenerate_reactions) tuples.</span>
+<span class="sd">    corresponding to ``reaction``.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        rmgdb (RMGDatabase): The RMG database instance.</span>
-<span class="sd">        reaction (Reaction): The RMG Reaction object.</span>
+<span class="sd">        reaction (Reaction): The RMG Reaction object instance.</span>
 
-<span class="sd">    Returns: List[KineticsFamily]</span>
-<span class="sd">        Entries are corresponding RMG KineticsFamily instances.</span>
+<span class="sd">    Returns: List[Tuple[&#39;KineticsFamily&#39;, list]]</span>
+<span class="sd">        Entries are tuples of a corresponding RMG KineticsFamily instance and a list of degenerate reactions.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">reaction</span> <span class="o">=</span> <span class="n">reaction</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>  <span class="c1"># use a copy to avoid changing atom order in the molecules by RMG</span>
+    <span class="n">reaction</span> <span class="o">=</span> <span class="n">reaction</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>  <span class="c1"># Use a copy to avoid changing atom order in the molecules by RMG.</span>
+    <span class="k">for</span> <span class="n">spc</span> <span class="ow">in</span> <span class="n">reaction</span><span class="o">.</span><span class="n">reactants</span> <span class="o">+</span> <span class="n">reaction</span><span class="o">.</span><span class="n">products</span><span class="p">:</span>
+        <span class="n">spc</span><span class="o">.</span><span class="n">generate_resonance_structures</span><span class="p">(</span><span class="n">save_order</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="n">fam_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
     <span class="k">for</span> <span class="n">family</span> <span class="ow">in</span> <span class="n">rmgdb</span><span class="o">.</span><span class="n">kinetics</span><span class="o">.</span><span class="n">families</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+        <span class="n">family</span><span class="o">.</span><span class="n">save_order</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="n">degenerate_reactions</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
-        <span class="n">family_reactions_by_r</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>  <span class="c1"># family reactions for the specified reactants</span>
-        <span class="n">family_reactions_by_rnp</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>  <span class="c1"># family reactions for the specified reactants and products</span>
+        <span class="n">family_reactions_by_r</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>  <span class="c1"># Family reactions for the specified reactants.</span>
+        <span class="n">family_reactions_by_rnp</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>  <span class="c1"># Family reactions for the specified reactants and products.</span>
 
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">reaction</span><span class="o">.</span><span class="n">reactants</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">reactant0</span> <span class="ow">in</span> <span class="n">reaction</span><span class="o">.</span><span class="n">reactants</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">molecule</span><span class="p">:</span>
                 <span class="n">fam_rxn</span> <span class="o">=</span> <span class="n">family</span><span class="o">.</span><span class="n">generate_reactions</span><span class="p">(</span><span class="n">reactants</span><span class="o">=</span><span class="p">[</span><span class="n">reactant0</span><span class="p">],</span>
-                                                    <span class="n">products</span><span class="o">=</span><span class="n">reaction</span><span class="o">.</span><span class="n">products</span><span class="p">)</span>
+                                                    <span class="n">products</span><span class="o">=</span><span class="n">reaction</span><span class="o">.</span><span class="n">products</span><span class="p">,</span>
+                                                    <span class="n">delete_labels</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                                                    <span class="p">)</span>
                 <span class="k">if</span> <span class="n">fam_rxn</span><span class="p">:</span>
                     <span class="n">family_reactions_by_r</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">fam_rxn</span><span class="p">)</span>
         <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">reaction</span><span class="o">.</span><span class="n">reactants</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">reactant0</span> <span class="ow">in</span> <span class="n">reaction</span><span class="o">.</span><span class="n">reactants</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">molecule</span><span class="p">:</span>
                 <span class="k">for</span> <span class="n">reactant1</span> <span class="ow">in</span> <span class="n">reaction</span><span class="o">.</span><span class="n">reactants</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">molecule</span><span class="p">:</span>
                     <span class="n">fam_rxn</span> <span class="o">=</span> <span class="n">family</span><span class="o">.</span><span class="n">generate_reactions</span><span class="p">(</span><span class="n">reactants</span><span class="o">=</span><span class="p">[</span><span class="n">reactant0</span><span class="p">,</span> <span class="n">reactant1</span><span class="p">],</span>
-                                                        <span class="n">products</span><span class="o">=</span><span class="n">reaction</span><span class="o">.</span><span class="n">products</span><span class="p">)</span>
+                                                        <span class="n">products</span><span class="o">=</span><span class="n">reaction</span><span class="o">.</span><span class="n">products</span><span class="p">,</span>
+                                                        <span class="n">delete_labels</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                                                        <span class="p">)</span>
                     <span class="k">if</span> <span class="n">fam_rxn</span><span class="p">:</span>
                         <span class="n">family_reactions_by_r</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">fam_rxn</span><span class="p">)</span>
         <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">reaction</span><span class="o">.</span><span class="n">reactants</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
@@ -385,14 +419,16 @@
                 <span class="k">for</span> <span class="n">reactant1</span> <span class="ow">in</span> <span class="n">reaction</span><span class="o">.</span><span class="n">reactants</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">molecule</span><span class="p">:</span>
                     <span class="k">for</span> <span class="n">reactant2</span> <span class="ow">in</span> <span class="n">reaction</span><span class="o">.</span><span class="n">reactants</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">molecule</span><span class="p">:</span>
                         <span class="n">fam_rxn</span> <span class="o">=</span> <span class="n">family</span><span class="o">.</span><span class="n">generate_reactions</span><span class="p">(</span><span class="n">reactants</span><span class="o">=</span><span class="p">[</span><span class="n">reactant0</span><span class="p">,</span> <span class="n">reactant1</span><span class="p">,</span> <span class="n">reactant2</span><span class="p">],</span>
-                                                            <span class="n">products</span><span class="o">=</span><span class="n">reaction</span><span class="o">.</span><span class="n">products</span><span class="p">)</span>
+                                                            <span class="n">products</span><span class="o">=</span><span class="n">reaction</span><span class="o">.</span><span class="n">products</span><span class="p">,</span>
+                                                            <span class="n">delete_labels</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                                                            <span class="p">)</span>
                         <span class="k">if</span> <span class="n">fam_rxn</span><span class="p">:</span>
                             <span class="n">family_reactions_by_r</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">fam_rxn</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">reaction</span><span class="o">.</span><span class="n">products</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">fam_rxn</span> <span class="ow">in</span> <span class="n">family_reactions_by_r</span><span class="p">:</span>
                 <span class="k">for</span> <span class="n">product0</span> <span class="ow">in</span> <span class="n">reaction</span><span class="o">.</span><span class="n">products</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">molecule</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="n">same_species_lists</span><span class="p">([</span><span class="n">product0</span><span class="p">],</span> <span class="n">fam_rxn</span><span class="o">.</span><span class="n">products</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">same_species_lists</span><span class="p">([</span><span class="n">product0</span><span class="p">],</span> <span class="n">fam_rxn</span><span class="o">.</span><span class="n">products</span><span class="p">,</span> <span class="n">save_order</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
                         <span class="n">family_reactions_by_rnp</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fam_rxn</span><span class="p">)</span>
             <span class="n">degenerate_reactions</span> <span class="o">=</span> <span class="n">find_degenerate_reactions</span><span class="p">(</span><span class="n">rxn_list</span><span class="o">=</span><span class="n">family_reactions_by_rnp</span><span class="p">,</span>
                                                              <span class="n">same_reactants</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
@@ -401,7 +437,7 @@
             <span class="k">for</span> <span class="n">fam_rxn</span> <span class="ow">in</span> <span class="n">family_reactions_by_r</span><span class="p">:</span>
                 <span class="k">for</span> <span class="n">product0</span> <span class="ow">in</span> <span class="n">reaction</span><span class="o">.</span><span class="n">products</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">molecule</span><span class="p">:</span>
                     <span class="k">for</span> <span class="n">product1</span> <span class="ow">in</span> <span class="n">reaction</span><span class="o">.</span><span class="n">products</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">molecule</span><span class="p">:</span>
-                        <span class="k">if</span> <span class="n">same_species_lists</span><span class="p">([</span><span class="n">product0</span><span class="p">,</span> <span class="n">product1</span><span class="p">],</span> <span class="n">fam_rxn</span><span class="o">.</span><span class="n">products</span><span class="p">):</span>
+                        <span class="k">if</span> <span class="n">same_species_lists</span><span class="p">([</span><span class="n">product0</span><span class="p">,</span> <span class="n">product1</span><span class="p">],</span> <span class="n">fam_rxn</span><span class="o">.</span><span class="n">products</span><span class="p">,</span> <span class="n">save_order</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
                             <span class="n">family_reactions_by_rnp</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fam_rxn</span><span class="p">)</span>
             <span class="n">degenerate_reactions</span> <span class="o">=</span> <span class="n">find_degenerate_reactions</span><span class="p">(</span><span class="n">rxn_list</span><span class="o">=</span><span class="n">family_reactions_by_rnp</span><span class="p">,</span>
                                                              <span class="n">same_reactants</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
@@ -411,7 +447,7 @@
                 <span class="k">for</span> <span class="n">product0</span> <span class="ow">in</span> <span class="n">reaction</span><span class="o">.</span><span class="n">products</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">molecule</span><span class="p">:</span>
                     <span class="k">for</span> <span class="n">product1</span> <span class="ow">in</span> <span class="n">reaction</span><span class="o">.</span><span class="n">products</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">molecule</span><span class="p">:</span>
                         <span class="k">for</span> <span class="n">product2</span> <span class="ow">in</span> <span class="n">reaction</span><span class="o">.</span><span class="n">products</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">molecule</span><span class="p">:</span>
-                            <span class="k">if</span> <span class="n">same_species_lists</span><span class="p">([</span><span class="n">product0</span><span class="p">,</span> <span class="n">product1</span><span class="p">,</span> <span class="n">product2</span><span class="p">],</span> <span class="n">fam_rxn</span><span class="o">.</span><span class="n">products</span><span class="p">):</span>
+                            <span class="k">if</span> <span class="n">same_species_lists</span><span class="p">([</span><span class="n">product0</span><span class="p">,</span> <span class="n">product1</span><span class="p">,</span> <span class="n">product2</span><span class="p">],</span> <span class="n">fam_rxn</span><span class="o">.</span><span class="n">products</span><span class="p">,</span> <span class="n">save_order</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
                                 <span class="n">family_reactions_by_rnp</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fam_rxn</span><span class="p">)</span>
             <span class="n">degenerate_reactions</span> <span class="o">=</span> <span class="n">find_degenerate_reactions</span><span class="p">(</span><span class="n">rxn_list</span><span class="o">=</span><span class="n">family_reactions_by_rnp</span><span class="p">,</span>
                                                              <span class="n">same_reactants</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
@@ -475,6 +511,27 @@
                             <span class="n">rxn</span><span class="o">.</span><span class="n">comment</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">reference</span><span class="o">.</span><span class="n">authors</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="n">entry</span><span class="o">.</span><span class="n">reference</span><span class="o">.</span><span class="n">year</span><span class="si">}</span><span class="s1">&#39;</span>
                         <span class="n">rmg_reactions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rxn</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">rmg_reactions</span></div>
+
+
+<div class="viewcode-block" id="get_family"><a class="viewcode-back" href="../../api/rmgdb.html#arc.rmgdb.get_family">[docs]</a><span class="k">def</span> <span class="nf">get_family</span><span class="p">(</span><span class="n">rmgdb</span><span class="p">:</span> <span class="n">RMGDatabase</span><span class="p">,</span>
+               <span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+               <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="s1">&#39;KineticsFamily&#39;</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get a KineticsFamily object instance corresponding to the input family ``label``.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        rmgdb (RMGDatabase): The RMG database instance.</span>
+<span class="sd">        label (str): The label of the desired family.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Optional[&#39;KineticsFamily&#39;]: The desired family object instance.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">label</span> <span class="o">=</span> <span class="n">label</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">family_label</span><span class="p">,</span> <span class="n">family</span> <span class="ow">in</span> <span class="n">rmgdb</span><span class="o">.</span><span class="n">kinetics</span><span class="o">.</span><span class="n">families</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">family_label</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="n">label</span><span class="p">:</span>
+            <span class="n">family</span><span class="o">.</span><span class="n">save_order</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">return</span> <span class="n">family</span>
+    <span class="k">return</span> <span class="kc">None</span></div>
 </pre></div>
 
            </div>

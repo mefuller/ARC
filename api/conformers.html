@@ -226,8 +226,8 @@ while atoms in Molecules are 0-indexed.</p>
 </div>
 <p>This will calculate the energy of the original conformer (defined using <cite>xyz</cite>).
 We iterate through new_dihedrals. The torsions are set accordingly and the energy and xyz of the newly
-generated conformer are kept.</p>
-<p>We assume that each list entry in new_dihedrals is of the length of the torsions list (2 in the example).</p>
+generated conformer are kept.
+We assume that each list entry in new_dihedrals is of the length of the torsions list (2 in the example).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -241,16 +241,14 @@ generated conformer are kept.</p>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>The conformer FF energies corresponding to the list of dihedrals.</p>
+<dd class="field-even"><p><ul class="simple">
+<li><p>The conformer FF energies corresponding to the list of dihedrals.</p></li>
+<li><p>The conformer xyz geometries corresponding to the list of dihedrals.</p></li>
+</ul>
+</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>list</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>The conformer xyz geometries corresponding to the list of dihedrals.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>list</p>
+<dd class="field-odd"><p>Tuple[list, list]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -287,14 +285,14 @@ by converting it to a tuple deterministically.</p>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>chirality_dict</strong> (<em>dict</em>) – The chirality dictionary of a conformer.</p>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>A deterministic tuple representation of the chirality dictionary.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>tuple</p>
-</dd>
 <dt class="field-even">Raises</dt>
 <dd class="field-even"><p><strong>ConformerError</strong> – If the chirality values are wrong.</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A deterministic tuple representation of the chirality dictionary.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>tuple</p>
 </dd>
 </dl>
 </dd></dl>
@@ -363,16 +361,14 @@ will not be considered.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>The deduced conformers.</p>
+<dd class="field-even"><p><ul class="simple">
+<li><p>The deduced conformers.</p></li>
+<li><p>Keys are torsion tuples.</p></li>
+</ul>
+</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>list</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Keys are torsion tuples</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>dict</p>
+<dd class="field-odd"><p>Tuple[list, dict]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -430,7 +426,7 @@ All atom indices are 0-indexed.</p>
 <dl class="py function">
 <dt id="arc.species.conformers.determine_number_of_conformers_to_generate">
 <code class="sig-prename descclassname">arc.species.conformers.</code><code class="sig-name descname">determine_number_of_conformers_to_generate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">label</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">heavy_atoms</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">torsion_num</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">mol</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>rmgpy.molecule.molecule.Molecule<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">xyz</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>dict<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">minimalist</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em><span class="sig-paren">)</span> &#x2192; Tuple<span class="p">[</span>int<span class="p">, </span>int<span class="p">]</span><a class="reference internal" href="../_modules/arc/species/conformers.html#determine_number_of_conformers_to_generate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.conformers.determine_number_of_conformers_to_generate" title="Permalink to this definition">¶</a></dt>
-<dd><p>Determine the number of conformers to generate using molecular mechanics</p>
+<dd><p>Determine the number of conformers to generate using molecular mechanics.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -468,16 +464,14 @@ before fitting a force field. True to be minimalistic.</p></li>
 <dd class="field-odd"><p><strong>mol_list</strong> (<em>list</em>) – Localized structures (Molecule objects) by which all rotors will be determined.</p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>A list of indices of scan pivots.</p>
+<dd class="field-even"><p><ul class="simple">
+<li><p>A list of indices of scan pivots.</p></li>
+<li><p>A list of indices of top atoms (including one of the pivotal atoms) corresponding to the torsions.</p></li>
+</ul>
+</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>list</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>A list of indices of top atoms (including one of the pivotal atoms) corresponding to the torsions.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>list</p>
+<dd class="field-odd"><p>Tuple[list, list]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -485,7 +479,7 @@ before fitting a force field. True to be minimalistic.</p></li>
 <dl class="py function">
 <dt id="arc.species.conformers.determine_smallest_atom_index_in_scan">
 <code class="sig-prename descclassname">arc.species.conformers.</code><code class="sig-name descname">determine_smallest_atom_index_in_scan</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">atom1</span><span class="p">:</span> <span class="n">rmgpy.molecule.molecule.Atom</span></em>, <em class="sig-param"><span class="n">atom2</span><span class="p">:</span> <span class="n">rmgpy.molecule.molecule.Atom</span></em>, <em class="sig-param"><span class="n">mol</span><span class="p">:</span> <span class="n">rmgpy.molecule.molecule.Molecule</span></em><span class="sig-paren">)</span> &#x2192; int<a class="reference internal" href="../_modules/arc/species/conformers.html#determine_smallest_atom_index_in_scan"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.conformers.determine_smallest_atom_index_in_scan" title="Permalink to this definition">¶</a></dt>
-<dd><p>Determine the smallest atom index in mol connected to <code class="docutils literal notranslate"><span class="pre">atom1</span></code> which is not <code class="docutils literal notranslate"><span class="pre">atom2</span></code>.
+<dd><p>Determine the smallest atom index in <code class="docutils literal notranslate"><span class="pre">mol</span></code> connected to <code class="docutils literal notranslate"><span class="pre">atom1</span></code> which is not <code class="docutils literal notranslate"><span class="pre">atom2</span></code>.
 Returns a heavy atom if available, otherwise a hydrogen atom.
 Useful for deterministically determining the indices of four atom in a scan.
 This function assumes there ARE additional atoms connected to <code class="docutils literal notranslate"><span class="pre">atom1</span></code>, and that <code class="docutils literal notranslate"><span class="pre">atom2</span></code> is not a hydrogen atom.</p>
@@ -520,17 +514,15 @@ This function assumes there ARE additional atoms connected to <code class="docut
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Sampling points for the torsion.</p>
+<dd class="field-even"><p><ul class="simple">
+<li><p>Sampling points for the torsion.</p></li>
+<li><p>Each entry is a well dictionary with the keys
+<code class="docutils literal notranslate"><span class="pre">start_idx</span></code>, <code class="docutils literal notranslate"><span class="pre">end_idx</span></code>, <code class="docutils literal notranslate"><span class="pre">start_angle</span></code>, <code class="docutils literal notranslate"><span class="pre">end_angle</span></code>, <code class="docutils literal notranslate"><span class="pre">angles</span></code>.</p></li>
+</ul>
+</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>list</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Each entry is a well dictionary with the keys
-<code class="docutils literal notranslate"><span class="pre">start_idx</span></code>, <code class="docutils literal notranslate"><span class="pre">end_idx</span></code>, <code class="docutils literal notranslate"><span class="pre">start_angle</span></code>, <code class="docutils literal notranslate"><span class="pre">end_angle</span></code>, <code class="docutils literal notranslate"><span class="pre">angles</span></code>.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>list</p>
+<dd class="field-odd"><p>Tuple[list, list]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -538,8 +530,8 @@ This function assumes there ARE additional atoms connected to <code class="docut
 <dl class="py function">
 <dt id="arc.species.conformers.determine_torsion_symmetry">
 <code class="sig-prename descclassname">arc.species.conformers.</code><code class="sig-name descname">determine_torsion_symmetry</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">label</span></em>, <em class="sig-param"><span class="n">top1</span></em>, <em class="sig-param"><span class="n">mol_list</span></em>, <em class="sig-param"><span class="n">torsion_scan</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/species/conformers.html#determine_torsion_symmetry"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.conformers.determine_torsion_symmetry" title="Permalink to this definition">¶</a></dt>
-<dd><p>Check whether a torsion is symmetric.</p>
-<p>If a torsion well is “well defined” and not smeared, it could be symmetric.
+<dd><p>Check whether a torsion is symmetric.
+If a torsion well is “well defined” and not smeared, it could be symmetric.
 Check the groups attached to the rotor pivots to determine whether it is indeed symmetric
 We don’t care about the actual rotor symmetry number here, since we plan to just use the first well
 (they’re all the same).</p>
@@ -610,7 +602,7 @@ We don’t care about the actual rotor symmetry number here, since we plan to ju
 <dd><p>Locates the sets of indices corresponding to every internal rotor (1-indexed).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>mol</strong> (<em>Molecule</em>) – The molecule for which rotors will be determined</p>
+<dd class="field-odd"><p><strong>mol</strong> (<em>Molecule</em>) – The molecule for which rotors will be determined.</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>Entries are rotor dictionaries with the four-atom scan coordinates, the pivots, and the smallest top.</p>
@@ -744,7 +736,7 @@ Useful when run outside of ARC. True to print.</p></li>
 <dt id="arc.species.conformers.generate_force_field_conformers">
 <code class="sig-prename descclassname">arc.species.conformers.</code><code class="sig-name descname">generate_force_field_conformers</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">label</span></em>, <em class="sig-param"><span class="n">mol_list</span></em>, <em class="sig-param"><span class="n">torsion_num</span></em>, <em class="sig-param"><span class="n">charge</span></em>, <em class="sig-param"><span class="n">multiplicity</span></em>, <em class="sig-param"><span class="n">xyzs</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">num_confs</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">force_field</span><span class="o">=</span><span class="default_value">'MMFF94s'</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/species/conformers.html#generate_force_field_conformers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.conformers.generate_force_field_conformers" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate conformers using RDKit and OpenBabel and optimize them using a force field
-Also consider user guesses in <cite>xyzs</cite></p>
+Also consider user guesses in <cite>xyzs</cite>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -758,14 +750,14 @@ Also consider user guesses in <cite>xyzs</cite></p>
 <li><p><strong>force_field</strong> (<em>str</em><em>, </em><em>optional</em>) – The type of force field to use.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Entries are conformer dictionaries.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>list</p>
-</dd>
 <dt class="field-even">Raises</dt>
 <dd class="field-even"><p><strong>ConformerError</strong> – If xyzs is given and it is not a list, or its entries are not strings.</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Entries are conformer dictionaries.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>list</p>
 </dd>
 </dl>
 </dd></dl>
@@ -810,16 +802,14 @@ The coordinates are returned in the order of atoms in mol.</p>
 <dd class="field-even"><p><strong>ConformerError</strong> – If conformers could not be generated.</p>
 </dd>
 <dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>Entries are xyz coordinates, each in a dict format.</p>
+<dd class="field-odd"><p><ul class="simple">
+<li><p>Entries are xyz coordinates, each in a dict format.</p></li>
+<li><p>Entries are the FF energies (in kJ/mol).</p></li>
+</ul>
+</p>
 </dd>
 <dt class="field-even">Return type</dt>
-<dd class="field-even"><p>list</p>
-</dd>
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>Entries are the FF energies (in kJ/mol).</p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>list</p>
+<dd class="field-even"><p>Tuple[list, list]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -827,7 +817,7 @@ The coordinates are returned in the order of atoms in mol.</p>
 <dl class="py function">
 <dt id="arc.species.conformers.get_lowest_confs">
 <code class="sig-prename descclassname">arc.species.conformers.</code><code class="sig-name descname">get_lowest_confs</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">label</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">confs</span><span class="p">:</span> <span class="n">Union<span class="p">[</span>dict<span class="p">, </span>list<span class="p">]</span></span></em>, <em class="sig-param"><span class="n">n</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">10</span></em>, <em class="sig-param"><span class="n">e</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">5.0</span></em>, <em class="sig-param"><span class="n">energy</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">'FF energy'</span></em><span class="sig-paren">)</span> &#x2192; list<a class="reference internal" href="../_modules/arc/species/conformers.html#get_lowest_confs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.conformers.get_lowest_confs" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get the most stable conformer</p>
+<dd><p>Get the most stable conformer.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -868,15 +858,15 @@ will be returned.</p>
 representing specific diastereomers to keep.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Entries are lowest energy diastereomeric conformer dictionaries to consider.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>list</p>
-</dd>
 <dt class="field-even">Raises</dt>
 <dd class="field-even"><p><strong>ConformerError</strong> – If diastereomers is not None and is of wrong type,
     or if conformers with the requested chirality combination could not be generated.</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Entries are lowest energy diastereomeric conformer dictionaries to consider.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>list</p>
 </dd>
 </dl>
 </dd></dl>
@@ -895,19 +885,16 @@ representing specific diastereomers to keep.</p></li>
 <li><p><strong>just_get_the_number</strong> (<em>bool</em><em>, </em><em>optional</em>) – Return the number of chiral centers regardless of their type.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><dl class="simple">
-<dt>Keys are types of chiral sites (‘C’ for carbon, ‘N’ for nitrogen, ‘D’ for double bond),</dt><dd><p>values are the number of chiral centers of each type. If <code class="docutils literal notranslate"><span class="pre">just_get_the_number</span></code> is <code class="docutils literal notranslate"><span class="pre">True</span></code>,
-just returns the number of chiral centers (integer).</p>
-</dd>
-</dl>
-</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>dict, int</p>
-</dd>
 <dt class="field-even">Raises</dt>
 <dd class="field-even"><p><strong>InputError</strong> – If neither <code class="docutils literal notranslate"><span class="pre">conformer</span></code> nor <code class="docutils literal notranslate"><span class="pre">xyz</span></code> were given.</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Keys are types of chiral sites (‘C’ for carbon, ‘N’ for nitrogen, ‘D’ for double bond),
+values are the number of chiral centers of each type. If <code class="docutils literal notranslate"><span class="pre">just_get_the_number</span></code> is <code class="docutils literal notranslate"><span class="pre">True</span></code>,
+just returns the number of chiral centers (integer).</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>Optional[dict, int]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -935,7 +922,7 @@ just returns the number of chiral centers (integer).</p>
 <dl class="py function">
 <dt id="arc.species.conformers.get_torsion_angles">
 <code class="sig-prename descclassname">arc.species.conformers.</code><code class="sig-name descname">get_torsion_angles</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">label</span></em>, <em class="sig-param"><span class="n">conformers</span></em>, <em class="sig-param"><span class="n">torsions</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/species/conformers.html#get_torsion_angles"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.conformers.get_torsion_angles" title="Permalink to this definition">¶</a></dt>
-<dd><p>Populate each torsion pivots with all available angles from the generated conformers</p>
+<dd><p>Populate each torsion pivots with all available angles from the generated conformers.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -982,14 +969,14 @@ just returns the number of chiral centers (integer).</p>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>mol</strong> (<em>Molecule</em>) – The molecule to be analyzed.</p>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Atom numbers (0-indexed) representing chiral nitrogen centers in the molecule (umbrella modes).</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>list</p>
-</dd>
 <dt class="field-even">Raises</dt>
 <dd class="field-even"><p><strong>TypeError</strong> – If <code class="docutils literal notranslate"><span class="pre">mol</span></code> is of wrong type.</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Atom numbers (0-indexed) representing chiral nitrogen centers in the molecule (umbrella modes).</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>list</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1014,14 +1001,14 @@ Note that chiral double bonds (‘E’ and ‘Z’) must not be inversed (they a
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>symbol</strong> (<em>str</em>) – The chirality symbol.</p>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>The inverse chirality symbol.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>str</p>
-</dd>
 <dt class="field-even">Raises</dt>
 <dd class="field-even"><p><strong>InputError</strong> – If <code class="docutils literal notranslate"><span class="pre">symbol</span></code> could not be recognized.</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The inverse chirality symbol.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>str</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1031,7 +1018,7 @@ Note that chiral double bonds (‘E’ and ‘Z’) must not be inversed (they a
 <code class="sig-prename descclassname">arc.species.conformers.</code><code class="sig-name descname">mix_rdkit_and_openbabel_force_field</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">label</span></em>, <em class="sig-param"><span class="n">mol</span></em>, <em class="sig-param"><span class="n">num_confs</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">xyz</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">force_field</span><span class="o">=</span><span class="default_value">'GAFF'</span></em>, <em class="sig-param"><span class="n">try_ob</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/species/conformers.html#mix_rdkit_and_openbabel_force_field"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.conformers.mix_rdkit_and_openbabel_force_field" title="Permalink to this definition">¶</a></dt>
 <dd><p>Optimize conformers using a force field (GAFF, MMFF94s, MMFF94, UFF, Ghemical)
 Use RDKit to generate the random conformers (OpenBabel isn’t good enough),
-but use OpenBabel to optimize them (RDKit doesn’t have GAFF)</p>
+but use OpenBabel to optimize them (RDKit doesn’t have GAFF).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -1044,16 +1031,14 @@ but use OpenBabel to optimize them (RDKit doesn’t have GAFF)</p>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Entries are optimized xyz’s in a list format.</p>
+<dd class="field-even"><p><ul class="simple">
+<li><p>Entries are optimized xyz’s in a list format.</p></li>
+<li><p>Entries are float numbers representing the energies in kJ/mol.</p></li>
+</ul>
+</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>list</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Entries are float numbers representing the energies in kJ/mol.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>list</p>
+<dd class="field-odd"><p>Tuple[list, list]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1061,7 +1046,7 @@ but use OpenBabel to optimize them (RDKit doesn’t have GAFF)</p>
 <dl class="py function">
 <dt id="arc.species.conformers.openbabel_force_field">
 <code class="sig-prename descclassname">arc.species.conformers.</code><code class="sig-name descname">openbabel_force_field</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">label</span></em>, <em class="sig-param"><span class="n">mol</span></em>, <em class="sig-param"><span class="n">num_confs</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">xyz</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">force_field</span><span class="o">=</span><span class="default_value">'GAFF'</span></em>, <em class="sig-param"><span class="n">method</span><span class="o">=</span><span class="default_value">'diverse'</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/species/conformers.html#openbabel_force_field"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.conformers.openbabel_force_field" title="Permalink to this definition">¶</a></dt>
-<dd><p>Optimize conformers using a force field (GAFF, MMFF94s, MMFF94, UFF, Ghemical)</p>
+<dd><p>Optimize conformers using a force field (GAFF, MMFF94s, MMFF94, UFF, Ghemical).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -1075,16 +1060,14 @@ For method description, see <a class="reference external" href="http://openbabel
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Entries are optimized xyz’s in a list format.</p>
+<dd class="field-even"><p><ul class="simple">
+<li><p>Entries are optimized xyz’s in a list format.</p></li>
+<li><p>Entries are float numbers representing the energies in kJ/mol.</p></li>
+</ul>
+</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>list</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Entries are float numbers representing the energies in kJ/mol.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>list</p>
+<dd class="field-odd"><p>Tuple[list, list]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1104,16 +1087,14 @@ This is a fall back method when RDKit fails to generate force field optimized co
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Entries are optimized xyz’s in a dictionary format.</p>
+<dd class="field-even"><p><ul class="simple">
+<li><p>Entries are optimized xyz’s in a dictionary format.</p></li>
+<li><p>Entries are float numbers representing the energies (in kJ/mol).</p></li>
+</ul>
+</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>list</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Entries are float numbers representing the energies (in kJ/mol).</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>list</p>
+<dd class="field-odd"><p>Tuple[list, list]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1154,16 +1135,14 @@ other, and are not pruned out.</p>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Entries are optimized xyz’s in a dictionary format.</p>
+<dd class="field-even"><p><ul class="simple">
+<li><p>Entries are optimized xyz’s in a dictionary format.</p></li>
+<li><p>Entries are float numbers representing the energies.</p></li>
+</ul>
+</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>list</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Entries are float numbers representing the energies.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>list</p>
+<dd class="field-odd"><p>Tuple[list, list]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1178,7 +1157,7 @@ other, and are not pruned out.</p>
 <li><p><strong>rd_mol</strong> (<em>RDKit RDMol</em>) – The RDKit molecule with embedded conformers to optimize.</p></li>
 <li><p><strong>i</strong> (<em>int</em>) – The conformer index from rd_mol to read.</p></li>
 <li><p><strong>rd_index_map</strong> (<em>list</em><em>, </em><em>optional</em>) – An atom map dictionary to reorder the xyz.
-Keys are rdkit atom indices, values are RMG mol atom indices</p></li>
+Keys are rdkit atom indices, values are RMG mol atom indices.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -1200,11 +1179,11 @@ Keys are rdkit atom indices, values are RMG mol atom indices</p></li>
 <li><p><strong>label</strong> (<em>str</em>) – The species’ label.</p></li>
 <li><p><strong>rd_mol</strong> (<em>RDKit RDMol</em>) – The RDKit molecule with embedded conformers to optimize.</p></li>
 <li><p><strong>i</strong> (<em>int</em><em>, </em><em>optional</em>) – The conformer index from rd_mol to read. If None, all will be read,</p></li>
-<li><p><strong>rd_index_map</strong> (<em>list</em><em>, </em><em>optional</em>) – An atom map dictionary to reorder the xyz. Requires mol to not be None.</p></li>
+<li><p><strong>rd_index_map</strong> (<em>list</em><em>, </em><em>optional</em>) – An atom map dictionary to reorder the xyz. Requires mol to not be <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>entries are xyz coordinate dicts.</p>
+<dd class="field-even"><p>Entries are xyz coordinate dicts.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>list</p>
@@ -1224,20 +1203,18 @@ Keys are rdkit atom indices, values are RMG mol atom indices</p></li>
 <li><p><strong>chiral_nitrogen_centers</strong> (<em>list</em>) – The 0-index of chiral (umbrella mode) nitrogen atoms in the molecule.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>A copy of the molecule with replaced N atoms.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>Molecule</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Elements inserted in addition to the C atom, ordered as in <code class="docutils literal notranslate"><span class="pre">chiral_nitrogen_centers</span></code>.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>list</p>
-</dd>
 <dt class="field-even">Raises</dt>
-<dd class="field-even"><p><strong>ConformerError</strong> – If any of the atoms indicated by <code class="docutils literal notranslate"><span class="pre">chiral_nitrogen_centers</span></code> could not be a chiral nitrogen atom</p>
+<dd class="field-even"><p><strong>ConformerError</strong> – If any of the atoms indicated by <code class="docutils literal notranslate"><span class="pre">chiral_nitrogen_centers</span></code> could not be a chiral nitrogen atom.</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><ul class="simple">
+<li><p>A copy of the molecule with replaced N atoms.</p></li>
+<li><p>Elements inserted in addition to the C atom, ordered as in <code class="docutils literal notranslate"><span class="pre">chiral_nitrogen_centers</span></code>.</p></li>
+</ul>
+</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>Tuple[Molecule, list]</p>
 </dd>
 </dl>
 </dd></dl>
