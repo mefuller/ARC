@@ -175,14 +175,11 @@ orca_default_options_dict = {
                            'dlpno_threshold': 'normalPNO'}},
 }
 
-# default_ts_methods = ['QST2', 'DEGSM', 'NEB', 'Kinbot', 'AutoTST']
-default_ts_methods = []
-
 valid_chars = "-_[]=.,%s%s" % (string.ascii_letters, string.digits)
 
 # A scan with better resolution (lower number here) takes more time to compute,
 # but the automatically-derived rotor symmetry number is more likely to be correct.
-rotor_scan_resolution = 8.0  # degrees. Default: 8.0
+rotor_scan_resolution = 10  # degrees. Default: 8.0
 
 # rotor validation parameters
 maximum_barrier = 40    # a rotor threshold (kJ/mol) above which the mode will be considered as vibrational if
@@ -198,7 +195,7 @@ max_rotor_trsh = 4      # maximum number of times to troubleshoot the same rotor
 preserve_params_in_scan = {
     'bond': 0.1,  # Default: 10% of the original bond length
     'angle': 10,  # Default: 10 degrees
-    'dihedral': 30,  # Default: 30 degrees
+    'dihedral': 50,  # Default: 30 degrees
 }
 
 # Coefficients to be used in a ``y = A * x ** b`` fit
@@ -211,6 +208,7 @@ preserve_params_in_scan = {
 # If the number of processes is greater than 'max_one' but equal or lower than 'max_two',
 # only two tasks will be spawned.
 tasks_coeff = {'A': 1.7, 'b': 0.35, 'cap': 100, 'max_one': 2, 'max_two': 9}
+# Todo: add min tasks for fast jobs such as GCN
 
 # Default job memory, cpu, time settings
 default_job_settings = {

@@ -232,7 +232,6 @@ class ARCSpecies(object):
         chosen_ts_list (List[int]): The TSGuess index corresponding to the TS guesses that were tried out.
         chosen_ts_method (str): The TS method that was actually used for optimization.
         ts_checks (Dict[str, bool]): Checks that a TS species went through.
-        rxn_zone_atom_indices (List[int]): 0-indexed atom indices of the active reaction zone.
         ts_conf_spawned (bool): Whether conformers were already spawned for the Species (representing a TS) based on its
                                 TSGuess objects.
         tsg_spawned (bool): If this species is a TS, this attribute describes whether TS guess jobs were already spawned.
@@ -306,7 +305,6 @@ class ARCSpecies(object):
                  rxn_index: Optional[int] = None,
                  smiles: str = '',
                  species_dict: Optional[dict] = None,
-                 ts_methods: Optional[List[str]] = None,
                  ts_number: Optional[int] = None,
                  xyz: Optional[Union[list, dict, str]] = None,
                  yml_path: Optional[str] = None,
@@ -342,7 +340,6 @@ class ARCSpecies(object):
         self.fragments = fragments
         self.original_label = None
         self.chosen_ts = None
-        self.rxn_zone_atom_indices = None
         self.ts_checks = dict()
 
         if species_dict is not None:
@@ -491,8 +488,7 @@ class ARCSpecies(object):
 
         if self.mol is not None and self.mol_list is None:
             self.set_mol_list()
-        if self.is_ts:
-            self.populate_ts_checks()
+        self.populate_ts_checks()
 
     def __str__(self) -> str:
         """Return a string representation of the object"""
@@ -605,7 +601,6 @@ class ARCSpecies(object):
             species_dict['unsuccessful_methods'] = self.unsuccessful_methods
             species_dict['chosen_ts_method'] = self.chosen_ts_method
             species_dict['chosen_ts'] = self.chosen_ts
-            species_dict['rxn_zone_atom_indices'] = self.rxn_zone_atom_indices
             species_dict['chosen_ts_list'] = self.chosen_ts_list
             species_dict['ts_checks'] = self.ts_checks
         if self.original_label is not None:
@@ -754,8 +749,6 @@ class ARCSpecies(object):
                 if 'unsuccessful_methods' in species_dict else list()
             self.chosen_ts_method = species_dict['chosen_ts_method'] if 'chosen_ts_method' in species_dict else None
             self.chosen_ts = species_dict['chosen_ts'] if 'chosen_ts' in species_dict else None
-            self.rxn_zone_atom_indices = species_dict['rxn_zone_atom_indices'] \
-                if 'rxn_zone_atom_indices' in species_dict else None
             self.ts_checks = species_dict['ts_checks'] if 'ts_checks' in species_dict else None
             self.chosen_ts_list = species_dict['chosen_ts_list'] if 'chosen_ts_list' in species_dict else list()
             self.checkfile = species_dict['checkfile'] if 'checkfile' in species_dict else None
@@ -1820,11 +1813,14 @@ class ARCSpecies(object):
 
     def populate_ts_checks(self):
         """Populate (or restart) the .ts_checks attribute with default (``False``) values."""
-        self.ts_checks = {'E0': False,
-                          'e_elect': False,
-                          'IRC': False,
-                          'normal_mode_displacement': False,
-                          }
+        if self.is_ts:
+            self.ts_checks = {'E0': False,
+                              'e_elect': False,
+                              'IRC': False,
+                              'freq': False,
+                              'normal_mode_displacement': False,
+                              'warnings': '',
+                              }
 
 
 class TSGuess(object):
@@ -2013,116 +2009,6 @@ class TSGuess(object):
                 self.rmg_reaction = Reaction(reactants=reactants, products=products)
             except AtomTypeError:
                 pass
-
-    def execute_ts_guess_method(self):
-        """
-        Execute a TS guess method
-        """
-        if self.method == 'user guess':
-            pass
-        elif self.method == 'qst2':
-            self.qst2()
-        elif self.method == 'degsm':
-            self.degsm()
-        elif self.method == 'neb':
-            self.neb()
-        elif self.method == 'kinbot':
-            self.kinbot()
-        elif self.method == 'autotst':
-            self.autotst()
-        elif self.method == 'gcn':
-            self.gcn()
-        else:
-            raise TSError('Unrecognized method. Should be either {0}. Got: {1}'.format(
-                          ['User guess'] + default_ts_methods, self.method))
-
-    def autotst(self):
-        """
-        Determine a TS guess using AutoTST for the following RMG families:
-        Current supported families are:
-        - H_Abstraction
-        Near-future supported families might be:
-        - Disproportionation
-        - R_Addition_MultipleBond
-        - intra_H_migration
-        """
-        if not isinstance(self.rmg_reaction, Reaction):
-            raise InputError('AutoTST requires an RMG Reaction object. Got: {0}'.format(type(self.rmg_reaction)))
-        if self.family not in ['H_Abstraction']:
-            logger.debug('AutoTST currently only works for H_Abstraction. Got: {0}'.format(self.family))
-            self.initial_xyz = None
-        else:
-            self.initial_xyz = atst.autotst(rmg_reaction=self.rmg_reaction, reaction_family=self.family)
-
-    def gcn(self):
-        """
-        Determine a TS guess using a graph convolutional network.
-
-        Reactant and product must each be a single fragment.
-        """
-        # check that this is an isomerization reaction i.e. only one reactant and one product
-        num_reactants = len(self.arc_reaction.r_species)
-        num_products = len(self.arc_reaction.p_species)
-
-        if num_reactants > 1:
-            logger.error(f'Error while using GCN with reactants: {self.arc_reaction.r_species}.\n'
-                         f'Isomerization reactions must have only 1 reactant.')
-        elif num_products > 1:
-            logger.error(f'Error while using GCN with products: {self.arc_reaction.p_species}.\n'
-                         f'Isomerization reactions must have only 1 product.')
-        else:
-            # run GCN
-            reactant = self.arc_reaction.r_species[0]
-            _, r_mol = rdkit_conf_from_mol(reactant.mol, reactant.get_xyz())
-
-            # GCN requires an atom-mapped reaction so map the product atoms onto the reactant atoms
-            _, mapped_product = self.arc_reaction.get_mapped_product_xyz()
-            _, p_mol = rdkit_conf_from_mol(mapped_product.mol, mapped_product.get_xyz())
-
-            # write input files for GCN to the TS project folder
-            ts_path = os.path.join(self.project_dir, 'calcs', 'TSs', self.arc_reaction.ts_label, 'GCN')
-            os.makedirs(ts_path, exist_ok=True)
-
-            r_path = os.path.join(ts_path, 'reactant.sdf')
-            w = Chem.SDWriter(r_path)
-            w.write(r_mol)
-            w.close()
-
-            p_path = os.path.join(ts_path, 'product.sdf')
-            w = Chem.SDWriter(p_path)
-            w.write(p_mol)
-            w.close()
-
-            start = time.time()
-            ts_xyz_dict = gcn.gcn(ts_path)
-            end = time.time()
-            self.execution_time = end - start  # seconds
-            self.success = False if ts_xyz_dict is None else True
-            self.initial_xyz = ts_xyz_dict
-
-    def qst2(self):
-        """
-        Determine a TS guess using QST2
-        """
-        self.success = False
-
-    def degsm(self):
-        """
-        Determine a TS guess using DEGSM
-        """
-        self.success = False
-
-    def neb(self):
-        """
-        Determine a TS guess using NEB
-        """
-        self.success = False
-
-    def kinbot(self):
-        """
-        Determine a TS guess using Kinbot for RMG's unimolecular families
-        """
-        self.success = False
 
     def process_xyz(self, xyz: Union[dict, str]):
         """
