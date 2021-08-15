@@ -104,7 +104,7 @@ cp $SubmitDir/input.in .
 
 $orcadir/orca input.in > input.log
 cp input.log  $SubmitDir/
-rm -rf  $WorkDir 
+rm -rf  $WorkDir
 
 """,
         'molpro': """#!/bin/bash -l
@@ -174,6 +174,8 @@ queue
 """,
         # will be renamed to ``job.sh`` when uploaded
         'gaussian_job': """#!/bin/csh
+
+mkdir -p /storage/ce_dana/{un}/scratch/g09/
 
 source /Local/ce_dana/g09/bsd/g09.login
 
@@ -634,11 +636,10 @@ export GAUSS_SCRDIR=/home/{un}/scratch/$SLURM_JOB_NAME-$SLURM_JOB_ID
 mkdir -p $GAUSS_SCRDIR
 chmod 750 $GAUSS_SCRDIR
 
-
 g16 < input.gjf > input.log
 
 rm -rf $GAUSS_SCRDIR
-    
+
     """,
-    }
+    },
 }
