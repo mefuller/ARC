@@ -297,7 +297,7 @@ class JobAdapter(ABC):
         file_name = 'job.sh'
         script_key = f'{self.job_adapter}_job'
         if self.server in submit_scripts.keys() and script_key in submit_scripts[self.server].keys():
-            file_content = submit_scripts[self.server][script_key]
+            file_content = submit_scripts[self.server][script_key].format(un='$USER')
             with open(os.path.join(self.local_path, file_name), 'w') as f:
                 f.write(file_content)
                 if self.server == 'local':
