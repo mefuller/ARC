@@ -136,7 +136,7 @@ class TestGaussianAdapter(unittest.TestCase):
 %mem=14336mb
 %NProcShared=8
 
-#P opt=(calcfc) guess=mix cbs-qb3   IOp(2/9=2000) IOp(1/12=5,3/44=0) scf=xqc  
+#P opt=(calcfc) cbs-qb3   IOp(2/9=2000) IOp(1/12=5,3/44=0) scf=xqc  
 
 spc1
 
@@ -154,7 +154,7 @@ O       0.00000000    0.00000000    1.00000000
 %mem=14336mb
 %NProcShared=8
 
-#P opt=(calcfc) SCRF=(smd, Solvent=water) guess=mix uwb97xd/def2-tzvp   IOp(2/9=2000) scf=xqc  
+#P opt=(calcfc) SCRF=(smd, Solvent=water) uwb97xd/def2-tzvp   IOp(2/9=2000) scf=xqc  
 
 spc1
 
@@ -206,7 +206,7 @@ block
 %mem=14336mb
 %NProcShared=8
 
-#P  guess=mix uwb97xd/def2-tzvp freq IOp(7/33=1) scf=(tight, direct) integral=(grid=ultrafine, Acc2E=12)  IOp(2/9=2000) scf=xqc  
+#P  uwb97xd/def2-tzvp freq IOp(7/33=1) scf=(tight, direct) integral=(grid=ultrafine, Acc2E=12)  IOp(2/9=2000) scf=xqc  
 
 birad_singlet
 
@@ -224,7 +224,7 @@ O       0.00000000    0.00000000    1.00000000
 %mem=14336mb
 %NProcShared=8
 
-#P opt=(ts, calcfc, noeigentest, maxcycles=100) guess=mix uwb97xd/def2-tzvp   IOp(2/9=2000) scf=xqc  
+#P opt=(ts, calcfc, noeigentest, maxcycles=100) uwb97xd/def2-tzvp   IOp(2/9=2000) scf=xqc  
 
 anion_TS
 
@@ -242,7 +242,7 @@ O       0.00000000    0.00000000    1.00000000
 %mem=14336mb
 %NProcShared=8
 
-#P irc=(CalcAll, reverse, maxpoints=50, stepsize=7) guess=mix wb97xd/def2-tzvp   IOp(2/9=2000) scf=xqc  
+#P irc=(CalcAll, reverse, maxpoints=50, stepsize=7) wb97xd/def2-tzvp   IOp(2/9=2000) scf=xqc  
 
 IRC
 
