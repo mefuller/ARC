@@ -2087,9 +2087,12 @@ class Scheduler(object):
                     execution_time = str(tsg.execution_time)
                     execution_time = execution_time[:execution_time.index('.') + 2] \
                         if '.' in execution_time else execution_time
-                    logger.info(f'TS guess {tsg.index} for {label}. Method: {tsg.method}, relative energy: '
-                                f'{tsg.energy:.2f} kJ/mol, guess execution time: {execution_time}{im_freqs} '
-                                f'{tsg.errors}')
+                    aux = f' {tsg.errors}.' if tsg.errors else '.'
+                    logger.info(f'TS guess {tsg.index:2} for {label}. '
+                                f'Method: {tsg.method:10}, '
+                                f'relative energy: {tsg.energy:.2f} kJ/mol, '
+                                f'guess ex time: {execution_time}{im_freqs}'
+                                f'{aux}')
                     # for TSs, only use `draw_3d()`, not `show_sticks()` which gets connectivity wrong:
                     plotter.draw_structure(xyz=tsg.initial_xyz, method='draw_3d')
             logger.info('\n')
