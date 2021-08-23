@@ -545,7 +545,7 @@ class TestTrsh(unittest.TestCase):
         log_file = os.path.join(ARC_PATH, 'arc', 'testing', 'rotor_scans', 'CH2OOH.out')
         # Case 1: non-smooth scan which troubleshot once
         case1 = {'label': 'CH2OOH',
-                 'torsion': [2, 0, 1, 3],
+                 'pivots': [1, 2],
                  'energies': parse_1d_scan_energies(log_file)[0],
                  'scan_res': 4.0,
                  'used_methods': None,
@@ -557,9 +557,8 @@ class TestTrsh(unittest.TestCase):
             invalidation_reason, 'Significant difference observed between consecutive conformers')
         expect_message = 'Rotor scan of CH2OOH between pivots [1, 2] is inconsistent between ' \
                          'two consecutive conformers.\nInconsistent consecutive conformers and ' \
-                         'problematic internal coordinates:\nconformer # 63 / # 64        D3, D2' \
-                         '\nconformer # 80 / # 81        D3, D2\nARC will attempt to troubleshoot' \
-                         ' this rotor scan.'
+                         'problematic internal coordinates:\nconformer # 80 / # 81        D3, D2\n' \
+                         'ARC will attempt to troubleshoot this rotor scan.'
         self.assertEqual(message, expect_message)
         self.assertEqual(len(actions.keys()), 1)
         self.assertIn('freeze', actions)
@@ -569,7 +568,7 @@ class TestTrsh(unittest.TestCase):
         # Case 2: Lower conformer
         log_file = os.path.join(ARC_PATH, 'arc', 'testing', 'rotor_scans', 'COCCOO.out')
         case2 = {'label': 'COCCOO',
-                 'torsion': [2, 1, 4, 5],
+                 'pivots': [2, 5],
                  'energies': parse_1d_scan_energies(log_file)[0],
                  'scan_res': 8.0,
                  'used_methods': None,
@@ -605,11 +604,11 @@ class TestTrsh(unittest.TestCase):
     def test_trsh_scan_job(self):
         """Test troubleshooting problematic 1D rotor scan"""
         case = {'label': 'CH2OOH',
-                 'scan_res': 4.0,
-                 'scan': [4, 1, 2, 3],
-                 'scan_list': [[4, 1, 2, 3], [1, 2, 3, 6]],
-                 'methods': {'freeze': [[5, 1, 2, 3], [2, 1, 4, 5]]},
-                 'log_file': os.path.join(ARC_PATH, 'arc', 'testing', 'rotor_scans', 'CH2OOH.out'),
+                'scan_res': 4.0,
+                'scan': [4, 1, 2, 3],
+                'scan_list': [[4, 1, 2, 3], [1, 2, 3, 6]],
+                'methods': {'freeze': [[5, 1, 2, 3], [2, 1, 4, 5]]},
+                'log_file': os.path.join(ARC_PATH, 'arc', 'testing', 'rotor_scans', 'CH2OOH.out'),
                 }
         scan_trsh, scan_res = trsh.trsh_scan_job(**case)
         self.assertEqual(scan_trsh, 'D 5 4 1 2 F\nD 1 2 3 6 F\nB 2 3 F\n')
