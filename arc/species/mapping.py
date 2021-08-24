@@ -1,7 +1,14 @@
 """
 A module for atom-mapping a species or a set of species.
+
+Species atom-map logic:
+1. Determine adjacent elements for each heavy atom
+2. Identify and loop superposition possibilities
+3. Recursively modify dihedrals until the structures overlap to some tolerance
+4. Determine RMSD to backbone, if good then determine RMSD to H's
 """
 
+from collections import deque
 from typing import TYPE_CHECKING, Dict, List, Optional, Tuple, Union
 
 from qcelemental.exceptions import ValidationError
@@ -70,7 +77,8 @@ def map_general_rxn(rxn: 'ARCReaction',
 
     Returns:
         Optional[List[int]]:
-            Entry indices are running atom indices of the reactants, entry values are running atom indices of the products.
+            Entry indices are running atom indices of the reactants,
+            corresponding entry values are running atom indices of the products.
     """
     if rxn.is_isomerization():
         return map_two_species(rxn.r_species[0], rxn.p_species[0], map_type='list')
@@ -107,7 +115,8 @@ def map_h_abstraction(rxn: 'ARCReaction',
 
     Returns:
         Optional[List[int]]:
-            Entry indices are running atom indices of the reactants, entry values are running atom indices of the products.
+            Entry indices are running atom indices of the reactants,
+            corresponding entry values are running atom indices of the products.
     """
     if not check_family_for_mapping_function(rxn=rxn, db=db, family='H_Abstraction'):
         return None
@@ -147,10 +156,10 @@ def map_h_abstraction(rxn: 'ARCReaction',
     map_2 = map_two_species(rxn.r_species[r3], spc_r3_h2_cut)
 
     result = {r_h_index: p_h_index}
-    for r_increment, p_increment, map_ in zip([r1_h2 * len_r1, (1 - r1_h2) * len_r1],
+    for r_increment, p_increment, map_i in zip([r1_h2 * len_r1, (1 - r1_h2) * len_r1],
                                               [(1 - r3_h2) * len_p1, r3_h2 * len_p1],
                                               [map_1, map_2]):
-        for i, entry in enumerate(map_):
+        for i, entry in enumerate(map_i):
             r_index = i + r_increment + int(i + r_increment >= r_h_index)
             p_index = entry + p_increment
             result[r_index] = p_index
@@ -171,7 +180,8 @@ def map_ho2_elimination_from_peroxy_radical(rxn: 'ARCReaction',
 
     Returns:
         Optional[List[int]]:
-            Entry indices are running atom indices of the reactants, entry values are running atom indices of the products.
+            Entry indices are running atom indices of the reactants,
+            corresponding entry values are running atom indices of the products.
     """
     if not check_family_for_mapping_function(rxn=rxn, db=db, family='HO2_Elimination_from_PeroxyRadical'):
         return None
@@ -180,6 +190,7 @@ def map_ho2_elimination_from_peroxy_radical(rxn: 'ARCReaction',
     r_label_dict, p_label_dict = get_atom_indices_of_labeled_atoms_in_an_rmg_reaction(arc_reaction=rxn,
                                                                                       rmg_reaction=rmg_reactions[0])
 
+    # Todo:
     # reverse = False
     # if len(rxn.p_species) == 1 and len(rxn.r_species) == 2:
     #     reverse = True
@@ -244,7 +255,8 @@ def map_intra_h_migration(rxn: 'ARCReaction',
 
     Returns:
         Optional[List[int]]:
-            Entry indices are running atom indices of the reactants, entry values are running atom indices of the products.
+            Entry indices are running atom indices of the reactants,
+            corresponding entry values are running atom indices of the products.
     """
     if not check_family_for_mapping_function(rxn=rxn, db=db, family='intra_H_migration'):
         return None
@@ -303,97 +315,6 @@ def check_family_for_mapping_function(rxn: 'ARCReaction',
     if rxn.family is None or rxn.family.label != family:
         return False
     return True
-
-
-def map_two_species(spc_1: Union[ARCSpecies, Species, Molecule],
-                    spc_2: Union[ARCSpecies, Species, Molecule],
-                    map_type: str = 'list',
-                    ) -> Optional[Union[List[int], Dict[int, int]]]:
-    """
-    Map the atoms in spc1 to the atoms in spc2.
-    All indices are 0-indexed.
-    If a dict type atom map is returned, it cold conveniently be used to map ``spc_2`` -> ``spc_1`` by doing::
-
-        ordered_spc1.atoms = [spc_2.atoms[atom_map[i]] for i in range(len(spc_2.atoms))]
-
-    Args:
-        spc_1 (Union[ARCSpecies, Species, Molecule]): Species 1.
-        spc_2 (Union[ARCSpecies, Species, Molecule]): Species 2.
-        map_type (str, optional): Whether to return a 'list' or a 'dict' map type.
-
-    Returns:
-        Optional[Union[List[int], Dict[int, int]]]:
-            The atom map. By default, a list is returned.
-            If the map is of ``list`` type, entry indices are atom indices of ``spc_1``, entry values are atom indices of ``spc_2``.
-            If the map is of ``dict`` type, keys are atom indices of ``spc_1``, values are atom indices of ``spc_2``.
-    """
-    qcmol_1 = create_qc_mol(species=spc_1.copy())
-    qcmol_2 = create_qc_mol(species=spc_2.copy())
-    if qcmol_1 is None or qcmol_2 is None:
-        return None
-    if len(qcmol_1.symbols) != len(qcmol_2.symbols):
-        raise ValueError(f'The number of atoms in spc1 ({spc_1.number_of_atoms}) must be equal '
-                         f'to the number of atoms in spc1 ({spc_2.number_of_atoms}).')
-    data = qcmol_2.align(ref_mol=qcmol_1, verbose=0)
-    atom_map = data[1]['mill'].atommap.tolist()
-    if map_type == 'dict':  # ** Todo: test
-        atom_map = {key: val for key, val in enumerate(atom_map)}
-    return atom_map
-
-
-def create_qc_mol(species: Union[ARCSpecies, Species, Molecule, List[Union[ARCSpecies, Species, Molecule]]],
-                  charge: Optional[int] = None,
-                  multiplicity: Optional[int] = None,
-                  ) -> Optional[QCMolecule]:
-    """
-    Create a single QCMolecule object instance from a ARCSpecies object instances.
-
-    Args:
-        species (List[Union[ARCSpecies, Species, Molecule]]): Entries are ARCSpecies / RMG Species / RMG Molecule
-                                                              object instances.
-        charge (int, optional): The overall charge of the surface.
-        multiplicity (int, optional): The overall electron multiplicity of the surface.
-
-    Returns:
-        Optional[QCMolecule]: The respective QCMolecule object instance.
-    """
-    species = [species] if not isinstance(species, list) else species
-    species_list = list()
-    for spc in species:
-        if isinstance(spc, ARCSpecies):
-            species_list.append(spc)
-        elif isinstance(spc, Species):
-            species_list.append(ARCSpecies(label='S', mol=spc.molecule[0]))
-        elif isinstance(spc, Molecule):
-            species_list.append(ARCSpecies(label='S', mol=spc))
-        else:
-            raise ValueError(f'Species entries may only be ARCSpecies, RMG Species, or RMG Molecule, '
-                             f'got {spc} which is a {type(spc)}.')
-    if len(species_list) == 1:
-        if charge is None:
-            charge = species_list[0].charge
-        if multiplicity is None:
-            multiplicity = species_list[0].multiplicity
-    if charge is None or multiplicity is None:
-        raise ValueError(f'An overall charge and multiplicity must be specified for multiple species, '
-                         f'got: {charge} and {multiplicity}, respectively')
-    radius = max([spc.radius for spc in species_list]) if len(species_list) > 1 else 0
-    qcmol = None
-    data = '\n--\n'.join([xyz_to_str(translate_xyz(spc.get_xyz(), translation=(i * radius, 0, 0)))
-                          for i, spc in enumerate(species_list)]) \
-        if len(species_list) > 1 else xyz_to_str(species_list[0].get_xyz())
-    try:
-        qcmol = QCMolecule.from_data(
-            data=data,
-            molecular_charge=charge,
-            molecular_multiplicity=multiplicity,
-            fragment_charges=[spc.charge for spc in species_list],
-            fragment_multiplicities=[spc.multiplicity for spc in species_list],
-            orient=False,
-        )
-    except ValidationError as err:
-        logger.warning(f'Could not get atom map for {[spc.label for spc in species_list]}, got:\n{err}')
-    return qcmol
 
 
 def get_atom_indices_of_labeled_atoms_in_an_rmg_reaction(arc_reaction: 'ARCReaction',
@@ -564,3 +485,334 @@ def _get_rmg_reactions_from_arc_reaction(arc_reaction: 'ARCReaction',
                 mapped_mols.append(rmg_mol)
         rmg_reaction.reactants, rmg_reaction.products = mapped_rmg_reactants, mapped_rmg_products
     return rmg_reactions
+
+
+def map_two_species(spc_1: Union[ARCSpecies, Species, Molecule],
+                    spc_2: Union[ARCSpecies, Species, Molecule],
+                    map_type: str = 'list',
+                    verbose: bool = False,
+                    ) -> Optional[Union[List[int], Dict[int, int]]]:
+    """
+    Map the atoms in spc1 to the atoms in spc2.
+    All indices are 0-indexed.
+    If a dict type atom map is returned, it cold conveniently be used to map ``spc_2`` -> ``spc_1`` by doing::
+
+        ordered_spc1.atoms = [spc_2.atoms[atom_map[i]] for i in range(len(spc_2.atoms))]
+
+    Args:
+        spc_1 (Union[ARCSpecies, Species, Molecule]): Species 1.
+        spc_2 (Union[ARCSpecies, Species, Molecule]): Species 2.
+        map_type (str, optional): Whether to return a 'list' or a 'dict' map type.
+        verbose (bool, optional): Whether to use logging.
+
+    Returns:
+        Optional[Union[List[int], Dict[int, int]]]:
+            The atom map. By default, a list is returned.
+            If the map is of ``list`` type, entry indices are atom indices of ``spc_1``, entry values are atom indices of ``spc_2``.
+            If the map is of ``dict`` type, keys are atom indices of ``spc_1``, values are atom indices of ``spc_2``.
+    """
+    # qcmol_1 = create_qc_mol(species=spc_1.copy())
+    # qcmol_2 = create_qc_mol(species=spc_2.copy())
+    # if qcmol_1 is None or qcmol_2 is None:
+    #     return None
+    # if len(qcmol_1.symbols) != len(qcmol_2.symbols):
+    #     raise ValueError(f'The number of atoms in spc1 ({spc_1.number_of_atoms}) must be equal '
+    #                      f'to the number of atoms in spc1 ({spc_2.number_of_atoms}).')
+    # data = qcmol_2.align(ref_mol=qcmol_1, verbose=0, uno_cutoff=0.01)
+    # atom_map = data[1]['mill'].atommap.tolist()
+    spc_1, spc_2 = get_arc_species(spc_1), get_arc_species(spc_2)
+    if not check_species_before_mapping(spc_1, spc_2, verbose):
+        return None
+    adj_element_dict_1, adj_element_dict_2 = determine_adjacent_elements(spc_1), determine_adjacent_elements(spc_2)
+
+
+    if map_type == 'dict':  # ** Todo: test
+        atom_map = {key: val for key, val in enumerate(atom_map)}
+    return atom_map
+
+
+def get_arc_species(spc: Union[ARCSpecies, Species, Molecule]) -> ARCSpecies:
+    """
+    Convert an object to an ARCSpecies object.
+
+    Args:
+        spc (Union[ARCSpecies, Species, Molecule]): An input object.
+
+    Returns:
+        ARCSpecies: THe corresponding ARCSpecies object.
+    """
+    if isinstance(spc, ARCSpecies):
+        return spc
+    if isinstance(spc, Species):
+        return ARCSpecies(label='S', mol=spc.molecule[0])
+    if isinstance(spc, Molecule):
+        return ARCSpecies(label='S', mol=spc)
+    raise ValueError(f'Species entries may only be ARCSpecies, RMG Species, or RMG Molecule, '
+                     f'got {spc} which is a {type(spc)}.')
+
+
+def create_qc_mol(species: Union[ARCSpecies, Species, Molecule, List[Union[ARCSpecies, Species, Molecule]]],
+                  charge: Optional[int] = None,
+                  multiplicity: Optional[int] = None,
+                  ) -> Optional[QCMolecule]:
+    """
+    Create a single QCMolecule object instance from a ARCSpecies object instances.
+
+    Args:
+        species (List[Union[ARCSpecies, Species, Molecule]]): Entries are ARCSpecies / RMG Species / RMG Molecule
+                                                              object instances.
+        charge (int, optional): The overall charge of the surface.
+        multiplicity (int, optional): The overall electron multiplicity of the surface.
+
+    Returns:
+        Optional[QCMolecule]: The respective QCMolecule object instance.
+    """
+    species = [species] if not isinstance(species, list) else species
+    species_list = list()
+    for spc in species:
+        species_list.append(get_arc_species(spc))
+    if len(species_list) == 1:
+        if charge is None:
+            charge = species_list[0].charge
+        if multiplicity is None:
+            multiplicity = species_list[0].multiplicity
+    if charge is None or multiplicity is None:
+        raise ValueError(f'An overall charge and multiplicity must be specified for multiple species, '
+                         f'got: {charge} and {multiplicity}, respectively')
+    radius = max([spc.radius for spc in species_list]) if len(species_list) > 1 else 0
+    qcmol = None
+    data = '\n--\n'.join([xyz_to_str(translate_xyz(spc.get_xyz(), translation=(i * radius, 0, 0)))
+                          for i, spc in enumerate(species_list)]) \
+        if len(species_list) > 1 else xyz_to_str(species_list[0].get_xyz())
+    try:
+        qcmol = QCMolecule.from_data(
+            data=data,
+            molecular_charge=charge,
+            molecular_multiplicity=multiplicity,
+            fragment_charges=[spc.charge for spc in species_list],
+            fragment_multiplicities=[spc.multiplicity for spc in species_list],
+            orient=False,
+        )
+    except ValidationError as err:
+        logger.warning(f'Could not get atom map for {[spc.label for spc in species_list]}, got:\n{err}')
+    return qcmol
+
+
+def check_species_before_mapping(spc_1: ARCSpecies,
+                                 spc_2: ARCSpecies,
+                                 verbose: bool = False,
+                                 ) -> bool:
+    """
+    Perform general checks before mapping two species.
+
+    Args:
+        spc_1 (ARCSpecies): Species 1.
+        spc_2 (ARCSpecies): Species 2.
+        verbose (bool, optional): Whether to use logging.
+
+    Returns:
+        bool: ``True`` if all checks passed, ``False`` otherwise.
+    """
+    # Check number of atoms > 0.
+    if spc_1.number_of_atoms == 0 or spc_2.number_of_atoms == 0:
+        if verbose:
+            logger.warning(f'The number of atoms must be larger than 0, '
+                           f'got {spc_1.number_of_atoms} and {spc_2.number_of_atoms}.')
+        return False
+    # Check the same number of atoms.
+    if spc_1.number_of_atoms != spc_2.number_of_atoms:
+        if verbose:
+            logger.warning(f'The number of atoms must be identical between the two species, '
+                           f'got {spc_1.number_of_atoms} and {spc_2.number_of_atoms}.')
+        return False
+    # Check the same number of each element.
+    element_dict_1, element_dict_2 = dict(), dict()
+    for atom in spc_1.mol.vertices:
+        element_dict_1[atom.element.symbol] = element_dict_1.get(atom.element.symbol, 0) + 1
+    for atom in spc_2.mol.vertices:
+        element_dict_2[atom.element.symbol] = element_dict_2.get(atom.element.symbol, 0) + 1
+    for key, val in element_dict_1.items():
+        if val != element_dict_2[key]:
+            if verbose:
+                logger.warning(f'The chemical formula of the two species is not identical, got the following elements:\n'
+                               f'{element_dict_1}\n{element_dict_2}')
+            return False
+    # Check the same number of bonds between similar elements (ignore bond order).
+    bonds_dict_1, bonds_dict_2 = get_bonds_dict(spc_1), get_bonds_dict(spc_2)
+    for key, val in bonds_dict_1.items():
+        if val != bonds_dict_2[key]:
+            if verbose:
+                logger.warning(f'The chemical bonds in the two species are not identical, got the following bonds:\n'
+                               f'{bonds_dict_1}\n{bonds_dict_2}')
+            return False
+    # Check whether both species are linear or both are non-linear.
+    if spc_1.mol.is_linear() != spc_2.mol.is_linear():
+        if verbose:
+            logger.warning(f'Both species should be either linear or non-linear, got:\n'
+                           f'linear = {spc_1.mol.is_linear()} and linear = {spc_2.mol.is_linear()}.')
+        return False
+    return True
+
+
+def get_bonds_dict(spc: ARCSpecies) -> Dict[str, int]:
+    """
+    Get a dictionary of bonds by elements in the species ignoring bond orders.
+
+    Args:
+        spc (ARCSpecies): The species to examine.
+
+    Returns:
+        Dict[str, int]: Keys are 'A-B' strings of element symbols sorted alphabetically (e.g., 'C-H' or 'H-O'),
+                        values are the number of such bonds (ignoring bond order).
+    """
+    bond_dict = dict()
+    bonds = spc.mol.get_all_edges()
+    for bond in bonds:
+        elements = sorted([bond.atom1.element.symbol, bond.atom2.element.symbol])
+        key = f'{elements[0]}-{elements[1]}'
+        bond_dict[key] = bond_dict.get(key, 0) + 1
+    return bond_dict
+
+
+def determine_adjacent_elements(spc: ARCSpecies) -> Dict[int, Dict[str, Union[str, List[int]]]]:
+    """
+    Determine the type and number of adjacent elements for each heavy atom in ``spc``.
+
+    Args:
+        spc (ARCSpecies): The input species.
+
+    Returns:
+        Dict[int, Dict[str, List[int]]]: Keys are indices of heavy atoms, values are dicts. keys are element symbols,
+                                         values are indices of adjacent atoms corresponding to this element.
+    """
+    adjacent_element_dict = dict()
+    for i, atom_1 in enumerate(spc.mol.atoms):
+        if atom_1.is_hydrogen():
+            continue
+        adjacent_elements = {'self': atom_1.element.symbol}
+        for atom_2 in atom_1.edges.keys():
+            if atom_2.element.symbol not in adjacent_elements.keys():
+                adjacent_elements[atom_2.element.symbol] = list()
+            adjacent_elements[atom_2.element.symbol].append(spc.mol.atoms.index(atom_2))
+        adjacent_element_dict[i] = adjacent_elements
+    return adjacent_element_dict
+
+
+def identify_superimposable_candidates(adj_element_dict_1: Dict[int, Dict[str, Union[str, List[int]]]],
+                                       adj_element_dict_2: Dict[int, Dict[str, Union[str, List[int]]]],
+                                       ) -> List[Dict[int, int]]:
+    """
+    Identify candidate ordering of heavy atoms (only) that could potentially be superiposed.
+
+    Args:
+        adj_element_dict_1 (Dict[int, Dict[str, Union[str, List[int]]]]): Adjacent element dict for species 1.
+        adj_element_dict_2 (Dict[int, Dict[str, Union[str, List[int]]]]): Adjacent element dict for species 2.
+
+    Returns:
+        List[Dict[int, int]]: Entries are superimposable candidate dicts. Keys are atom indices of heavy atoms
+                              of species 1, values are potentially mapped atom indices of species 2.
+    """
+    for key_1, val_1 in adj_element_dict_1.items():
+        for key_2, val_2 in adj_element_dict_2.items():
+            # Try all combinations of heavy atoms.
+            # call dfs todo !!
+            pass
+
+
+def are_adj_elements_in_agreement(adj_elements_1: Dict[str, Union[str, List[int]]],
+                                  adj_elements_2: Dict[str, Union[str, List[int]]],
+                                  ) -> bool:
+    """
+    Check whether two dictionaries representing adjacent elements are in agreement
+    w.r.t. the type and number of adjacent elements.
+    Also checks the identity of the parent ("self") element.
+
+    Args:
+          adj_elements_1 (Dict[str, List[int]]): Adjacent elements dictionary 1.
+          adj_elements_2 (Dict[str, List[int]]): Adjacent elements dictionary 2.
+
+    Returns:
+        bool: ``True`` if the two dicts represent identical adjacent elements, ``False`` otherwise.
+    """
+    if len(list(adj_elements_1.keys())) != len(list(adj_elements_2.keys())):
+        return False
+    if adj_elements_1['self'] != adj_elements_2['self']:
+        return False
+    for key, val in adj_elements_1.items():
+        if key != 'self' and (key not in adj_elements_2 or len(val) != len(adj_elements_2[key])):
+            return False
+    return True
+
+
+def dfs(adj_elements_1: Dict[int, Dict[str, List[int]]],
+        adj_elements_2: Dict[int, Dict[str, List[int]]],
+        key_1: int,
+        key_2: int,
+        visited_1: Optional[List[int]] = None,
+        visited_2: Optional[List[int]] = None,
+        ) -> Optional[Dict[int, int]]:
+    """
+    A depth first search (DFS) graph traversal algorithm to determine possible superimposable ordering of heavy atoms.
+
+    Args:
+        adj_elements_1 (Dict[int, Dict[str, List[int]]]): Adjacent elements dictionary 1 (graph 1).
+        adj_elements_2 (Dict[int, Dict[str, List[int]]]): Adjacent elements dictionary 2 (graph 2).
+        key_1 (int): The starting index for graph 1.
+        key_2 (int): The starting index for graph 2.
+        visited_1 (List[int], optional): Flags of visited nodes in graph 1.
+        visited_2 (List[int], optional): Flags of visited nodes in graph 2.
+
+    Returns:
+        Optional[Dict[int, int]]: ``None`` if this is not a valid superimposable candidate. Keys are atom indices of
+                                  heavy atoms of species 1, values are potentially mapped atom indices of species 2.
+    """
+    visited_1 = visited_1 or [key_1]
+    visited_2 = visited_2 or [key_2]
+    if not are_adj_elements_in_agreement(adj_elements_1[key_1], adj_elements_2[key_2]):
+        return None
+    result = {key_1: key_2}
+    for symbol in adj_elements_1[key_1].keys():
+        if symbol not in ['self', 'H']:
+            for entry_1 in adj_elements_1[key_1][symbol]:
+                if entry_1 not in visited_1:
+                    for entry_2 in adj_elements_2[key_2][symbol]:
+                        if entry_2 not in visited_2:
+                            output = dfs(adj_elements_1=adj_elements_1,
+                                         adj_elements_2=adj_elements_2,
+                                         key_1=entry_1,
+                                         key_2=entry_2,
+                                         visited_1=visited_1,
+                                         visited_2=visited_2,
+                                         )
+                            if output is None:
+                                return None
+                            result = {**result, **output}  # Combine dicts.
+    return result
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
