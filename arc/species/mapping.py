@@ -6,9 +6,12 @@ Species atom-map logic:
 2. Identify and loop superposition possibilities
 3. Recursively modify dihedrals until the structures overlap to some tolerance
 4. Determine RMSD to backbone, if good then determine RMSD to H's
+5. When mapping H's on terminal heavy atoms, check whether rotating this rotor will reduce the overall RMSD
+   if there's more than one H on that terminal atom
 """
 
 from collections import deque
+from itertools import product
 from typing import TYPE_CHECKING, Dict, List, Optional, Tuple, Union
 
 from qcelemental.exceptions import ValidationError
@@ -20,7 +23,7 @@ from rmgpy.species import Species
 import arc.rmgdb as rmgdb
 from arc.common import convert_list_index_0_to_1, logger
 from arc.species import ARCSpecies
-from arc.species.converter import translate_xyz, xyz_to_str
+from arc.species.converter import compare_confs, sort_xyz_using_indices, translate_xyz, xyz_from_data, xyz_to_str
 from arc.species.vectors import calculate_dihedral_angle
 
 
@@ -491,6 +494,7 @@ def map_two_species(spc_1: Union[ARCSpecies, Species, Molecule],
                     spc_2: Union[ARCSpecies, Species, Molecule],
                     map_type: str = 'list',
                     verbose: bool = False,
+                    backend: str = 'rmsd',
                     ) -> Optional[Union[List[int], Dict[int, int]]]:
     """
     Map the atoms in spc1 to the atoms in spc2.
@@ -504,6 +508,7 @@ def map_two_species(spc_1: Union[ARCSpecies, Species, Molecule],
         spc_2 (Union[ARCSpecies, Species, Molecule]): Species 2.
         map_type (str, optional): Whether to return a 'list' or a 'dict' map type.
         verbose (bool, optional): Whether to use logging.
+        backend (str, optional): Whether to use 'QCElemental' or ARC's RMSD method as the backend.
 
     Returns:
         Optional[Union[List[int], Dict[int, int]]]:
@@ -511,23 +516,46 @@ def map_two_species(spc_1: Union[ARCSpecies, Species, Molecule],
             If the map is of ``list`` type, entry indices are atom indices of ``spc_1``, entry values are atom indices of ``spc_2``.
             If the map is of ``dict`` type, keys are atom indices of ``spc_1``, values are atom indices of ``spc_2``.
     """
-    # qcmol_1 = create_qc_mol(species=spc_1.copy())
-    # qcmol_2 = create_qc_mol(species=spc_2.copy())
-    # if qcmol_1 is None or qcmol_2 is None:
-    #     return None
-    # if len(qcmol_1.symbols) != len(qcmol_2.symbols):
-    #     raise ValueError(f'The number of atoms in spc1 ({spc_1.number_of_atoms}) must be equal '
-    #                      f'to the number of atoms in spc1 ({spc_2.number_of_atoms}).')
-    # data = qcmol_2.align(ref_mol=qcmol_1, verbose=0, uno_cutoff=0.01)
-    # atom_map = data[1]['mill'].atommap.tolist()
-    spc_1, spc_2 = get_arc_species(spc_1), get_arc_species(spc_2)
-    if not check_species_before_mapping(spc_1, spc_2, verbose):
-        return None
-    adj_element_dict_1, adj_element_dict_2 = determine_adjacent_elements(spc_1), determine_adjacent_elements(spc_2)
-
-
-    if map_type == 'dict':  # ** Todo: test
-        atom_map = {key: val for key, val in enumerate(atom_map)}
+    if backend not in ['QCElemental', 'RMSD']:
+        raise ValueError(f'The backend method could be either "QCElemental" or "RMSD", got {backend}.')
+    if backend == 'RMSD':
+        spc_1, spc_2 = get_arc_species(spc_1), get_arc_species(spc_2)
+        if not check_species_before_mapping(spc_1, spc_2, verbose):
+            return None
+        adj_element_dict_1, adj_element_dict_2 = determine_adjacent_elements(spc_1), determine_adjacent_elements(spc_2)
+        candidates = identify_superimposable_candidates(adj_element_dict_1, adj_element_dict_2)
+        if not len(candidates):
+            backend = 'QCElemental'
+        else:
+            rmsds, fixed_spcs = list(), list()
+            for candidate in candidates:
+                fixed_spc_1, fixed_spc_2 = fix_dihedrals_by_backbone_mapping(spc_1, spc_2, backbone_map=candidate)
+                fixed_spcs.append((fixed_spc_1, fixed_spc_2))
+                backbone_1, backbone_2 = set(list(candidate.keys())), set(list(candidate.values()))
+                xyz1, xyz2 = fixed_spc_1.get_xyz(), fixed_spc_2.get_xyz()
+                for xyz, spc, backbone in zip([xyz1, xyz2], [fixed_spc_1, fixed_spc_2], [backbone_1, backbone_2]):
+                    xyz = xyz_from_data(coords=[xyz1['coords'][i] for i in range(spc.number_of_atoms) if i in [backbone]],
+                                        symbols=[xyz1['symbols'][i] for i in range(spc.number_of_atoms) if i in [backbone]],
+                                        isotopes=[xyz1['isotopes'][i] for i in range(spc.number_of_atoms) if i in [backbone]])
+                xyz2 = sort_xyz_using_indices(xyz2, indices=[v for k, v in sorted(candidate.items(), key=lambda item: item[0])])
+                rmsds.append(compare_confs(xyz1=xyz1, xyz2=xyz2, rmsd_score=True))
+            chosen_candidate_index = rmsds.index(min(rmsds))
+            fixed_spc_1, fixed_spc_2 = fixed_spcs[chosen_candidate_index]
+            atom_map = map_hydrogens(fixed_spc_1, fixed_spc_2, candidate)
+            if map_type == 'list':
+                atom_map = [v for k, v in sorted(atom_map.items(), key=lambda item: item[0])]
+    if backend == 'QCElemental':
+        qcmol_1 = create_qc_mol(species=spc_1.copy())
+        qcmol_2 = create_qc_mol(species=spc_2.copy())
+        if qcmol_1 is None or qcmol_2 is None:
+            return None
+        if len(qcmol_1.symbols) != len(qcmol_2.symbols):
+            raise ValueError(f'The number of atoms in spc1 ({spc_1.number_of_atoms}) must be equal '
+                             f'to the number of atoms in spc1 ({spc_2.number_of_atoms}).')
+        data = qcmol_2.align(ref_mol=qcmol_1, verbose=0, uno_cutoff=0.01)
+        atom_map = data[1]['mill'].atommap.tolist()
+        if map_type == 'dict':
+            atom_map = {key: val for key, val in enumerate(atom_map)}
     return atom_map
 
 
@@ -712,11 +740,14 @@ def identify_superimposable_candidates(adj_element_dict_1: Dict[int, Dict[str, U
         List[Dict[int, int]]: Entries are superimposable candidate dicts. Keys are atom indices of heavy atoms
                               of species 1, values are potentially mapped atom indices of species 2.
     """
+    candidates = list()
     for key_1, val_1 in adj_element_dict_1.items():
         for key_2, val_2 in adj_element_dict_2.items():
             # Try all combinations of heavy atoms.
-            # call dfs todo !!
-            pass
+            result = iterative_dfs(adj_element_dict_1, adj_element_dict_2, key_1, key_2)
+            if result:
+                candidates.append(result)
+    return prune_identical_dicts(candidates)
 
 
 def are_adj_elements_in_agreement(adj_elements_1: Dict[str, Union[str, List[int]]],
@@ -744,50 +775,210 @@ def are_adj_elements_in_agreement(adj_elements_1: Dict[str, Union[str, List[int]
     return True
 
 
-def dfs(adj_elements_1: Dict[int, Dict[str, List[int]]],
-        adj_elements_2: Dict[int, Dict[str, List[int]]],
-        key_1: int,
-        key_2: int,
-        visited_1: Optional[List[int]] = None,
-        visited_2: Optional[List[int]] = None,
-        ) -> Optional[Dict[int, int]]:
+def iterative_dfs(adj_elements_1: Dict[int, Dict[str, List[int]]],
+                  adj_elements_2: Dict[int, Dict[str, List[int]]],
+                  key_1: int,
+                  key_2: int,
+                  ) -> Dict[int, int]:
     """
     A depth first search (DFS) graph traversal algorithm to determine possible superimposable ordering of heavy atoms.
+    This is an iterative and not a recursive algorithm since Python doesn't have a great support for recursion
+    since it lacks Tail Recursion Elimination and because there is a limit of recursion stack depth (by default is 1000).
 
     Args:
         adj_elements_1 (Dict[int, Dict[str, List[int]]]): Adjacent elements dictionary 1 (graph 1).
         adj_elements_2 (Dict[int, Dict[str, List[int]]]): Adjacent elements dictionary 2 (graph 2).
         key_1 (int): The starting index for graph 1.
         key_2 (int): The starting index for graph 2.
-        visited_1 (List[int], optional): Flags of visited nodes in graph 1.
-        visited_2 (List[int], optional): Flags of visited nodes in graph 2.
 
     Returns:
-        Optional[Dict[int, int]]: ``None`` if this is not a valid superimposable candidate. Keys are atom indices of
-                                  heavy atoms of species 1, values are potentially mapped atom indices of species 2.
+        Dict[int, int]: ``None`` if this is not a valid superimposable candidate. Keys are atom indices of
+                        heavy atoms of species 1, values are potentially mapped atom indices of species 2.
     """
-    visited_1 = visited_1 or [key_1]
-    visited_2 = visited_2 or [key_2]
-    if not are_adj_elements_in_agreement(adj_elements_1[key_1], adj_elements_2[key_2]):
-        return None
-    result = {key_1: key_2}
-    for symbol in adj_elements_1[key_1].keys():
-        if symbol not in ['self', 'H']:
-            for entry_1 in adj_elements_1[key_1][symbol]:
-                if entry_1 not in visited_1:
-                    for entry_2 in adj_elements_2[key_2][symbol]:
-                        if entry_2 not in visited_2:
-                            output = dfs(adj_elements_1=adj_elements_1,
-                                         adj_elements_2=adj_elements_2,
-                                         key_1=entry_1,
-                                         key_2=entry_2,
-                                         visited_1=visited_1,
-                                         visited_2=visited_2,
-                                         )
-                            if output is None:
-                                return None
-                            result = {**result, **output}  # Combine dicts.
+    visited_1, visited_2 = list(), list()
+    stack_1, stack_2 = deque(), deque()
+    stack_1.append(key_1)
+    stack_2.append(key_2)
+    result = dict()
+    while stack_1 and stack_2:
+        key_1 = stack_1.pop()
+        key_2 = stack_2.pop()
+        if key_1 in visited_1 or key_2 in visited_2:
+            continue
+        visited_1.append(key_1)
+        visited_2.append(key_2)
+        if not are_adj_elements_in_agreement(adj_elements_1[key_1], adj_elements_2[key_2]):
+            continue
+        result[key_1] = key_2
+        for symbol in adj_elements_1[key_1].keys():
+            if symbol not in ['self', 'H']:
+                for combination_tuple in product(adj_elements_1[key_1][symbol], adj_elements_2[key_2][symbol]):
+                    if combination_tuple[0] not in visited_1 and combination_tuple[1] not in visited_2:
+                        stack_1.append(combination_tuple[0])
+                        stack_2.append(combination_tuple[1])
     return result
+
+
+def prune_identical_dicts(dicts_list: List[dict]) -> List[dict]:
+    """
+    Return a list of unique dictionaries.
+
+    Args:
+        dicts_list (List[dict]): A list of dicts to prune.
+
+    Returns:
+        List[dict]: A list of unique dicts.
+    """
+    new_dicts_list = list()
+    for new_dict in dicts_list:
+        unique = True
+        for existing_dict in new_dicts_list:
+            if unique:
+                for new_key, new_val in new_dict.items():
+                    if new_key not in existing_dict.keys() or new_val == existing_dict[new_key]:
+                        unique = False
+                        break
+        if unique:
+            new_dicts_list.append(new_dict)
+    return new_dicts_list
+
+
+def fix_dihedrals_by_backbone_mapping(spc_1: ARCSpecies,
+                                      spc_2: ARCSpecies,
+                                      backbone_map: Dict[int, int],
+                                      ) -> Tuple[ARCSpecies, ARCSpecies]:
+    """
+    Fix the dihedral angles of two mapped species to align them.
+
+    Args:
+        spc_1 (ARCSpecies): Species 1.
+        spc_2 (ARCSpecies): Species 2.
+        backbone_map (Dict[int, int]): The backbone map.
+
+    Returns:
+        Tuple[ARCSpecies, ARCSpecies]: The corresponding species with aligned dihedral angles.
+    """
+    if not spc_1.rotors_dict:
+        spc_1.determine_rotors()
+    if not spc_2.rotors_dict:
+        spc_2.determine_rotors()
+    spc_1_copy, spc_2_copy = spc_1.copy(), spc_2.copy()
+    torsions = get_backbone_dihedral_angles(spc_1, spc_2, backbone_map)
+    deviations = [get_backbone_dihedral_deviation_score(spc_1, spc_2, backbone_map, torsions=torsions)]
+    # Loop while the deviation improves by more than 1 degree:
+    while len(torsions) and (len(deviations) < 2 or deviations[-2] - deviations[-1] > 1):
+        for torsion_dict in torsions:
+            angle = 0.5 * sum([torsion_dict['angle 1'], torsion_dict['angle 2']])
+            spc_1_copy.set_dihedral(scan=convert_list_index_0_to_1(torsion_dict['torsion 1']),
+                                    deg_abs=angle, count=False, chk_rotor_list=False)
+            spc_2_copy.set_dihedral(scan=convert_list_index_0_to_1(torsion_dict['torsion 2']),
+                                    deg_abs=angle, count=False, chk_rotor_list=False)
+            spc_1_copy.final_xyz, spc_2_copy.final_xyz = spc_1_copy.initial_xyz, spc_2_copy.initial_xyz
+        torsions = get_backbone_dihedral_angles(spc_1_copy, spc_2_copy, backbone_map)
+        deviations.append(get_backbone_dihedral_deviation_score(spc_1_copy, spc_2_copy, backbone_map, torsions=torsions))
+    return spc_1_copy, spc_2_copy
+
+
+def get_backbone_dihedral_deviation_score(spc_1: ARCSpecies,
+                                          spc_2: ARCSpecies,
+                                          backbone_map: Dict[int, int],
+                                          torsions: Optional[List[Dict[str, Union[float, List[int]]]]] = None
+                                          ) -> float:
+    """
+    Determine a deviation score for dihedral angles of torsions.
+    We don't consider here "terminal" torsions, just pure backbone torsions.
+
+    Args:
+        spc_1 (ARCSpecies): Species 1.
+        spc_2 (ARCSpecies): Species 2.
+        backbone_map (Dict[int, int]): The backbone map.
+        torsions (Optional[List[Dict[str, Union[float, List[int]]]]], optional): The backbone dihedral angles.
+    """
+    torsions = torsions or get_backbone_dihedral_angles(spc_1, spc_2, backbone_map)
+    return sum([abs(torsion_dict['angle 1'] - torsion_dict['angle 2']) for torsion_dict in torsions])
+
+
+def get_backbone_dihedral_angles(spc_1: ARCSpecies,
+                                 spc_2: ARCSpecies,
+                                 backbone_map: Dict[int, int],
+                                 ) -> List[Dict[str, Union[float, List[int]]]]:
+    """
+    Determine the dihedral angles of the backbone torsions of two backbone mapped species.
+    The output has the following format::
+
+        torsions = [{'torsion 1': [0, 1, 2, 3],  # The first torsion in terms of species 1 indices.
+                     'torsion 2': [5, 7, 2, 4],  # The first torsion in terms of species 2 indices.
+                     'angle 1': 60.0,  # The corresponding dihedral angle to 'torsion 1'.
+                     'angle 2': 125.1,  # The corresponding dihedral angle to 'torsion 2'.
+                    },
+                    {}, ...  # The second torsion, and so on.
+                   ]
+
+    Args:
+        spc_1 (ARCSpecies): Species 1.
+        spc_2 (ARCSpecies): Species 2.
+        backbone_map (Dict[int, int]): The backbone map.
+
+    Returns:
+        List[Dict[str, Union[float, List[int]]]]: The corresponding species with aligned dihedral angles.
+    """
+    torsions = list()
+    for rotor_dict_1 in spc_1.rotors_dict.values():
+        torsion_1 = rotor_dict_1['torsion']
+        if not spc_1.mol.atoms[torsion_1[0]].is_hydrogen() \
+                and not spc_1.mol.atoms[torsion_1[3]].is_hydrogen():
+            # This is not a "terminal" torsion
+            for rotor_dict_2 in spc_2.rotors_dict.values():
+                torsion_2 = [backbone_map[t_1] for t_1 in torsion_1]
+                if all(pivot_2 in [torsion_2[1], torsion_2[2]]
+                       for pivot_2 in [rotor_dict_2['torsion'][1], rotor_dict_2['torsion'][2]]):
+                    torsions.append({'torsion 1': torsion_1,
+                                     'torsion 2': torsion_2,
+                                     'angle 1': calculate_dihedral_angle(coords=spc_1.get_xyz(), torsion=torsion_1),
+                                     'angle 2': calculate_dihedral_angle(coords=spc_2.get_xyz(), torsion=torsion_2)})
+    return torsions
+
+
+def map_hydrogens(spc_1: ARCSpecies,
+                  spc_2: ARCSpecies,
+                  backbone_map: Dict[int, int],
+                  ) -> Dict[int, int]:
+    """
+    Atom map hydrogen atoms between two species with a known mapped heavy atom backbone.
+    If only a single hydrogen atom is bonded to a given heavy atom, it is straight-forwardly mapped.
+    If more than one hydrogen atom is bonded to a given heavy atom forming a "terminal" internal rotor,
+    an internal rotation will be attempted to find the closest match, e.g., in cases such as::
+
+        C -- H1     |         H1
+          \         |       /
+           H2       |     C -- H2
+
+    To avoid mapping H2 to H1 due to small RMSD, but H1 to H2 although the RMSD is huge.
+
+    Args:
+        spc_1 (ARCSpecies): Species 1.
+        spc_2 (ARCSpecies): Species 2.
+        backbone_map (Dict[int, int]): The backbone map.
+
+    Returns:
+        Dict[int, int]: The atom map. Keys are 0-indices in ``spc_1``, values are corresponding 0-indices in ``spc_2``.
+    """
+    # convert to zmats by putting the backbone first
+    # then convert back to xyz - expect to have overlapping xyz's
+    # check H RMSD in the two species by actual deviation in XYZ as if they are on the same coordinate space
+    # rotate to minimize RMSD and switcing H on this rotor mapping if needed
+    # append each positive map to the map dict and return it
+
+
+
+
+
+
+
+
+
+
+
 
 
 
