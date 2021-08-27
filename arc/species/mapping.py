@@ -508,7 +508,7 @@ def map_two_species(spc_1: Union[ARCSpecies, Species, Molecule],
         spc_2 (Union[ARCSpecies, Species, Molecule]): Species 2.
         map_type (str, optional): Whether to return a 'list' or a 'dict' map type.
         verbose (bool, optional): Whether to use logging.
-        backend (str, optional): Whether to use 'QCElemental' or ARC's RMSD method as the backend.
+        backend (str, optional): Whether to use 'QCElemental' or ARC's 'RMSD' method as the backend.
 
     Returns:
         Optional[Union[List[int], Dict[int, int]]]:
@@ -516,11 +516,12 @@ def map_two_species(spc_1: Union[ARCSpecies, Species, Molecule],
             If the map is of ``list`` type, entry indices are atom indices of ``spc_1``, entry values are atom indices of ``spc_2``.
             If the map is of ``dict`` type, keys are atom indices of ``spc_1``, values are atom indices of ``spc_2``.
     """
-    if backend not in ['QCElemental', 'RMSD']:
+    if backend.lower() not in ['qcelemental', 'rmsd']:
         raise ValueError(f'The backend method could be either "QCElemental" or "RMSD", got {backend}.')
-    if backend == 'RMSD':
+    atom_map = None
+    if backend.lower() == 'rmsd':
         spc_1, spc_2 = get_arc_species(spc_1), get_arc_species(spc_2)
-        if not check_species_before_mapping(spc_1, spc_2, verbose):
+        if not check_species_before_mapping(spc_1, spc_2, verbose=True):
             return None
         adj_element_dict_1, adj_element_dict_2 = determine_adjacent_elements(spc_1), determine_adjacent_elements(spc_2)
         candidates = identify_superimposable_candidates(adj_element_dict_1, adj_element_dict_2)
@@ -533,18 +534,21 @@ def map_two_species(spc_1: Union[ARCSpecies, Species, Molecule],
                 fixed_spcs.append((fixed_spc_1, fixed_spc_2))
                 backbone_1, backbone_2 = set(list(candidate.keys())), set(list(candidate.values()))
                 xyz1, xyz2 = fixed_spc_1.get_xyz(), fixed_spc_2.get_xyz()
-                for xyz, spc, backbone in zip([xyz1, xyz2], [fixed_spc_1, fixed_spc_2], [backbone_1, backbone_2]):
-                    xyz = xyz_from_data(coords=[xyz1['coords'][i] for i in range(spc.number_of_atoms) if i in [backbone]],
-                                        symbols=[xyz1['symbols'][i] for i in range(spc.number_of_atoms) if i in [backbone]],
-                                        isotopes=[xyz1['isotopes'][i] for i in range(spc.number_of_atoms) if i in [backbone]])
-                xyz2 = sort_xyz_using_indices(xyz2, indices=[v for k, v in sorted(candidate.items(), key=lambda item: item[0])])
+                xyz1 = xyz_from_data(coords=[xyz1['coords'][i] for i in range(fixed_spc_1.number_of_atoms) if i in backbone_1],
+                                     symbols=[xyz1['symbols'][i] for i in range(fixed_spc_1.number_of_atoms) if i in backbone_1],
+                                     isotopes=[xyz1['isotopes'][i] for i in range(fixed_spc_1.number_of_atoms) if i in backbone_1])
+                xyz2 = xyz_from_data(coords=[xyz2['coords'][i] for i in range(fixed_spc_2.number_of_atoms) if i in backbone_2],
+                                     symbols=[xyz2['symbols'][i] for i in range(fixed_spc_2.number_of_atoms) if i in backbone_2],
+                                     isotopes=[xyz2['isotopes'][i] for i in range(fixed_spc_2.number_of_atoms) if i in backbone_2])
+                no_gap_candidate = remove_gaps_from_values(candidate)
+                xyz2 = sort_xyz_using_indices(xyz2, indices=[v for k, v in sorted(no_gap_candidate.items(), key=lambda item: item[0])])
                 rmsds.append(compare_confs(xyz1=xyz1, xyz2=xyz2, rmsd_score=True))
             chosen_candidate_index = rmsds.index(min(rmsds))
             fixed_spc_1, fixed_spc_2 = fixed_spcs[chosen_candidate_index]
             atom_map = map_hydrogens(fixed_spc_1, fixed_spc_2, candidate)
             if map_type == 'list':
                 atom_map = [v for k, v in sorted(atom_map.items(), key=lambda item: item[0])]
-    if backend == 'QCElemental':
+    if backend.lower() == 'qcelemental':
         qcmol_1 = create_qc_mol(species=spc_1.copy())
         qcmol_2 = create_qc_mol(species=spc_2.copy())
         if qcmol_1 is None or qcmol_2 is None:
@@ -843,6 +847,24 @@ def prune_identical_dicts(dicts_list: List[dict]) -> List[dict]:
     return new_dicts_list
 
 
+def remove_gaps_from_values(data: Dict[int, int]) -> Dict[int, int]:
+    """
+    Return a dictionary of integer keys and values with consecutive values starting at 0.
+
+    Args:
+        data (Dict[int, int]): A dictionary of integers as keys and values.
+
+    Returns:
+        Dict[int, int]: A dictionary of integers as keys and values with consecutive values starting at 0.
+    """
+    new_data = dict()
+    val = 0
+    for key, _ in sorted(data.items(), key=lambda item: item[1]):
+        new_data[key] = val
+        val += 1
+    return new_data
+
+
 def fix_dihedrals_by_backbone_mapping(spc_1: ARCSpecies,
                                       spc_2: ARCSpecies,
                                       backbone_map: Dict[int, int],
@@ -939,6 +961,34 @@ def get_backbone_dihedral_angles(spc_1: ARCSpecies,
     return torsions
 
 
+def map_lists(list_1: List[float],
+              list_2: List[float],
+              ) -> Dict[int, int]:
+    """
+    Map two lists with equal lengths of floats by proximity of entries.
+    Assuming no two entries in a list are identical.
+
+    Args:
+        list_1 (List[float]): List 1.
+        list_2 (List[float]): List 2.
+
+    Returns:
+        Dict[int, int]: The lists map. Keys correspond to entry indices in ``list_1``,
+                        Values correspond to respective entry indices in ``list_2``.
+    """
+    if len(list_1) != len(list_2):
+        raise ValueError(f'Lists must be of the same length, got\n{list_1}\{list_2}\n'
+                         f'with lengths {len(list_1)} and {len(list_2)}.')
+    list_map = dict()
+    dict_1, dict_2 = {k: True for k in list_1}, {k: True for k in list_2}
+    while any(dict_1.values()):
+        min_1_index = list_1.index(min([k for k, v in dict_1.items() if v]))
+        min_2_index = list_2.index(min([k for k, v in dict_2.items() if v]))
+        dict_1[list_1[min_1_index]], dict_2[list_2[min_2_index]] = False, False
+        list_map[min_1_index] = min_2_index
+    return list_map
+
+
 def map_hydrogens(spc_1: ARCSpecies,
                   spc_2: ARCSpecies,
                   backbone_map: Dict[int, int],
@@ -950,10 +1000,12 @@ def map_hydrogens(spc_1: ARCSpecies,
     an internal rotation will be attempted to find the closest match, e.g., in cases such as::
 
         C -- H1     |         H1
-          \         |       /
-           H2       |     C -- H2
+         \          |       /
+          H2        |     C -- H2
 
     To avoid mapping H2 to H1 due to small RMSD, but H1 to H2 although the RMSD is huge.
+    Further, we assume that each H has but one covalent bond, and that there are maximum 4 hydrogen atoms per heavy atom
+    (e.g., CH4 or SiH4).
 
     Args:
         spc_1 (ARCSpecies): Species 1.
@@ -963,13 +1015,61 @@ def map_hydrogens(spc_1: ARCSpecies,
     Returns:
         Dict[int, int]: The atom map. Keys are 0-indices in ``spc_1``, values are corresponding 0-indices in ``spc_2``.
     """
-    # convert to zmats by putting the backbone first
-    # then convert back to xyz - expect to have overlapping xyz's
-    # check H RMSD in the two species by actual deviation in XYZ as if they are on the same coordinate space
-    # rotate to minimize RMSD and switcing H on this rotor mapping if needed
-    # append each positive map to the map dict and return it
+    atom_map = backbone_map
+    atoms_1, atoms_2 = spc_1.mol.atoms, spc_2.mol.atoms
+    for hydrogen_1 in atoms_1:
+        if hydrogen_1.is_hydrogen() and atoms_1.index(hydrogen_1) not in atom_map.keys():
+            heavy_atom_1 = list(hydrogen_1.edges.keys())[0]
+            heavy_atom_2 = atoms_2[backbone_map[atoms_1.index(heavy_atom_1)]]
+            num_hydrogens_1 = len([atom for atom in heavy_atom_1.edges.keys() if atom.is_hydrogen()])
+            # num_hydrogens_2 = len([atom for atom in heavy_atom_2.edges.values() if atom.is_hydrogen()])
+            if num_hydrogens_1 == 1:
+                # We know that num_hydrogens_2 == 1 because the candidate map resulted from are_adj_elements_in_agreement().
+                hydrogen_2 = [atom for atom in heavy_atom_2.edges.keys() if atom.is_hydrogen()][0]
+                atom_map[atoms_1.index(hydrogen_1)] = atoms_2.index(hydrogen_2)
+            else:
+                # 2/3/4 hydrogen atoms on this heavy atom.
+                success = False
+                # 1. Check for a torsion involving heavy_atom_1 as a pivotal atom (most common case).
+                heavy_atom_1_index = atoms_1.index(heavy_atom_1)
+                for rotor_dict in spc_1.rotors_dict.values():
+                    if heavy_atom_1_index in [rotor_dict['torsion'][1], rotor_dict['torsion'][2]]:
+                        hydrogen_indices_1 = [atoms_1.index(atom)
+                                              for atom in heavy_atom_1.edges.keys() if atom.is_hydrogen()]
+                        hydrogen_indices_2 = [atoms_2.index(atom)
+                                              for atom in heavy_atom_2.edges.keys() if atom.is_hydrogen()]
+                        torsion_1_base = rotor_dict['torsion'][:-1] if rotor_dict['torsion'][-1] in hydrogen_indices_1 \
+                            else rotor_dict['torsion'][1:][::-1]
+                        torsions_1 = [torsion_1_base + [h_index] for h_index in hydrogen_indices_1]
+                        if torsion_1_base[0] not in atom_map.keys():
+                            # There's an unmapped hydrogen atom in torsion_1_base. Randomly map it to a respective hydrogen.
+                            atom_map[torsion_1_base[0]] = [atoms_2.index(atom)
+                                                           for atom in atoms_2[atom_map[torsion_1_base[1]]].edges.keys()
+                                                           if atom.is_hydrogen()][0]
+                        torsions_2 = [[atom_map[t] for t in torsion_1_base] + [h_index] for h_index in hydrogen_indices_2]
+                        dihedrals_1 = [calculate_dihedral_angle(coords=spc_1.get_xyz(), torsion=torsion)
+                                       for torsion in torsions_1]
+                        dihedrals_2 = [calculate_dihedral_angle(coords=spc_2.get_xyz(), torsion=torsion)
+                                       for torsion in torsions_2]
+                        dihedral_map_dict = map_lists(dihedrals_1, dihedrals_2)
+                        for key, val in dihedral_map_dict.items():
+                            atom_map[hydrogen_indices_1[key]] = hydrogen_indices_2[val]
+                        success = True
+                        break
+                # 2. Check for pseudo-torsion (3 consecutive heavy atoms) involving heavy_atom_1 as a pivotal atom.
+                if not success:
+                    pass
+
+                # 3. Check by angles (search for 2 consecutive heavy atoms).
+                if not success:
+                    pass
 
 
+                # 4. Use zmats constraining the backbone ??
+                if not success:
+                    pass
+
+    return atom_map
 
 
 
