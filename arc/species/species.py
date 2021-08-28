@@ -788,15 +788,14 @@ class ARCSpecies(object):
                               id=atom_dict['id'],
                               props=atom_dict['props'],
                               ) for atom_dict in species_dict['mol']['atoms']]
-                for i, atom in enumerate(atoms):
-                    edges = dict()
+                self.mol.atoms = atoms
+                for i, atom_1 in enumerate(atoms):
                     for atom_2_id, bond_order in species_dict['mol']['atoms'][i]['edges'].items():
                         for atom_2 in atoms:
                             if atom_2.id == atom_2_id:
                                 break
-                        edges[atom_2] = Bond(atom, atom_2, bond_order)
-                    atom.edges = edges
-                self.mol.atoms = atoms
+                        bond = Bond(atom_1, atom_2, bond_order)
+                        self.mol.add_bond(bond)
                 self.mol.update_atomtypes(raise_exception=False)
                 if not self.is_ts:
                     self.mol.identify_ring_membership()
