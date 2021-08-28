@@ -396,7 +396,7 @@ def sort_xyz_using_indices(xyz_dict: dict,
         raise ValueError(f"The number of indices {len(indices)} does not match "
                          f"the number of coordinates {len(xyz_dict['coords'])}")
     if any(i >= len(xyz_dict['coords']) for i in indices):
-        raise ValueError(f"All indices must be lower than the length of the coordinates tuple."
+        raise ValueError(f"All indices must be lower than the length of the coordinates tuple. "
                          f"Got {len(xyz_dict['coords'])} coordinates, and indices of:\n{indices}")
     coords, symbols, isotopes = list(), list(), list()
     for i in indices:
