@@ -30,6 +30,7 @@ from arc.species.vectors import calculate_dihedral_angle
 if TYPE_CHECKING:
     from rmgpy.data.kinetics.family import TemplateReaction
     from rmgpy.data.rmg import RMGDatabase
+    from rmgpy.molecule.molecule import Atom
     from rmgpy.reaction import Reaction
     from arc.reaction import ARCReaction
 
@@ -223,7 +224,7 @@ def map_ho2_elimination_from_peroxy_radical(rxn: 'ARCReaction',
         map_1 = map_two_species(spc_r_mod, rxn.p_species[r1dr2])
         for rotor in spc_r_mod.rotors_dict.values():
             torsion = rotor['torsion']
-            if not spc_r_mod.mol.atoms[torsion[0]].is_hydrogen() and not spc_r_mod.mol.atoms[torsion[1]].is_hydrogen():
+            if spc_r_mod.mol.atoms[torsion[0]].is_non_hydrogen() and spc_r_mod.mol.atoms[torsion[1]].is_non_hydrogen():
                 spc_r_mod.set_dihedral(scan=convert_list_index_0_to_1(torsion),
                                        deg_abs=calculate_dihedral_angle(coords=rxn.p_species[r1dr2].get_xyz(),
                                                                         torsion=[map_1[t] for t in torsion]),
@@ -521,7 +522,7 @@ def map_two_species(spc_1: Union[ARCSpecies, Species, Molecule],
     atom_map = None
     if backend.lower() == 'rmsd':
         spc_1, spc_2 = get_arc_species(spc_1), get_arc_species(spc_2)
-        if not check_species_before_mapping(spc_1, spc_2, verbose=True):
+        if not check_species_before_mapping(spc_1, spc_2, verbose=verbose):
             return None
         adj_element_dict_1, adj_element_dict_2 = determine_adjacent_elements(spc_1), determine_adjacent_elements(spc_2)
         candidates = identify_superimposable_candidates(adj_element_dict_1, adj_element_dict_2)
@@ -719,14 +720,13 @@ def determine_adjacent_elements(spc: ARCSpecies) -> Dict[int, Dict[str, Union[st
     """
     adjacent_element_dict = dict()
     for i, atom_1 in enumerate(spc.mol.atoms):
-        if atom_1.is_hydrogen():
-            continue
-        adjacent_elements = {'self': atom_1.element.symbol}
-        for atom_2 in atom_1.edges.keys():
-            if atom_2.element.symbol not in adjacent_elements.keys():
-                adjacent_elements[atom_2.element.symbol] = list()
-            adjacent_elements[atom_2.element.symbol].append(spc.mol.atoms.index(atom_2))
-        adjacent_element_dict[i] = adjacent_elements
+        if atom_1.is_non_hydrogen():
+            adjacent_elements = {'self': atom_1.element.symbol}
+            for atom_2 in atom_1.edges.keys():
+                if atom_2.element.symbol not in adjacent_elements.keys():
+                    adjacent_elements[atom_2.element.symbol] = list()
+                adjacent_elements[atom_2.element.symbol].append(spc.mol.atoms.index(atom_2))
+            adjacent_element_dict[i] = adjacent_elements
     return adjacent_element_dict
 
 
@@ -892,9 +892,9 @@ def fix_dihedrals_by_backbone_mapping(spc_1: ARCSpecies,
         for torsion_dict in torsions:
             angle = 0.5 * sum([torsion_dict['angle 1'], torsion_dict['angle 2']])
             spc_1_copy.set_dihedral(scan=convert_list_index_0_to_1(torsion_dict['torsion 1']),
-                                    deg_abs=angle, count=False, chk_rotor_list=False)
+                                    deg_abs=angle, count=False, chk_rotor_list=False, xyz=spc_1_copy.get_xyz())
             spc_2_copy.set_dihedral(scan=convert_list_index_0_to_1(torsion_dict['torsion 2']),
-                                    deg_abs=angle, count=False, chk_rotor_list=False)
+                                    deg_abs=angle, count=False, chk_rotor_list=False, xyz=spc_2_copy.get_xyz())
             spc_1_copy.final_xyz, spc_2_copy.final_xyz = spc_1_copy.initial_xyz, spc_2_copy.initial_xyz
         torsions = get_backbone_dihedral_angles(spc_1_copy, spc_2_copy, backbone_map)
         deviations.append(get_backbone_dihedral_deviation_score(spc_1_copy, spc_2_copy, backbone_map, torsions=torsions))
@@ -947,8 +947,8 @@ def get_backbone_dihedral_angles(spc_1: ARCSpecies,
     torsions = list()
     for rotor_dict_1 in spc_1.rotors_dict.values():
         torsion_1 = rotor_dict_1['torsion']
-        if not spc_1.mol.atoms[torsion_1[0]].is_hydrogen() \
-                and not spc_1.mol.atoms[torsion_1[3]].is_hydrogen():
+        if spc_1.mol.atoms[torsion_1[0]].is_non_hydrogen() \
+                and spc_1.mol.atoms[torsion_1[3]].is_non_hydrogen():
             # This is not a "terminal" torsion
             for rotor_dict_2 in spc_2.rotors_dict.values():
                 torsion_2 = [backbone_map[t_1] for t_1 in torsion_1]
@@ -1022,7 +1022,6 @@ def map_hydrogens(spc_1: ARCSpecies,
             heavy_atom_1 = list(hydrogen_1.edges.keys())[0]
             heavy_atom_2 = atoms_2[backbone_map[atoms_1.index(heavy_atom_1)]]
             num_hydrogens_1 = len([atom for atom in heavy_atom_1.edges.keys() if atom.is_hydrogen()])
-            # num_hydrogens_2 = len([atom for atom in heavy_atom_2.edges.values() if atom.is_hydrogen()])
             if num_hydrogens_1 == 1:
                 # We know that num_hydrogens_2 == 1 because the candidate map resulted from are_adj_elements_in_agreement().
                 hydrogen_2 = [atom for atom in heavy_atom_2.edges.keys() if atom.is_hydrogen()][0]
@@ -1034,76 +1033,97 @@ def map_hydrogens(spc_1: ARCSpecies,
                 heavy_atom_1_index = atoms_1.index(heavy_atom_1)
                 for rotor_dict in spc_1.rotors_dict.values():
                     if heavy_atom_1_index in [rotor_dict['torsion'][1], rotor_dict['torsion'][2]]:
-                        hydrogen_indices_1 = [atoms_1.index(atom)
-                                              for atom in heavy_atom_1.edges.keys() if atom.is_hydrogen()]
-                        hydrogen_indices_2 = [atoms_2.index(atom)
-                                              for atom in heavy_atom_2.edges.keys() if atom.is_hydrogen()]
-                        torsion_1_base = rotor_dict['torsion'][:-1] if rotor_dict['torsion'][-1] in hydrogen_indices_1 \
-                            else rotor_dict['torsion'][1:][::-1]
-                        torsions_1 = [torsion_1_base + [h_index] for h_index in hydrogen_indices_1]
-                        if torsion_1_base[0] not in atom_map.keys():
-                            # There's an unmapped hydrogen atom in torsion_1_base. Randomly map it to a respective hydrogen.
-                            atom_map[torsion_1_base[0]] = [atoms_2.index(atom)
-                                                           for atom in atoms_2[atom_map[torsion_1_base[1]]].edges.keys()
-                                                           if atom.is_hydrogen()][0]
-                        torsions_2 = [[atom_map[t] for t in torsion_1_base] + [h_index] for h_index in hydrogen_indices_2]
-                        dihedrals_1 = [calculate_dihedral_angle(coords=spc_1.get_xyz(), torsion=torsion)
-                                       for torsion in torsions_1]
-                        dihedrals_2 = [calculate_dihedral_angle(coords=spc_2.get_xyz(), torsion=torsion)
-                                       for torsion in torsions_2]
-                        dihedral_map_dict = map_lists(dihedrals_1, dihedrals_2)
-                        for key, val in dihedral_map_dict.items():
-                            atom_map[hydrogen_indices_1[key]] = hydrogen_indices_2[val]
+                        atom_map = add_adjacent_hydrogen_atoms_to_map_based_on_a_specific_torsion(
+                            spc_1=spc_1,
+                            spc_2=spc_2,
+                            heavy_atom_1=heavy_atom_1,
+                            heavy_atom_2=heavy_atom_2,
+                            torsion=rotor_dict['torsion'],
+                            atom_map=atom_map,
+                        )
                         success = True
                         break
-                # 2. Check for pseudo-torsion (3 consecutive heavy atoms) involving heavy_atom_1 as a pivotal atom.
+                # 2. Check for a heavy atom with only H atoms adjacent to it (CH4, NH3, H2).
+                if not success:
+                    if all(atom.is_hydrogen() for atom in heavy_atom_1.edges.keys()):
+                        for atom_1, atom_2 in zip([atom for atom in atoms_1 if atom.is_hydrogen()],
+                                                  [atom for atom in atoms_2 if atom.is_hydrogen()]):
+                            atom_map[atoms_1.index(atom_1)] = atoms_2.index(atom_2)
+                        success = True
+                # 3. Check for a pseudo-torsion (may involve multiple bonds) with heavy_atom_1 as a pivot.
+                if not success:
+                    pseudo_torsion = list()
+                    for atom_1_3 in heavy_atom_1.edges.keys():  # Candidate atom 3/3 in a pseudo-torsion of spc_1.
+                        if atom_1_3.is_non_hydrogen():
+                            for atom_1_4 in atom_1_3.edges.keys():
+                                if atom_1_4.is_non_hydrogen():
+                                    pseudo_torsion = [atoms_1.index(atom) for atom in [hydrogen_1, heavy_atom_1, atom_1_3, atom_1_4]]
+                                    break
+                            if not len(pseudo_torsion):
+                                # Compromise for a hydrogen atom in position 4.
+                                for atom_1_4 in atom_1_3.edges.keys():
+                                    pseudo_torsion = [atoms_1.index(atom) for atom in [hydrogen_1, heavy_atom_1, atom_1_3, atom_1_4]]
+                                    break
+                            if len(pseudo_torsion):
+                                atom_map = add_adjacent_hydrogen_atoms_to_map_based_on_a_specific_torsion(
+                                    spc_1=spc_1,
+                                    spc_2=spc_2,
+                                    heavy_atom_1=heavy_atom_1,
+                                    heavy_atom_2=heavy_atom_2,
+                                    torsion=pseudo_torsion,
+                                    atom_map=atom_map,
+                                )
+                                success = True
+                                break
+                # 4. Check by angles (search for 2 consecutive heavy atoms).
                 if not success:
                     pass
-
-                # 3. Check by angles (search for 2 consecutive heavy atoms).
+                # 5. Use zmats constraining the backbone ??
                 if not success:
                     pass
-
-
-                # 4. Use zmats constraining the backbone ??
-                if not success:
-                    pass
-
     return atom_map
 
 
+def add_adjacent_hydrogen_atoms_to_map_based_on_a_specific_torsion(spc_1: ARCSpecies,
+                                                                   spc_2: ARCSpecies,
+                                                                   heavy_atom_1: 'Atom',
+                                                                   heavy_atom_2: 'Atom',
+                                                                   torsion: List[int],
+                                                                   atom_map: Dict[int, int],
+                                                                   ) -> Dict[int, int]:
+    """
+    Map hydrogen atoms around one end of a specific torsion (or pseudo-torsion) by matching dihedral angles.
 
+    Args:
+          spc_1 (ARCSpecies): Species 1.
+          spc_2 (ARCSpecies): Species 2.
+          heavy_atom_1 (Atom): The heavy atom from ``spc_1`` around which hydrogen atoms will be mapped.
+          heavy_atom_2 (Atom): The heavy atom from ``spc_2`` around which hydrogen atoms will be mapped.
+          torsion (List[int]): 0-indices of 4 consecutive atoms in ``spc_1``.
+          atom_map (Dict[int, int]): A partial atom map between ``spc_1`` and ``spc_2``.
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    Returns:
+        Dict[int, int]: The updated atom map.
+    """
+    atoms_1, atoms_2 = spc_1.mol.atoms, spc_2.mol.atoms
+    hydrogen_indices_1 = [atoms_1.index(atom)
+                          for atom in heavy_atom_1.edges.keys() if atom.is_hydrogen()]
+    hydrogen_indices_2 = [atoms_2.index(atom)
+                          for atom in heavy_atom_2.edges.keys() if atom.is_hydrogen()]
+    torsion_1_base = torsion[:-1] if torsion[-1] in hydrogen_indices_1 \
+        else torsion[1:][::-1]
+    torsions_1 = [torsion_1_base + [h_index] for h_index in hydrogen_indices_1]
+    if torsion_1_base[0] not in atom_map.keys():
+        # There's an unmapped hydrogen atom in torsion_1_base. Randomly map it to a respective hydrogen.
+        atom_map[torsion_1_base[0]] = [atoms_2.index(atom)
+                                       for atom in atoms_2[atom_map[torsion_1_base[1]]].edges.keys()
+                                       if atom.is_hydrogen()][0]
+    torsions_2 = [[atom_map[t] for t in torsion_1_base] + [h_index] for h_index in hydrogen_indices_2]
+    dihedrals_1 = [calculate_dihedral_angle(coords=spc_1.get_xyz(), torsion=torsion)
+                   for torsion in torsions_1]
+    dihedrals_2 = [calculate_dihedral_angle(coords=spc_2.get_xyz(), torsion=torsion)
+                   for torsion in torsions_2]
+    dihedral_map_dict = map_lists(dihedrals_1, dihedrals_2)
+    for key, val in dihedral_map_dict.items():
+        atom_map[hydrogen_indices_1[key]] = hydrogen_indices_2[val]
+    return atom_map
