@@ -1040,6 +1040,7 @@ def map_hydrogens(spc_1: ARCSpecies,
                             heavy_atom_2=heavy_atom_2,
                             torsion=rotor_dict['torsion'],
                             atom_map=atom_map,
+                            find_torsion_end_to_map=True,
                         )
                         success = True
                         break
@@ -1056,22 +1057,24 @@ def map_hydrogens(spc_1: ARCSpecies,
                     for atom_1_3 in heavy_atom_1.edges.keys():  # Candidate atom 3/3 in a pseudo-torsion of spc_1.
                         if atom_1_3.is_non_hydrogen():
                             for atom_1_4 in atom_1_3.edges.keys():
-                                if atom_1_4.is_non_hydrogen():
+                                if atom_1_4.is_non_hydrogen() and atom_1_4 is not heavy_atom_1:
                                     pseudo_torsion = [atoms_1.index(atom) for atom in [hydrogen_1, heavy_atom_1, atom_1_3, atom_1_4]]
                                     break
                             if not len(pseudo_torsion):
                                 # Compromise for a hydrogen atom in position 4.
                                 for atom_1_4 in atom_1_3.edges.keys():
-                                    pseudo_torsion = [atoms_1.index(atom) for atom in [hydrogen_1, heavy_atom_1, atom_1_3, atom_1_4]]
-                                    break
+                                    if atom_1_4 is not heavy_atom_1:
+                                        pseudo_torsion = [atoms_1.index(atom) for atom in [hydrogen_1, heavy_atom_1, atom_1_3, atom_1_4]]
+                                        break
                             if len(pseudo_torsion):
                                 atom_map = add_adjacent_hydrogen_atoms_to_map_based_on_a_specific_torsion(
                                     spc_1=spc_1,
                                     spc_2=spc_2,
                                     heavy_atom_1=heavy_atom_1,
                                     heavy_atom_2=heavy_atom_2,
-                                    torsion=pseudo_torsion,
+                                    torsion=pseudo_torsion[::-1],
                                     atom_map=atom_map,
+                                    find_torsion_end_to_map=False,
                                 )
                                 success = True
                                 break
@@ -1090,6 +1093,7 @@ def add_adjacent_hydrogen_atoms_to_map_based_on_a_specific_torsion(spc_1: ARCSpe
                                                                    heavy_atom_2: 'Atom',
                                                                    torsion: List[int],
                                                                    atom_map: Dict[int, int],
+                                                                   find_torsion_end_to_map: bool = True,
                                                                    ) -> Dict[int, int]:
     """
     Map hydrogen atoms around one end of a specific torsion (or pseudo-torsion) by matching dihedral angles.
@@ -1101,6 +1105,9 @@ def add_adjacent_hydrogen_atoms_to_map_based_on_a_specific_torsion(spc_1: ARCSpe
           heavy_atom_2 (Atom): The heavy atom from ``spc_2`` around which hydrogen atoms will be mapped.
           torsion (List[int]): 0-indices of 4 consecutive atoms in ``spc_1``.
           atom_map (Dict[int, int]): A partial atom map between ``spc_1`` and ``spc_2``.
+          find_torsion_end_to_map (bool, optional): Whether to automatically identify the side of the torsion that
+                                                    requires mapping. If ``False``, the last atom, ``torsion[-1]``
+                                                    is assumed to be on the side that requires mapping.
 
     Returns:
         Dict[int, int]: The updated atom map.
@@ -1110,8 +1117,7 @@ def add_adjacent_hydrogen_atoms_to_map_based_on_a_specific_torsion(spc_1: ARCSpe
                           for atom in heavy_atom_1.edges.keys() if atom.is_hydrogen()]
     hydrogen_indices_2 = [atoms_2.index(atom)
                           for atom in heavy_atom_2.edges.keys() if atom.is_hydrogen()]
-    torsion_1_base = torsion[:-1] if torsion[-1] in hydrogen_indices_1 \
-        else torsion[1:][::-1]
+    torsion_1_base = torsion[::-1][:-1] if torsion[-1] not in hydrogen_indices_1 and find_torsion_end_to_map else torsion[:-1]
     torsions_1 = [torsion_1_base + [h_index] for h_index in hydrogen_indices_1]
     if torsion_1_base[0] not in atom_map.keys():
         # There's an unmapped hydrogen atom in torsion_1_base. Randomly map it to a respective hydrogen.
