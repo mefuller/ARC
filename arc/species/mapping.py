@@ -21,10 +21,10 @@ from rmgpy.molecule import Molecule
 from rmgpy.species import Species
 
 import arc.rmgdb as rmgdb
-from arc.common import convert_list_index_0_to_1, logger
+from arc.common import convert_list_index_0_to_1, extremum_list, logger
 from arc.species import ARCSpecies
 from arc.species.converter import compare_confs, sort_xyz_using_indices, translate_xyz, xyz_from_data, xyz_to_str
-from arc.species.vectors import calculate_dihedral_angle
+from arc.species.vectors import calculate_dihedral_angle, get_delta_angle
 
 
 if TYPE_CHECKING:
@@ -494,8 +494,8 @@ def _get_rmg_reactions_from_arc_reaction(arc_reaction: 'ARCReaction',
 def map_two_species(spc_1: Union[ARCSpecies, Species, Molecule],
                     spc_2: Union[ARCSpecies, Species, Molecule],
                     map_type: str = 'list',
-                    verbose: bool = False,
                     backend: str = 'rmsd',
+                    verbose: bool = False,
                     ) -> Optional[Union[List[int], Dict[int, int]]]:
     """
     Map the atoms in spc1 to the atoms in spc2.
@@ -508,8 +508,8 @@ def map_two_species(spc_1: Union[ARCSpecies, Species, Molecule],
         spc_1 (Union[ARCSpecies, Species, Molecule]): Species 1.
         spc_2 (Union[ARCSpecies, Species, Molecule]): Species 2.
         map_type (str, optional): Whether to return a 'list' or a 'dict' map type.
-        verbose (bool, optional): Whether to use logging.
         backend (str, optional): Whether to use 'QCElemental' or ARC's 'RMSD' method as the backend.
+        verbose (bool, optional): Whether to use logging.
 
     Returns:
         Optional[Union[List[int], Dict[int, int]]]:
@@ -523,6 +523,8 @@ def map_two_species(spc_1: Union[ARCSpecies, Species, Molecule],
     if backend.lower() == 'rmsd':
         spc_1, spc_2 = get_arc_species(spc_1), get_arc_species(spc_2)
         if not check_species_before_mapping(spc_1, spc_2, verbose=verbose):
+            if verbose:
+                logger.warning(f'Could not map species {spc_1} and {spc_2}.')
             return None
         adj_element_dict_1, adj_element_dict_2 = determine_adjacent_elements(spc_1), determine_adjacent_elements(spc_2)
         candidates = identify_superimposable_candidates(adj_element_dict_1, adj_element_dict_2)
@@ -701,8 +703,7 @@ def get_bonds_dict(spc: ARCSpecies) -> Dict[str, int]:
     bond_dict = dict()
     bonds = spc.mol.get_all_edges()
     for bond in bonds:
-        elements = sorted([bond.atom1.element.symbol, bond.atom2.element.symbol])
-        key = f'{elements[0]}-{elements[1]}'
+        key = '-'.join(sorted([bond.atom1.element.symbol, bond.atom2.element.symbol]))
         bond_dict[key] = bond_dict.get(key, 0) + 1
     return bond_dict
 
@@ -945,6 +946,10 @@ def get_backbone_dihedral_angles(spc_1: ARCSpecies,
         List[Dict[str, Union[float, List[int]]]]: The corresponding species with aligned dihedral angles.
     """
     torsions = list()
+    if not spc_1.rotors_dict:
+        spc_1.determine_rotors()
+    if not spc_2.rotors_dict:
+        spc_2.determine_rotors()
     for rotor_dict_1 in spc_1.rotors_dict.values():
         torsion_1 = rotor_dict_1['torsion']
         if spc_1.mol.atoms[torsion_1[0]].is_non_hydrogen() \
@@ -967,6 +972,7 @@ def map_lists(list_1: List[float],
     """
     Map two lists with equal lengths of floats by proximity of entries.
     Assuming no two entries in a list are identical.
+    Note: values are treated as cyclic in a 0-360 range (i.e., 1 is closer to 259 than to 5)!
 
     Args:
         list_1 (List[float]): List 1.
@@ -977,13 +983,14 @@ def map_lists(list_1: List[float],
                         Values correspond to respective entry indices in ``list_2``.
     """
     if len(list_1) != len(list_2):
-        raise ValueError(f'Lists must be of the same length, got\n{list_1}\{list_2}\n'
+        raise ValueError(f'Lists must be of the same length, got:\n{list_1}\n{list_2}\n'
                          f'with lengths {len(list_1)} and {len(list_2)}.')
     list_map = dict()
     dict_1, dict_2 = {k: True for k in list_1}, {k: True for k in list_2}
     while any(dict_1.values()):
         min_1_index = list_1.index(min([k for k, v in dict_1.items() if v]))
-        min_2_index = list_2.index(min([k for k, v in dict_2.items() if v]))
+        angle_deltas = [get_delta_angle(list_1[min_1_index], angle_2) if dict_2[angle_2] else None for angle_2 in list_2]
+        min_2_index = angle_deltas.index(extremum_list(angle_deltas, return_min=True))
         dict_1[list_1[min_1_index]], dict_2[list_2[min_2_index]] = False, False
         list_map[min_1_index] = min_2_index
     return list_map
