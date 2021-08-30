@@ -161,8 +161,8 @@ def map_h_abstraction(rxn: 'ARCReaction',
 
     result = {r_h_index: p_h_index}
     for r_increment, p_increment, map_i in zip([r1_h2 * len_r1, (1 - r1_h2) * len_r1],
-                                              [(1 - r3_h2) * len_p1, r3_h2 * len_p1],
-                                              [map_1, map_2]):
+                                               [(1 - r3_h2) * len_p1, r3_h2 * len_p1],
+                                               [map_1, map_2]):
         for i, entry in enumerate(map_i):
             r_index = i + r_increment + int(i + r_increment >= r_h_index)
             p_index = entry + p_increment
@@ -222,14 +222,15 @@ def map_ho2_elimination_from_peroxy_radical(rxn: 'ARCReaction',
         # Fix dihedrals between 4 heavy atom sequences.
         spc_r_mod.determine_rotors()
         map_1 = map_two_species(spc_r_mod, rxn.p_species[r1dr2])
-        for rotor in spc_r_mod.rotors_dict.values():
-            torsion = rotor['torsion']
-            if spc_r_mod.mol.atoms[torsion[0]].is_non_hydrogen() and spc_r_mod.mol.atoms[torsion[1]].is_non_hydrogen():
-                spc_r_mod.set_dihedral(scan=convert_list_index_0_to_1(torsion),
-                                       deg_abs=calculate_dihedral_angle(coords=rxn.p_species[r1dr2].get_xyz(),
-                                                                        torsion=[map_1[t] for t in torsion]),
-                                       chk_rotor_list=False)
-                spc_r_mod.final_xyz = spc_r_mod.initial_xyz
+        if spc_r_mod.rotors_dict is not None:
+            for rotor in spc_r_mod.rotors_dict.values():
+                torsion = rotor['torsion']
+                if spc_r_mod.mol.atoms[torsion[0]].is_non_hydrogen() and spc_r_mod.mol.atoms[torsion[1]].is_non_hydrogen():
+                    spc_r_mod.set_dihedral(scan=convert_list_index_0_to_1(torsion),
+                                           deg_abs=calculate_dihedral_angle(coords=rxn.p_species[r1dr2].get_xyz(),
+                                                                            torsion=[map_1[t] for t in torsion]),
+                                           chk_rotor_list=False)
+                    spc_r_mod.final_xyz = spc_r_mod.initial_xyz
         map_2 = map_two_species(spc_r_mod, rxn.p_species[r1dr2])
         new_map, added_ho2_atoms = list(), list()
         star_map = {r_o3_index: '*3', r_o4_index: '*4', r_h5_index: '*5'}
@@ -450,6 +451,8 @@ def _get_rmg_reactions_from_arc_reaction(arc_reaction: 'ARCReaction',
                                          ) -> Optional[List['TemplateReaction']]:
     """
     A helper function for getting RMG reactions from an ARC reaction.
+    This function calls ``map_two_species()`` so that each species in the RMG reaction is correctly mapped
+    to the corresponding species in the ARC reaction. It does not attempt to map reactants to products.
 
     Args:
         arc_reaction (ARCReaction): The ARCReaction object instance.
@@ -494,7 +497,7 @@ def _get_rmg_reactions_from_arc_reaction(arc_reaction: 'ARCReaction',
 def map_two_species(spc_1: Union[ARCSpecies, Species, Molecule],
                     spc_2: Union[ARCSpecies, Species, Molecule],
                     map_type: str = 'list',
-                    backend: str = 'rmsd',
+                    backend: str = 'RMSD',
                     verbose: bool = False,
                     ) -> Optional[Union[List[int], Dict[int, int]]]:
     """
@@ -508,7 +511,7 @@ def map_two_species(spc_1: Union[ARCSpecies, Species, Molecule],
         spc_1 (Union[ARCSpecies, Species, Molecule]): Species 1.
         spc_2 (Union[ARCSpecies, Species, Molecule]): Species 2.
         map_type (str, optional): Whether to return a 'list' or a 'dict' map type.
-        backend (str, optional): Whether to use 'QCElemental' or ARC's 'RMSD' method as the backend.
+        backend (str, optional): Whether to use ``'QCElemental'`` or ARC's ``'RMSD'`` method as the backend.
         verbose (bool, optional): Whether to use logging.
 
     Returns:
@@ -517,11 +520,37 @@ def map_two_species(spc_1: Union[ARCSpecies, Species, Molecule],
             If the map is of ``list`` type, entry indices are atom indices of ``spc_1``, entry values are atom indices of ``spc_2``.
             If the map is of ``dict`` type, keys are atom indices of ``spc_1``, values are atom indices of ``spc_2``.
     """
+    spc_1, spc_2 = get_arc_species(spc_1), get_arc_species(spc_2)
+
+    # A shortcut for mono-atomic species.
+    if spc_1.number_of_atoms == spc_2.number_of_atoms == 1:
+        if map_type == 'dict':
+            return {0: 0}
+        return [0]
+
+    # A shortcut for homonuclear diatomic species.
+    if spc_1.number_of_atoms == spc_2.number_of_atoms == 2 \
+            and len(set([atom.element.symbol for atom in spc_1.mol.atoms])) == 1:
+        if map_type == 'dict':
+            return {0: 0, 1: 1}
+        return [0, 1]
+
+    # A shortcut for species with all different elements:
+    if len(set([atom.element.symbol for atom in spc_1.mol.atoms])) == spc_1.number_of_atoms:
+        atom_map = {}
+        for i, atom_1 in enumerate(spc_1.mol.atoms):
+            for j, atom_2 in enumerate(spc_2.mol.atoms):
+                if atom_1.element.symbol == atom_2.element.symbol:
+                    atom_map[i] = j
+                    break
+        if map_type == 'list':
+            atom_map = [v for k, v in sorted(atom_map.items(), key=lambda item: item[0])]
+        return atom_map
+
     if backend.lower() not in ['qcelemental', 'rmsd']:
         raise ValueError(f'The backend method could be either "QCElemental" or "RMSD", got {backend}.')
     atom_map = None
     if backend.lower() == 'rmsd':
-        spc_1, spc_2 = get_arc_species(spc_1), get_arc_species(spc_2)
         if not check_species_before_mapping(spc_1, spc_2, verbose=verbose):
             if verbose:
                 logger.warning(f'Could not map species {spc_1} and {spc_2}.')
@@ -602,10 +631,7 @@ def create_qc_mol(species: Union[ARCSpecies, Species, Molecule, List[Union[ARCSp
     Returns:
         Optional[QCMolecule]: The respective QCMolecule object instance.
     """
-    species = [species] if not isinstance(species, list) else species
-    species_list = list()
-    for spc in species:
-        species_list.append(get_arc_species(spc))
+    species_list = [species] if not isinstance(species, list) else species
     if len(species_list) == 1:
         if charge is None:
             charge = species_list[0].charge
@@ -735,7 +761,7 @@ def identify_superimposable_candidates(adj_element_dict_1: Dict[int, Dict[str, U
                                        adj_element_dict_2: Dict[int, Dict[str, Union[str, List[int]]]],
                                        ) -> List[Dict[int, int]]:
     """
-    Identify candidate ordering of heavy atoms (only) that could potentially be superiposed.
+    Identify candidate ordering of heavy atoms (only) that could potentially be superimposed.
 
     Args:
         adj_element_dict_1 (Dict[int, Dict[str, Union[str, List[int]]]]): Adjacent element dict for species 1.
@@ -881,9 +907,8 @@ def fix_dihedrals_by_backbone_mapping(spc_1: ARCSpecies,
     Returns:
         Tuple[ARCSpecies, ARCSpecies]: The corresponding species with aligned dihedral angles.
     """
-    if not spc_1.rotors_dict:
+    if not spc_1.rotors_dict or not spc_2.rotors_dict:
         spc_1.determine_rotors()
-    if not spc_2.rotors_dict:
         spc_2.determine_rotors()
     spc_1_copy, spc_2_copy = spc_1.copy(), spc_2.copy()
     torsions = get_backbone_dihedral_angles(spc_1, spc_2, backbone_map)
@@ -949,12 +974,12 @@ def get_backbone_dihedral_angles(spc_1: ARCSpecies,
     if not spc_1.rotors_dict or not spc_2.rotors_dict:
         spc_1.determine_rotors()
         spc_2.determine_rotors()
-    if spc_1.rotors_dict is not None:
+    if spc_1.rotors_dict is not None and spc_2.rotors_dict is not None:
         for rotor_dict_1 in spc_1.rotors_dict.values():
             torsion_1 = rotor_dict_1['torsion']
             if spc_1.mol.atoms[torsion_1[0]].is_non_hydrogen() \
                     and spc_1.mol.atoms[torsion_1[3]].is_non_hydrogen():
-                # This is not a "terminal" torsion
+                # This is not a "terminal" torsion.
                 for rotor_dict_2 in spc_2.rotors_dict.values():
                     torsion_2 = [backbone_map[t_1] for t_1 in torsion_1]
                     if all(pivot_2 in [torsion_2[1], torsion_2[2]]
