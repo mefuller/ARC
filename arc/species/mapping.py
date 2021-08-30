@@ -160,12 +160,12 @@ def map_h_abstraction(rxn: 'ARCReaction',
     map_2 = map_two_species(rxn.r_species[r3], spc_r3_h2_cut)
 
     result = {r_h_index: p_h_index}
-    for r_increment, p_increment, map_i in zip([r1_h2 * len_r1, (1 - r1_h2) * len_r1],
-                                               [(1 - r3_h2) * len_p1, r3_h2 * len_p1],
+    for r_increment, p_increment, map_i in zip([r1_h2 * len_r1, r3 * len_r1],
+                                               [r1 * len_p1, r3_h2 * len_p1],
                                                [map_1, map_2]):
         for i, entry in enumerate(map_i):
             r_index = i + r_increment + int(i + r_increment >= r_h_index)
-            p_index = entry + p_increment
+            p_index = entry + p_increment + int(i + p_increment >= p_h_index)
             result[r_index] = p_index
     return [val for key, val in sorted(result.items(), key=lambda item: item[0])]
 
