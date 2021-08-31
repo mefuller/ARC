@@ -131,7 +131,7 @@ def map_h_abstraction(rxn: 'ARCReaction',
     if not check_family_for_mapping_function(rxn=rxn, db=db, family='H_Abstraction'):
         return None
 
-    rmg_reactions = _get_rmg_reactions_from_arc_reaction(arc_reaction=rxn)
+    rmg_reactions = get_rmg_reactions_from_arc_reaction(arc_reaction=rxn)
     r_label_dict, p_label_dict = get_atom_indices_of_labeled_atoms_in_an_rmg_reaction(arc_reaction=rxn,
                                                                                       rmg_reaction=rmg_reactions[0])
     r_h_index = r_label_dict['*2']
@@ -199,7 +199,7 @@ def map_ho2_elimination_from_peroxy_radical(rxn: 'ARCReaction',
     if not check_family_for_mapping_function(rxn=rxn, db=db, family='HO2_Elimination_from_PeroxyRadical'):
         return None
 
-    rmg_reactions = _get_rmg_reactions_from_arc_reaction(arc_reaction=rxn)
+    rmg_reactions = get_rmg_reactions_from_arc_reaction(arc_reaction=rxn)
     r_label_dict, p_label_dict = get_atom_indices_of_labeled_atoms_in_an_rmg_reaction(arc_reaction=rxn,
                                                                                       rmg_reaction=rmg_reactions[0])
 
@@ -277,7 +277,7 @@ def map_intra_h_migration(rxn: 'ARCReaction',
     if not check_family_for_mapping_function(rxn=rxn, db=db, family='intra_H_migration'):
         return None
 
-    rmg_reactions = _get_rmg_reactions_from_arc_reaction(arc_reaction=rxn)
+    rmg_reactions = get_rmg_reactions_from_arc_reaction(arc_reaction=rxn)
     r_label_dict, p_label_dict = get_atom_indices_of_labeled_atoms_in_an_rmg_reaction(arc_reaction=rxn,
                                                                                       rmg_reaction=rmg_reactions[0])
 
@@ -442,7 +442,7 @@ def find_equivalent_atoms_in_reactants(arc_reaction: 'ARCReaction') -> Optional[
     Returns:
         Optional[List[List[int]]]: Entries are lists of 0-indices, each such list represents equivalent atoms.
     """
-    rmg_reactions = _get_rmg_reactions_from_arc_reaction(arc_reaction)
+    rmg_reactions = get_rmg_reactions_from_arc_reaction(arc_reaction)
     dicts = [get_atom_indices_of_labeled_atoms_in_an_rmg_reaction(rmg_reaction=rmg_reaction,
                                                                   arc_reaction=arc_reaction)[0]
              for rmg_reaction in rmg_reactions]
@@ -457,10 +457,10 @@ def find_equivalent_atoms_in_reactants(arc_reaction: 'ARCReaction') -> Optional[
     return equivalent_indices
 
 
-def _get_rmg_reactions_from_arc_reaction(arc_reaction: 'ARCReaction',
-                                         backend: str = 'ARC',
-                                         db: Optional['RMGDatabase'] = None,
-                                         ) -> Optional[List['TemplateReaction']]:
+def get_rmg_reactions_from_arc_reaction(arc_reaction: 'ARCReaction',
+                                        backend: str = 'ARC',
+                                        db: Optional['RMGDatabase'] = None,
+                                        ) -> Optional[List['TemplateReaction']]:
     """
     A helper function for getting RMG reactions from an ARC reaction.
     This function calls ``map_two_species()`` so that each species in the RMG reaction is correctly mapped
