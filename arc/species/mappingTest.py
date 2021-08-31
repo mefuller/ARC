@@ -1041,16 +1041,16 @@ class TestMapping(unittest.TestCase):
 
     def test_iterative_dfs(self):
         """Test the iterative_dfs function."""
-        result = mapping.iterative_dfs(adj_elements_1={0: {'self': 'C', 'C': [1]},
-                                                       1: {'self': 'C', 'H': [4, 3]}},
-                                       adj_elements_2={0: {'self': 'C', 'C': [1]},
-                                                       1: {'self': 'C', 'H': [4, 3]}},
+        result = mapping.iterative_dfs(fingerprint_1={0: {'self': 'C', 'C': [1]},
+                                                      1: {'self': 'C', 'H': [4, 3]}},
+                                       fingerprint_2={0: {'self': 'C', 'C': [1]},
+                                                      1: {'self': 'C', 'H': [4, 3]}},
                                        key_1=0,
                                        key_2=0,
                                        )
         self.assertEqual(result, {0: 0, 1: 1})
-        result = mapping.iterative_dfs(adj_elements_1=self.fingerprint_1,
-                                       adj_elements_2=self.fingerprint_2,
+        result = mapping.iterative_dfs(fingerprint_1=self.fingerprint_1,
+                                       fingerprint_2=self.fingerprint_2,
                                        key_1=0,
                                        key_2=0,
                                        )
@@ -1103,8 +1103,8 @@ class TestMapping(unittest.TestCase):
         """Test the get_backbone_dihedral_deviation_score function."""
         self.spc1.determine_rotors()
         self.spc2.determine_rotors()
-        adj_dict_1, adj_dict_2 = mapping.determine_adjacent_elements(self.spc1), mapping.determine_adjacent_elements(self.spc2)
-        backbone_map = mapping.identify_superimposable_candidates(adj_dict_1, adj_dict_2)[0]
+        fingerprint_1, fingerprint_2 = mapping.fingerprint(self.spc1), mapping.fingerprint(self.spc2)
+        backbone_map = mapping.identify_superimposable_candidates(fingerprint_1, fingerprint_2)[0]
         score = mapping.get_backbone_dihedral_deviation_score(spc_1=self.spc1, spc_2=self.spc2, backbone_map=backbone_map)
         self.assertAlmostEqual(score, 106.8417836)
 
@@ -1139,8 +1139,8 @@ class TestMapping(unittest.TestCase):
         # One inner torsion, several terminal torsions.
         self.spc1.determine_rotors()
         self.spc2.determine_rotors()
-        adj_dict_1, adj_dict_2 = mapping.determine_adjacent_elements(self.spc1), mapping.determine_adjacent_elements(self.spc2)
-        backbone_map = mapping.identify_superimposable_candidates(adj_dict_1, adj_dict_2)[0]
+        fingerprint_1, fingerprint_2 = mapping.fingerprint(self.spc1), mapping.fingerprint(self.spc2)
+        backbone_map = mapping.identify_superimposable_candidates(fingerprint_1, fingerprint_2)[0]
         self.assertEqual(backbone_map, {0: 0, 3: 1, 5: 3, 6: 4, 4: 2})
         atom_map = mapping.map_hydrogens(self.spc1, self.spc2, backbone_map)
         self.assertEqual(atom_map,
