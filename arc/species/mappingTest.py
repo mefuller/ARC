@@ -275,16 +275,42 @@ class TestMapping(unittest.TestCase):
                                                (-0.08895014121458822, 1.516782545404168, 1.0773864056369775),
                                                (1.7343645501760614, 0.8833943612907731, -0.5328117982045897))})
         cls.ccjco = ARCSpecies(label='CCjCO', smiles='CC=C[O]', xyz=cls.c3h5o_xyz)
-        cls.adj_element_dict_1 = {0: {'self': 'C', 'C': [3], 'H': [1, 2]},
-                                  3: {'self': 'C', 'C': [0, 4, 5], 'H': [7]},
-                                  4: {'self': 'C', 'C': [3], 'H': [8, 9, 10]},
-                                  5: {'self': 'C', 'C': [3], 'O': [6], 'H': [11, 12]},
-                                  6: {'self': 'O', 'C': [5], 'H': [13]}}
-        cls.adj_element_dict_2 = {0: {'self': 'C', 'C': [1], 'H': [5, 6]},
-                                  1: {'self': 'C', 'C': [0, 2, 3], 'H': [7]},
-                                  2: {'self': 'C', 'C': [1], 'H': [8, 9, 10]},
-                                  3: {'self': 'C', 'C': [1], 'O': [4], 'H': [11, 12]},
-                                  4: {'self': 'O', 'C': [3], 'H': [13]}}
+        cls.chiral_spc_1 = ARCSpecies(label='chiral_1', xyz="""C                 -0.81825240   -0.04911020   -0.14065159
+                                                               H                 -1.34163466   -0.39900096   -1.00583797
+                                                               C                  0.51892324    0.16369053   -0.19760928
+                                                               H                  1.05130979   -0.01818286   -1.10776676
+                                                               O                 -1.52975971    0.19395459    1.07572699
+                                                               H                 -2.43039815    0.45695722    0.87255216
+                                                               C                  1.27220245    0.66727126    1.04761235
+                                                               H                  1.28275235    1.73721734    1.04963240
+                                                               N                  0.59593728    0.18162740    2.25910542
+                                                               H                  0.58607755   -0.81832221    2.25721751
+                                                               H                  1.08507962    0.50862787    3.06769089
+                                                               S                  2.94420440    0.05748035    1.01655601
+                                                               H                  3.58498087    0.48585096    2.07580298""")
+        cls.chiral_spc_2 = ARCSpecies(label='chiral_2', xyz="""C                 -0.87981815   -0.20807053    0.19322984
+                                                               C                  0.42332778    0.13088820    0.03998264
+                                                               H                  0.86277627    0.13934039   -0.93557545
+                                                               C                  1.27169817    0.50390374    1.26991235
+                                                               H                  1.20358506    1.55745467    1.44395558
+                                                               S                  0.66715728   -0.37334195    2.69587529
+                                                               H                 -0.58281416   -0.04639937    2.91216198
+                                                               N                  2.67433788    0.13702924    1.02720897
+                                                               H                  3.01396759    0.62986390    0.22610619
+                                                               H                  3.22522774    0.37924712    1.82586462
+                                                               O                 -1.66759006   -0.55444424   -0.94884750
+                                                               H                 -2.58359979   -0.31485264   -0.79034816
+                                                               H                 -1.31926707   -0.21652112    1.16878775""")
+        cls.fingerprint_1 = {0: {'self': 'C', 'C': [3], 'H': [1, 2]},
+                             3: {'self': 'C', 'chirality': 'S', 'C': [0, 4, 5], 'H': [7]},
+                             4: {'self': 'C', 'C': [3], 'H': [8, 9, 10]},
+                             5: {'self': 'C', 'C': [3], 'O': [6], 'H': [11, 12]},
+                             6: {'self': 'O', 'C': [5], 'H': [13]}}
+        cls.fingerprint_2 = {0: {'self': 'C', 'C': [1], 'H': [5, 6]},
+                             1: {'self': 'C', 'chirality': 'S', 'C': [0, 2, 3], 'H': [7]},
+                             2: {'self': 'C', 'C': [1], 'H': [8, 9, 10]},
+                             3: {'self': 'C', 'C': [1], 'O': [4], 'H': [11, 12]},
+                             4: {'self': 'O', 'C': [3], 'H': [13]}}
 
     def test_map_h_abstraction(self):
         """Test the map_h_abstraction() function."""
@@ -294,7 +320,44 @@ class TestMapping(unittest.TestCase):
         p_1 = ARCSpecies(label='H2', smiles='[H][H]', xyz=self.h2_xyz)
         p_2 = ARCSpecies(label='CH3', smiles='[CH3]', xyz=self.ch3_xyz)
         rxn = ARCReaction(r_species=[r_1, r_2], p_species=[p_1, p_2])
+        atom_map = mapping.map_h_abstraction(rxn=rxn, db=self.rmgdb, backend='ARC')
+        self.assertIn(atom_map[0], [0, 1])
+        self.assertEqual(atom_map[1], 2)
+        for index in [2, 3, 4, 5]:
+            self.assertIn(atom_map[index], [0, 1, 3, 4, 5])
+        self.assertTrue(any(atom_map[r_index] in [0, 1] for r_index in [2, 3, 4, 5]))
+
+        # H + CH4 <=> CH3 + H2 (different order)
+        rxn = ARCReaction(r_species=[r_1, r_2], p_species=[p_2, p_1])
         atom_map = mapping.map_h_abstraction(rxn=rxn, db=self.rmgdb)
+        self.assertIn(atom_map[0], [4, 5])
+        self.assertEqual(atom_map[1], 0)
+        for index in [2, 3, 4, 5]:
+            self.assertIn(atom_map[index], [1, 2, 3, 4, 5])
+        self.assertTrue(any(atom_map[r_index] in [4, 5] for r_index in [2, 3, 4, 5]))
+
+        # CH4 + H <=> H2 + CH3 (different order)
+        rxn = ARCReaction(r_species=[r_2, r_1], p_species=[p_1, p_2])
+        atom_map = mapping.map_h_abstraction(rxn=rxn, db=self.rmgdb)
+        self.assertEqual(atom_map[0], 2)
+        for index in [1, 2, 3, 4]:
+            self.assertIn(atom_map[index], [0, 1, 3, 4, 5])
+        self.assertTrue(any(atom_map[r_index] in [0, 1] for r_index in [1, 2, 3, 4]))
+        self.assertIn(atom_map[5], [0, 1])
+
+        # CH4 + H <=> CH3 + H2 (different order)
+        rxn = ARCReaction(r_species=[r_2, r_1], p_species=[p_2, p_1])
+        atom_map = mapping.map_h_abstraction(rxn=rxn, db=self.rmgdb)
+        self.assertEqual(atom_map[0], 0)
+        for index in [1, 2, 3, 4]:
+            self.assertIn(atom_map[index], [1, 2, 3, 4, 5])
+        self.assertTrue(any(atom_map[r_index] in [4, 5] for r_index in [1, 2, 3, 4]))
+        self.assertIn(atom_map[5], [4, 5])
+
+
+        # # H + CH4 <=> H2 + CH3 using QCElemental as the backend.
+        rxn = ARCReaction(r_species=[r_1, r_2], p_species=[p_1, p_2])
+        atom_map = mapping.map_h_abstraction(rxn=rxn, db=self.rmgdb, backend='QCElemental')
         self.assertIn(atom_map[0], [0, 1])
         self.assertEqual(atom_map[1], 2)
         for index in [2, 3, 4, 5]:
@@ -920,27 +983,43 @@ class TestMapping(unittest.TestCase):
         bond_dict = mapping.get_bonds_dict(spc=ARCSpecies(label='iC4H10', smiles='CC(C)C'))
         self.assertEqual(bond_dict, {'C-C': 3, 'C-H': 10})
 
-    def test_determine_adjacent_elements(self):
-        """Test the determine_adjacent_elements function."""
-        adjacent_element_list = mapping.determine_adjacent_elements(ARCSpecies(label='CH4', smiles='C'))
-        self.assertEqual(adjacent_element_list, {0: {'self': 'C', 'H': [1, 2, 3, 4]}})
+    def test_fingerprint(self):
+        """Test the fingerprint function."""
+        fingerprint = mapping.fingerprint(ARCSpecies(label='CH4', smiles='C'))
+        self.assertEqual(fingerprint, {0: {'self': 'C', 'H': [1, 2, 3, 4]}})
 
-        adjacent_element_list = mapping.determine_adjacent_elements(self.ccjco)
-        self.assertEqual(adjacent_element_list, {0: {'self': 'C', 'C': [1], 'H': [5, 6, 7]},
-                                                 1: {'self': 'C', 'C': [0, 3], 'H': [2]},
-                                                 3: {'self': 'C', 'C': [1], 'O': [4], 'H': [8]},
-                                                 4: {'self': 'O', 'C': [3]}})
+        fingerprint = mapping.fingerprint(self.ccjco)
+        self.assertEqual(fingerprint, {0: {'self': 'C', 'C': [1], 'H': [5, 6, 7]},
+                                       1: {'self': 'C', 'chirality': 'Z', 'C': [0, 3], 'H': [2]},
+                                       3: {'self': 'C', 'chirality': 'Z', 'C': [1], 'O': [4], 'H': [8]},
+                                       4: {'self': 'O', 'C': [3]}})
 
-        adjacent_element_list = mapping.determine_adjacent_elements(self.spc1)
-        self.assertEqual(adjacent_element_list, self.adj_element_dict_1)
+        fingerprint = mapping.fingerprint(self.spc1)
+        self.assertEqual(fingerprint, self.fingerprint_1)
 
-        adjacent_element_list = mapping.determine_adjacent_elements(self.spc2)
-        self.assertEqual(adjacent_element_list, self.adj_element_dict_2)
+        fingerprint = mapping.fingerprint(self.spc2)
+        self.assertEqual(fingerprint, self.fingerprint_2)
+
+        fingerprint = mapping.fingerprint(self.chiral_spc_1)
+        self.assertEqual(fingerprint, {0: {'self': 'C', 'chirality': 'Z', 'C': [2], 'O': [4], 'H': [1]},
+                                       2: {'self': 'C', 'chirality': 'Z', 'C': [0, 6], 'H': [3]},
+                                       4: {'self': 'O', 'C': [0], 'H': [5]},
+                                       6: {'self': 'C', 'chirality': 'S', 'C': [2], 'N': [8], 'S': [11], 'H': [7]},
+                                       8: {'self': 'N', 'C': [6], 'H': [9, 10]},
+                                       11: {'self': 'S', 'C': [6], 'H': [12]}})
+
+        fingerprint = mapping.fingerprint(self.chiral_spc_2)
+        self.assertEqual(fingerprint, {0: {'self': 'C', 'chirality': 'E', 'C': [1], 'O': [10], 'H': [12]},
+                                       1: {'self': 'C', 'chirality': 'E', 'C': [0, 3], 'H': [2]},
+                                       3: {'self': 'C', 'chirality': 'R', 'C': [1], 'N': [7], 'S': [5], 'H': [4]},
+                                       5: {'self': 'S', 'C': [3], 'H': [6]},
+                                       7: {'self': 'N', 'C': [3], 'H': [8, 9]},
+                                       10: {'self': 'O', 'C': [0], 'H': [11]}})
 
     def test_identify_superimposable_candidates(self):
         """Test the identify_superimposable_candidates function."""
-        candidates = mapping.identify_superimposable_candidates(adj_element_dict_1=self.adj_element_dict_1,
-                                                                adj_element_dict_2=self.adj_element_dict_2)
+        candidates = mapping.identify_superimposable_candidates(fingerprint_1=self.fingerprint_1,
+                                                                fingerprint_2=self.fingerprint_2)
         self.assertEqual(candidates, [{0: 0, 3: 1, 4: 2, 5: 3, 6: 4}])
 
     def test_are_adj_elements_in_agreement(self):
@@ -970,8 +1049,8 @@ class TestMapping(unittest.TestCase):
                                        key_2=0,
                                        )
         self.assertEqual(result, {0: 0, 1: 1})
-        result = mapping.iterative_dfs(adj_elements_1=self.adj_element_dict_1,
-                                       adj_elements_2=self.adj_element_dict_2,
+        result = mapping.iterative_dfs(adj_elements_1=self.fingerprint_1,
+                                       adj_elements_2=self.fingerprint_2,
                                        key_1=0,
                                        key_2=0,
                                        )
