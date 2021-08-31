@@ -935,8 +935,7 @@ class TestMapping(unittest.TestCase):
 
         # Multiple chiral centers
         atom_map = mapping.map_two_species(self.chiral_spc_1, self.chiral_spc_1_b)
-        print(atom_map)
-        self.assertEqual(atom_map, [])
+        self.assertEqual(atom_map, [0, 2, 8, 5, 6, 7, 9, 10, 3, 4, 11, 1, 12])
 
         # Different resonance structures.
         atom_map = mapping.map_two_species(self.cccoj, self.ccjco)
