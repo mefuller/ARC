@@ -23,6 +23,7 @@ from rmgpy.species import Species
 import arc.rmgdb as rmgdb
 from arc.common import convert_list_index_0_to_1, extremum_list, logger
 from arc.species import ARCSpecies
+from arc.species.conformers import determine_chirality
 from arc.species.converter import compare_confs, sort_xyz_using_indices, translate_xyz, xyz_from_data, xyz_to_str
 from arc.species.vectors import calculate_dihedral_angle, get_delta_angle
 
@@ -770,16 +771,23 @@ def fingerprint(spc: ARCSpecies,
         Dict[int, Dict[str, List[int]]]: Keys are indices of heavy atoms, values are dicts. keys are element symbols,
                                          values are indices of adjacent atoms corresponding to this element.
     """
-    adjacent_element_dict = dict()
+    fingerprint_dict  = dict()
+    chirality_dict = determine_chirality(conformers=[{'xyz': spc.get_xyz()}],
+                                         label=spc.label,
+                                         mol=spc.mol)[0]['chirality'] if consider_chirality else {}
     for i, atom_1 in enumerate(spc.mol.atoms):
         if atom_1.is_non_hydrogen():
-            adjacent_elements = {'self': atom_1.element.symbol}
+            atom_fingerprint = {'self': atom_1.element.symbol}
+            if consider_chirality:
+                for key, val in chirality_dict.items():
+                    if i in key:
+                        atom_fingerprint['chirality'] = val
             for atom_2 in atom_1.edges.keys():
-                if atom_2.element.symbol not in adjacent_elements.keys():
-                    adjacent_elements[atom_2.element.symbol] = list()
-                adjacent_elements[atom_2.element.symbol].append(spc.mol.atoms.index(atom_2))
-            adjacent_element_dict[i] = adjacent_elements
-    return adjacent_element_dict
+                if atom_2.element.symbol not in atom_fingerprint .keys():
+                    atom_fingerprint [atom_2.element.symbol] = list()
+                atom_fingerprint [atom_2.element.symbol].append(spc.mol.atoms.index(atom_2))
+            fingerprint_dict [i] = atom_fingerprint
+    return fingerprint_dict
 
 
 def identify_superimposable_candidates(fingerprint_1: Dict[int, Dict[str, Union[str, List[int]]]],
@@ -825,8 +833,10 @@ def are_adj_elements_in_agreement(fingerprint_1: Dict[str, Union[str, List[int]]
         return False
     if fingerprint_1['self'] != fingerprint_2['self']:
         return False
+    if fingerprint_1.get('chirality', 1) != fingerprint_2.get('chirality', 1):
+        return False
     for key, val in fingerprint_1.items():
-        if key != 'self' and (key not in fingerprint_2 or len(val) != len(fingerprint_2[key])):
+        if key != 'self' and key != 'chirality' and (key not in fingerprint_2 or len(val) != len(fingerprint_2[key])):
             return False
     return True
 
@@ -867,7 +877,7 @@ def iterative_dfs(fingerprint_1: Dict[int, Dict[str, List[int]]],
             continue
         result[key_1] = key_2
         for symbol in fingerprint_1[key_1].keys():
-            if symbol not in ['self', 'H']:
+            if symbol not in ['self', 'chirality', 'H']:
                 for combination_tuple in product(fingerprint_1[key_1][symbol], fingerprint_2[key_2][symbol]):
                     if combination_tuple[0] not in visited_1 and combination_tuple[1] not in visited_2:
                         stack_1.append(combination_tuple[0])
