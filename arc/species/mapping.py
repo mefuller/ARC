@@ -419,7 +419,7 @@ def map_arc_rmg_species(arc_reaction: 'ARCReaction',
                                      f'got {rmg_obj} which is a {type(rmg_obj)}.')
                 rmg_spc.generate_resonance_structures(save_order=True)
                 if rmg_spc.is_isomorphic(arc_spc.mol, save_order=True):
-                    if i in spc_map.keys() and concatenate:  # ** Todo: test
+                    if i in spc_map.keys() and concatenate:
                         spc_map[i].append(j)
                     elif concatenate:
                         spc_map[i] = [j]
@@ -496,7 +496,8 @@ def get_rmg_reactions_from_arc_reaction(arc_reaction: 'ARCReaction',
                                                               ):
             for rmg_mol, arc_spc in zip(ordered_rmg_mols, arc_species):
                 mol = arc_spc.copy().mol
-                atom_map = map_two_species(mol, rmg_mol, map_type='dict', backend=backend)
+                # The RMG molecule will get a random 3D conformer, don't consider chirality when mapping.
+                atom_map = map_two_species(mol, rmg_mol, map_type='dict', backend=backend, consider_chirality=False)
                 new_atoms_list = list()
                 for i in range(len(rmg_mol.atoms)):
                     rmg_mol.atoms[atom_map[i]].id = mol.atoms[i].id
@@ -511,6 +512,7 @@ def map_two_species(spc_1: Union[ARCSpecies, Species, Molecule],
                     spc_2: Union[ARCSpecies, Species, Molecule],
                     map_type: str = 'list',
                     backend: str = 'ARC',
+                    consider_chirality: bool = True,
                     allow_backend_shift: bool = True,
                     verbose: bool = False,
                     ) -> Optional[Union[List[int], Dict[int, int]]]:
@@ -527,6 +529,7 @@ def map_two_species(spc_1: Union[ARCSpecies, Species, Molecule],
         map_type (str, optional): Whether to return a 'list' or a 'dict' map type.
         backend (str, optional): Whether to use ``'QCElemental'`` or ``ARC``'s method as the backend.
         allow_backend_shift (bool, optional): Whether to try QCElemental's method if ARC'd method cannot identify candidates.
+        consider_chirality (bool, optional): Whether to consider chirality when fingerprinting.
         verbose (bool, optional): Whether to use logging.
 
     Returns:
@@ -570,8 +573,9 @@ def map_two_species(spc_1: Union[ARCSpecies, Species, Molecule],
             if verbose:
                 logger.warning(f'Could not map species {spc_1} and {spc_2}.')
             return None
-        adj_element_dict_1, adj_element_dict_2 = determine_adjacent_elements(spc_1), determine_adjacent_elements(spc_2)
-        candidates = identify_superimposable_candidates(adj_element_dict_1, adj_element_dict_2)
+        fingerprint_1 = fingerprint(spc_1, consider_chirality=consider_chirality)
+        fingerprint_2 = fingerprint(spc_2, consider_chirality=consider_chirality)
+        candidates = identify_superimposable_candidates(fingerprint_1, fingerprint_2)
         if not len(candidates):
             if allow_backend_shift:
                 backend = 'QCElemental'
@@ -752,12 +756,15 @@ def get_bonds_dict(spc: ARCSpecies) -> Dict[str, int]:
     return bond_dict
 
 
-def determine_adjacent_elements(spc: ARCSpecies) -> Dict[int, Dict[str, Union[str, List[int]]]]:
+def fingerprint(spc: ARCSpecies,
+                consider_chirality: bool = True
+                ) -> Dict[int, Dict[str, Union[str, List[int]]]]:
     """
     Determine the type and number of adjacent elements for each heavy atom in ``spc``.
 
     Args:
         spc (ARCSpecies): The input species.
+        consider_chirality (bool, optional): Whether to consider chirality when fingerprinting.
 
     Returns:
         Dict[int, Dict[str, List[int]]]: Keys are indices of heavy atoms, values are dicts. keys are element symbols,
@@ -775,32 +782,32 @@ def determine_adjacent_elements(spc: ARCSpecies) -> Dict[int, Dict[str, Union[st
     return adjacent_element_dict
 
 
-def identify_superimposable_candidates(adj_element_dict_1: Dict[int, Dict[str, Union[str, List[int]]]],
-                                       adj_element_dict_2: Dict[int, Dict[str, Union[str, List[int]]]],
+def identify_superimposable_candidates(fingerprint_1: Dict[int, Dict[str, Union[str, List[int]]]],
+                                       fingerprint_2: Dict[int, Dict[str, Union[str, List[int]]]],
                                        ) -> List[Dict[int, int]]:
     """
     Identify candidate ordering of heavy atoms (only) that could potentially be superimposed.
 
     Args:
-        adj_element_dict_1 (Dict[int, Dict[str, Union[str, List[int]]]]): Adjacent element dict for species 1.
-        adj_element_dict_2 (Dict[int, Dict[str, Union[str, List[int]]]]): Adjacent element dict for species 2.
+        fingerprint_1 (Dict[int, Dict[str, Union[str, List[int]]]]): Adjacent element dict for species 1.
+        fingerprint_2 (Dict[int, Dict[str, Union[str, List[int]]]]): Adjacent element dict for species 2.
 
     Returns:
         List[Dict[int, int]]: Entries are superimposable candidate dicts. Keys are atom indices of heavy atoms
                               of species 1, values are potentially mapped atom indices of species 2.
     """
     candidates = list()
-    for key_1, val_1 in adj_element_dict_1.items():
-        for key_2, val_2 in adj_element_dict_2.items():
+    for key_1, val_1 in fingerprint_1.items():
+        for key_2, val_2 in fingerprint_2.items():
             # Try all combinations of heavy atoms.
-            result = iterative_dfs(adj_element_dict_1, adj_element_dict_2, key_1, key_2)
+            result = iterative_dfs(fingerprint_1, fingerprint_2, key_1, key_2)
             if result:
                 candidates.append(result)
     return prune_identical_dicts(candidates)
 
 
-def are_adj_elements_in_agreement(adj_elements_1: Dict[str, Union[str, List[int]]],
-                                  adj_elements_2: Dict[str, Union[str, List[int]]],
+def are_adj_elements_in_agreement(fingerprint_1: Dict[str, Union[str, List[int]]],
+                                  fingerprint_2: Dict[str, Union[str, List[int]]],
                                   ) -> bool:
     """
     Check whether two dictionaries representing adjacent elements are in agreement
@@ -808,24 +815,24 @@ def are_adj_elements_in_agreement(adj_elements_1: Dict[str, Union[str, List[int]
     Also checks the identity of the parent ("self") element.
 
     Args:
-          adj_elements_1 (Dict[str, List[int]]): Adjacent elements dictionary 1.
-          adj_elements_2 (Dict[str, List[int]]): Adjacent elements dictionary 2.
+          fingerprint_1 (Dict[str, List[int]]): Adjacent elements dictionary 1.
+          fingerprint_2 (Dict[str, List[int]]): Adjacent elements dictionary 2.
 
     Returns:
         bool: ``True`` if the two dicts represent identical adjacent elements, ``False`` otherwise.
     """
-    if len(list(adj_elements_1.keys())) != len(list(adj_elements_2.keys())):
+    if len(list(fingerprint_1.keys())) != len(list(fingerprint_2.keys())):
         return False
-    if adj_elements_1['self'] != adj_elements_2['self']:
+    if fingerprint_1['self'] != fingerprint_2['self']:
         return False
-    for key, val in adj_elements_1.items():
-        if key != 'self' and (key not in adj_elements_2 or len(val) != len(adj_elements_2[key])):
+    for key, val in fingerprint_1.items():
+        if key != 'self' and (key not in fingerprint_2 or len(val) != len(fingerprint_2[key])):
             return False
     return True
 
 
-def iterative_dfs(adj_elements_1: Dict[int, Dict[str, List[int]]],
-                  adj_elements_2: Dict[int, Dict[str, List[int]]],
+def iterative_dfs(fingerprint_1: Dict[int, Dict[str, List[int]]],
+                  fingerprint_2: Dict[int, Dict[str, List[int]]],
                   key_1: int,
                   key_2: int,
                   ) -> Dict[int, int]:
@@ -835,8 +842,8 @@ def iterative_dfs(adj_elements_1: Dict[int, Dict[str, List[int]]],
     since it lacks Tail Recursion Elimination and because there is a limit of recursion stack depth (by default is 1000).
 
     Args:
-        adj_elements_1 (Dict[int, Dict[str, List[int]]]): Adjacent elements dictionary 1 (graph 1).
-        adj_elements_2 (Dict[int, Dict[str, List[int]]]): Adjacent elements dictionary 2 (graph 2).
+        fingerprint_1 (Dict[int, Dict[str, List[int]]]): Adjacent elements dictionary 1 (graph 1).
+        fingerprint_2 (Dict[int, Dict[str, List[int]]]): Adjacent elements dictionary 2 (graph 2).
         key_1 (int): The starting index for graph 1.
         key_2 (int): The starting index for graph 2.
 
@@ -856,12 +863,12 @@ def iterative_dfs(adj_elements_1: Dict[int, Dict[str, List[int]]],
             continue
         visited_1.append(key_1)
         visited_2.append(key_2)
-        if not are_adj_elements_in_agreement(adj_elements_1[key_1], adj_elements_2[key_2]):
+        if not are_adj_elements_in_agreement(fingerprint_1[key_1], fingerprint_2[key_2]):
             continue
         result[key_1] = key_2
-        for symbol in adj_elements_1[key_1].keys():
+        for symbol in fingerprint_1[key_1].keys():
             if symbol not in ['self', 'H']:
-                for combination_tuple in product(adj_elements_1[key_1][symbol], adj_elements_2[key_2][symbol]):
+                for combination_tuple in product(fingerprint_1[key_1][symbol], fingerprint_2[key_2][symbol]):
                     if combination_tuple[0] not in visited_1 and combination_tuple[1] not in visited_2:
                         stack_1.append(combination_tuple[0])
                         stack_2.append(combination_tuple[1])
