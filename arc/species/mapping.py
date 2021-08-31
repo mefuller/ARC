@@ -36,6 +36,7 @@ if TYPE_CHECKING:
 
 
 def map_reaction(rxn: 'ARCReaction',
+                 backend: str = 'ARC',
                  db: Optional['RMGDatabase'] = None,
                  ) -> Optional[List[int]]:
     """
@@ -43,6 +44,7 @@ def map_reaction(rxn: 'ARCReaction',
 
     Args:
         rxn (ARCReaction): An ARCReaction object instance.
+        backend (str, optional): Whether to use ``'QCElemental'`` or ``ARC``'s method as the backend.
         db (RMGDatabase, optional): The RMG database instance.
 
     Returns:
@@ -53,7 +55,7 @@ def map_reaction(rxn: 'ARCReaction',
     if rxn.family is None:
         rmgdb.determine_family(reaction=rxn, db=db)
     if rxn.family is None:
-        return map_general_rxn(rxn)
+        return map_general_rxn(rxn, backend=backend)
 
     fam_func_dict = {'H_Abstraction': map_h_abstraction,
                      'HO2_Elimination_from_PeroxyRadical': map_ho2_elimination_from_peroxy_radical,
@@ -65,10 +67,11 @@ def map_reaction(rxn: 'ARCReaction',
 
     map_func = fam_func_dict.get(rxn.family.label, map_general_rxn)
 
-    return map_func(rxn, db)
+    return map_func(rxn, backend=backend, db=db)
 
 
 def map_general_rxn(rxn: 'ARCReaction',
+                    backend: str = 'ARC',
                     db: Optional['RMGDatabase'] = None,
                     ) -> Optional[List[int]]:
     """
@@ -77,6 +80,7 @@ def map_general_rxn(rxn: 'ARCReaction',
 
     Args:
         rxn (ARCReaction): An ARCReaction object instance.
+        backend (str, optional): Whether to use ``'QCElemental'`` or ``ARC``'s method as the backend.
         db (RMGDatabase, optional): The RMG database instance.
 
     Returns:
@@ -85,7 +89,7 @@ def map_general_rxn(rxn: 'ARCReaction',
             corresponding entry values are running atom indices of the products.
     """
     if rxn.is_isomerization():
-        return map_two_species(rxn.r_species[0], rxn.p_species[0], map_type='list')
+        return map_two_species(rxn.r_species[0], rxn.p_species[0], map_type='list', backend=backend)
 
     qcmol_1 = create_qc_mol(species=[spc.copy() for spc in rxn.r_species],
                             charge=rxn.charge,
@@ -106,6 +110,7 @@ def map_general_rxn(rxn: 'ARCReaction',
 
 
 def map_h_abstraction(rxn: 'ARCReaction',
+                      backend: str = 'ARC',
                       db: Optional['RMGDatabase'] = None,
                       ) -> Optional[List[int]]:
     """
@@ -115,6 +120,7 @@ def map_h_abstraction(rxn: 'ARCReaction',
 
     Args:
         rxn (ARCReaction): An ARCReaction object instance that belongs to the RMG H_Abstraction reaction family.
+        backend (str, optional): Whether to use ``'QCElemental'`` or ``ARC``'s method as the backend.
         db (RMGDatabase, optional): The RMG database instance.
 
     Returns:
@@ -156,8 +162,8 @@ def map_h_abstraction(rxn: 'ARCReaction',
     spc_r3_h2_cuts = spc_r3_h2.scissors()
     spc_r3_h2_cut = [spc for spc in spc_r3_h2_cuts if spc.label != 'H'][0] \
         if any(spc.label != 'H' for spc in spc_r3_h2_cuts) else spc_r3_h2_cuts[0]  # Treat H2 as well :)
-    map_1 = map_two_species(spc_r1_h2_cut, rxn.p_species[r1])
-    map_2 = map_two_species(rxn.r_species[r3], spc_r3_h2_cut)
+    map_1 = map_two_species(spc_r1_h2_cut, rxn.p_species[r1], backend=backend)
+    map_2 = map_two_species(rxn.r_species[r3], spc_r3_h2_cut, backend=backend)
 
     result = {r_h_index: p_h_index}
     for r_increment, p_increment, map_i, j in zip([r1_h2 * len_r1, r3 * len_r1],
@@ -172,6 +178,7 @@ def map_h_abstraction(rxn: 'ARCReaction',
 
 
 def map_ho2_elimination_from_peroxy_radical(rxn: 'ARCReaction',
+                                            backend: str = 'ARC',
                                             db: Optional['RMGDatabase'] = None,
                                             ) -> Optional[List[int]]:
     """
@@ -181,6 +188,7 @@ def map_ho2_elimination_from_peroxy_radical(rxn: 'ARCReaction',
 
     Args:
         rxn (ARCReaction): An ARCReaction object instance that belongs to the RMG H_Abstraction reaction family.
+        backend (str, optional): Whether to use ``'QCElemental'`` or ``ARC``'s method as the backend.
         db (RMGDatabase, optional): The RMG database instance.
 
     Returns:
@@ -222,7 +230,7 @@ def map_ho2_elimination_from_peroxy_radical(rxn: 'ARCReaction',
         # Different dihedral angles in the reactant and product will make mapping H atoms hard.
         # Fix dihedrals between 4 heavy atom sequences.
         spc_r_mod.determine_rotors()
-        map_1 = map_two_species(spc_r_mod, rxn.p_species[r1dr2])
+        map_1 = map_two_species(spc_r_mod, rxn.p_species[r1dr2], backend=backend)
         if spc_r_mod.rotors_dict is not None:
             for rotor in spc_r_mod.rotors_dict.values():
                 torsion = rotor['torsion']
@@ -232,7 +240,7 @@ def map_ho2_elimination_from_peroxy_radical(rxn: 'ARCReaction',
                                                                             torsion=[map_1[t] for t in torsion]),
                                            chk_rotor_list=False)
                     spc_r_mod.final_xyz = spc_r_mod.initial_xyz
-        map_2 = map_two_species(spc_r_mod, rxn.p_species[r1dr2])
+        map_2 = map_two_species(spc_r_mod, rxn.p_species[r1dr2], backend=backend)
         new_map, added_ho2_atoms = list(), list()
         star_map = {r_o3_index: '*3', r_o4_index: '*4', r_h5_index: '*5'}
         for i, entry in enumerate(map_2):
@@ -248,6 +256,7 @@ def map_ho2_elimination_from_peroxy_radical(rxn: 'ARCReaction',
 
 
 def map_intra_h_migration(rxn: 'ARCReaction',
+                          backend: str = 'ARC',
                           db: Optional['RMGDatabase'] = None,
                           ) -> Optional[List[int]]:
     """
@@ -257,6 +266,7 @@ def map_intra_h_migration(rxn: 'ARCReaction',
 
     Args:
         rxn (ARCReaction): An ARCReaction object instance that belongs to the RMG H_Abstraction reaction family.
+        backend (str, optional): Whether to use ``'QCElemental'`` or ``ARC``'s method as the backend.
         db (RMGDatabase, optional): The RMG database instance.
 
     Returns:
@@ -288,7 +298,7 @@ def map_intra_h_migration(rxn: 'ARCReaction',
                        )
     spc_p.final_xyz = spc_p.get_xyz()  # Scissors require the .final_xyz attribute to be populated.
     spc_p_dot = [spc for spc in spc_p.scissors() if spc.label != 'H'][0]
-    map_ = map_two_species(spc_r_dot, spc_p_dot)
+    map_ = map_two_species(spc_r_dot, spc_p_dot, backend=backend)
 
     new_map = list()
     for i, entry in enumerate(map_):
@@ -448,6 +458,7 @@ def find_equivalent_atoms_in_reactants(arc_reaction: 'ARCReaction') -> Optional[
 
 
 def _get_rmg_reactions_from_arc_reaction(arc_reaction: 'ARCReaction',
+                                         backend: str = 'ARC',
                                          db: Optional['RMGDatabase'] = None,
                                          ) -> Optional[List['TemplateReaction']]:
     """
@@ -457,6 +468,7 @@ def _get_rmg_reactions_from_arc_reaction(arc_reaction: 'ARCReaction',
 
     Args:
         arc_reaction (ARCReaction): The ARCReaction object instance.
+        backend (str, optional): Whether to use ``'QCElemental'`` or ``ARC``'s method as the backend.
         db (RMGDatabase, optional): The RMG database instance.
 
     Returns:
@@ -484,7 +496,7 @@ def _get_rmg_reactions_from_arc_reaction(arc_reaction: 'ARCReaction',
                                                               ):
             for rmg_mol, arc_spc in zip(ordered_rmg_mols, arc_species):
                 mol = arc_spc.copy().mol
-                atom_map = map_two_species(mol, rmg_mol, map_type='dict')
+                atom_map = map_two_species(mol, rmg_mol, map_type='dict', backend=backend)
                 new_atoms_list = list()
                 for i in range(len(rmg_mol.atoms)):
                     rmg_mol.atoms[atom_map[i]].id = mol.atoms[i].id
@@ -498,7 +510,8 @@ def _get_rmg_reactions_from_arc_reaction(arc_reaction: 'ARCReaction',
 def map_two_species(spc_1: Union[ARCSpecies, Species, Molecule],
                     spc_2: Union[ARCSpecies, Species, Molecule],
                     map_type: str = 'list',
-                    backend: str = 'RMSD',
+                    backend: str = 'ARC',
+                    allow_backend_shift: bool = True,
                     verbose: bool = False,
                     ) -> Optional[Union[List[int], Dict[int, int]]]:
     """
@@ -512,7 +525,8 @@ def map_two_species(spc_1: Union[ARCSpecies, Species, Molecule],
         spc_1 (Union[ARCSpecies, Species, Molecule]): Species 1.
         spc_2 (Union[ARCSpecies, Species, Molecule]): Species 2.
         map_type (str, optional): Whether to return a 'list' or a 'dict' map type.
-        backend (str, optional): Whether to use ``'QCElemental'`` or ARC's ``'RMSD'`` method as the backend.
+        backend (str, optional): Whether to use ``'QCElemental'`` or ``ARC``'s method as the backend.
+        allow_backend_shift (bool, optional): Whether to try QCElemental's method if ARC'd method cannot identify candidates.
         verbose (bool, optional): Whether to use logging.
 
     Returns:
@@ -548,10 +562,10 @@ def map_two_species(spc_1: Union[ARCSpecies, Species, Molecule],
             atom_map = [v for k, v in sorted(atom_map.items(), key=lambda item: item[0])]
         return atom_map
 
-    if backend.lower() not in ['qcelemental', 'rmsd']:
-        raise ValueError(f'The backend method could be either "QCElemental" or "RMSD", got {backend}.')
+    if backend.lower() not in ['qcelemental', 'arc']:
+        raise ValueError(f'The backend method could be either "QCElemental" or "ARC", got {backend}.')
     atom_map = None
-    if backend.lower() == 'rmsd':
+    if backend.lower() == 'arc':
         if not check_species_before_mapping(spc_1, spc_2, verbose=verbose):
             if verbose:
                 logger.warning(f'Could not map species {spc_1} and {spc_2}.')
@@ -559,7 +573,10 @@ def map_two_species(spc_1: Union[ARCSpecies, Species, Molecule],
         adj_element_dict_1, adj_element_dict_2 = determine_adjacent_elements(spc_1), determine_adjacent_elements(spc_2)
         candidates = identify_superimposable_candidates(adj_element_dict_1, adj_element_dict_2)
         if not len(candidates):
-            backend = 'QCElemental'
+            if allow_backend_shift:
+                backend = 'QCElemental'
+            else:
+                return None
         else:
             rmsds, fixed_spcs = list(), list()
             for candidate in candidates:
