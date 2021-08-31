@@ -92,6 +92,7 @@ def map_general_rxn(rxn: 'ARCReaction',
     if rxn.is_isomerization():
         return map_two_species(rxn.r_species[0], rxn.p_species[0], map_type='list', backend=backend)
 
+    # If the reaction is not a known RMG template and is not isomerization, use fragments via the QCElemental backend.
     qcmol_1 = create_qc_mol(species=[spc.copy() for spc in rxn.r_species],
                             charge=rxn.charge,
                             multiplicity=rxn.multiplicity,
@@ -132,7 +133,7 @@ def map_h_abstraction(rxn: 'ARCReaction',
     if not check_family_for_mapping_function(rxn=rxn, db=db, family='H_Abstraction'):
         return None
 
-    rmg_reactions = get_rmg_reactions_from_arc_reaction(arc_reaction=rxn)
+    rmg_reactions = get_rmg_reactions_from_arc_reaction(arc_reaction=rxn, backend=backend)
     r_label_dict, p_label_dict = get_atom_indices_of_labeled_atoms_in_an_rmg_reaction(arc_reaction=rxn,
                                                                                       rmg_reaction=rmg_reactions[0])
     r_h_index = r_label_dict['*2']
@@ -200,7 +201,7 @@ def map_ho2_elimination_from_peroxy_radical(rxn: 'ARCReaction',
     if not check_family_for_mapping_function(rxn=rxn, db=db, family='HO2_Elimination_from_PeroxyRadical'):
         return None
 
-    rmg_reactions = get_rmg_reactions_from_arc_reaction(arc_reaction=rxn)
+    rmg_reactions = get_rmg_reactions_from_arc_reaction(arc_reaction=rxn, backend=backend)
     r_label_dict, p_label_dict = get_atom_indices_of_labeled_atoms_in_an_rmg_reaction(arc_reaction=rxn,
                                                                                       rmg_reaction=rmg_reactions[0])
 
@@ -278,7 +279,7 @@ def map_intra_h_migration(rxn: 'ARCReaction',
     if not check_family_for_mapping_function(rxn=rxn, db=db, family='intra_H_migration'):
         return None
 
-    rmg_reactions = get_rmg_reactions_from_arc_reaction(arc_reaction=rxn)
+    rmg_reactions = get_rmg_reactions_from_arc_reaction(arc_reaction=rxn, backend=backend)
     r_label_dict, p_label_dict = get_atom_indices_of_labeled_atoms_in_an_rmg_reaction(arc_reaction=rxn,
                                                                                       rmg_reaction=rmg_reactions[0])
 
@@ -430,7 +431,9 @@ def map_arc_rmg_species(arc_reaction: 'ARCReaction',
     return r_map, p_map
 
 
-def find_equivalent_atoms_in_reactants(arc_reaction: 'ARCReaction') -> Optional[List[List[int]]]:
+def find_equivalent_atoms_in_reactants(arc_reaction: 'ARCReaction',
+                                       backend: str = 'ARC',
+                                       ) -> Optional[List[List[int]]]:
     """
     Find atom indices that are equivalent in the reactants of an ARCReaction
     in the sense that they represent degenerate reaction sites that are indifferentiable in 2D.
@@ -439,11 +442,12 @@ def find_equivalent_atoms_in_reactants(arc_reaction: 'ARCReaction') -> Optional[
 
     Args:
         arc_reaction ('ARCReaction'): The ARCReaction object instance.
+        backend (str, optional): Whether to use ``'QCElemental'`` or ``ARC``'s method as the backend.
 
     Returns:
         Optional[List[List[int]]]: Entries are lists of 0-indices, each such list represents equivalent atoms.
     """
-    rmg_reactions = get_rmg_reactions_from_arc_reaction(arc_reaction)
+    rmg_reactions = get_rmg_reactions_from_arc_reaction(arc_reaction, backend=backend)
     dicts = [get_atom_indices_of_labeled_atoms_in_an_rmg_reaction(rmg_reaction=rmg_reaction,
                                                                   arc_reaction=arc_reaction)[0]
              for rmg_reaction in rmg_reactions]
@@ -569,6 +573,7 @@ def map_two_species(spc_1: Union[ARCSpecies, Species, Molecule],
     if backend.lower() not in ['qcelemental', 'arc']:
         raise ValueError(f'The backend method could be either "QCElemental" or "ARC", got {backend}.')
     atom_map = None
+
     if backend.lower() == 'arc':
         if not check_species_before_mapping(spc_1, spc_2, verbose=verbose):
             if verbose:
@@ -603,6 +608,7 @@ def map_two_species(spc_1: Union[ARCSpecies, Species, Molecule],
             atom_map = map_hydrogens(fixed_spc_1, fixed_spc_2, candidate)
             if map_type == 'list':
                 atom_map = [v for k, v in sorted(atom_map.items(), key=lambda item: item[0])]
+
     if backend.lower() == 'qcelemental':
         qcmol_1 = create_qc_mol(species=spc_1.copy())
         qcmol_2 = create_qc_mol(species=spc_2.copy())
@@ -761,7 +767,10 @@ def fingerprint(spc: ARCSpecies,
                 consider_chirality: bool = True
                 ) -> Dict[int, Dict[str, Union[str, List[int]]]]:
     """
-    Determine the type and number of adjacent elements for each heavy atom in ``spc``.
+    Determine the species fingerprint.
+    For any heavy atom in the ``spc`` its element (``self``) will be determined,
+    the element types and numbers of adjacent atoms are determined,
+    and any chirality information will be determined if relevant.
 
     Args:
         spc (ARCSpecies): The input species.
@@ -771,7 +780,7 @@ def fingerprint(spc: ARCSpecies,
         Dict[int, Dict[str, List[int]]]: Keys are indices of heavy atoms, values are dicts. keys are element symbols,
                                          values are indices of adjacent atoms corresponding to this element.
     """
-    fingerprint_dict  = dict()
+    fingerprint_dict = dict()
     chirality_dict = determine_chirality(conformers=[{'xyz': spc.get_xyz()}],
                                          label=spc.label,
                                          mol=spc.mol)[0]['chirality'] if consider_chirality else {}
