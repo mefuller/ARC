@@ -288,6 +288,19 @@ class TestMapping(unittest.TestCase):
                                                                H                  1.08507962    0.50862787    3.06769089
                                                                S                  2.94420440    0.05748035    1.01655601
                                                                H                  3.58498087    0.48585096    2.07580298""")
+        cls.chiral_spc_1_b = ARCSpecies(label='chiral_1b', xyz="""C                 -0.81825240   -0.04911020   -0.14065159
+                                                                  S                  2.94420440    0.05748035    1.01655601
+                                                                  H                 -1.34163466   -0.39900096   -1.00583797
+                                                                  N                  0.59593728    0.18162740    2.25910542
+                                                                  H                  0.58607755   -0.81832221    2.25721751
+                                                                  H                  1.05130979   -0.01818286   -1.10776676
+                                                                  O                 -1.52975971    0.19395459    1.07572699
+                                                                  H                 -2.43039815    0.45695722    0.87255216
+                                                                  C                  0.51892324    0.16369053   -0.19760928
+                                                                  C                  1.27220245    0.66727126    1.04761235
+                                                                  H                  1.28275235    1.73721734    1.04963240
+                                                                  H                  1.08507962    0.50862787    3.06769089
+                                                                  H                  3.58498087    0.48585096    2.07580298""")  # same as chiral_spc_1, different atom order
         cls.chiral_spc_2 = ARCSpecies(label='chiral_2', xyz="""C                 -0.87981815   -0.20807053    0.19322984
                                                                C                  0.42332778    0.13088820    0.03998264
                                                                H                  0.86277627    0.13934039   -0.93557545
@@ -354,8 +367,7 @@ class TestMapping(unittest.TestCase):
         self.assertTrue(any(atom_map[r_index] in [4, 5] for r_index in [1, 2, 3, 4]))
         self.assertIn(atom_map[5], [4, 5])
 
-
-        # # H + CH4 <=> H2 + CH3 using QCElemental as the backend.
+        # H + CH4 <=> H2 + CH3 using QCElemental as the backend.
         rxn = ARCReaction(r_species=[r_1, r_2], p_species=[p_1, p_2])
         atom_map = mapping.map_h_abstraction(rxn=rxn, db=self.rmgdb, backend='QCElemental')
         self.assertIn(atom_map[0], [0, 1])
@@ -581,7 +593,7 @@ class TestMapping(unittest.TestCase):
                      H      -1.37296018   -1.18147301   -0.62077856
                      H      -0.92437032    1.60768040    0.35200716
                      H       2.49347824   -0.13648710   -0.59717108
-                     H       2.18431385   -0.69791121    1.15515621"""  # NC=C=C
+                     H       2.18431385   -0.69791121    1.15515621"""  # NC=C=C  # Todo: unused
         ho2_xyz = """O      -0.18935000    0.42639000    0.00000000
                      O       1.07669000   -0.17591000    0.00000000
                      H      -0.88668000   -0.25075000    0.00000000"""  # O[O]
@@ -615,7 +627,7 @@ class TestMapping(unittest.TestCase):
     def test_get_atom_indices_of_labeled_atoms_in_an_rmg_reaction(self):
         """Test the get_atom_indices_of_labeled_atoms_in_an_rmg_reaction() function."""
         determine_family(self.arc_reaction_1)
-        rmg_reactions = mapping._get_rmg_reactions_from_arc_reaction(arc_reaction=self.arc_reaction_1, db=self.rmgdb)
+        rmg_reactions = mapping.get_rmg_reactions_from_arc_reaction(arc_reaction=self.arc_reaction_1, db=self.rmgdb)
         r_dict, p_dict = mapping.get_atom_indices_of_labeled_atoms_in_an_rmg_reaction(arc_reaction=self.arc_reaction_1,
                                                                                       rmg_reaction=rmg_reactions[0])
         self.assertEqual(r_dict['*1'], 0)
@@ -626,7 +638,7 @@ class TestMapping(unittest.TestCase):
         self.assertEqual(p_dict['*3'], 4)
 
         determine_family(self.arc_reaction_2)
-        rmg_reactions = mapping._get_rmg_reactions_from_arc_reaction(arc_reaction=self.arc_reaction_2, db=self.rmgdb)
+        rmg_reactions = mapping.get_rmg_reactions_from_arc_reaction(arc_reaction=self.arc_reaction_2, db=self.rmgdb)
         r_dict, p_dict = mapping.get_atom_indices_of_labeled_atoms_in_an_rmg_reaction(arc_reaction=self.arc_reaction_2,
                                                                                       rmg_reaction=rmg_reactions[0])
         self.assertIn(r_dict['*1'], [0, 2])
@@ -637,7 +649,7 @@ class TestMapping(unittest.TestCase):
         self.assertEqual(p_dict['*3'], 10)
 
         determine_family(self.arc_reaction_4)
-        rmg_reactions = mapping._get_rmg_reactions_from_arc_reaction(arc_reaction=self.arc_reaction_4, db=self.rmgdb)
+        rmg_reactions = mapping.get_rmg_reactions_from_arc_reaction(arc_reaction=self.arc_reaction_4, db=self.rmgdb)
         r_dict, p_dict = mapping.get_atom_indices_of_labeled_atoms_in_an_rmg_reaction(arc_reaction=self.arc_reaction_4,
                                                                                       rmg_reaction=rmg_reactions[0])
         self.assertEqual(r_dict['*1'], 0)
@@ -656,7 +668,7 @@ class TestMapping(unittest.TestCase):
         self.assertEqual(self.rxn_2a.p_species[0].mol.atoms[0].radical_electrons, 0)
         self.assertEqual(self.rxn_2a.p_species[0].mol.atoms[1].radical_electrons, 0)
         self.assertEqual(self.rxn_2a.p_species[0].mol.atoms[2].radical_electrons, 1)
-        rmg_reactions = mapping._get_rmg_reactions_from_arc_reaction(arc_reaction=self.rxn_2a, db=self.rmgdb)
+        rmg_reactions = mapping.get_rmg_reactions_from_arc_reaction(arc_reaction=self.rxn_2a, db=self.rmgdb)
         r_dict, p_dict = mapping.get_atom_indices_of_labeled_atoms_in_an_rmg_reaction(arc_reaction=self.rxn_2a,
                                                                                       rmg_reaction=rmg_reactions[0])
         self.assertEqual(r_dict['*1'], 1)
@@ -669,7 +681,7 @@ class TestMapping(unittest.TestCase):
         determine_family(self.rxn_2b)
         for atom, symbol in zip(self.rxn_2b.r_species[0].mol.atoms, ['C', 'C', 'H', 'H', 'H', 'H', 'C', 'H', 'H', 'H']):
             self.assertEqual(atom.symbol, symbol)
-        rmg_reactions = mapping._get_rmg_reactions_from_arc_reaction(arc_reaction=self.rxn_2b, db=self.rmgdb)
+        rmg_reactions = mapping.get_rmg_reactions_from_arc_reaction(arc_reaction=self.rxn_2b, db=self.rmgdb)
         r_dict, p_dict = mapping.get_atom_indices_of_labeled_atoms_in_an_rmg_reaction(arc_reaction=self.rxn_2b,
                                                                                       rmg_reaction=rmg_reactions[0])
         self.assertEqual(r_dict['*1'], 1)
@@ -687,7 +699,7 @@ class TestMapping(unittest.TestCase):
         rxn_1 = ARCReaction(reactants=['C3H6O', 'C4H9O'], products=['C3H5O', 'C4H10O'],
                             r_species=[r_1, r_2], p_species=[p_1, p_2])
         determine_family(rxn_1)
-        rmg_reactions = mapping._get_rmg_reactions_from_arc_reaction(arc_reaction=rxn_1, db=self.rmgdb)
+        rmg_reactions = mapping.get_rmg_reactions_from_arc_reaction(arc_reaction=rxn_1, db=self.rmgdb)
         for rmg_reaction in rmg_reactions:
             r_dict, p_dict = mapping.get_atom_indices_of_labeled_atoms_in_an_rmg_reaction(arc_reaction=rxn_1,
                                                                                           rmg_reaction=rmg_reaction)
@@ -701,7 +713,7 @@ class TestMapping(unittest.TestCase):
         rxn_2 = ARCReaction(reactants=['C3H6O', 'C4H9O'], products=['C3H5O', 'C4H10O'],
                             r_species=[r_1, r_2], p_species=[p_1, p_2])
         determine_family(rxn_2)
-        rmg_reactions = mapping._get_rmg_reactions_from_arc_reaction(arc_reaction=rxn_2, db=self.rmgdb)
+        rmg_reactions = mapping.get_rmg_reactions_from_arc_reaction(arc_reaction=rxn_2, db=self.rmgdb)
         for rmg_reaction in rmg_reactions:
             r_dict, p_dict = mapping.get_atom_indices_of_labeled_atoms_in_an_rmg_reaction(arc_reaction=rxn_2,
                                                                                           rmg_reaction=rmg_reaction)
@@ -719,7 +731,7 @@ class TestMapping(unittest.TestCase):
         rxn_3 = ARCReaction(reactants=['C3H6O', 'C4H9O'], products=['C3H5O', 'C4H10O'],
                             r_species=[r_1, r_2], p_species=[p_1, p_2])
         determine_family(rxn_3)
-        rmg_reactions = mapping._get_rmg_reactions_from_arc_reaction(arc_reaction=rxn_3, db=self.rmgdb)
+        rmg_reactions = mapping.get_rmg_reactions_from_arc_reaction(arc_reaction=rxn_3, db=self.rmgdb)
         r_dict, p_dict = mapping.get_atom_indices_of_labeled_atoms_in_an_rmg_reaction(arc_reaction=rxn_3,
                                                                                       rmg_reaction=rmg_reactions[0])
         self.assertEqual(r_dict, {'*3': 10, '*1': 1, '*2': 7})
@@ -914,12 +926,17 @@ class TestMapping(unittest.TestCase):
         for index in [1, 2]:
             self.assertIn(atom_map[index], [5, 6])  # H's on terminal CH2
         self.assertEqual(atom_map[3:7], [1, 2, 3, 4])  # part of the backbone
-        self.assertEqual(atom_map[7], 7) # H on tertiary C
-        for index in [8, 9, 10]:  # 11?
+        self.assertEqual(atom_map[7], 7)  # H on tertiary C
+        for index in [8, 9, 10]:
             self.assertIn(atom_map[index], [8, 9, 10])  # H's on CH3
         for index in [11, 12]:
             self.assertIn(atom_map[index], [11, 12])  # H's on internal CH2
         self.assertEqual(atom_map[13], 13)  # H on O atom
+
+        # Multiple chiral centers
+        atom_map = mapping.map_two_species(self.chiral_spc_1, self.chiral_spc_1_b)
+        print(atom_map)
+        self.assertEqual(atom_map, [])
 
         # Different resonance structures.
         atom_map = mapping.map_two_species(self.cccoj, self.ccjco)
@@ -928,8 +945,6 @@ class TestMapping(unittest.TestCase):
             self.assertIn(atom_map[index], [5, 6, 7])
         self.assertEqual(atom_map[7], 2)
         self.assertEqual(atom_map[8], 8)
-
-        # todo: add tests: C=C
 
     def test_get_arc_species(self):
         """Test the get_arc_species function."""
@@ -1029,7 +1044,7 @@ class TestMapping(unittest.TestCase):
         self.assertFalse(mapping.are_adj_elements_in_agreement({'self': 'C', 'C': [3]},
                                                                {'self': 'C', 'O': [3]}))
         self.assertFalse(mapping.are_adj_elements_in_agreement({'self': 'C', 'C': [3]},
-                                                              {'self': 'O', 'C': [3]}))
+                                                               {'self': 'O', 'C': [3]}))
         self.assertTrue(mapping.are_adj_elements_in_agreement({'self': 'C', 'C': [3]},
                                                               {'self': 'C', 'C': [2]}))
         self.assertTrue(mapping.are_adj_elements_in_agreement({'self': 'C', 'C': [1], 'O': [4], 'H': [8]},
@@ -1129,7 +1144,7 @@ class TestMapping(unittest.TestCase):
 
     def test_map_hydrogens(self):
         """Test the map_hydrogens function."""
-        # Todo: add many tests with many tyoes of torsions.... and non-torsions, mult bonds, cyclics
+        # Todo: add many tests with many types of torsions.... and non-torsions, mult bonds, cyclics
         # CH4 different order
         spc1 = ARCSpecies(label='CH4', smiles='C', xyz=self.ch4_xyz)
         spc2 = ARCSpecies(label='CH4', smiles='C', xyz=self.ch4_xyz_diff_order)
