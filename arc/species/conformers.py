@@ -118,7 +118,7 @@ def generate_conformers(mol_list: Union[List[Molecule], Molecule],
                         return_all_conformers=False,
                         plot_path=None,
                         print_logs=True,
-                        ) -> Union[list, Tuple[list, list], None]:
+                        ) -> Optional[Union[list, Tuple[list, list]]]:
     """
     Generate conformers for (non-TS) species starting from a list of RMG Molecules.
     (resonance structures are assumed to have already been generated and included in the molecule list)
@@ -155,8 +155,9 @@ def generate_conformers(mol_list: Union[List[Molecule], Molecule],
         ConformerError: If something goes wrong.
         TypeError: If xyzs has entries of a wrong type.
 
-    Returns:
-        list: Lowest conformers.
+    Returns: Optional[Union[list, Tuple[list, list]]]
+        - Lowest conformers
+        - Lowest conformers and all new conformers.
     """
     if isinstance(mol_list, Molecule):
         # try generating resonance structures, but strictly keep atom order
