@@ -245,7 +245,7 @@ class ARCReaction(object):
         self.charge = reaction_dict['charge'] if 'charge' in reaction_dict else 0
         self.reactants = reaction_dict['reactants'] if 'reactants' in reaction_dict else None
         self.products = reaction_dict['products'] if 'products' in reaction_dict else None
-        if 'family' in reaction_dict:
+        if 'family' in reaction_dict and reaction_dict['family'] is not None:
             db = rmgdb.make_rmg_database_object()
             rmgdb.load_families_only(db)
             self.family = rmgdb.get_family(rmgdb=db, label=reaction_dict['family'])
