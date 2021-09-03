@@ -1674,6 +1674,16 @@ H       2.82319256   -0.46240839   -0.40178723"""
         for atom, symbol in zip(spc6.mol.atoms, ['C', 'C', 'H', 'H', 'H', 'H', 'C', 'H', 'H', 'H']):
             self.assertEqual(atom.symbol, symbol)
 
+        xyz7 = {'coords': ((0.02724478716956233, 0.6093829407458188, 0.0),
+                           (-1.3946381818031768, -0.24294788636871906, 0.0),
+                           (1.3673933946336125, -0.36643505437710233, 0.0)),
+                'isotopes': (32, 16, 16), 'symbols': ('S', 'O', 'O')}
+        spc7 = ARCSpecies(label='SO2', smiles='[O][S]=O', xyz=xyz7)
+        for atom, symbol in zip(spc7.mol.atoms, spc7.get_xyz()['symbols']):
+            self.assertEqual(atom.symbol, symbol)
+        for atom, symbol in zip(spc7.mol.atoms, ['S', 'O', 'O']):
+            self.assertEqual(atom.symbol, symbol)
+
     def test_get_radius(self):
         """Test determining the species radius"""
         spc1 = ARCSpecies(label='r1', smiles='O=C=O')
