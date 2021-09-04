@@ -29,6 +29,8 @@ def parse_command_line_arguments(command_line_args=None):
     parser = argparse.ArgumentParser(description='OpenBabel')
     parser.add_argument('file', metavar='FILE', type=str, nargs=1,
                         help='a YAML input file describing the job to execute')
+    parser.add_argument('num', metavar='OUTPUT NUM', type=str, nargs=1,
+                        help='an identifier for the output number')
 
     args = parser.parse_args(command_line_args)
 
@@ -44,15 +46,15 @@ def main():
     """
     # Parse command-line arguments
     args = parse_command_line_arguments()
+    input_file = args.file
+    output_num = args.num
 
     function_dict = {'openbabel_force_field_on_rdkit_conformers': openbabel_force_field_on_rdkit_conformers,
-                     'mix_rdkit_and_openbabel_force_field': mix_rdkit_and_openbabel_force_field,
                      'openbabel_force_field': openbabel_force_field,
                      }
 
     # Execute.
     try:
-        input_file = args.file
         input_dict = read_yaml_file(path=input_file)
         function = function_dict[input_dict['function']]
         xyzs, energies = function(**input_dict)
@@ -61,7 +63,7 @@ def main():
 
     # Process output.
 
-    output_path = os.path.join(os.path.abspath(os.path.dirname(os.path.dirname(__file__))), 'results.yml')
+    output_path = os.path.join(os.path.abspath(os.path.dirname(os.path.dirname(__file__))), f'output_{output_num}.yml')
     save_yaml_file(path=output_path, content={'xyzs': xyzs, 'energies': energies})
 
 
@@ -119,64 +121,6 @@ def openbabel_force_field_on_rdkit_conformers(label: str,
         energies.append(ff.Energy())
         xyz_str = '\n'.join(obconversion.WriteString(ob_mol).splitlines()[2:])
         xyzs.append(str_to_xyz(xyz_str))
-    return xyzs, energies
-
-
-def mix_rdkit_and_openbabel_force_field(label,
-                                        mol_dict,
-                                        num_confs=None,
-                                        xyz=None,
-                                        force_field='GAFF',
-                                        try_ob=False,
-                                        ) -> Tuple[list, list]:
-    """
-    Optimize conformers using a force field (GAFF, MMFF94s, MMFF94, UFF, Ghemical)
-    Use RDKit to generate the random conformers (OpenBabel isn't good enough),
-    but use OpenBabel to optimize them (RDKit doesn't have GAFF).
-
-    Args:
-        label (str): The species' label.
-        mol_dict (dict): A dict representation of an RMG molecule object with connectivity and bond order information.
-        num_confs (int, optional): The number of random 3D conformations to generate.
-        xyz (string or list, optional): The 3D coordinates in either a string or an array format.
-        force_field (str, optional): The type of force field to use.
-        try_ob (bool, optional): Whether to try OpenBabel if RDKit fails. ``True`` to try, ``False`` by default.
-
-    Returns:
-        Tuple[list, list]:
-            - Entries are optimized xyz's in a list format.
-            - Entries are float numbers representing the energies in kJ/mol.
-    """
-    mol = rmg_mol_from_dict_repr(mol_dict)
-    xyzs, energies = list(), list()
-    rd_mol = embed_rdkit(label, mol, num_confs=num_confs, xyz=xyz)
-    unoptimized_xyzs = list()
-    for i in range(rd_mol.GetNumConformers()):
-        conf, xyz = rd_mol.GetConformer(i), list()
-        for j in range(conf.GetNumAtoms()):
-            pt = conf.GetAtomPosition(j)
-            xyz.append([pt.x, pt.y, pt.z])
-        xyz = [xyz[j] for j, _ in enumerate(xyz)]  # reorder
-        unoptimized_xyzs.append(xyz_from_data(coords=xyz, symbols=[atom.element.symbol for atom in mol.atoms]))
-
-    if not len(unoptimized_xyzs) and try_ob:
-        # use OB as the fall back method
-        xyzs, energies = openbabel_force_field(label=label,
-                                               mol_dict=mol_dict,
-                                               num_confs=num_confs,
-                                               force_field=force_field,
-                                               )
-
-    else:
-        for xyz in unoptimized_xyzs:
-            xyzs_, energies_ = openbabel_force_field(label=label,
-                                                     mol_dict=mol_dict,
-                                                     num_confs=num_confs,
-                                                     xyz=xyz,
-                                                     force_field=force_field,
-                                                     )
-            xyzs.extend(xyzs_)
-            energies.extend(energies_)
     return xyzs, energies
 
 
