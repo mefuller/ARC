@@ -45,14 +45,11 @@ import time
 from itertools import product
 from typing import List, Optional, Tuple, Union
 
-from openbabel import openbabel as ob
-from openbabel import pybel as pyb
 from rdkit import Chem
 from rdkit.Chem.rdchem import EditableMol as RDMol
 
 import rmgpy.molecule.group as gr
 from rmgpy.exceptions import ILPSolutionError, ResonanceError
-from rmgpy.molecule.converter import to_ob_mol
 from rmgpy.molecule.molecule import Atom, Bond, Molecule
 from rmgpy.molecule.element import C as C_ELEMENT, H as H_ELEMENT, F as F_ELEMENT, Cl as Cl_ELEMENT, I as I_ELEMENT
 
@@ -66,9 +63,12 @@ from arc.common import (ARC_PATH,
                         save_yaml_file,
                         )
 from arc.exceptions import ConformerError, InputError
+from arc.imports import settings
 import arc.plotter
 from arc.species import converter, vectors
 
+
+ARC_PYTHON = settings['ARC_PYTHON']
 
 # The number of conformers to generate per range of heavy atoms in the molecule
 # (will be increased if there are chiral centers)
@@ -1157,6 +1157,7 @@ def openbabel_force_field(label, mol, num_confs=None, xyz=None, force_field='GAF
             - Entries are optimized xyz's in a list format.
             - Entries are float numbers representing the energies in kJ/mol.
     """
+    mol.assign_atom_ids()
     input_dict = {'function': 'openbabel_force_field',
                   'label': label,
                   'mol_dict': rmg_mol_to_dict_repr(mol),
@@ -1186,6 +1187,7 @@ def openbabel_force_field_on_rdkit_conformers(label, mol, num_confs, xyz, force_
             - Entries are optimized xyz's in a dictionary format.
             - Entries are float numbers representing the energies (in kJ/mol).
     """
+    mol.assign_atom_ids()
     input_dict = {'function': 'openbabel_force_field_on_rdkit_conformers',
                   'label': label,
                   'mol_dict': rmg_mol_to_dict_repr(mol),
@@ -1209,19 +1211,20 @@ def run_ob_as_subprocess(input_dict: dict) -> Tuple[list, list]:
             - Entries are optimized xyz's in a list format.
             - Entries are float numbers representing the energies in kJ/mol.
     """
+    global OB_OUTPUT_NUM
     xyzs, energies = list(), list()
-    input_file_path = os.path.join(ARC_PATH, 'scripts', f'input_{OB_OUTPUT_NUM}.yml')
-    output_file_path = os.path.join(ARC_PATH, 'scripts', f'output_{OB_OUTPUT_NUM}.yml')
+    input_file_path = os.path.join(ARC_PATH, 'arc', 'scripts', f'input_{OB_OUTPUT_NUM}.yml')
+    output_file_path = os.path.join(ARC_PATH, 'arc', 'scripts', f'output_{OB_OUTPUT_NUM}.yml')
     save_yaml_file(input_file_path, input_dict)
 
     # Run the OpenBabel as a subprocess.
-    script_path = os.path.join(ARC_PATH, 'scripts', 'runopenbabel.py')
+    script_path = os.path.join(ARC_PATH, 'arc', 'scripts', 'runopenbabel.py')
     commands = ['source ~/.bashrc',
-                'conda activate arc_env',
-                f'python {script_path} --file {input_file_path} --num {OB_OUTPUT_NUM}']
+                f'{ARC_PYTHON} {script_path} {input_file_path} {OB_OUTPUT_NUM}']
     command = '; '.join(commands)
     OB_OUTPUT_NUM += 1
     output = subprocess.run(command, shell=True, executable='/bin/bash')
+
     if output.returncode:
         logger.warning(f'Could not execute OpenBabel in standalone mode.')
     elif os.path.isfile(output_file_path):
