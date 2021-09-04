@@ -17,7 +17,7 @@ from rmgpy.molecule.converter import to_ob_mol
 
 from arc.common import read_yaml_file, rmg_mol_from_dict_repr, save_yaml_file
 from arc.species.conformers import embed_rdkit
-from arc.species.converter import str_to_xyz, xyz_from_data
+from arc.species.converter import str_to_xyz
 
 
 def parse_command_line_arguments(command_line_args=None):
@@ -29,13 +29,14 @@ def parse_command_line_arguments(command_line_args=None):
     parser = argparse.ArgumentParser(description='OpenBabel')
     parser.add_argument('file', metavar='FILE', type=str, nargs=1,
                         help='a YAML input file describing the job to execute')
-    parser.add_argument('num', metavar='OUTPUT NUM', type=str, nargs=1,
+    parser.add_argument('num', metavar='OUTPUT_NUM', type=str, nargs=1,
                         help='an identifier for the output number')
 
     args = parser.parse_args(command_line_args)
 
     # Process args to set correct default values and format.
     args.file = args.file[0]
+    args.num = args.num[0]
 
     return args
 
@@ -57,13 +58,14 @@ def main():
     try:
         input_dict = read_yaml_file(path=input_file)
         function = function_dict[input_dict['function']]
+        del input_dict['function']
         xyzs, energies = function(**input_dict)
-    except Exception:
+    except Exception as e:
+        print(f'Could not execute OpenBabel, got the following error:\n{e}')
         return None
 
     # Process output.
-
-    output_path = os.path.join(os.path.abspath(os.path.dirname(os.path.dirname(__file__))), f'output_{output_num}.yml')
+    output_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), f'output_{output_num}.yml')
     save_yaml_file(path=output_path, content={'xyzs': xyzs, 'energies': energies})
 
 
