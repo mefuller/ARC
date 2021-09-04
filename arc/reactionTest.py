@@ -1320,6 +1320,32 @@ H       1.12853146   -0.86793870    0.06973060"""
         self.assertTrue(check_atom_map(rxn_1))
         self.assertTrue(mapped_product.get_xyz(), h2o_xyz_1)
 
+        reactant_xyz = """C  -1.3087    0.0068    0.0318
+                          C   0.1715   -0.0344    0.0210
+                          N   0.9054   -0.9001    0.6395
+                          O   2.1683   -0.5483    0.3437
+                          N   2.1499    0.5449   -0.4631
+                          N   0.9613    0.8655   -0.6660
+                          H  -1.6558    0.9505    0.4530
+                          H  -1.6934   -0.0680   -0.9854
+                          H  -1.6986   -0.8169    0.6255"""
+        reactant = ARCSpecies(label='reactant', smiles='C([C]1=[N]O[N]=[N]1)', xyz=reactant_xyz)
+        product_xyz = """C  -1.0108   -0.0114   -0.0610  
+                         C   0.4780    0.0191    0.0139    
+                         N   1.2974   -0.9930    0.4693    
+                         O   0.6928   -1.9845    0.8337    
+                         N   1.7456    1.9701   -0.6976    
+                         N   1.1642    1.0763   -0.3716    
+                         H  -1.4020    0.9134   -0.4821  
+                         H  -1.3327   -0.8499   -0.6803   
+                         H  -1.4329   -0.1554    0.9349"""
+        product = ARCSpecies(label='product', smiles='[N-]=[N+]=C(N=O)C', xyz=product_xyz)
+        rxn_2 = ARCReaction(r_species=[reactant], p_species=[product])
+        mapped_product = rxn_2.get_mapped_product_xyz()
+        self.assertEqual(rxn_2.atom_map, [2, 0, 1])
+        self.assertTrue(check_atom_map(rxn_2))
+        self.assertTrue(mapped_product.get_xyz(), h2o_xyz_1)
+
     def test_check_attributes(self):
         """Test checking the reaction attributes"""
         rxn_1 = ARCReaction(label='H + [O-][N+](=N)N=O <=> [N-]=[N+](N=O)[O] + H2',
