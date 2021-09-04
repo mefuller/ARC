@@ -710,6 +710,78 @@ H       1.98414750   -0.79355889   -0.24492049"""  # colliding atoms
         with self.assertRaises(ValueError):
             common.convert_list_index_0_to_1([0], direction=-1)
 
+    def test_rmg_mol_to_dict_repr(self):
+        """Test the rmg_mol_to_dict_repr() function."""
+        mol = Molecule(smiles='NCC')
+        repr = common.rmg_mol_to_dict_repr(mol)
+        c_dict = {'element': {'number': 6, 'symbol': 'C', 'name': 'carbon',
+                              'mass': 0.01201064046472311, 'isotope': -1},
+                  'radical_electrons': 0, 'charge': 0, 'label': '', 'lone_pairs': 0, 'id': -1,
+                  'props': {'inRing': False}, 'edges': {-1: 1.0}}
+        h_dict = {'element': {'number': 1, 'symbol': 'H', 'name': 'hydrogen',
+                              'mass': 0.0010079710045829415, 'isotope': -1},
+                  'radical_electrons': 0, 'charge': 0, 'label': '', 'lone_pairs': 0, 'id': -1,
+                  'props': {'inRing': False}, 'edges': {-1: 1.0}}
+        expected_repr = {'atoms': [{'element': {'number': 7, 'symbol': 'N', 'name': 'nitrogen',
+                                                'mass': 0.014006859622895718, 'isotope': -1},
+                                    'radical_electrons': 0, 'charge': 0, 'label': '', 'lone_pairs': 1, 'id': -1,
+                                    'props': {'inRing': False}, 'edges': {-1: 1.0}},
+                                   c_dict, c_dict,
+                                   h_dict, h_dict, h_dict, h_dict, h_dict, h_dict, h_dict],
+                         'multiplicity': 1, 'props': {}}
+        self.assertEqual(repr, expected_repr)
+
+    def test_rmg_mol_from_dict_repr(self):
+        """Test the rmg_mol_from_dict_repr() function."""
+        repr = {'atoms':
+                    [{'element': {'number': 7, 'symbol': 'N', 'name': 'nitrogen',
+                                  'mass': 0.014006859622895718, 'isotope': -1},
+                      'radical_electrons': 0, 'charge': 0, 'label': '', 'lone_pairs': 1, 'id': -32768,
+                      'props': {'inRing': False}, 'edges': {-32767: 1.0, -32765: 1.0, -32764: 1.0}},
+                     {'element': {'number': 6, 'symbol': 'C', 'name': 'carbon',
+                                  'mass': 0.01201064046472311, 'isotope': -1},
+                      'radical_electrons': 0, 'charge': 0, 'label': '', 'lone_pairs': 0, 'id': -32767,
+                      'props': {'inRing': False}, 'edges': {-32768: 1.0, -32766: 1.0, -32763: 1.0, -32762: 1.0}},
+                     {'element': {'number': 6, 'symbol': 'C', 'name': 'carbon',
+                                  'mass': 0.01201064046472311, 'isotope': -1},
+                      'radical_electrons': 0, 'charge': 0, 'label': '', 'lone_pairs': 0, 'id': -32766,
+                      'props': {'inRing': False}, 'edges': {-32767: 1.0, -32761: 1.0, -32760: 1.0, -32759: 1.0}},
+                     {'element': {'number': 1, 'symbol': 'H', 'name': 'hydrogen',
+                                  'mass': 0.0010079710045829415, 'isotope': -1},
+                      'radical_electrons': 0, 'charge': 0, 'label': '', 'lone_pairs': 0, 'id': -32765,
+                      'props': {'inRing': False}, 'edges': {-32768: 1.0}},
+                     {'element': {'number': 1, 'symbol': 'H', 'name': 'hydrogen',
+                                  'mass': 0.0010079710045829415, 'isotope': -1},
+                      'radical_electrons': 0, 'charge': 0, 'label': '', 'lone_pairs': 0, 'id': -32764,
+                      'props': {'inRing': False}, 'edges': {-32768: 1.0}},
+                     {'element': {'number': 1, 'symbol': 'H', 'name': 'hydrogen',
+                                  'mass': 0.0010079710045829415, 'isotope': -1},
+                      'radical_electrons': 0, 'charge': 0, 'label': '', 'lone_pairs': 0, 'id': -32763,
+                      'props': {'inRing': False}, 'edges': {-32767: 1.0}},
+                     {'element': {'number': 1, 'symbol': 'H', 'name': 'hydrogen',
+                                  'mass': 0.0010079710045829415, 'isotope': -1},
+                      'radical_electrons': 0, 'charge': 0, 'label': '', 'lone_pairs': 0, 'id': -32762,
+                      'props': {'inRing': False}, 'edges': {-32767: 1.0}},
+                     {'element': {'number': 1, 'symbol': 'H', 'name': 'hydrogen',
+                                  'mass': 0.0010079710045829415, 'isotope': -1},
+                      'radical_electrons': 0, 'charge': 0, 'label': '', 'lone_pairs': 0, 'id': -32761,
+                      'props': {'inRing': False}, 'edges': {-32766: 1.0}},
+                     {'element': {'number': 1, 'symbol': 'H', 'name': 'hydrogen',
+                                  'mass': 0.0010079710045829415, 'isotope': -1},
+                      'radical_electrons': 0, 'charge': 0, 'label': '', 'lone_pairs': 0, 'id': -32760,
+                      'props': {'inRing': False}, 'edges': {-32766: 1.0}},
+                     {'element': {'number': 1, 'symbol': 'H', 'name': 'hydrogen',
+                                  'mass': 0.0010079710045829415, 'isotope': -1},
+                      'radical_electrons': 0, 'charge': 0, 'label': '', 'lone_pairs': 0, 'id': -32759,
+                      'props': {'inRing': False}, 'edges': {-32766: 1.0}}],
+                'multiplicity': 1, 'props': {}}
+        mol = common.rmg_mol_from_dict_repr(repr=repr, is_ts=False)
+        smiles = mol.to_smiles()
+        self.assertEqual(len(smiles), 3)
+        self.assertEqual(smiles.count('C'), 2)
+        self.assertEqual(smiles.count('N'), 1)
+
+
     @classmethod
     def tearDownClass(cls):
         """
