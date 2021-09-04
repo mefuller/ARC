@@ -221,9 +221,9 @@ default_job_settings = {
 # An imaginary frequency is valid if it is between the following range (in cm-1):
 LOWEST_MAJOR_TS_FREQ, HIGHEST_MAJOR_TS_FREQ = 5.0, 10000.0
 
-# default environment names for sister repos
+# Default environment names for selected repos.
 home = os.getenv("HOME") or os.path.expanduser("~")
-TS_GCN_PYTHON, AUTOTST_PYTHON = None, None
+TS_GCN_PYTHON, AUTOTST_PYTHON, ARC_PYTHON = None, None, None
 gcn_pypath_1 = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(sys.executable))),
                             'ts_gcn', 'bin', 'python')
 gcn_pypath_2 = os.path.join(home, 'anaconda3', 'envs', 'ts_gcn', 'bin', 'python')
@@ -244,4 +244,15 @@ autotst_pypath_5 = os.path.join('/Local/ce_dana', 'anaconda3', 'envs', 'tst_env'
 for autotst_pypath in [autotst_pypath_1, autotst_pypath_2, autotst_pypath_3, autotst_pypath_4, autotst_pypath_5]:
     if os.path.isfile(autotst_pypath):
         AUTOTST_PYTHON = autotst_pypath
+        break
+
+arc_pypath_1 = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(sys.executable))),
+                            'arc_env', 'bin', 'python')
+arc_pypath_2 = os.path.join(home, 'anaconda3', 'envs', 'arc_env', 'bin', 'python')
+arc_pypath_3 = os.path.join(home, 'miniconda3', 'envs', 'arc_env', 'bin', 'python')
+arc_pypath_4 = os.path.join(home, '.conda', 'envs', 'arc_env', 'bin', 'python')
+arc_pypath_5 = os.path.join('/Local/ce_dana', 'anaconda3', 'envs', 'arc_env', 'bin', 'python')
+for arc_pypath in [arc_pypath_1, arc_pypath_2, arc_pypath_3, arc_pypath_4, arc_pypath_5]:
+    if os.path.isfile(arc_pypath):
+        ARC_PYTHON = arc_pypath
         break
