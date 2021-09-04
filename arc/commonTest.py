@@ -713,7 +713,7 @@ H       1.98414750   -0.79355889   -0.24492049"""  # colliding atoms
     def test_rmg_mol_to_dict_repr(self):
         """Test the rmg_mol_to_dict_repr() function."""
         mol = Molecule(smiles='NCC')
-        repr = common.rmg_mol_to_dict_repr(mol)
+        representation = common.rmg_mol_to_dict_repr(mol)
         c_dict = {'element': {'number': 6, 'symbol': 'C', 'name': 'carbon',
                               'mass': 0.01201064046472311, 'isotope': -1},
                   'radical_electrons': 0, 'charge': 0, 'label': '', 'lone_pairs': 0, 'id': -1,
@@ -729,11 +729,11 @@ H       1.98414750   -0.79355889   -0.24492049"""  # colliding atoms
                                    c_dict, c_dict,
                                    h_dict, h_dict, h_dict, h_dict, h_dict, h_dict, h_dict],
                          'multiplicity': 1, 'props': {}}
-        self.assertEqual(repr, expected_repr)
+        self.assertEqual(representation, expected_repr)
 
     def test_rmg_mol_from_dict_repr(self):
         """Test the rmg_mol_from_dict_repr() function."""
-        repr = {'atoms':
+        representation = {'atoms':
                     [{'element': {'number': 7, 'symbol': 'N', 'name': 'nitrogen',
                                   'mass': 0.014006859622895718, 'isotope': -1},
                       'radical_electrons': 0, 'charge': 0, 'label': '', 'lone_pairs': 1, 'id': -32768,
@@ -775,7 +775,7 @@ H       1.98414750   -0.79355889   -0.24492049"""  # colliding atoms
                       'radical_electrons': 0, 'charge': 0, 'label': '', 'lone_pairs': 0, 'id': -32759,
                       'props': {'inRing': False}, 'edges': {-32766: 1.0}}],
                 'multiplicity': 1, 'props': {}}
-        mol = common.rmg_mol_from_dict_repr(repr=repr, is_ts=False)
+        mol = common.rmg_mol_from_dict_repr(representation=representation, is_ts=False)
         smiles = mol.to_smiles()
         self.assertEqual(len(smiles), 3)
         self.assertEqual(smiles.count('C'), 2)
