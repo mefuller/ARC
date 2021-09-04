@@ -1271,22 +1271,22 @@ def rmg_mol_to_dict_repr(mol: Molecule) -> dict:
             }
 
 
-def rmg_mol_from_dict_repr(repr: dict,
+def rmg_mol_from_dict_repr(representation: dict,
                            is_ts: bool = False,
                            ) -> Optional[Molecule]:
     """
     Generate a dict representation of an RMG ``Molecule`` object instance.
 
     Args:
-        repr (dict): A dict representation of an RMG ``Molecule`` object instance.
+        representation (dict): A dict representation of an RMG ``Molecule`` object instance.
         is_ts (bool, optional): Whether the ``Molecule`` represents a TS.
 
     Returns:
         ``Molecule``: The corresponding RMG ``Molecule`` object instance.
 
     """
-    mol = Molecule(multiplicity=repr['multiplicity'],
-                   props=repr['props'])
+    mol = Molecule(multiplicity=representation['multiplicity'],
+                   props=representation['props'])
     atoms = [Atom(element=Element(number=atom_dict['element']['number'],
                                   symbol=atom_dict['element']['symbol'],
                                   name=atom_dict['element']['name'],
@@ -1298,10 +1298,10 @@ def rmg_mol_from_dict_repr(repr: dict,
                   lone_pairs=atom_dict['lone_pairs'],
                   id=atom_dict['id'],
                   props=atom_dict['props'],
-                  ) for atom_dict in repr['atoms']]
+                  ) for atom_dict in representation['atoms']]
     mol.atoms = atoms
     for i, atom_1 in enumerate(atoms):
-        for atom_2_id, bond_order in repr['atoms'][i]['edges'].items():
+        for atom_2_id, bond_order in representation['atoms'][i]['edges'].items():
             for atom_2 in atoms:
                 if atom_2.id == atom_2_id:
                     break
