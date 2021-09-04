@@ -558,10 +558,12 @@ O       1.40839617    0.14303696    0.00000000"""
         H         -0.78712        0.56391        0.71847
         O          1.39175        1.59510        0.11494""")
         spc = ARCSpecies(label='CCO[O]', smiles='CCO[O]', xyz=xyz)
-        rd_mol = conformers.embed_rdkit(
-            label='', mol=spc.mol, num_confs=2, xyz=xyz)
-        xyzs, energies = conformers.openbabel_force_field_on_rdkit_conformers(label='', rd_mol=rd_mol,
-                                                                            force_field='MMFF94s',)
+        xyzs, energies = conformers.openbabel_force_field_on_rdkit_conformers(label='',
+                                                                              mol=spc.mol,
+                                                                              num_confs=2,
+                                                                              xyz=xyz,
+                                                                              force_field='MMFF94s',
+                                                                              )
         expected_xyzs = [{'symbols': ('C', 'C', 'H', 'H', 'H', 'O', 'H', 'H', 'O'),
                           'isotopes': (12, 12, 1, 1, 1, 16, 1, 1, 16),
                           'coords': ((-0.92004, 0.17591, -0.00274),
