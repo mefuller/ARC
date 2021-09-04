@@ -302,7 +302,7 @@ class GCNAdapter(JobAdapter):
 
                 ts_xyz_fwd, ts_xyz_rev = None, None
 
-                # run the GCN as a subprocess in the forward directions
+                # Run the GCN as a subprocess in the forward directions.
                 ts_guess_f = TSGuess(method=f'GCN',
                                      method_direction='F',
                                      index=len(rxn.ts_species.ts_guesses),
