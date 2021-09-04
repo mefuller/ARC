@@ -648,8 +648,8 @@ def get_arc_species(spc: Union[ARCSpecies, Species, Molecule]) -> ARCSpecies:
         return ARCSpecies(label='S', mol=spc.molecule[0])
     if isinstance(spc, Molecule):
         return ARCSpecies(label='S', mol=spc)
-    raise ValueError(f'Species entries may only be ARCSpecies, RMG Species, or RMG Molecule, '
-                     f'got {spc} which is a {type(spc)}.')
+    raise ValueError(f'Species entries may only be ARCSpecies, RMG Species, or RMG Molecule.\n'
+                     f'Got {spc} which is a {type(spc)}.')
 
 
 def create_qc_mol(species: Union[ARCSpecies, Species, Molecule, List[Union[ARCSpecies, Species, Molecule]]],
