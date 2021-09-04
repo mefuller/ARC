@@ -37,11 +37,11 @@ from arc.imports import settings
 
 logger = logging.getLogger('arc')
 
-# absolute path to the ARC folder
+# Absolute path to the ARC folder.
 ARC_PATH = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
-# absolute path to RMG-Py folder
+# Absolute path to RMG-Py folder.
 RMG_PATH = os.path.abspath(os.path.dirname(os.path.dirname(rmgpy.__file__)))
-# absolute path to RMG-database folder
+# Absolute path to RMG-database folder.
 RMG_DATABASE_PATH = os.path.abspath(os.path.dirname(rmgpy.settings['database.directory']))
 
 VERSION = '1.1.0'
