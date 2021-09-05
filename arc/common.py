@@ -544,17 +544,15 @@ def colliding_atoms(xyz: dict,
         xyz (dict): The Cartesian coordinates.
         threshold (float, optional): The collision threshold to use.
 
-    Returns: bool
-        ``True`` if they are colliding, ``False`` otherwise.
+    Returns:
+        bool: ``True`` if they are colliding, ``False`` otherwise.
     """
     if len(xyz['symbols']) == 1:
         # monoatomic
         return False
-
     geometry = np.array([np.array(coord, np.float64) * 1.8897259886 for coord in xyz['coords']])  # convert A to Bohr
     qcel_out = qcel.molutil.guess_connectivity(symbols=xyz['symbols'], geometry=geometry, threshold=threshold)
     logger.debug(qcel_out)
-
     return bool(len(qcel_out))
 
 
