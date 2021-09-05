@@ -30,7 +30,7 @@ import math
 import numpy as np
 import operator
 import re
-from typing import Dict, List, Optional, Tuple , Union
+from typing import Dict, List, Optional, Tuple, Union
 
 from rmgpy.molecule.molecule import Molecule
 
@@ -210,10 +210,10 @@ def determine_r_atoms(zmat: Dict[str, Union[dict, tuple]],
     if is_atom_in_new_fragment(atom_index=atom_index, zmat=zmat, fragments=fragments):
         connectivity = None
     if len(zmat['coords']) == 0:
-        # this is the 1st atom added to the zmat, there's no distance definition here
+        # This is the 1st atom added to the zmat, there's no distance definition here.
         r_atoms = None
     elif any(constraint is not None for constraint in [r_constraint, a_constraint, d_constraint]):
-        # 1. always use the constraint if given
+        # 1. Always use the constraint if given.
         if r_constraint is not None:
             r_atoms = [n] + [key_by_val(zmat['map'], r_constraint[1])]
         elif a_constraint is not None:
@@ -221,12 +221,12 @@ def determine_r_atoms(zmat: Dict[str, Union[dict, tuple]],
         elif d_constraint is not None:
             r_atoms = [n] + [key_by_val(zmat['map'], d_constraint[1])]
     elif connectivity is not None:
-        # 2. use connectivity if the atom is not constrained
+        # 2. Use connectivity if the atom is not constrained.
         r_atoms = [n]
-        atom_dict = dict()  # Keys are neighbor atom indices, values are tuples of depth and linearity
+        atom_dict = dict()  # Keys are neighbor atom indices, values are tuples of depth and linearity.
         for atom_c in connectivity[atom_index]:
-            # code adopted from arc.common.determine_top_group_indices():
-            linear = True  # assume the chain from atom_index towards atom_c is linear unless otherwise proven
+            # Code adopted from arc.common.determine_top_group_indices():
+            linear = True  # Assume the chain from atom_index towards atom_c is linear unless otherwise proven.
             explored_atom_list, atom_list_to_explore1, atom_list_to_explore2, top = [atom_index], [atom_c], [], []
             while len(atom_list_to_explore1 + atom_list_to_explore2):
                 for atom3 in atom_list_to_explore1:
@@ -235,19 +235,19 @@ def determine_r_atoms(zmat: Dict[str, Union[dict, tuple]],
                         for atom4 in connectivity[atom3]:
                             if atom4 not in explored_atom_list and atom4 not in atom_list_to_explore2:
                                 if xyz['symbols'][atom4] in ['H', 'F', 'Cl', 'Br', 'I', 'X']:
-                                    # append w/o further exploration
+                                    # Append w/o further exploration.
                                     top.append(atom4)
                                 else:
                                     atom_list_to_explore2.append(atom4)  # explore it further
                     explored_atom_list.append(atom3)  # mark as explored
                 atom_list_to_explore1, atom_list_to_explore2 = atom_list_to_explore2, []
                 if len(top) >= 2:
-                    # calculate the angle formed with the index_atom
+                    # Calculate the angle formed with the index_atom.
                     angle = calculate_angle(coords=xyz['coords'], atoms=[atom_index] + top[-2:], index=0, units='degs')
                     if not is_angle_linear(angle):
                         linear = False
                         if len(top) >= 3:
-                            # if it's not linear and there are 3 or more atoms, we have all the info that we need
+                            # If it's not linear and there are 3 or more atoms, we have all the info that we need.
                             break
             atom_dict[atom_c] = (len(top), linear)
         long_non_linear, long_linear, two_non_linear, two_linear, one = list(), list(), list(), list(), list()
@@ -282,7 +282,7 @@ def determine_r_atoms(zmat: Dict[str, Union[dict, tuple]],
         trivial_assignment = True
         r_atoms = list()
     if trivial_assignment and isinstance(r_atoms, list) and len(r_atoms) != 2:
-        # 3. use trivial atom assigment if constraint and connectivity were not given
+        # 3. Use trivial atom assigment if constraint and connectivity were not given.
         r_atoms = [n]
         if len(zmat['coords']) in [1, 2]:
             r_atoms.append(len(zmat['coords']) - 1)
@@ -1343,10 +1343,7 @@ def get_atom_order(xyz: Optional[Dict[str, tuple]] = None,
     if mol is None and xyz is None:
         raise ValueError('Either mol or xyz must be given.')
     if fragments is None or not len(fragments):
-        if mol is not None:
-            fragments = [list(range(len(mol.atoms)))]
-        if xyz is not None:
-            fragments = [list(range(len(xyz['symbols'])))]
+        fragments = [list(range(len(mol.atoms if mol is not None else xyz['symbols'])))]
     else:
         fragments = order_fragments_by_constraints(fragments=fragments, constraints_dict=constraints_dict)
 
@@ -1387,17 +1384,17 @@ def get_atom_order_from_mol(mol: Molecule,
     number_of_heavy_atoms = len([atom for atom in mol.atoms if atom.is_non_hydrogen()])
 
     for constraint_type, constraint_list in constraints_dict.items():
-        constraints.extend(constraint_list)  # a list of all constraint tuples
+        constraints.extend(constraint_list)  # A list of all constraint tuples.
         for constraint in constraint_list:
-            # a list of the atoms being constraint to other atoms
-            constraint_atoms.append(constraint[0])  # only the first atom in the constraint tuple is really constrained
+            # A list of the atoms being constraint to other atoms.
+            constraint_atoms.append(constraint[0])  # Only the first atom in the constraint tuple is really constrained.
         if constraint_type == 'D_group':
             for constraint_indices in constraint_list:
                 if len(top_d):
                     raise ZMatError(f'zmats can only handle one D_group constraint at a time, got:\n{constraints_dict}')
-                # determine the "top" of the *relevant branch* of this torsion
+                # Determine the "top" of the *relevant branch* of this torsion
                 # since the first atom (number 0) is the constrained one being changed,
-                # this top is defined from the second atom in the torsion (number 1) to it
+                # this top is defined from the second atom in the torsion (number 1) to it.
                 logger.debug(f'determining top_d for {constraint_indices[1]} -> {constraint_indices[0]}')
                 top_d = determine_top_group_indices(mol=mol,
                                                     atom1=mol.atoms[constraint_indices[1]],
@@ -1405,12 +1402,12 @@ def get_atom_order_from_mol(mol: Molecule,
                                                     index=0)[0]
 
     for i in range(len(mol.atoms)):
-        # iterate through the atoms until a successful atom_order is reached
+        # Iterate through the atoms until a successful atom_order is reached.
 
         atom_order, start = list(), None
-        # try determining a starting point as a heavy atom connected to no more than one heavy atom neighbor
+        # Try determining a starting point as a heavy atom connected to no more than one heavy atom neighbor.
         for atom1 in mol.atoms:
-            # find a tail, e.g.: CH3-C-...
+            # Find a tail, e.g.: CH3-C-...
             atom1_index = mol.atoms.index(atom1)
             if atom1.is_non_hydrogen() \
                     and sum([atom2.is_non_hydrogen() for atom2 in list(atom1.edges.keys())]) <= 1 \
@@ -1421,7 +1418,7 @@ def get_atom_order_from_mol(mol: Molecule,
                 start = atom1_index
                 break
         else:
-            # if a tail could not be found (e.g., cyclohexane), just start from the first non-constrained heavy atom
+            # If a tail could not be found (e.g., cyclohexane), just start from the first non-constrained heavy atom.
             for atom1 in mol.atoms:
                 atom1_index = mol.atoms.index(atom1)
                 if atom1.is_non_hydrogen() \
@@ -1432,7 +1429,7 @@ def get_atom_order_from_mol(mol: Molecule,
                     start = atom1_index
                     break
             else:
-                # try hydrogens (an atom might be constraint to H, in which case H should come before that atom)
+                # Try hydrogens (an atom might be constraint to H, in which case H should come before that atom).
                 for atom1 in mol.atoms:
                     atom1_index = mol.atoms.index(atom1)
                     if atom1.is_hydrogen() \
@@ -1449,7 +1446,7 @@ def get_atom_order_from_mol(mol: Molecule,
         atoms_to_explore = [start]
 
         if number_of_heavy_atoms == 2:
-            # to have meaningful dihedrals for H's, add one H from each heavy atom before adding the heavy atoms
+            # To have meaningful dihedrals for H's, add one H from each heavy atom before adding the heavy atoms.
             heavy_atoms = [atom for atom in mol.atoms if atom.is_non_hydrogen()]
             hydrogens_0 = [atom for atom in heavy_atoms[0].edges.keys() if atom.is_hydrogen()]
             hydrogens_1 = [atom for atom in heavy_atoms[1].edges.keys() if atom.is_hydrogen()]
@@ -1471,9 +1468,9 @@ def get_atom_order_from_mol(mol: Molecule,
                             atom_order.append(atom1_index)
                 atoms_to_explore = list()
 
-        unexplored = list()  # atoms purposely not added to atom_order due to a D_group constraint
+        unexplored = list()  # Atoms purposely not added to atom_order due to a D_group constraint.
         while len(atoms_to_explore):
-            # add all heavy atoms, consider branching and rings
+            # Add all heavy atoms, consider branching and rings.
             atom1_index = atoms_to_explore[0]
             atoms_to_explore.pop(0)
             atom1 = mol.atoms[atom1_index]
@@ -1488,13 +1485,13 @@ def get_atom_order_from_mol(mol: Molecule,
                     atoms_to_explore.append(index2)
 
         for atom1 in mol.atoms:
-            # add all hydrogen atoms
+            # Add all hydrogen atoms.
             if atom1.is_hydrogen():
                 index = mol.atoms.index(atom1)
                 if index not in atom_order and index not in top_d and index in fragment:
                     atom_order.append(index)
 
-        # now add top_d
+        # Now add top_d.
         for top_d_atom in top_d:
             if top_d_atom not in atom_order and top_d_atom in fragment:
                 atom_order.append(top_d_atom)
@@ -1508,24 +1505,24 @@ def get_atom_order_from_mol(mol: Molecule,
         success = True
 
         for constraint in constraints:
-            # loop through all constraint tuples, verify that the atoms are ordered in accordance with them
+            # Loop through all constraint tuples, verify that the atoms are ordered in accordance with them.
             if any([c in fragment for c in constraint]):
-                # consider this constraint
+                # Consider this constraint.
                 constraint_atom_order = [atom_order.index(constraint_atom) for constraint_atom in constraint
                                          if constraint_atom in fragment]
                 diff = [constraint_atom_order[j+1] - constraint_atom_order[j]
                         for j in range(len(constraint_atom_order) - 1)]
                 if any(entry > 0 for entry in diff):
-                    # diff should only have negative entries
+                    # Diff should only have negative entries.
                     unsuccessful.append(start)
                     success = False
 
         if success:
-            # The atom order list answers all constraints criteria
+            # The atom order list answers all constraints criteria.
             break
 
     else:
-        # the outer for loop exhausted all possibilities and was unsuccessful
+        # The outer for loop exhausted all possibilities and was unsuccessful.
         raise ZMatError(f'Could not derive an atom order from connectivity that answers all '
                         f'constraint criteria:\n{constraints_dict}')
 
@@ -1810,8 +1807,8 @@ def get_parameter_from_atom_indices(zmat, indices, xyz_indexed=True):
     raise ZMatError(f'Could not find a key corresponding to {key} {indices}.')
 
 
-def _compare_zmats(zmat1:dict,
-                   zmat2:dict,
+def _compare_zmats(zmat1: dict,
+                   zmat2: dict,
                    r_tol: Optional[float] = None,
                    a_tol: Optional[float] = None,
                    d_tol: Optional[float] = None,
@@ -1904,7 +1901,7 @@ def get_all_neighbors(mol, atom_index):
 
     Args:
         mol (Molecule): The RMG molecule with connectivity information.
-        atom_index (int): The index of the atom whos neighbors are requested.
+        atom_index (int): The index of the atom whose neighbors are requested.
 
     Returns:
         list: Atom indices of all neighbors of the requested atom.
