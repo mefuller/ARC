@@ -463,18 +463,18 @@ def combine_coordinates_with_redundant_atoms(xyz_1: Union[dict, str],
     if d == b:
         raise ValueError(f'The value for d ({d}) is invalid (it represents atom B, not atom D)')
 
-    zmat_1, zmat_2 = generate_the_two_constrained_zmats(xyz_1, xyz_2, mol_1, mol_2, h1, h2, a, b, d)
+    zmat_1, zmat_2 = generate_the_two_constrained_zmats(xyz_1, xyz_2, mol_1, mol_2, h1, h2, a, b, c, d)
 
-    # if atom_map is not None:
-    #     # Re-map zmat2, which is based on a product structure, back to the reactant atoms (expect for the redundant H).
-    #     print(atom_map)
-    #     atom_map = atom_map[:len(zmat2['symbols']) - 1] if reactants_reversed else atom_map[len(zmat1['symbols']):]
-    #     print(f'reactants_reversed: {reactants_reversed}')
-    #     print(atom_map)
-    #     print(zmat2)
-    #     for reactant_index, product_index in enumerate(atom_map):
-    #         print(product_index)
-    #         zmat2['map'][key_by_val(dictionary=zmat2['map'], value=product_index)] = reactant_index
+    if atom_map is not None:
+        # Re-map zmat_2, which is based on a product structure, back to the reactant atoms (expect for the redundant H).
+        print(atom_map)
+        atom_map = atom_map[:len(zmat_2['symbols']) - 1] if reactants_reversed else atom_map[len(zmat_1['symbols']):]
+        print(f'reactants_reversed: {reactants_reversed}')
+        print(atom_map)
+        print(zmat_2)
+        for reactant_index, product_index in enumerate(atom_map):
+            print(product_index)
+            zmat_2['map'][key_by_val(dictionary=zmat_2['map'], value=product_index)] = reactant_index
 
     # Stretch the A--H1 and B--H2 bonds.
     stretch_zmat_bond(zmat=zmat_1, indices=(h1, a), stretch=r1_stretch)
@@ -520,28 +520,30 @@ def generate_the_two_constrained_zmats(xyz_1: dict,
                                        h2: int,
                                        a: int,
                                        b: int,
+                                       c: Optional[int],
                                        d: Optional[int],
                                        ) -> Tuple[dict, dict]:
     """
     Generate the two constrained zmats required for combining coordinates with a redundant atom.
 
     Args:
-        xyz_1 (dict): The Cartesian coordinates of molecule 1 (including the redundant atom).
-        xyz_2 (dict): The Cartesian coordinates of molecule 2 (including the redundant atom).
-        mol_1 (Molecule): The RMG Molecule instance corresponding to ``xyz1``.
-        mol_2 (Molecule): The RMG Molecule instance corresponding to ``xyz2``.
-        h1 (int): The 0-index of a terminal redundant H atom in ``xyz1`` (atom H1).
-        h2 (int): The 0-index of a terminal redundant H atom in ``xyz2`` (atom H2).
-        a (int): The 0-index of an atom in ``xyz1`` connected to H1 (atom A).
-        b (int): The 0-index of an atom in ``xyz2`` connected to H2 (atom B).
-        d (Optional[int]): The 0-index of an atom in ``xyz2`` connected to either B or H2 which is neither B nor H2 (atom D).
+        xyz_1 (dict): The Cartesian coordinates of ``mol_1`` (including the redundant atom).
+        xyz_2 (dict): The Cartesian coordinates of ``mol_2`` (including the redundant atom).
+        mol_1 (Molecule): The RMG Molecule instance corresponding to ``xyz_1``.
+        mol_2 (Molecule): The RMG Molecule instance corresponding to ``xyz_2``.
+        h1 (int): The 0-index of a terminal redundant H atom in ``xyz_1`` (atom H1).
+        h2 (int): The 0-index of a terminal redundant H atom in ``xyz_2`` (atom H2).
+        a (int): The 0-index of an atom in ``xyz_1`` connected to H1 (atom A).
+        b (int): The 0-index of an atom in ``xyz_2`` connected to H2 (atom B).
+        c (Optional[int]): The 0-index of an atom in ``xyz_1`` connected to either A or H1 which is neither A nor H1 (atom C).
+        d (Optional[int]): The 0-index of an atom in ``xyz_2`` connected to either B or H2 which is neither B nor H2 (atom D).
 
     Returns:
         Tuple[dict, dict]: The two zmats.
     """
     zmat1 = zmat_from_xyz(xyz=xyz_1,
                           mol=mol_1,
-                          constraints={'R_atom': [(h1, a)]},
+                          constraints={'A_group': [(h1, a, c)]} if c is not None else {'R_atom': [(h1, a)]},
                           consolidate=False,
                           )
     zmat2 = zmat_from_xyz(xyz=xyz_2,
