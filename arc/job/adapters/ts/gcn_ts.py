@@ -258,7 +258,7 @@ class GCNAdapter(JobAdapter):
         for rxn in self.reactions:
 
             if rxn.ts_species is None:
-                # Mainly used for testing, in an ARC run the TS species should already exist.
+                # Mainly used while testing, in an ARC run the TS species should already exist at this point.
                 rxn.ts_species = ARCSpecies(label=self.species_label,
                                             is_ts=True,
                                             charge=rxn.charge,
