@@ -138,11 +138,11 @@ H      -1.22610851    0.40421362    1.35170355"""
         O          1.39175        1.59510        0.11494""")
         spc = ARCSpecies(label='CCO[O]', smiles='CCO[O]', xyz=xyz)
         lowest_confs = conformers.generate_conformers(mol_list=spc.mol_list, label=spc.label,
-                                                        charge=spc.charge, multiplicity=spc.multiplicity,
-                                                        force_field='MMFF94s', print_logs=False, diastereomers=None,
-                                                        n_confs=1, return_all_conformers=False)
+                                                      charge=spc.charge, multiplicity=spc.multiplicity,
+                                                      force_field='MMFF94s', print_logs=False, diastereomers=None,
+                                                      n_confs=1, return_all_conformers=False)
         self.assertEqual(len(lowest_confs), 1)
-        self.assertAlmostEqual(lowest_confs[0]['FF energy'], -0.7418115656748858)
+        self.assertAlmostEqual(lowest_confs[0]['FF energy'], 1.7935316798176644)
         expected_xyz = {'symbols': ('C', 'C', 'H', 'H', 'H', 'O', 'H', 'H', 'O'),
                         'isotopes': (12, 12, 1, 1, 1, 16, 1, 1, 16),
                         'coords': ((-1.06401, 0.15134, -0.02907),
@@ -454,6 +454,12 @@ H       1.40965394    0.40549015    0.08143497""")
         energies = conformers.get_force_field_energies(label='', mol=ch2oh_mol, xyz=ch2oh_xyz, optimize=True)[1]
         self.assertAlmostEqual(energies[0], 13.466911, 5)
 
+        # Test peroxyl radical (uses UFF by default if MMFF94s is still buggy in RDKit).
+        xyzs, energies = conformers.get_force_field_energies(label='', mol=Molecule(smiles='CCO[O]'), num_confs=10)
+        self.assertEqual(len(energies), 10)
+        self.assertEqual(len(xyzs), 10)
+        self.assertEqual(xyzs[0]['symbols'], ('C', 'C', 'O', 'O', 'H', 'H', 'H', 'H', 'H'))
+
     def test_generate_force_field_conformers(self):
         """Test generating conformers from RDKit """
         mol_list = [self.mol0]
@@ -538,25 +544,29 @@ H       0.68104300    0.74807180    0.61546062""")]
     def test_openbabel_force_field(self):
         """Test Open Babel force field"""
         xyz = """S      -0.19093478    0.57933906    0.00000000
-O      -1.21746139   -0.72237602    0.00000000
-O       1.40839617    0.14303696    0.00000000"""
+                 O      -1.21746139   -0.72237602    0.00000000
+                 O       1.40839617    0.14303696    0.00000000"""
         spc = ARCSpecies(label='SO2', smiles='O=S=O', xyz=xyz)
-        xyzs, energies = conformers.openbabel_force_field(label='', mol=spc.mol, num_confs=1,
-                                                          force_field='GAFF', method='diverse')
+        xyzs, energies = conformers.openbabel_force_field(label='',
+                                                          mol=spc.mol,
+                                                          num_confs=1,
+                                                          force_field='GAFF',
+                                                          method='diverse',
+                                                          )
         self.assertEqual(len(xyzs), 1)
         self.assertAlmostEqual(energies[0], 2.931930, 3)
 
     def test_openbabel_force_field_on_rdkit_conformers(self):
         """Test Open Babel force field on RDKit conformers"""
         xyz = converter.str_to_xyz("""C         -2.18276        2.03598        0.00028
-        C         -0.83696        1.34108       -0.05231
-        H         -2.23808        2.82717       -0.75474
-        H         -2.33219        2.51406        0.97405
-        H         -2.99589        1.32546       -0.17267
-        O          0.18176        2.30786        0.17821
-        H         -0.69161        0.88171       -1.03641
-        H         -0.78712        0.56391        0.71847
-        O          1.39175        1.59510        0.11494""")
+                                      C         -0.83696        1.34108       -0.05231
+                                      H         -2.23808        2.82717       -0.75474
+                                      H         -2.33219        2.51406        0.97405
+                                      H         -2.99589        1.32546       -0.17267
+                                      O          0.18176        2.30786        0.17821
+                                      H         -0.69161        0.88171       -1.03641
+                                      H         -0.78712        0.56391        0.71847
+                                      O          1.39175        1.59510        0.11494""")
         spc = ARCSpecies(label='CCO[O]', smiles='CCO[O]', xyz=xyz)
         xyzs, energies = conformers.openbabel_force_field_on_rdkit_conformers(label='',
                                                                               mol=spc.mol,
