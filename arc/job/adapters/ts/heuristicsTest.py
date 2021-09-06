@@ -663,88 +663,101 @@ class TestHeuristicsAdapter(unittest.TestCase):
         self.assertEqual(zmat1, expected_zmat1)
         self.assertEqual(zmat2, expected_zmat2)
 
+    def test_stretch_zmat_bond(self):
+        """Test the stretch_zmat_bond function."""
+        zmat2_copy = {'symbols': ('H', 'C', 'C', 'H', 'H', 'H', 'H', 'H'),  # Don't combine with cls.zmat2
+                      'coords': ((None, None, None), ('R_1_0', None, None), ('R_2_1', 'A_2_1_0', None),
+                                 ('R_3_1', 'A_3_1_2', 'D_3_1_2_0'), ('R_4_1', 'A_4_1_2', 'D_4_1_2_3'),
+                                 ('R_5_2', 'A_5_2_1', 'D_5_2_1_4'), ('R_6_2', 'A_6_2_1', 'D_6_2_1_5'),
+                                 ('R_7_2', 'A_7_2_1', 'D_7_2_1_6')),
+                      'vars': {'R_1_0': 1.0940775789443724, 'R_2_1': 1.5120487296562577,
+                               'A_2_1_0': 110.56801921096591, 'R_3_1': 1.0940725668318991,
+                               'A_3_1_2': 110.56890700195424, 'D_3_1_2_0': 239.99938309284212,
+                               'R_4_1': 1.0940817193677925, 'A_4_1_2': 110.56754686774481,
+                               'D_4_1_2_3': 239.9997190582892, 'R_5_2': 1.0940725668318991,
+                               'A_5_2_1': 110.56890700195424, 'D_5_2_1_4': 59.99971758419434,
+                               'R_6_2': 1.0940840619688397, 'A_6_2_1': 110.56790845138725,
+                               'D_6_2_1_5': 239.99905123159166, 'R_7_2': 1.0940817193677925,
+                               'A_7_2_1': 110.56754686774481, 'D_7_2_1_6': 240.00122783407815},
+                      'map': {0: 3, 1: 0, 2: 1, 3: 2, 4: 4, 5: 5, 6: 6, 7: 7}}
+        stretch_zmat_bond(zmat=zmat2_copy, indices=(1, 0), stretch=1.5)
+        self.assertEqual(zmat2_copy['vars']['R_2_1'], self.zmat2['vars']['R_2_1'] * 1.5)
 
-    # def test_stretch_zmat_bond(self):
-    #     """Test the stretch_zmat_bond function."""
-    #     zmat2 = self.zmat2.copy()
-    #     stretch_zmat_bond(zmat=zmat2, indices=(1, 0), stretch=1.5)
-    #     self.assertEqual(zmat2['vars']['R_2_1'], 1.5120487296562577 * 1.5)
-    #
-    # def test_determine_glue_params_to_combine_zmats(self):
-    #     """Test the determine_glue_params_to_combine_zmats() function."""
-    #     zmat = {'symbols': ('C', 'C', 'O', 'O', 'H', 'H', 'H', 'H', 'H', 'H'),
-    #             'coords': ((None, None, None), ('R_1_0', None, None), ('R_2_1', 'A_2_1_0', None),
-    #                        ('R_3_2', 'A_3_2_1', 'D_3_2_1_0'), ('R_4_0', 'A_4_0_1', 'D_4_0_1_3'),
-    #                        ('R_5_0', 'A_5_0_1', 'D_5_0_1_4'), ('R_6_0', 'A_6_0_1', 'D_6_0_1_5'),
-    #                        ('R_7_1', 'A_7_1_0', 'D_7_1_0_6'), ('R_8_1', 'A_8_1_0', 'D_8_1_0_7'),
-    #                        ('R_9_3', 'A_9_3_2', 'D_9_3_2_1')),
-    #             'vars': {'R_1_0': 1.5147479951212197, 'R_2_1': 1.4265728986680748,
-    #                      'A_2_1_0': 108.63387152978416, 'R_3_2': 1.4559254886404387,
-    #                      'A_3_2_1': 105.58023544826183, 'D_3_2_1_0': 179.9922243050821,
-    #                      'R_4_0': 1.0950205915944824, 'A_4_0_1': 110.62463321031589,
-    #                      'D_4_0_1_3': 59.13545080998071, 'R_5_0': 1.093567969297245,
-    #                      'A_5_0_1': 110.91425998596507, 'D_5_0_1_4': 120.87266977773987,
-    #                      'R_6_0': 1.0950091062890002, 'A_6_0_1': 110.62270362433773,
-    #                      'D_6_0_1_5': 120.87301274044218, 'R_7_1': 1.0951433842986755,
-    #                      'A_7_1_0': 110.20822115119915, 'D_7_1_0_6': 181.16392677464265,
-    #                      'R_8_1': 1.0951410439636102, 'A_8_1_0': 110.20143800025897,
-    #                      'D_8_1_0_7': 239.4199964284852, 'R_9_3': 0.9741224704818748,
-    #                      'A_9_3_2': 96.30065819269021, 'D_9_3_2_1': 242.3527063196313},
-    #             'map': {0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8, 9: 9}}
-    #     zmat_1 = zmat.copy()
-    #     param_a2, param_d2, param_d3 = determine_glue_params_to_combine_zmats(zmat=zmat_1,
-    #                                                                           is_a2_linear=True,
-    #                                                                           a=3,
-    #                                                                           c=2,
-    #                                                                           d=0,
-    #                                                                           d3=30,
-    #                                                                           )
-    #     self.assertEqual(param_a2, 'A_11_9_10')
-    #     self.assertEqual(param_d2, 'D_11_9_10_3')
-    #     self.assertEqual(param_d3, 'D_12_11_9_3')
-    #     self.assertEqual(zmat_1['symbols'][-1], 'X')
-    #     self.assertEqual(zmat_1['coords'][-1], ('RX_10_9', 'AX_10_9_3', 'DX_10_9_3_2'))
-    #     self.assertEqual(zmat_1['vars']['RX_10_9'], 1.0)
-    #     self.assertEqual(zmat_1['vars']['AX_10_9_3'], 90)
-    #     self.assertEqual(zmat_1['vars']['DX_10_9_3_2'], 0)
-    #     self.assertEqual(zmat_1['map'][10], 'X10')
-    #     expected_xyz_1 = {'symbols': ('C', 'C', 'O', 'O', 'H', 'H', 'H', 'H', 'H', 'H', 'X'),
-    #                       'isotopes': (12, 12, 16, 16, 1, 1, 1, 1, 1, 1, None),
-    #                       'coords': ((0.01398594476849108, -0.6889055930112338, -1.784376061009113),
-    #                                  (0.01398594476849108, -0.6889055930112338, -0.26962806588789334),
-    #                                  (0.01398594476849108, 0.6628859053975544, 0.18618985833619472),
-    #                                  (0.013795619205083086, 0.5853276282667381, 1.6400480721581545),
-    #                                  (0.8936110241109786, -0.1630214384486075, -2.1700905561834642),
-    #                                  (0.013993742824539971, -1.7104245574061123, -2.174747562010025),
-    #                                  (-0.8656459383075578, -0.16302845349065453, -2.170051996558082),
-    #                                  (0.9066278741353695, -1.1982381538878737, 0.10867044129945613),
-    #                                  (-0.8786689727859842, -1.1983013118398729, 0.10854795923608584),
-    #                                  (-0.8438878073681937, 1.028321080587749, 1.77062574436878),
-    #                                  (-0.9409710712603131, 1.1321270125843694, 0.7807776912038682))}
-    #     self.assertEqual(zmat_to_xyz(zmat_1, keep_dummy=True), expected_xyz_1)
-    #
-    #     param_a2, param_d2, param_d3 = determine_glue_params_to_combine_zmats(zmat=zmat.copy(),
-    #                                                                           is_a2_linear=True,
-    #                                                                           a=3,
-    #                                                                           c=2,
-    #                                                                           d=0,
-    #                                                                           d3=None,
-    #                                                                           )
-    #     self.assertEqual(param_a2, 'A_11_9_10')
-    #     self.assertEqual(param_d2, 'D_11_9_10_3')
-    #     self.assertIsNone(param_d3)
-    #
-    #     param_a2, param_d2, param_d3 = determine_glue_params_to_combine_zmats(zmat=zmat.copy(),
-    #                                                                           is_a2_linear=True,
-    #                                                                           a=3,
-    #                                                                           c=None,
-    #                                                                           d=None,
-    #                                                                           d3=None,
-    #                                                                           )
-    #     self.assertEqual(param_a2, 'A_11_9_10')
-    #     self.assertIsNone(param_d2)
-    #     self.assertIsNone(param_d3)
-    #
+    def test_determine_glue_params_to_combine_zmats(self):
+        """Test the determine_glue_params_to_combine_zmats() function."""
+        zmat = {'symbols': ('C', 'C', 'O', 'O', 'H', 'H', 'H', 'H', 'H', 'H'),
+                'coords': ((None, None, None), ('R_1_0', None, None), ('R_2_1', 'A_2_1_0', None),
+                           ('R_3_2', 'A_3_2_1', 'D_3_2_1_0'), ('R_4_0', 'A_4_0_1', 'D_4_0_1_3'),
+                           ('R_5_0', 'A_5_0_1', 'D_5_0_1_4'), ('R_6_0', 'A_6_0_1', 'D_6_0_1_5'),
+                           ('R_7_1', 'A_7_1_0', 'D_7_1_0_6'), ('R_8_1', 'A_8_1_0', 'D_8_1_0_7'),
+                           ('R_9_3', 'A_9_3_2', 'D_9_3_2_1')),
+                'vars': {'R_1_0': 1.5147479951212197, 'R_2_1': 1.4265728986680748,
+                         'A_2_1_0': 108.63387152978416, 'R_3_2': 1.4559254886404387,
+                         'A_3_2_1': 105.58023544826183, 'D_3_2_1_0': 179.9922243050821,
+                         'R_4_0': 1.0950205915944824, 'A_4_0_1': 110.62463321031589,
+                         'D_4_0_1_3': 59.13545080998071, 'R_5_0': 1.093567969297245,
+                         'A_5_0_1': 110.91425998596507, 'D_5_0_1_4': 120.87266977773987,
+                         'R_6_0': 1.0950091062890002, 'A_6_0_1': 110.62270362433773,
+                         'D_6_0_1_5': 120.87301274044218, 'R_7_1': 1.0951433842986755,
+                         'A_7_1_0': 110.20822115119915, 'D_7_1_0_6': 181.16392677464265,
+                         'R_8_1': 1.0951410439636102, 'A_8_1_0': 110.20143800025897,
+                         'D_8_1_0_7': 239.4199964284852, 'R_9_3': 0.9741224704818748,
+                         'A_9_3_2': 96.30065819269021, 'D_9_3_2_1': 242.3527063196313},
+                'map': {0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8, 9: 9}}
+        zmat_1 = zmat.copy()
+        param_a2, param_d2, param_d3 = determine_glue_params_to_combine_zmats(zmat=zmat_1,
+                                                                              is_a2_linear=True,
+                                                                              a=3,
+                                                                              c=2,
+                                                                              d=0,
+                                                                              d3=30,
+                                                                              )
+        self.assertEqual(param_a2, 'A_11_9_10')
+        self.assertEqual(param_d2, 'D_11_9_10_3')
+        self.assertEqual(param_d3, 'D_12_11_9_3')
+        self.assertEqual(zmat_1['symbols'][-1], 'X')
+        self.assertEqual(zmat_1['coords'][-1], ('RX_10_9', 'AX_10_9_3', 'DX_10_9_3_2'))
+        self.assertEqual(zmat_1['vars']['RX_10_9'], 1.0)
+        self.assertEqual(zmat_1['vars']['AX_10_9_3'], 90)
+        self.assertEqual(zmat_1['vars']['DX_10_9_3_2'], 0)
+        self.assertEqual(zmat_1['map'][10], 'X10')
+        expected_xyz_1 = {'symbols': ('C', 'C', 'O', 'O', 'H', 'H', 'H', 'H', 'H', 'H', 'X'),
+                          'isotopes': (12, 12, 16, 16, 1, 1, 1, 1, 1, 1, None),
+                          'coords': ((0.01398594476849108, -0.6889055930112338, -1.784376061009113),
+                                     (0.01398594476849108, -0.6889055930112338, -0.26962806588789334),
+                                     (0.01398594476849108, 0.6628859053975544, 0.18618985833619472),
+                                     (0.013795619205083086, 0.5853276282667381, 1.6400480721581545),
+                                     (0.8936110241109786, -0.1630214384486075, -2.1700905561834642),
+                                     (0.013993742824539971, -1.7104245574061123, -2.174747562010025),
+                                     (-0.8656459383075578, -0.16302845349065453, -2.170051996558082),
+                                     (0.9066278741353695, -1.1982381538878737, 0.10867044129945613),
+                                     (-0.8786689727859842, -1.1983013118398729, 0.10854795923608584),
+                                     (-0.8438878073681937, 1.028321080587749, 1.77062574436878),
+                                     (-0.9409710712603131, 1.1321270125843694, 0.7807776912038682))}
+        self.assertEqual(zmat_to_xyz(zmat_1, keep_dummy=True), expected_xyz_1)
+
+        param_a2, param_d2, param_d3 = determine_glue_params_to_combine_zmats(zmat=zmat.copy(),
+                                                                              is_a2_linear=True,
+                                                                              a=3,
+                                                                              c=2,
+                                                                              d=0,
+                                                                              d3=None,
+                                                                              )
+        self.assertEqual(param_a2, 'A_11_9_10')
+        self.assertEqual(param_d2, 'D_11_9_10_3')
+        self.assertIsNone(param_d3)
+
+        param_a2, param_d2, param_d3 = determine_glue_params_to_combine_zmats(zmat=zmat.copy(),
+                                                                              is_a2_linear=True,
+                                                                              a=3,
+                                                                              c=None,
+                                                                              d=None,
+                                                                              d3=None,
+                                                                              )
+        self.assertEqual(param_a2, 'A_11_9_10')
+        self.assertIsNone(param_d2)
+        self.assertIsNone(param_d3)
+
     # def test_get_modified_params_from_zmat2(self):
     #     """Test the get_modified_params_from_zmat2() function."""
     #     zmat1 = {'symbols': ('C', 'C', 'H', 'H', 'H', 'H', 'H', 'H', 'X'),
