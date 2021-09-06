@@ -737,7 +737,7 @@ def get_arc_species(spc: Union[ARCSpecies, Species, Molecule]) -> ARCSpecies:
         spc (Union[ARCSpecies, Species, Molecule]): An input object.
 
     Returns:
-        ARCSpecies: THe corresponding ARCSpecies object.
+        ARCSpecies: The corresponding ARCSpecies object.
     """
     if isinstance(spc, ARCSpecies):
         return spc
