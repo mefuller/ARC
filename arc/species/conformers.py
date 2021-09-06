@@ -1035,6 +1035,7 @@ def get_force_field_energies(label: str,
                              num_confs: Optional[int] = None,
                              xyz: dict = None,
                              force_field: str = 'MMFF94s',
+                             try_uff: bool = True,
                              optimize: bool = True,
                              try_ob: bool = True,
                              suppress_warning: bool = False) -> Tuple[list, list]:
@@ -1049,6 +1050,7 @@ def get_force_field_energies(label: str,
         num_confs (int, optional): The number of random 3D conformations to generate.
         xyz (dict, optional): The 3D coordinates guess.
         force_field (str, optional): The type of force field to use.
+        try_uff (bool, optional): Whether to try UFF if MMFF94(s) fails. ``True`` by default.
         optimize (bool, optional): Whether to first optimize the conformer using FF. True to optimize.
         try_ob (bool, optional): Whether to try OpenBabel if RDKit fails. ``True`` to try, ``True`` by default.
         suppress_warning (bool, optional): Wheter to suppress warning of using OpenBabel. ``True`` to suppress, ``False`` by default.
@@ -1064,7 +1066,7 @@ def get_force_field_energies(label: str,
     xyzs, energies = list(), list()
     if force_field.lower() in ['mmff94', 'mmff94s', 'uff']:
         rd_mol = embed_rdkit(label, mol, num_confs=num_confs, xyz=xyz)
-        xyzs, energies = rdkit_force_field(label, rd_mol, force_field=force_field, optimize=optimize)
+        xyzs, energies = rdkit_force_field(label, rd_mol, force_field=force_field, try_uff=try_uff, optimize=optimize)
     if not len(xyzs) and force_field.lower() in ['gaff', 'mmff94', 'mmff94s', 'uff', 'ghemical'] and try_ob:
         if not suppress_warning:
             logger.warning(f'Using OpenBabel (instead of RDKit) as a fall back method to generate conformers for {label}. '
@@ -1322,14 +1324,21 @@ def read_rdkit_embedded_conformer_i(rd_mol, i, rd_index_map=None):
     return xyz_dict
 
 
-def rdkit_force_field(label, rd_mol, force_field='MMFF94s', optimize=True):
+def rdkit_force_field(label: str,
+                      rd_mol: RDMol,
+                      force_field: str = 'MMFF94s',
+                      try_uff: bool = True,
+                      optimize: bool = True,
+                      ) -> Tuple[list, list]:
     """
     Optimize RDKit conformers using a force field (MMFF94 or MMFF94s are recommended).
+    For UFF see: https://www.rdkit.org/docs/source/rdkit.Chem.rdForceFieldHelpers.html#rdkit.Chem.rdForceFieldHelpers.UFFOptimizeMoleculeConfs
 
     Args:
         label (str): The species' label.
         rd_mol (RDKit RDMol): The RDKit molecule with embedded conformers to optimize.
         force_field (str, optional): The type of force field to use.
+        try_uff (bool, optional): Whether to try UFF if MMFF94(s) fails. ``True`` by default.
         optimize (bool, optional): Whether to first optimize the conformer using FF. True to optimize.
 
     Returns:
@@ -1342,14 +1351,28 @@ def rdkit_force_field(label, rd_mol, force_field='MMFF94s', optimize=True):
         if optimize:
             v, j = 1, 0
             while v == 1 and j < 200:  # v == 1: continue, v == 0: enough steps, v == -1: unable to set up
-                v = Chem.AllChem.MMFFOptimizeMolecule(rd_mol, mmffVariant=force_field, confId=i,
-                                                      maxIters=500, ignoreInterfragInteractions=False)
+                v = Chem.AllChem.MMFFOptimizeMolecule(rd_mol,
+                                                      mmffVariant=force_field,
+                                                      confId=i,
+                                                      maxIters=500,
+                                                      ignoreInterfragInteractions=False,
+                                                      )
                 j += 1
         mol_properties = Chem.AllChem.MMFFGetMoleculeProperties(rd_mol, mmffVariant=force_field)
         if mol_properties is not None:
             ff = Chem.AllChem.MMFFGetMoleculeForceField(rd_mol, mol_properties, confId=i)
             if optimize:
                 energies.append(ff.CalcEnergy())
+            xyzs.append(read_rdkit_embedded_conformer_i(rd_mol, i))
+    if not len(xyzs) and 'MMFF' in force_field and try_uff:
+        output = Chem.AllChem.UFFOptimizeMoleculeConfs(rd_mol,
+                                                       maxIters=200,
+                                                       ignoreInterfragInteractions=True,
+                                                       ) \
+            if optimize else None
+        for i in range(rd_mol.GetNumConformers()):
+            if output is not None and output[i][0] == 0:  # The optimization converged.
+                energies.append(output[i][1])
             xyzs.append(read_rdkit_embedded_conformer_i(rd_mol, i))
     return xyzs, energies
 
