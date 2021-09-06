@@ -353,6 +353,7 @@ def combine_coordinates_with_redundant_atoms(xyz_1: Union[dict, str],
                                              mol_2: 'Molecule',
                                              h1: int,
                                              h2: int,
+                                             atom_map: List[int],
                                              c: Optional[int] = None,
                                              d: Optional[int] = None,
                                              r1_stretch: float = 1.2,
@@ -362,7 +363,6 @@ def combine_coordinates_with_redundant_atoms(xyz_1: Union[dict, str],
                                              d3: Optional[float] = None,
                                              keep_dummy: bool = False,
                                              reactants_reversed: bool = False,
-                                             atom_map: Optional[List[int]] = None,
                                              ) -> dict:
     """
     Combine two coordinates that share an atom.
@@ -405,6 +405,7 @@ def combine_coordinates_with_redundant_atoms(xyz_1: Union[dict, str],
         mol_2 (Molecule): The Molecule instance corresponding to ``xyz2``.
         h1 (int): The 0-index of a terminal redundant H atom in ``xyz1`` (atom H1).
         h2 (int): The 0-index of a terminal redundant H atom in ``xyz2`` (atom H2).
+        atom_map (List[int]): The ARCReaction atom_map.
         c (Optional[int]): The 0-index of an atom in ``xyz1`` connected to either A or H1 which is neither A nor H1
                            (atom C).
         d (Optional[int]): The 0-index of an atom in ``xyz2`` connected to either B or H2 which is neither B nor H2
@@ -420,8 +421,7 @@ def combine_coordinates_with_redundant_atoms(xyz_1: Union[dict, str],
         d3 (Optional[float]): The dihedral angel (in degrees) between atoms D-B-H-A (dihedral D-B-H-A).
                               This parameter is mandatory only if atom D exists (i.e., if ``mol2`` has 3 or more atoms).
         keep_dummy (bool, optional): Whether to keep a dummy atom if added, ``True`` to keep, ``False`` by default.
-        reactants_reversed (bool): Whether the reactants were reversed when generating the TS guess.
-        atom_map (Optional[List[int]]): The ARCReaction atom_map.
+        reactants_reversed (bool, optional): Whether the reactants were reversed relative to the RMG template.
 
     Returns:
         dict: The combined Cartesian coordinates.
@@ -465,16 +465,19 @@ def combine_coordinates_with_redundant_atoms(xyz_1: Union[dict, str],
 
     zmat_1, zmat_2 = generate_the_two_constrained_zmats(xyz_1, xyz_2, mol_1, mol_2, h1, h2, a, b, c, d)
 
-    if atom_map is not None:
-        # Re-map zmat_2, which is based on a product structure, back to the reactant atoms (expect for the redundant H).
-        print(atom_map)
-        atom_map = atom_map[:len(zmat_2['symbols']) - 1] if reactants_reversed else atom_map[len(zmat_1['symbols']):]
-        print(f'reactants_reversed: {reactants_reversed}')
-        print(atom_map)
-        print(zmat_2)
-        for reactant_index, product_index in enumerate(atom_map):
-            print(product_index)
-            zmat_2['map'][key_by_val(dictionary=zmat_2['map'], value=product_index)] = reactant_index
+    # if atom_map is not None:
+    #     # Re-map zmat_2, which is based on a product structure, back to the reactant atoms (expect for the redundant H).
+    #     new_map = dict()
+    #     for key, val in zmat_2['map'].items():
+    #         new_map[key] =
+    #     print(atom_map)
+    #     atom_map = atom_map[:len(zmat_2['symbols']) - 1] if reactants_reversed else atom_map[len(zmat_1['symbols']):]
+    #     print(f'reactants_reversed: {reactants_reversed}')
+    #     print(atom_map)
+    #     print(zmat_2)
+    #     for reactant_index, product_index in enumerate(atom_map):
+    #         print(product_index)
+    #         zmat_2['map'][key_by_val(dictionary=zmat_2['map'], value=product_index)] = reactant_index
 
     # Stretch the A--H1 and B--H2 bonds.
     stretch_zmat_bond(zmat=zmat_1, indices=(h1, a), stretch=r1_stretch)
@@ -488,19 +491,24 @@ def combine_coordinates_with_redundant_atoms(xyz_1: Union[dict, str],
                                                          d3=d3,
                                                          )
 
-    new_coords, new_vars, new_map = get_modified_params_from_zmat2(zmat_1=zmat_1,
-                                                                   zmat_2=zmat_2,
-                                                                   is_a2_linear=is_a2_linear,
-                                                                   glue_params=glue_params,
-                                                                   a2=a2,
-                                                                   c=c,
-                                                                   d2=d2,
-                                                                   d3=d3,
-                                                                   reactants_reversed=reactants_reversed,
-                                                                   )
+    new_symbols, new_coords, new_vars, new_map = get_modified_params_from_zmat_2(zmat_1=zmat_1,
+                                                                                 zmat_2=zmat_2,
+                                                                                 is_a2_linear=is_a2_linear,
+                                                                                 glue_params=glue_params,
+                                                                                 a2=a2,
+                                                                                 c=c,
+                                                                                 d2=d2,
+                                                                                 d3=d3,
+                                                                                 atom_map=atom_map,
+                                                                                 reactants_reversed=reactants_reversed,
+                                                                                 )
+
+
+    # also modify zmat_1 if R3 is the 1st or 2nd reactant
+
+
 
     combined_zmat = dict()
-    # Remove the redundant H from zmat2, it's the first atom.
     combined_zmat['symbols'] = tuple(zmat_1['symbols'] + zmat_2['symbols'][1:])  # todo: map it to products if needed (if its there?)
     combined_zmat['coords'] = tuple(list(zmat_1['coords']) + new_coords)
     combined_zmat['vars'] = {**zmat_1['vars'], **new_vars}  # Combine the two dicts.
@@ -561,7 +569,7 @@ def stretch_zmat_bond(zmat: dict,
     Stretch a bond in a zmat.
 
     Args:
-        zmat: THe zmat to process.
+        zmat: The zmat to process.
         indices (tuple): A length 2 tuple with the 0-indices of the xyz (not zmat) atoms representing the bond to stretch.
         stretch (float): The factor by which to multiply (stretch/shrink) the bond length.
     """
@@ -599,6 +607,7 @@ def determine_glue_params_to_combine_zmats(zmat: dict,
     zd = num_atoms_1 + 1 + int(is_a2_linear) if d is not None else None  # The atom index of D in the combined zmat.
     param_a2 = f'A_{zb}_{zh}_{za}'  # B-H-A
     param_d2 = f'D_{zb}_{zh}_{za}_{zc}' if zc is not None else None  # B-H-A-C
+    param_d3 = f'D_{zd}_{zb}_{zh}_{za}' if d3 is not None and d is not None else None  # D-B-H-A
     if is_a2_linear:
         # Add a dummy atom.
         zmat['map'][len(zmat['symbols'])] = f"X{len(zmat['symbols'])}"
@@ -615,22 +624,24 @@ def determine_glue_params_to_combine_zmats(zmat: dict,
             zmat['vars'][d_str] = 0
         param_a2 = f'A_{zb}_{zh}_{zx}'  # B-H-X
         param_d2 = f'D_{zb}_{zh}_{zx}_{za}' if zc is not None else None  # B-H-X-A
-    param_d3 = f'D_{zd}_{zb}_{zh}_{za}' if d3 is not None and d is not None else None  # D-B-H-A
+        param_d3 = f'D_{zd}_{zb}_{zh}_{zx}' if d3 is not None and d is not None else None  # D-B-H-X
     return param_a2, param_d2, param_d3
 
 
-def get_modified_params_from_zmat2(zmat_1: dict,
-                                   zmat_2: dict,
-                                   is_a2_linear: bool,
-                                   glue_params: Tuple[str, str, str],
-                                   a2: float,
-                                   c: Optional[int],
-                                   d2: Optional[float],
-                                   d3: Optional[float],
-                                   reactants_reversed=False,
-                                   ):
+def get_modified_params_from_zmat_2(zmat_1: dict,
+                                    zmat_2: dict,
+                                    is_a2_linear: bool,
+                                    glue_params: Tuple[str, str, str],
+                                    a2: float,
+                                    c: Optional[int],
+                                    d2: Optional[float],
+                                    d3: Optional[float],
+                                    atom_map: List[int],
+                                    reactants_reversed: bool = False,
+                                    ) -> Tuple[list, list, dict, dict]:
     """
-    Generate a modified zmat2: Remove the first atom, change all existing parameter indices, add "glue" parameters.
+    Generate a modified zmat2 (in parts):
+    Remove the first atom, change all existing parameter indices, and add "glue" parameters.
 
     Args:
         zmat_1 (dict): The zmat describing R1H.
@@ -641,14 +652,21 @@ def get_modified_params_from_zmat2(zmat_1: dict,
         c (int): The 0-index of an atom in ``xyz1`` connected to either A or H1 which is neither A nor H1 (atom C).
         d2 (float): The dihedral angle (in degrees) between atoms B-H-A-C (dihedral B-H-A-C).
         d3 (float): The dihedral angel (in degrees) between atoms D-B-H-A (dihedral D-B-H-A).
-        reactants_reversed (bool): Whether the reactants were reversed when generating the TS guess.
+        atom_map (List[int]): The ARCReaction atom_map.
+        reactants_reversed (bool, optional): Whether the reactants were reversed relative to the RMG template.
 
     Returns:
-        Tuple[list, dict, dict]: new_coords, new_vars, new_map.
+        Tuple[list, list, dict, dict]: new_symbols, new_coords, new_vars, new_map.
 
 
         todo: use reactants_reversed to manipulate new_coords, new_vars, new_map
+
+        atom map symbols, think how to modify key and val...
+
     """
+    # Remove the redundant H from zmat_2, it's the first atom. No need for further sorting, the zmat map will do that.
+    new_symbols = [symbol for symbol in zmat_2['symbols'][1:]]
+
     new_coords, new_vars = list(), dict()
     param_a2, param_d2, param_d3 = glue_params
     num_atoms_1 = len(zmat_1['symbols'])
@@ -657,7 +675,7 @@ def get_modified_params_from_zmat2(zmat_1: dict,
         for j, param in enumerate(coords):
             if param is not None:
                 if i == 0 and is_a2_linear:
-                    # Atom B should refer to H, not X.
+                    # Atom B should refer to H, not X (which is the last atom in zmat_1, if it exists).
                     new_param = up_param(param=param, increment_list=[num_atoms_1 - 1, num_atoms_1 - 2])
                 else:
                     new_param = up_param(param=param, increment=num_atoms_1 - 1)
@@ -671,7 +689,7 @@ def get_modified_params_from_zmat2(zmat_1: dict,
                 elif i == 0 and j == 2 and c is not None:
                     # This is d2.
                     new_coord.append(param_d2)
-                    new_vars[param_d2] = 0 if is_a2_linear else d2
+                    new_vars[param_d2] = d2
                 elif i == 1 and j == 2 and param_d3 is not None:
                     # This is d3.
                     new_coord.append(param_d3)
@@ -679,44 +697,64 @@ def get_modified_params_from_zmat2(zmat_1: dict,
                 else:
                     new_coord.append(None)
         new_coords.append(tuple(new_coord))
-    new_map = get_new_zmat2_map(zmat_1=zmat_1, zmat_2=zmat_2, reactants_reversed=reactants_reversed)
-    return new_coords, new_vars, new_map
+    new_map = get_new_zmat_2_map(zmat_1=zmat_1,
+                                 zmat_2=zmat_2,
+                                 atom_map=atom_map,
+                                 reactants_reversed=reactants_reversed,
+                                 )
+    return new_symbols, new_coords, new_vars, new_map
 
 
-def get_new_zmat2_map(zmat_1: dict,
-                      zmat_2: dict,
-                      reactants_reversed=False,
-                      ) -> Dict[int, Union[int, str]]:
+def get_new_zmat_2_map(zmat_1: dict,
+                       zmat_2: dict,
+                       atom_map: List[int],
+                       reactants_reversed: bool = False,
+                       ) -> Dict[int, Union[int, str]]:
     """
     Get the map of the combined zmat.
 
     Args:
-        zmat_1 (dict): The zmat describing R1H.
+        zmat_1 (dict): The zmat describing R1H. Contains a dummy atom at the end if a2 is linear.
         zmat_2 (dict): The zmat describing R2H.
-        reactants_reversed (bool): Whether the reactants were reversed when generating the TS guess.
+        atom_map (List[int]): The ARCReaction atom_map.
+        reactants_reversed (bool, optional): Whether the reactants were reversed relative to the RMG template.
 
     Returns:
-        dict: The combined zmat map element.
+        Dict[int, Union[int, str]]: The combined zmat map element.
     """
     new_map = dict()
-    num_atoms_1 = len(zmat_1['symbols'])
-    # Exclude the redundant H atom if the reactants were reversed.
-    num_atoms = num_atoms_1 if not reactants_reversed else num_atoms_1 - 1
-    num_atoms -= sum([1 for val in zmat_1['map'].values() if isinstance(val, str) and 'X' in val])
+    num_atoms_1, num_atoms_2 = len(zmat_1['symbols']), len(zmat_2['symbols']) - 1  # Redundant H in zmat_2.
+
+    # 1. Add zmat_1's map.
+    val_inc = num_atoms_2 if reactants_reversed else 0
     for key, val in zmat_1['map'].items():
-        if key < num_atoms:
-            new_map[key] = val
-        if key == num_atoms and reactants_reversed:
-            # This is the redundant H atom; map it correctly to R2 since the reactants are reversed.
-            pass  # todo
+        if isinstance(val, str) and 'X' in val:
+            new_map[key] = f'X{int(val[1:]) + val_inc}'
+        else:
+            new_map[key] = val + val_inc
 
-        elif isinstance(val, str) and 'X' in val:
-            len_new_map = len(list(new_map.values()))
-            new_map[len_new_map] = f'X{len_new_map}'
-
-    len_new_map = len(list(new_map.values()))
-    for key, val in zmat_2['map'].items():
-        new_map[key + len_new_map] = val + len_new_map
+    # 2. Add zmat_2's map. Use the reaction atom_map, remember that dummy atoms are not considered in the atom_map.
+    num_dummies_1 = len([symbol for symbol in zmat_1['symbols'] if symbol == 'X']) if not reactants_reversed else 0
+    dummy_2_indices = [int(val[1:]) for val in zmat_2['map'].values() if isinstance(val, str) and 'X' in val]
+    key_inc = num_atoms_1
+    val_inc = num_atoms_1 - num_dummies_1 if not reactants_reversed else 0
+    h2_index = zmat_2['map'][0]
+    for i, (key, val) in enumerate(zmat_2['map'].items()):
+        # Skip the redundant H.
+        new_key = key - 1 + key_inc
+        if i:
+            if isinstance(val, str) and 'X' in val:
+                # A dummy atom is not in the atom_map, look for the preceding atom and add 1.
+                dummy_index = int(val[1:])
+                new_val = atom_map.index(dummy_index - 1) + 1 + num_dummies_1 \
+                    + len([dummy_2_index for dummy_2_index in dummy_2_indices if dummy_index > dummy_2_index])
+                new_val = f'X{new_val}'
+            else:
+                new_val = atom_map.index(val + val_inc) + num_dummies_1 \
+                    + len([dummy_2_index for dummy_2_index in dummy_2_indices if val > dummy_2_index])
+            if val > h2_index:
+                new_val -= 1
+            new_map[new_key] = new_val
     return new_map
 
 
