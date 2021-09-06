@@ -443,16 +443,14 @@ def combine_coordinates_with_redundant_atoms(xyz_1: Union[dict, str],
     if not is_a2_linear and len(mol_2.atoms) > 2 and d3 is None:
         raise ValueError('The d3 parameter (the A-H-B-D dihedral) must be given if the a2 angle (B-H-A) is not close '
                          'to 180 degrees, got None.')
-    if is_angle_linear(a2) and d2 is not None:
-        logger.warning(f'The combination a2={a2} and d2={d2} is meaningless (cannot rotate a dihedral about a linear '
-                       f'angle). Not considering d2, it is redundant with d3.')
-        d2 = None
     if len(mol_1.atoms) > 2 and c is None:
         raise ValueError('The c parameter (the index of atom C in xyz1) must be given if mol_1 has 3 or more atoms, '
                          'got None.')
     if len(mol_2.atoms) > 2 and d is None:
         raise ValueError('The d parameter (the index of atom D in xyz2) must be given if mol_2 has 3 or more atoms, '
                          'got None.')
+    if len(mol_1.atoms) > 2 and d2 is None:
+        raise ValueError('The d2 parameter (dihedral B-H-A-C) must be given if mol_1 has 3 or more atoms, got None.')
     if len(mol_2.atoms) > 2 and d3 is None:
         raise ValueError('The d3 parameter (dihedral D-B-H-A) must be given if mol_2 has 3 or more atoms, got None.')
 
@@ -465,32 +463,17 @@ def combine_coordinates_with_redundant_atoms(xyz_1: Union[dict, str],
 
     zmat_1, zmat_2 = generate_the_two_constrained_zmats(xyz_1, xyz_2, mol_1, mol_2, h1, h2, a, b, c, d)
 
-    # if atom_map is not None:
-    #     # Re-map zmat_2, which is based on a product structure, back to the reactant atoms (expect for the redundant H).
-    #     new_map = dict()
-    #     for key, val in zmat_2['map'].items():
-    #         new_map[key] =
-    #     print(atom_map)
-    #     atom_map = atom_map[:len(zmat_2['symbols']) - 1] if reactants_reversed else atom_map[len(zmat_1['symbols']):]
-    #     print(f'reactants_reversed: {reactants_reversed}')
-    #     print(atom_map)
-    #     print(zmat_2)
-    #     for reactant_index, product_index in enumerate(atom_map):
-    #         print(product_index)
-    #         zmat_2['map'][key_by_val(dictionary=zmat_2['map'], value=product_index)] = reactant_index
-
     # Stretch the A--H1 and B--H2 bonds.
     stretch_zmat_bond(zmat=zmat_1, indices=(h1, a), stretch=r1_stretch)
     stretch_zmat_bond(zmat=zmat_2, indices=(b, h2), stretch=r2_stretch)
 
-    glue_params = determine_glue_params_to_combine_zmats(zmat=zmat_1,
-                                                         is_a2_linear=is_a2_linear,
-                                                         a=a,
-                                                         c=c,
-                                                         d=d,
-                                                         d3=d3,
-                                                         )
-
+    glue_params = determine_glue_params(zmat=zmat_1,
+                                        is_a2_linear=is_a2_linear,
+                                        a=a,
+                                        c=c,
+                                        d=d,
+                                        d3=d3,
+                                        )
     new_symbols, new_coords, new_vars, new_map = get_modified_params_from_zmat_2(zmat_1=zmat_1,
                                                                                  zmat_2=zmat_2,
                                                                                  is_a2_linear=is_a2_linear,
@@ -502,17 +485,7 @@ def combine_coordinates_with_redundant_atoms(xyz_1: Union[dict, str],
                                                                                  atom_map=atom_map,
                                                                                  reactants_reversed=reactants_reversed,
                                                                                  )
-
-
-    # also modify zmat_1 if R3 is the 1st or 2nd reactant
-
-
-
-    combined_zmat = dict()
-    combined_zmat['symbols'] = tuple(zmat_1['symbols'] + zmat_2['symbols'][1:])  # todo: map it to products if needed (if its there?)
-    combined_zmat['coords'] = tuple(list(zmat_1['coords']) + new_coords)
-    combined_zmat['vars'] = {**zmat_1['vars'], **new_vars}  # Combine the two dicts.
-    combined_zmat['map'] = new_map
+    combined_zmat = {'symbols': new_symbols, 'coords': new_coords, 'vars': new_vars, 'map': new_map}
     for i, coords in enumerate(combined_zmat['coords']):
         if i > 2 and None in coords:
             raise ValueError(f'Could not combine zmats, got a None parameter beyond the 3rd row:\n{combined_zmat}')
@@ -577,13 +550,13 @@ def stretch_zmat_bond(zmat: dict,
     zmat['vars'][param] *= stretch
 
 
-def determine_glue_params_to_combine_zmats(zmat: dict,
-                                           is_a2_linear: bool,
-                                           a: int,
-                                           c: Optional[int],
-                                           d: Optional[int],
-                                           d3: Optional[float],
-                                           ) -> Tuple[str, str, str]:
+def determine_glue_params(zmat: dict,
+                          is_a2_linear: bool,
+                          a: int,
+                          c: Optional[int],
+                          d: Optional[int],
+                          d3: Optional[float],
+                          ) -> Tuple[str, str, str]:
     """
     Determine glue parameters for combining two zmats.
     Modifies the ``zmat`` argument if a dummy atom needs to be added.
@@ -638,7 +611,7 @@ def get_modified_params_from_zmat_2(zmat_1: dict,
                                     d3: Optional[float],
                                     atom_map: List[int],
                                     reactants_reversed: bool = False,
-                                    ) -> Tuple[list, list, dict, dict]:
+                                    ) -> Tuple[tuple, tuple, dict, dict]:
     """
     Generate a modified zmat2 (in parts):
     Remove the first atom, change all existing parameter indices, and add "glue" parameters.
@@ -656,16 +629,10 @@ def get_modified_params_from_zmat_2(zmat_1: dict,
         reactants_reversed (bool, optional): Whether the reactants were reversed relative to the RMG template.
 
     Returns:
-        Tuple[list, list, dict, dict]: new_symbols, new_coords, new_vars, new_map.
-
-
-        todo: use reactants_reversed to manipulate new_coords, new_vars, new_map
-
-        atom map symbols, think how to modify key and val...
-
+        Tuple[tuple, tuple, dict, dict]: new_symbols, new_coords, new_vars, new_map.
     """
     # Remove the redundant H from zmat_2, it's the first atom. No need for further sorting, the zmat map will do that.
-    new_symbols = [symbol for symbol in zmat_2['symbols'][1:]]
+    new_symbols = tuple(zmat_1['symbols'] + zmat_2['symbols'][1:])
 
     new_coords, new_vars = list(), dict()
     param_a2, param_d2, param_d3 = glue_params
@@ -702,6 +669,8 @@ def get_modified_params_from_zmat_2(zmat_1: dict,
                                  atom_map=atom_map,
                                  reactants_reversed=reactants_reversed,
                                  )
+    new_coords = tuple(list(zmat_1['coords']) + new_coords)
+    new_vars = {**zmat_1['vars'], **new_vars}
     return new_symbols, new_coords, new_vars, new_map
 
 
