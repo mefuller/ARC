@@ -24,7 +24,9 @@ import os
 from typing import TYPE_CHECKING, Dict, List, Optional, Tuple, Union
 
 from rmgpy.exceptions import ActionError
+from rmgpy.molecule.molecule import Molecule
 from rmgpy.reaction import Reaction
+from rmgpy.species import Species
 
 from arc.common import almost_equal_coords, colliding_atoms, get_logger, key_by_val
 from arc.job.adapter import JobAdapter
@@ -32,12 +34,12 @@ from arc.job.adapters.common import check_argument_consistency, ts_adapters_by_r
 from arc.job.factory import register_job_adapter
 from arc.plotter import save_geo
 from arc.species.converter import compare_zmats, sort_xyz_using_indices, xyz_from_data, zmat_from_xyz, zmat_to_xyz
+from arc.species.mapping import map_two_species
 from arc.species.species import ARCSpecies, TSGuess
 from arc.species.zmat import get_parameter_from_atom_indices, is_angle_linear, up_param
 
 if TYPE_CHECKING:
     from rmgpy.data.kinetics.family import KineticsFamily
-    from rmgpy.molecule.molecule import Molecule
     from arc.level import Level
     from arc.reaction import ARCReaction
     from arc.species import ARCSpecies
@@ -363,6 +365,7 @@ def combine_coordinates_with_redundant_atoms(xyz_1: Union[dict, str],
                                              d3: Optional[float] = None,
                                              keep_dummy: bool = False,
                                              reactants_reversed: bool = False,
+                                             products_reversed: bool = False,
                                              ) -> dict:
     """
     Combine two coordinates that share an atom.
@@ -422,6 +425,7 @@ def combine_coordinates_with_redundant_atoms(xyz_1: Union[dict, str],
                               This parameter is mandatory only if atom D exists (i.e., if ``mol2`` has 3 or more atoms).
         keep_dummy (bool, optional): Whether to keep a dummy atom if added, ``True`` to keep, ``False`` by default.
         reactants_reversed (bool, optional): Whether the reactants were reversed relative to the RMG template.
+        products_reversed (bool, optional): Whether the products were reversed relative to the RMG template.
 
     Returns:
         dict: The combined Cartesian coordinates.
@@ -484,6 +488,7 @@ def combine_coordinates_with_redundant_atoms(xyz_1: Union[dict, str],
                                                                                  d3=d3,
                                                                                  atom_map=atom_map,
                                                                                  reactants_reversed=reactants_reversed,
+                                                                                 products_reversed=products_reversed,
                                                                                  )
     combined_zmat = {'symbols': new_symbols, 'coords': new_coords, 'vars': new_vars, 'map': new_map}
     for i, coords in enumerate(combined_zmat['coords']):
@@ -611,6 +616,7 @@ def get_modified_params_from_zmat_2(zmat_1: dict,
                                     d3: Optional[float],
                                     atom_map: List[int],
                                     reactants_reversed: bool = False,
+                                    products_reversed: bool = False,
                                     ) -> Tuple[tuple, tuple, dict, dict]:
     """
     Generate a modified zmat2 (in parts):
@@ -627,6 +633,7 @@ def get_modified_params_from_zmat_2(zmat_1: dict,
         d3 (float): The dihedral angel (in degrees) between atoms D-B-H-A (dihedral D-B-H-A).
         atom_map (List[int]): The ARCReaction atom_map.
         reactants_reversed (bool, optional): Whether the reactants were reversed relative to the RMG template.
+        products_reversed (bool, optional): Whether the products were reversed relative to the RMG template.
 
     Returns:
         Tuple[tuple, tuple, dict, dict]: new_symbols, new_coords, new_vars, new_map.
@@ -668,6 +675,7 @@ def get_modified_params_from_zmat_2(zmat_1: dict,
                                  zmat_2=zmat_2,
                                  atom_map=atom_map,
                                  reactants_reversed=reactants_reversed,
+                                 products_reversed=products_reversed,
                                  )
     new_coords = tuple(list(zmat_1['coords']) + new_coords)
     new_vars = {**zmat_1['vars'], **new_vars}
@@ -678,6 +686,7 @@ def get_new_zmat_2_map(zmat_1: dict,
                        zmat_2: dict,
                        atom_map: List[int],
                        reactants_reversed: bool = False,
+                       products_reversed: bool = False,
                        ) -> Dict[int, Union[int, str]]:
     """
     Get the map of the combined zmat.
@@ -687,6 +696,7 @@ def get_new_zmat_2_map(zmat_1: dict,
         zmat_2 (dict): The zmat describing R2H.
         atom_map (List[int]): The ARCReaction atom_map.
         reactants_reversed (bool, optional): Whether the reactants were reversed relative to the RMG template.
+        products_reversed (bool, optional): Whether the products were reversed relative to the RMG template.
 
     Returns:
         Dict[int, Union[int, str]]: The combined zmat map element.
@@ -706,20 +716,25 @@ def get_new_zmat_2_map(zmat_1: dict,
     num_dummies_1 = len([symbol for symbol in zmat_1['symbols'] if symbol == 'X']) if not reactants_reversed else 0
     dummy_2_indices = [int(val[1:]) for val in zmat_2['map'].values() if isinstance(val, str) and 'X' in val]
     key_inc = num_atoms_1
-    val_inc = num_atoms_1 - num_dummies_1 if not reactants_reversed else 0
+    atom_map_val_inc = num_atoms_1 - 1 if not products_reversed else 0
     h2_index = zmat_2['map'][0]
     for i, (key, val) in enumerate(zmat_2['map'].items()):
         # Skip the redundant H.
-        new_key = key - 1 + key_inc
         if i:
+            # Atoms in zmat_2 always come after atoms in zmat_1 in the new zmat, regardless of the reactants/products
+            # order in each side of the given reaction. Deduct 1 since we're skipping the first atom in zmat_2, atom H2.
+            new_key = key - 1 + key_inc
+            # Use the reaction atom_map to map atoms in zmat_2 (i.e., values in zmat_2's 'map') to atoms in the R(*3)
+            # reactant (at least for H-Abstraction reactions), since zmat_2 was built based on atoms in the R(*3)-H(*2)
+            # **product** (at least for H-Abstraction reactions).
             if isinstance(val, str) and 'X' in val:
                 # A dummy atom is not in the atom_map, look for the preceding atom and add 1.
                 dummy_index = int(val[1:])
-                new_val = atom_map.index(dummy_index - 1) + 1 + num_dummies_1 \
+                new_val = atom_map.index(dummy_index - 1 + atom_map_val_inc) + 1 + num_dummies_1 \
                     + len([dummy_2_index for dummy_2_index in dummy_2_indices if dummy_index > dummy_2_index])
                 new_val = f'X{new_val}'
             else:
-                new_val = atom_map.index(val + val_inc) + num_dummies_1 \
+                new_val = atom_map.index(val + val_inc + atom_map_val_inc) + num_dummies_1 \
                     + len([dummy_2_index for dummy_2_index in dummy_2_indices if val > dummy_2_index])
             if val > h2_index:
                 new_val -= 1
@@ -727,8 +742,8 @@ def get_new_zmat_2_map(zmat_1: dict,
     return new_map
 
 
-def label_molecules(reactants: List['Molecule'],
-                    products: List['Molecule'],
+def label_molecules(reactants: List[Union[Molecule, Species]],
+                    products: List[Union[Molecule, Species]],
                     family: 'KineticsFamily',
                     output_with_resonance: bool = False,
                     ) -> Optional[Reaction]:
@@ -746,7 +761,8 @@ def label_molecules(reactants: List['Molecule'],
     Returns:
         Optional[Reaction]: An RMG Reaction instance with atom-labeled reactants and products.
     """
-    reaction = Reaction(reactants=reactants, products=products)
+    reactants_copy, products_copy = [r.copy(deep=True) for r in reactants], [p.copy(deep=True) for p in products]
+    reaction = Reaction(reactants=reactants_copy, products=products_copy)
     try:
         family.add_atom_labels_for_reaction(reaction=reaction,
                                             output_with_resonance=output_with_resonance,
@@ -754,6 +770,42 @@ def label_molecules(reactants: List['Molecule'],
                                             )
     except (ActionError, ValueError):
         return None
+
+    reactant_mols, product_mols = list(), list()
+    for reactant in reactants:
+        if isinstance(reactant, Molecule):
+            reactant_mols.append(reactant.copy(deep=True))
+        elif isinstance(reactant, Species):
+            reactant_mols.append(reactant.molecule[0].copy(deep=True))
+    for product in products:
+        if isinstance(product, Molecule):
+            product_mols.append(product)
+        elif isinstance(product, Species):
+            product_mols.append(product.molecule[0])
+
+    # Use atom mapping, since atoms in the RMG products were shuffled (products re-created from the reactants).
+    for index in range(len(reaction.reactants)):
+        # The RMG molecule will get a random 3D conformer, don't consider chirality when mapping.
+        atom_map = map_two_species(spc_1=reactant_mols[index],
+                                   spc_2=reaction.reactants[index].molecule[0],
+                                   consider_chirality=False,
+                                   )
+        new_atoms_list = list()
+        for i in range(len(reactant_mols[index].atoms)):
+            reactant_mols[index].atoms[i].id = reaction.reactants[index].molecule[0].atoms[atom_map[i]].id
+            new_atoms_list.append(reactant_mols[index].atoms[i])
+        reaction.reactants[index].molecule[0].atoms = new_atoms_list
+    for index in range(len(reaction.products)):
+        # The RMG molecule will get a random 3D conformer, don't consider chirality when mapping.
+        atom_map = map_two_species(spc_1=product_mols[index],
+                                   spc_2=reaction.products[index].molecule[0],
+                                   consider_chirality=False,
+                                   )
+        new_atoms_list = list()
+        for i in range(len(product_mols[index].atoms)):
+            product_mols[index].atoms[i].id = reaction.products[index].molecule[0].atoms[atom_map[i]].id
+            new_atoms_list.append(product_mols[index].atoms[i])
+        reaction.products[index].molecule[0].atoms = new_atoms_list
     return reaction
 
 
@@ -845,12 +897,12 @@ def h_abstraction(arc_reaction: 'ARCReaction',
     # using the first RMG reaction; all other RMG reactions and the ARC reaction should have the same order.
     # The expected RMG atom labels are: R(*1)-H(*2) + R(*3)j <=> R(*1)j + R(*3)-H(*2).
     reactants_reversed, products_reversed = False, False
-    for atom in rmg_reactions[0].reactants[0].molecule[0].atoms:
-        if atom.label == '*3':
+    for atom in rmg_reactions[0].reactants[1].molecule[0].atoms:
+        if atom.label == '*2':
             reactants_reversed = True
             break
-    for atom in rmg_reactions[0].products[1].molecule[0].atoms:
-        if atom.label == '*1':
+    for atom in rmg_reactions[0].products[0].molecule[0].atoms:
+        if atom.label == '*2':
             products_reversed = True
             break
 
@@ -868,8 +920,7 @@ def h_abstraction(arc_reaction: 'ARCReaction',
         d = find_distant_neighbor(rmg_mol=rmg_product_mol, start=h2)
 
         # d2 describes the B-H-A-C dihedral, populate d2_values if C exists and the B-H-A angle is not linear.
-        d2_values = list(range(0, 360, dihedral_increment)) if len(rmg_reactant_mol.atoms) > 2 \
-            and not is_angle_linear(a2) else list()
+        d2_values = list(range(0, 360, dihedral_increment)) if len(rmg_reactant_mol.atoms) > 2 else list()
 
         # d3 describes the D-B-H-A dihedral, populate d3_values if D exists.
         d3_values = list(range(0, 360, dihedral_increment)) if len(rmg_product_mol.atoms) > 2 else list()
@@ -901,6 +952,7 @@ def h_abstraction(arc_reaction: 'ARCReaction',
                                                                      d2=d2,
                                                                      d3=d3,
                                                                      reactants_reversed=reactants_reversed,
+                                                                     products_reversed=products_reversed,
                                                                      atom_map=arc_reaction.atom_map,
                                                                      )
             except ValueError as e:
