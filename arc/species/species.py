@@ -1030,8 +1030,10 @@ class ARCSpecies(object):
         else:
             num_confs = min(500, max(50, len(self.mol.atoms) * 3))
             rd_mol = conformers.embed_rdkit(label=self.label, mol=self.mol, num_confs=num_confs)
-            xyzs, energies = conformers.rdkit_force_field(label=self.label, rd_mol=rd_mol,
-                                                          force_field='MMFF94s')
+            xyzs, energies = conformers.rdkit_force_field(label=self.label,
+                                                          rd_mol=rd_mol,
+                                                          force_field='MMFF94s',
+                                                          )
             if energies:
                 min_energy = min(energies)
                 min_energy_index = energies.index(min_energy)
@@ -1039,7 +1041,7 @@ class ARCSpecies(object):
             elif xyzs:
                 self.cheap_conformer = xyzs[0]
             else:
-                logger.warning('Could not generate a cheap conformer for {0}'.format(self.label))
+                logger.warning(f'Could not generate a cheap conformer for {self.label}')
                 self.cheap_conformer = None
 
     def get_xyz(self, generate: bool = True) -> Optional[dict]:
@@ -1075,7 +1077,7 @@ class ARCSpecies(object):
                         xyz = self.conformers[0]
         return xyz
 
-    def determine_rotors(self) -> None:
+    def determine_rotors(self, verbose: bool = False) -> None:
         """
         Determine possible unique rotors in the species to be treated as hindered rotors,
         taking into account all localized structures.
@@ -1101,13 +1103,14 @@ class ARCSpecies(object):
                     else:
                         self.rotors_dict[self.number_of_rotors] = new_rotor
                         self.number_of_rotors += 1
-        if self.number_of_rotors == 1:
-            logger.info(f'\nFound one possible rotor for {self.label}')
-        elif self.number_of_rotors > 1:
-            logger.info(f'\nFound {self.number_of_rotors} possible rotors for {self.label}')
-        if self.number_of_rotors > 0:
-            logger.info(f'Pivot list(s) for {self.label}: '
-                        f'{[self.rotors_dict[i]["pivots"] for i in range(self.number_of_rotors)]}\n')
+        if verbose:
+            if self.number_of_rotors == 1:
+                logger.info(f'\nFound one possible rotor for {self.label}')
+            elif self.number_of_rotors > 1:
+                logger.info(f'\nFound {self.number_of_rotors} possible rotors for {self.label}')
+            if self.number_of_rotors > 0:
+                logger.info(f'Pivot list(s) for {self.label}: '
+                            f'{[self.rotors_dict[i]["pivots"] for i in range(self.number_of_rotors)]}\n')
         self.initialize_directed_rotors()
 
     def initialize_directed_rotors(self):
@@ -2105,7 +2108,7 @@ class TSGuess(object):
         """
         self.success = False
 
-    def process_xyz(self, xyz: dict or str):
+    def process_xyz(self, xyz: Union[dict, str]):
         """
         Process the user's input. If ``xyz`` represents a file path, parse it.
 
@@ -2424,7 +2427,7 @@ def check_atom_balance(entry_1: Union[dict, str, Molecule],
 
     Args:
         entry_1 (Union[dict, str, Molecule]): Either an xyz (dict or str) or an RMG Molecule object.
-        entry_2 (Union[dict, str, Molecule]):  Either an xyz (dict or str) or an RMG Molecule object.
+        entry_2 (Union[dict, str, Molecule]): Either an xyz (dict or str) or an RMG Molecule object.
         verbose (Optional[bool]): Whether to log the differences if found.
 
     Raises:
