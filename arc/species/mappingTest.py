@@ -6,6 +6,7 @@ This module contains unit tests of the arc.species.mapping module
 """
 
 import unittest
+from typing import List
 
 from qcelemental.models.molecule import Molecule as QCMolecule
 
@@ -14,6 +15,7 @@ from rmgpy.reaction import Reaction
 from rmgpy.species import Species
 
 import arc.species.mapping as mapping
+from arc.common import check_r_n_p_symbols_between_rmg_and_arc_rxns
 from arc.rmgdb import determine_family, load_families_only, make_rmg_database_object, rmg_database_instance_only_fams
 from arc.reaction import ARCReaction
 from arc.species.species import ARCSpecies
@@ -635,14 +637,14 @@ class TestMapping(unittest.TestCase):
                           H  -1.6934   -0.0680   -0.9854
                           H  -1.6986   -0.8169    0.6255"""
         reactant = ARCSpecies(label='reactant', smiles='C([C]1=[N]O[N]=[N]1)', xyz=reactant_xyz)
-        product_xyz = """C  -1.0108   -0.0114   -0.0610  
-                         C   0.4780    0.0191    0.0139    
-                         N   1.2974   -0.9930    0.4693    
-                         O   0.6928   -1.9845    0.8337    
-                         N   1.7456    1.9701   -0.6976    
-                         N   1.1642    1.0763   -0.3716    
-                         H  -1.4020    0.9134   -0.4821  
-                         H  -1.3327   -0.8499   -0.6803   
+        product_xyz = """C  -1.0108   -0.0114   -0.0610
+                         C   0.4780    0.0191    0.0139
+                         N   1.2974   -0.9930    0.4693
+                         O   0.6928   -1.9845    0.8337
+                         N   1.7456    1.9701   -0.6976
+                         N   1.1642    1.0763   -0.3716
+                         H  -1.4020    0.9134   -0.4821
+                         H  -1.3327   -0.8499   -0.6803
                          H  -1.4329   -0.1554    0.9349"""
         product = ARCSpecies(label='product', smiles='[N-]=[N+]=C(N=O)C', xyz=product_xyz)
         rxn_1 = ARCReaction(label='reactant <=> product', ts_label='TS0', r_species=[reactant], p_species=[product])
@@ -652,10 +654,9 @@ class TestMapping(unittest.TestCase):
         self.assertIn(atom_map[7], [6, 7])
         self.assertIn(atom_map[8], [7, 8])
 
-
     def test_get_atom_indices_of_labeled_atoms_in_an_rmg_reaction(self):
         """Test the get_atom_indices_of_labeled_atoms_in_an_rmg_reaction() function."""
-        determine_family(self.arc_reaction_1)
+        determine_family(self.arc_reaction_1, db=self.rmgdb)
         rmg_reactions = mapping.get_rmg_reactions_from_arc_reaction(arc_reaction=self.arc_reaction_1, db=self.rmgdb)
         r_dict, p_dict = mapping.get_atom_indices_of_labeled_atoms_in_an_rmg_reaction(arc_reaction=self.arc_reaction_1,
                                                                                       rmg_reaction=rmg_reactions[0])
@@ -665,8 +666,9 @@ class TestMapping(unittest.TestCase):
         self.assertEqual(p_dict['*1'], 0)
         self.assertIn(p_dict['*2'], [5, 6])
         self.assertEqual(p_dict['*3'], 4)
+        self.assertTrue(check_r_n_p_symbols_between_rmg_and_arc_rxns(self.arc_reaction_1, rmg_reactions))
 
-        determine_family(self.arc_reaction_2)
+        determine_family(self.arc_reaction_2, db=self.rmgdb)
         rmg_reactions = mapping.get_rmg_reactions_from_arc_reaction(arc_reaction=self.arc_reaction_2, db=self.rmgdb)
         r_dict, p_dict = mapping.get_atom_indices_of_labeled_atoms_in_an_rmg_reaction(arc_reaction=self.arc_reaction_2,
                                                                                       rmg_reaction=rmg_reactions[0])
@@ -676,8 +678,10 @@ class TestMapping(unittest.TestCase):
         self.assertEqual(p_dict['*1'], 0)
         self.assertIn(p_dict['*2'], [11, 12, 13])
         self.assertEqual(p_dict['*3'], 10)
+        self.assertTrue(check_r_n_p_symbols_between_rmg_and_arc_rxns(self.arc_reaction_2, rmg_reactions))
 
-        determine_family(self.arc_reaction_4)
+
+        determine_family(self.arc_reaction_4, db=self.rmgdb)
         rmg_reactions = mapping.get_rmg_reactions_from_arc_reaction(arc_reaction=self.arc_reaction_4, db=self.rmgdb)
         r_dict, p_dict = mapping.get_atom_indices_of_labeled_atoms_in_an_rmg_reaction(arc_reaction=self.arc_reaction_4,
                                                                                       rmg_reaction=rmg_reactions[0])
@@ -687,8 +691,9 @@ class TestMapping(unittest.TestCase):
         self.assertEqual(p_dict['*1'], 0)
         self.assertEqual(p_dict['*2'], 2)
         self.assertIn(p_dict['*3'], [3, 4, 5])
+        self.assertTrue(check_r_n_p_symbols_between_rmg_and_arc_rxns(self.arc_reaction_4, rmg_reactions))
 
-        determine_family(self.rxn_2a)
+        determine_family(self.rxn_2a, db=self.rmgdb)
         for atom, symbol in zip(self.rxn_2a.r_species[0].mol.atoms, ['C', 'C', 'C', 'H', 'H', 'H', 'H', 'H', 'H', 'H']):
             self.assertEqual(atom.symbol, symbol)
         self.assertEqual(self.rxn_2a.r_species[0].mol.atoms[0].radical_electrons, 0)
@@ -706,8 +711,9 @@ class TestMapping(unittest.TestCase):
         self.assertEqual(p_dict['*1'], 1)
         self.assertEqual(p_dict['*2'], 2)
         self.assertIn(p_dict['*3'], [3, 6])
+        self.assertTrue(check_r_n_p_symbols_between_rmg_and_arc_rxns(self.rxn_2a, rmg_reactions))
 
-        determine_family(self.rxn_2b)
+        determine_family(self.rxn_2b, db=self.rmgdb)
         for atom, symbol in zip(self.rxn_2b.r_species[0].mol.atoms, ['C', 'C', 'H', 'H', 'H', 'H', 'C', 'H', 'H', 'H']):
             self.assertEqual(atom.symbol, symbol)
         rmg_reactions = mapping.get_rmg_reactions_from_arc_reaction(arc_reaction=self.rxn_2b, db=self.rmgdb)
@@ -719,6 +725,7 @@ class TestMapping(unittest.TestCase):
         self.assertEqual(p_dict['*1'], 1)
         self.assertEqual(p_dict['*2'], 2)
         self.assertIn(p_dict['*3'], [3, 6])
+        self.assertTrue(check_r_n_p_symbols_between_rmg_and_arc_rxns(self.rxn_2b, rmg_reactions))
 
         # C3H6O + C4H9O <=> C3H5O + C4H10O
         r_1 = ARCSpecies(label='C3H6O', smiles='CCC=O')
@@ -727,7 +734,7 @@ class TestMapping(unittest.TestCase):
         p_2 = ARCSpecies(label='C4H10O', smiles='CC(C)CO')
         rxn_1 = ARCReaction(reactants=['C3H6O', 'C4H9O'], products=['C3H5O', 'C4H10O'],
                             r_species=[r_1, r_2], p_species=[p_1, p_2])
-        determine_family(rxn_1)
+        determine_family(rxn_1, db=self.rmgdb)
         rmg_reactions = mapping.get_rmg_reactions_from_arc_reaction(arc_reaction=rxn_1, db=self.rmgdb)
         for rmg_reaction in rmg_reactions:
             r_dict, p_dict = mapping.get_atom_indices_of_labeled_atoms_in_an_rmg_reaction(arc_reaction=rxn_1,
@@ -737,11 +744,12 @@ class TestMapping(unittest.TestCase):
                 keys = list(d.keys())
                 for label in ['*1', '*2', '*3']:
                     self.assertIn(label, keys)
+        self.assertTrue(check_r_n_p_symbols_between_rmg_and_arc_rxns(rxn_1, rmg_reactions))
 
         p_1 = ARCSpecies(label='C3H5O', smiles='CC=C[O]')  # Use a wrong resonance structure and repeat the above.
         rxn_2 = ARCReaction(reactants=['C3H6O', 'C4H9O'], products=['C3H5O', 'C4H10O'],
                             r_species=[r_1, r_2], p_species=[p_1, p_2])
-        determine_family(rxn_2)
+        determine_family(rxn_2, db=self.rmgdb)
         rmg_reactions = mapping.get_rmg_reactions_from_arc_reaction(arc_reaction=rxn_2, db=self.rmgdb)
         for rmg_reaction in rmg_reactions:
             r_dict, p_dict = mapping.get_atom_indices_of_labeled_atoms_in_an_rmg_reaction(arc_reaction=rxn_2,
@@ -751,6 +759,7 @@ class TestMapping(unittest.TestCase):
                 keys = list(d.keys())
                 for label in ['*1', '*2', '*3']:
                     self.assertIn(label, keys)
+        self.assertTrue(check_r_n_p_symbols_between_rmg_and_arc_rxns(rxn_2, rmg_reactions))
 
         # C3H6O + C4H9O <=> C3H5O + C4H10O
         r_1 = ARCSpecies(label='C3H6O', smiles='CCC=O', xyz=self.c3h6o_xyz)
@@ -759,12 +768,13 @@ class TestMapping(unittest.TestCase):
         p_2 = ARCSpecies(label='C4H10O', smiles='CC(C)CO', xyz=self.c4h10o_xyz)
         rxn_3 = ARCReaction(reactants=['C3H6O', 'C4H9O'], products=['C3H5O', 'C4H10O'],
                             r_species=[r_1, r_2], p_species=[p_1, p_2])
-        determine_family(rxn_3)
+        determine_family(rxn_3, db=self.rmgdb)
         rmg_reactions = mapping.get_rmg_reactions_from_arc_reaction(arc_reaction=rxn_3, db=self.rmgdb)
         r_dict, p_dict = mapping.get_atom_indices_of_labeled_atoms_in_an_rmg_reaction(arc_reaction=rxn_3,
                                                                                       rmg_reaction=rmg_reactions[0])
         self.assertEqual(r_dict, {'*3': 10, '*1': 1, '*2': 7})
         self.assertEqual(p_dict, {'*1': 1, '*3': 9, '*2': 16})
+        self.assertTrue(check_r_n_p_symbols_between_rmg_and_arc_rxns(rxn_3, rmg_reactions))
 
     def test_map_arc_rmg_species(self):
         """Test the map_arc_rmg_species() function."""
@@ -1057,9 +1067,9 @@ class TestMapping(unittest.TestCase):
                                            (1.3673933946336125, -0.36643505437710233, 0.0)),
                                 'isotopes': (32, 16, 16), 'symbols': ('S', 'O', 'O')})
         fingerprint = mapping.fingerprint(so2_t)
-        self.assertEqual(fingerprint, {0: {'self': 'S', 'O': [2, 1]},
-                                       1: {'self': 'O', 'S': [0]},
-                                       2: {'self': 'O', 'S': [0]}})
+        self.assertIn(fingerprint[0]['O'], [[1, 2], [2, 1]])  # non-deterministic
+        for i in [1, 2]:
+            self.assertEqual(fingerprint[i], {'self': 'O', 'S': [0]})
 
         fingerprint = mapping.fingerprint(self.ccjco)
         self.assertEqual(fingerprint, {0: {'self': 'C', 'C': [1], 'H': [5, 6, 7]},

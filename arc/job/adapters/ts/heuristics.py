@@ -640,6 +640,7 @@ def get_modified_params_from_zmat_2(zmat_1: dict,
     """
     # Remove the redundant H from zmat_2, it's the first atom. No need for further sorting, the zmat map will do that.
     new_symbols = tuple(zmat_1['symbols'] + zmat_2['symbols'][1:])
+    print(f'new_symbols: {new_symbols}')
 
     new_coords, new_vars = list(), dict()
     param_a2, param_d2, param_d3 = glue_params
@@ -701,6 +702,12 @@ def get_new_zmat_2_map(zmat_1: dict,
     Returns:
         Dict[int, Union[int, str]]: The combined zmat map element.
     """
+    import pprint
+    pprint.pprint(zmat_1)
+    pprint.pprint(zmat_2)
+    print(atom_map)
+    print(reactants_reversed)
+    print(products_reversed)
     new_map = dict()
     num_atoms_1, num_atoms_2 = len(zmat_1['symbols']), len(zmat_2['symbols']) - 1  # Redundant H in zmat_2.
 
@@ -717,28 +724,36 @@ def get_new_zmat_2_map(zmat_1: dict,
     dummy_2_indices = [int(val[1:]) for val in zmat_2['map'].values() if isinstance(val, str) and 'X' in val]
     key_inc = num_atoms_1
     atom_map_val_inc = num_atoms_1 - 1 if not products_reversed else 0
+    print(f'atom_map_val_inc: {atom_map_val_inc}')
     h2_index = zmat_2['map'][0]
     for i, (key, val) in enumerate(zmat_2['map'].items()):
         # Skip the redundant H.
-        if i:
-            # Atoms in zmat_2 always come after atoms in zmat_1 in the new zmat, regardless of the reactants/products
-            # order in each side of the given reaction. Deduct 1 since we're skipping the first atom in zmat_2, atom H2.
-            new_key = key - 1 + key_inc
-            # Use the reaction atom_map to map atoms in zmat_2 (i.e., values in zmat_2's 'map') to atoms in the R(*3)
-            # reactant (at least for H-Abstraction reactions), since zmat_2 was built based on atoms in the R(*3)-H(*2)
-            # **product** (at least for H-Abstraction reactions).
-            if isinstance(val, str) and 'X' in val:
-                # A dummy atom is not in the atom_map, look for the preceding atom and add 1.
-                dummy_index = int(val[1:])
-                new_val = atom_map.index(dummy_index - 1 + atom_map_val_inc) + 1 + num_dummies_1 \
-                    + len([dummy_2_index for dummy_2_index in dummy_2_indices if dummy_index > dummy_2_index])
-                new_val = f'X{new_val}'
-            else:
-                new_val = atom_map.index(val + val_inc + atom_map_val_inc) + num_dummies_1 \
-                    + len([dummy_2_index for dummy_2_index in dummy_2_indices if val > dummy_2_index])
-            if val > h2_index:
-                new_val -= 1
-            new_map[new_key] = new_val
+        if i == 0:
+            continue
+        # Atoms in zmat_2 always come after atoms in zmat_1 in the new zmat, regardless of the reactants/products
+        # order on each side of the given reaction. Deduct 1 since we're skipping the first atom in zmat_2, atom H2.
+        new_key = key - 1 + key_inc
+        # Use the reaction atom_map to map atoms in zmat_2 (i.e., values in zmat_2's 'map') to atoms in the R(*3)
+        # reactant (at least for H-Abstraction reactions), since zmat_2 was built based on atoms in the R(*3)-H(*2)
+        # **product** (at least for H-Abstraction reactions).
+        if isinstance(val, str) and 'X' in val:
+            # A dummy atom is not in the atom_map, look for the preceding atom and add 1.
+            dummy_index = int(val[1:])
+            new_val = atom_map.index(dummy_index - 1 + atom_map_val_inc) + 1 + num_dummies_1 \
+                + len([dummy_2_index for dummy_2_index in dummy_2_indices if dummy_index > dummy_2_index])
+            new_val = f'X{new_val}'
+        else:
+            print(f'atom_map: {atom_map}')
+            print(f'val = {val}, atom_map_val_inc = {atom_map_val_inc}, sum = {val + atom_map_val_inc}. Index map: {atom_map.index(val + atom_map_val_inc)}')
+            print('new val is the sum of: ', atom_map.index(val + atom_map_val_inc), num_dummies_1, len([dummy_2_index for dummy_2_index in dummy_2_indices if val > dummy_2_index]))
+            new_val = atom_map.index(val + atom_map_val_inc) + num_dummies_1 \
+                + len([dummy_2_index for dummy_2_index in dummy_2_indices if val > dummy_2_index])
+        if val > h2_index:
+            new_val -= 1
+        new_map[new_key] = new_val
+        print(i, key, val, new_val)
+    if len(list(new_map.values())) != len(set(new_map.values())):
+        raise ValueError(f'Could not generate a combined zmat map with no repeating values.\n{new_map}')
     return new_map
 
 
@@ -793,6 +808,7 @@ def label_molecules(reactants: List[Union[Molecule, Species]],
         new_atoms_list = list()
         for i in range(len(reactant_mols[index].atoms)):
             reactant_mols[index].atoms[i].id = reaction.reactants[index].molecule[0].atoms[atom_map[i]].id
+            reactant_mols[index].atoms[i].label = reaction.reactants[index].molecule[0].atoms[atom_map[i]].label
             new_atoms_list.append(reactant_mols[index].atoms[i])
         reaction.reactants[index].molecule[0].atoms = new_atoms_list
     for index in range(len(reaction.products)):
@@ -804,6 +820,7 @@ def label_molecules(reactants: List[Union[Molecule, Species]],
         new_atoms_list = list()
         for i in range(len(product_mols[index].atoms)):
             product_mols[index].atoms[i].id = reaction.products[index].molecule[0].atoms[atom_map[i]].id
+            product_mols[index].atoms[i].label = reaction.products[index].molecule[0].atoms[atom_map[i]].label
             new_atoms_list.append(product_mols[index].atoms[i])
         reaction.products[index].molecule[0].atoms = new_atoms_list
     return reaction
@@ -912,7 +929,6 @@ def h_abstraction(arc_reaction: 'ARCReaction',
     for rmg_reaction in rmg_reactions:
         rmg_reactant_mol = rmg_reaction.reactants[int(reactants_reversed)].molecule[0]
         rmg_product_mol = rmg_reaction.products[int(not products_reversed)].molecule[0]
-
         h1 = rmg_reactant_mol.atoms.index([atom for atom in rmg_reactant_mol.atoms if atom.label == '*2'][0])
         h2 = rmg_product_mol.atoms.index([atom for atom in rmg_product_mol.atoms if atom.label == '*2'][0])
 

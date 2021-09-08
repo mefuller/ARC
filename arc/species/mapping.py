@@ -36,6 +36,9 @@ if TYPE_CHECKING:
     from arc.reaction import ARCReaction
 
 
+RESERVED_FINGERPRINT_KEYS = ['self', 'chirality', 'label']
+
+
 def map_reaction(rxn: 'ARCReaction',
                  backend: str = 'ARC',
                  db: Optional['RMGDatabase'] = None,
@@ -177,8 +180,8 @@ def map_isomerization_reaction(rxn: 'ARCReaction',
             r_copy = rxn.r_species[0].copy()
             p_copy = rxn.p_species[0].copy()
             extra_bond_in_reactant = False
-            if sum([len(v) for k, v in r_fingerprint[pairs[0][0]].items() if k not in ['self', 'chirality']]) > \
-                    sum([len(v) for k, v in p_fingerprint[pairs[0][1]].items() if k not in ['self', 'chirality']]):
+            if sum([len(v) for k, v in r_fingerprint[pairs[0][0]].items() if k not in RESERVED_FINGERPRINT_KEYS]) > \
+                    sum([len(v) for k, v in p_fingerprint[pairs[0][1]].items() if k not in RESERVED_FINGERPRINT_KEYS]):
                 extra_bond_in_reactant = True
             if extra_bond_in_reactant:
                 try:
@@ -587,6 +590,8 @@ def get_rmg_reactions_from_arc_reaction(arc_reaction: 'ARCReaction',
         rmgdb.determine_family(reaction=arc_reaction, db=db)
     if arc_reaction.family is None:
         return None
+    if not arc_reaction.family.save_order:
+        raise ValueError('Must have the save_order attribute of the family set to True.')
     rmg_reactions = arc_reaction.family.generate_reactions(reactants=[spc.mol for spc in arc_reaction.r_species],
                                                            products=[spc.mol for spc in arc_reaction.p_species],
                                                            prod_resonance=True,
@@ -889,6 +894,7 @@ def fingerprint(spc: ARCSpecies,
     chirality_dict = determine_chirality(conformers=[{'xyz': spc.get_xyz()}],
                                          label=spc.label,
                                          mol=spc.mol)[0]['chirality'] if consider_chirality else {}
+    print_it = False
     for i, atom_1 in enumerate(spc.mol.atoms):
         if atom_1.is_non_hydrogen():
             atom_fingerprint = {'self': atom_1.element.symbol}
@@ -896,11 +902,18 @@ def fingerprint(spc: ARCSpecies,
                 for key, val in chirality_dict.items():
                     if i in key:
                         atom_fingerprint['chirality'] = val
+            # if atom_1.label:
+            #     print(f'adding label {atom_1.label}')
+            #     print_it = True
+            #     atom_fingerprint['label'] = atom_1.label
             for atom_2 in atom_1.edges.keys():
                 if atom_2.element.symbol not in atom_fingerprint .keys():
-                    atom_fingerprint [atom_2.element.symbol] = list()
-                atom_fingerprint [atom_2.element.symbol].append(spc.mol.atoms.index(atom_2))
-            fingerprint_dict [i] = atom_fingerprint
+                    atom_fingerprint[atom_2.element.symbol] = list()
+                atom_fingerprint[atom_2.element.symbol].append(spc.mol.atoms.index(atom_2))
+                # atom_fingerprint[atom_2.element.symbol] = sorted(atom_fingerprint[atom_2.element.symbol] + [spc.mol.atoms.index(atom_2)])
+            fingerprint_dict[i] = atom_fingerprint
+    if print_it:
+        print(fingerprint_dict)
     return fingerprint_dict
 
 
@@ -949,8 +962,10 @@ def are_adj_elements_in_agreement(fingerprint_1: Dict[str, Union[str, List[int]]
         return False
     if fingerprint_1.get('chirality', 1) != fingerprint_2.get('chirality', 1):
         return False
+    if fingerprint_1.get('label', 1) != fingerprint_2.get('label', 1):
+        return False
     for key, val in fingerprint_1.items():
-        if key != 'self' and key != 'chirality' and (key not in fingerprint_2 or len(val) != len(fingerprint_2[key])):
+        if key not in RESERVED_FINGERPRINT_KEYS and (key not in fingerprint_2 or len(val) != len(fingerprint_2[key])):
             return False
     return True
 
@@ -998,7 +1013,7 @@ def iterative_dfs(fingerprint_1: Dict[int, Dict[str, List[int]]],
             continue
         result[key_1] = key_2
         for symbol in fingerprint_1[key_1].keys():
-            if symbol not in ['self', 'chirality', 'H']:
+            if symbol not in RESERVED_FINGERPRINT_KEYS + ['H']:
                 for combination_tuple in product(fingerprint_1[key_1][symbol], fingerprint_2[key_2][symbol]):
                     if combination_tuple[0] not in visited_1 and combination_tuple[1] not in visited_2:
                         stack_1.append(combination_tuple[0])

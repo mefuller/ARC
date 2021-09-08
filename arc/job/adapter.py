@@ -49,6 +49,18 @@ default_job_settings, servers, submit_filenames, t_max_format, output_filenames,
 constraint_type_dict = {2: 'B', 3: 'A', 4: 'D'}
 
 
+# Todo:
+"""
+1. if the list of TSGuesses is exhausted, don't "use the last one" for calculating the rate, it is wrong.
+2. Cluster TSGuesses!
+3. if the TSGuesses are exhausted, try (only once) to generate new ones from stochastic methods, ignoring existing ones (sing clustering)
+
+
+
+"""
+
+
+
 class JobEnum(str, Enum):
     """
     The supported job software adapters.
@@ -342,7 +354,7 @@ class JobAdapter(ABC):
         Determine the number of tasks to use in a job array
         and whether to iterate by conformers, species, reactions, or scan constraints.
         """
-        # return None  # tmp
+        return None  # tmp
         # Todo: set a capacity for incore jobs per adapter. E.g., 1 for Gaussian, 100 for GCN without parallelization
         # todo: adapters with high capacity should know about it, they're currently set up to only run one instance
         if len(self.job_types) > 1:

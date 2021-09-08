@@ -366,7 +366,7 @@ class ARCReaction(object):
     def rmg_reaction_from_arc_species(self):
         """
         A helper function for generating the RMG Reaction object from ARCSpecies
-        Used for determining the family
+        Used for determining the family.
         """
         if self.rmg_reaction is None and len(self.r_species) and len(self.p_species) and \
                 all([arc_spc.mol is not None for arc_spc in self.r_species + self.p_species]):

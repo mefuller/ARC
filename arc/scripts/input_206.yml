@@ -1,0 +1,209 @@
+force_field: MMFF94s
+function: openbabel_force_field_on_rdkit_conformers
+label: S
+mol_dict:
+  atoms:
+  - charge: 0
+    edges:
+      -26133: 1.0
+      -26130: 1.0
+      -26129: 1.0
+      -26128: 1.0
+    element:
+      isotope: -1
+      mass: 0.01201064046472311
+      name: carbon
+      number: 6
+      symbol: C
+    id: -26134
+    label: ''
+    lone_pairs: 0
+    props:
+      inRing: false
+    radical_electrons: 0
+  - charge: 0
+    edges:
+      -26134: 1.0
+      -26132: 1.0
+      -26127: 1.0
+      -26126: 1.0
+    element:
+      isotope: -1
+      mass: 0.01201064046472311
+      name: carbon
+      number: 6
+      symbol: C
+    id: -26133
+    label: ''
+    lone_pairs: 0
+    props:
+      inRing: false
+    radical_electrons: 0
+  - charge: 0
+    edges:
+      -26133: 1.0
+      -26131: 1.0
+    element:
+      isotope: -1
+      mass: 0.01599939912557602
+      name: oxygen
+      number: 8
+      symbol: O
+    id: -26132
+    label: ''
+    lone_pairs: 2
+    props:
+      inRing: false
+    radical_electrons: 0
+  - charge: 0
+    edges:
+      -26132: 1.0
+    element:
+      isotope: -1
+      mass: 0.01599939912557602
+      name: oxygen
+      number: 8
+      symbol: O
+    id: -26131
+    label: ''
+    lone_pairs: 2
+    props:
+      inRing: false
+    radical_electrons: 1
+  - charge: 0
+    edges:
+      -26134: 1.0
+    element:
+      isotope: -1
+      mass: 0.0010079710045829415
+      name: hydrogen
+      number: 1
+      symbol: H
+    id: -26130
+    label: ''
+    lone_pairs: 0
+    props:
+      inRing: false
+    radical_electrons: 0
+  - charge: 0
+    edges:
+      -26134: 1.0
+    element:
+      isotope: -1
+      mass: 0.0010079710045829415
+      name: hydrogen
+      number: 1
+      symbol: H
+    id: -26129
+    label: ''
+    lone_pairs: 0
+    props:
+      inRing: false
+    radical_electrons: 0
+  - charge: 0
+    edges:
+      -26134: 1.0
+    element:
+      isotope: -1
+      mass: 0.0010079710045829415
+      name: hydrogen
+      number: 1
+      symbol: H
+    id: -26128
+    label: ''
+    lone_pairs: 0
+    props:
+      inRing: false
+    radical_electrons: 0
+  - charge: 0
+    edges:
+      -26133: 1.0
+    element:
+      isotope: -1
+      mass: 0.0010079710045829415
+      name: hydrogen
+      number: 1
+      symbol: H
+    id: -26127
+    label: ''
+    lone_pairs: 0
+    props:
+      inRing: false
+    radical_electrons: 0
+  - charge: 0
+    edges:
+      -26133: 1.0
+    element:
+      isotope: -1
+      mass: 0.0010079710045829415
+      name: hydrogen
+      number: 1
+      symbol: H
+    id: -26126
+    label: ''
+    lone_pairs: 0
+    props:
+      inRing: false
+    radical_electrons: 0
+  multiplicity: 2
+  props: {}
+num_confs: null
+optimize: true
+xyz:
+  coords: !!python/tuple
+  - !!python/tuple
+    - -1.07278
+    - -0.04173
+    - 0.01317
+  - !!python/tuple
+    - 0.41049999999999986
+    - 0.26515
+    - 0.058520000000000086
+  - !!python/tuple
+    - 1.01413932456065
+    - -0.5608508951935635
+    - 1.047983377787876
+  - !!python/tuple
+    - 1.252100798817608
+    - -1.7911214090553857
+    - 0.41081017277088655
+  - !!python/tuple
+    - -1.66249
+    - 0.84374
+    - 0.26724
+  - !!python/tuple
+    - -1.3648
+    - -0.38575
+    - -0.98421
+  - !!python/tuple
+    - -1.32259
+    - -0.84594
+    - 0.71313
+  - !!python/tuple
+    - 0.5663955043747313
+    - 1.318955593734805
+    - 0.3144615582295762
+  - !!python/tuple
+    - 0.8652752468067602
+    - 0.06083100387474609
+    - -0.9171865987345883
+  isotopes: !!python/tuple
+  - 12
+  - 12
+  - 16
+  - 16
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  symbols: !!python/tuple
+  - C
+  - C
+  - O
+  - O
+  - H
+  - H
+  - H
+  - H
+  - H

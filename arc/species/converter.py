@@ -1445,14 +1445,8 @@ def order_atoms(ref_mol, mol):
                              for key, val in mapping.items()}
                 mol.atoms = [mol.atoms[index_map[i]] for i, _ in enumerate(mol.atoms)]
             else:
-                # logger.debug('Could not map molecules {0}, {1}:\n\n{2}\n\n{3}'.format(
-                #     ref_mol.copy(deep=True).to_smiles(), mol.copy(deep=True).to_smiles(),
-                #     ref_mol.copy(deep=True).to_adjacency_list(), mol.copy(deep=True).to_adjacency_list()))
                 raise SanitizationError('Could not map molecules')
         else:
-            # logger.debug('Could not map non isomorphic molecules {0}, {1}:\n\n{2}\n\n{3}'.format(
-            #     ref_mol.copy(deep=True).to_smiles(), mol.copy(deep=True).to_smiles(),
-            #     ref_mol.copy(deep=True).to_adjacency_list(), mol.copy(deep=True).to_adjacency_list()))
             raise SanitizationError('Could not map non isomorphic molecules')
 
 

@@ -189,8 +189,7 @@ class SSHClient(object):
             # but introduce an opportunity for better troubleshooting.
             # The current behavior is that if the remote path does not exist
             # an empty file will be created at the local path
-            logger.debug(
-                f'{remote_file_path} does not exist on {self.server}.')
+            logger.debug(f'{remote_file_path} does not exist on {self.server}.')
         try:
             self._sftp.get(remotepath=remote_file_path,
                            localpath=local_file_path)
@@ -340,6 +339,7 @@ class SSHClient(object):
             try:
                 self._sftp, self._ssh = self._connect()
             except Exception as e:
+                raise ValueError('why connect to a server?')
                 if not times_tried % 10:
                     logger.info(f'Tried connecting to {self.server} {times_tried} times with no success...'
                                 f'\nGot: {e}')
