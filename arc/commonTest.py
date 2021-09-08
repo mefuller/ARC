@@ -18,6 +18,10 @@ from rmgpy.molecule.molecule import Molecule
 import arc.common as common
 from arc.exceptions import InputError, SettingsError
 from arc.imports import settings
+from arc.reaction import ARCReaction
+from arc.rmgdb import make_rmg_database_object, load_families_only, rmg_database_instance_only_fams
+from arc.species.mapping import get_rmg_reactions_from_arc_reaction
+from arc.species.species import ARCSpecies
 import arc.species.converter as converter
 
 
@@ -34,6 +38,10 @@ class TestCommon(unittest.TestCase):
         A method that is run before all unit tests in this class.
         """
         cls.maxDiff = None
+        cls.rmgdb = rmg_database_instance_only_fams
+        if cls.rmgdb is None:
+            cls.rmgdb = make_rmg_database_object()
+            load_families_only(cls.rmgdb)
         cls.default_job_types = {'conformers': True,
                                  'opt': True,
                                  'fine': True,
@@ -839,6 +847,13 @@ H       1.98414750   -0.79355889   -0.24492049"""  # colliding atoms
         representation = common.rmg_mol_to_dict_repr(mol)
         new_mol = common.rmg_mol_from_dict_repr(representation, is_ts=False)
         self.assertEqual(new_mol.to_smiles(), 'CC')
+
+    def test_check_r_n_p_symbols_between_rmg_and_arc_rxns(self):
+        """Test the check_r_n_p_symbols_between_rmg_and_arc_rxns() function"""
+        arc_rxn = ARCReaction(r_species=[ARCSpecies(label='CH4', smiles='C'), ARCSpecies(label='OH', smiles='[OH]')],
+                              p_species=[ARCSpecies(label='CH3', smiles='[CH3]'), ARCSpecies(label='H2O', smiles='O')])
+        rmg_reactions = get_rmg_reactions_from_arc_reaction(arc_reaction=arc_rxn, db=self.rmgdb)
+        self.assertTrue(common.check_r_n_p_symbols_between_rmg_and_arc_rxns(arc_rxn, rmg_reactions))
 
     @classmethod
     def tearDownClass(cls):
