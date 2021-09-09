@@ -149,10 +149,9 @@ def map_isomerization_reaction(rxn: 'ARCReaction',
                 unique_p_keys.append(p_key)
         sorted_symbols_r = sorted([r_fingerprint[key]['self'] for key in unique_r_keys])
         sorted_symbols_p = sorted([p_fingerprint[key]['self'] for key in unique_p_keys])
-        if len(unique_r_keys) == len(unique_p_keys) == 2 \
-                and sorted_symbols_r == sorted_symbols_p:
+        if len(unique_r_keys) == len(unique_p_keys) == 2 and sorted_symbols_r == sorted_symbols_p:
             if len(set(sorted_symbols_p)) == 2:
-                # Two different elements, easy to match.
+                # Only two unique elements, easy to match.
                 if r_fingerprint[unique_r_keys[0]]['self'] == p_fingerprint[unique_p_keys[0]]['self']:
                     pairs = [(unique_r_keys[0], unique_p_keys[0]), (unique_r_keys[1], unique_p_keys[1])]
                 else:
@@ -171,8 +170,8 @@ def map_isomerization_reaction(rxn: 'ARCReaction',
                                             unique_p_keys[1],
                                             allow_first_key_pair_to_disagree=True,
                                             )
-                if bool(candidate_0) != bool(candidate_1):
-                    if not candidate_1:
+                if bool(candidate_0 is None) != bool(candidate_1 is None):
+                    if candidate_1 is None:
                         pairs = [(unique_r_keys[0], unique_p_keys[0]), (unique_r_keys[1], unique_p_keys[1])]
                     else:
                         pairs = [(unique_r_keys[0], unique_p_keys[1]), (unique_r_keys[1], unique_p_keys[0])]
@@ -901,10 +900,13 @@ def fingerprint(spc: ARCSpecies,
                 for key, val in chirality_dict.items():
                     if i in key:
                         atom_fingerprint['chirality'] = val
+            # if atom_1.label:
+            #     atom_fingerprint['label'] = atom_1.label
             for atom_2 in atom_1.edges.keys():
                 if atom_2.element.symbol not in atom_fingerprint .keys():
                     atom_fingerprint[atom_2.element.symbol] = list()
-                atom_fingerprint[atom_2.element.symbol].append(spc.mol.atoms.index(atom_2))
+                atom_fingerprint[atom_2.element.symbol] = sorted(atom_fingerprint[atom_2.element.symbol]
+                                                                 + [spc.mol.atoms.index(atom_2)])
             fingerprint_dict[i] = atom_fingerprint
     return fingerprint_dict
 
@@ -928,7 +930,7 @@ def identify_superimposable_candidates(fingerprint_1: Dict[int, Dict[str, Union[
         for key_2, val_2 in fingerprint_2.items():
             # Try all combinations of heavy atoms.
             result = iterative_dfs(fingerprint_1, fingerprint_2, key_1, key_2)
-            if result:
+            if result is not None:
                 candidates.append(result)
     return prune_identical_dicts(candidates)
 
@@ -967,7 +969,7 @@ def iterative_dfs(fingerprint_1: Dict[int, Dict[str, List[int]]],
                   key_1: int,
                   key_2: int,
                   allow_first_key_pair_to_disagree: bool = False,
-                  ) -> Dict[int, int]:
+                  ) -> Optional[Dict[int, int]]:
     """
     A depth first search (DFS) graph traversal algorithm to determine possible superimposable ordering of heavy atoms.
     This is an iterative and not a recursive algorithm since Python doesn't have a great support for recursion
@@ -982,8 +984,8 @@ def iterative_dfs(fingerprint_1: Dict[int, Dict[str, List[int]]],
                                                            of ``key_1`` and ``key_2``.
 
     Returns:
-        Dict[int, int]: ``None`` if this is not a valid superimposable candidate. Keys are atom indices of
-                        heavy atoms of species 1, values are potentially mapped atom indices of species 2.
+        Optional[Dict[int, int]]: ``None`` if this is an invalid superimposable candidate. Keys are atom indices of
+                                  heavy atoms of species 1, values are potentially mapped atom indices of species 2.
     """
     visited_1, visited_2 = list(), list()
     stack_1, stack_2 = deque(), deque()
@@ -1010,6 +1012,8 @@ def iterative_dfs(fingerprint_1: Dict[int, Dict[str, List[int]]],
                     if combination_tuple[0] not in visited_1 and combination_tuple[1] not in visited_2:
                         stack_1.append(combination_tuple[0])
                         stack_2.append(combination_tuple[1])
+    if len(result.keys()) != len(fingerprint_1.keys()):
+        return None
     return result
 
 
