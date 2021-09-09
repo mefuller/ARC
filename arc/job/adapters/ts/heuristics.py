@@ -7,6 +7,8 @@ Todo:
     - test H2O2 as the RH abstractor, see that both TS chiralities are attained
     - Add tests
     - add database and train from database, see https://github.com/ReactionMechanismGenerator/ARC/commit/081df5bf8e53987e9ff48eef481c17997f9cff2a, https://github.com/ReactionMechanismGenerator/ARC/commit/9a569ee80331494dcca26490fd66accc69697380, https://github.com/ReactionMechanismGenerator/ARC/commit/10d255467334f7821547e7dc5d98bb50bbfab7c0
+    - use FF or TorchANI to only retain guesses with reasonable energies
+    - Think: two H sites on a CH2 element, one being abstracted. On which one in the reactant do we put the abstractor? Can/should we try both?
 """
 
 import datetime
@@ -25,7 +27,7 @@ from arc.job.adapters.common import check_argument_consistency, ts_adapters_by_r
 from arc.job.factory import register_job_adapter
 from arc.plotter import save_geo
 from arc.species.converter import compare_zmats, zmat_from_xyz, zmat_to_xyz
-from arc.species.mapping import map_two_species
+from arc.species.mapping import map_arc_rmg_species, map_two_species
 from arc.species.species import ARCSpecies, TSGuess
 from arc.species.zmat import get_parameter_from_atom_indices, is_angle_linear, remove_1st_atom, up_param
 
@@ -275,12 +277,13 @@ class HeuristicsAdapter(JobAdapter):
             reaction_list = list()
             for reactants in list(reactant_mol_combinations):
                 for products in list(product_mol_combinations):
-                    reaction = label_molecules(reactants=list(reactants),
-                                               products=list(products),
-                                               family=rxn.family,
-                                               )
-                    if reaction is not None:
-                        reaction_list.append(reaction)
+                    rxns = react(reactants=list(reactants),
+                                 products=list(products),
+                                 family=rxn.family,
+                                 arc_reaction=rxn,
+                                 )
+                    if rxns is not None:
+                        reaction_list.extend(rxns)
 
             xyzs = list()
             tsg = None
@@ -730,11 +733,11 @@ def get_new_zmat_2_map(zmat_1: dict,
     return new_map
 
 
-def label_molecules(reactants: List[Union[Molecule, Species]],
-                    products: List[Union[Molecule, Species]],
-                    family: 'KineticsFamily',
-                    output_with_resonance: bool = False,
-                    ) -> Optional[Reaction]:
+def react(reactants: List[Union[Molecule, Species]],
+          products: List[Union[Molecule, Species]],
+          family: 'KineticsFamily',
+          arc_reaction: 'ARCReaction',
+          ) -> Optional[List[Reaction]]:
     """
     React molecules to give the requested products via an RMG family.
     Results in a reaction with RMG's atom labels for the reactants and products.
@@ -742,61 +745,82 @@ def label_molecules(reactants: List[Union[Molecule, Species]],
     Args:
         reactants (List['Molecule']): Entries are Molecule instances of the reaction reactants.
         products (List['Molecule']): Entries are Molecule instances of the reaction products.
-        family ('KineticsFamily'): The RMG reaction family instance.
-        output_with_resonance (bool, optional): Whether to generate all resonance structures with labels.
-                                                ``True`` to generate, ``False`` by default.
+        family (KineticsFamily): The RMG reaction family instance.
+        arc_reaction (ARCReaction): The corresponding ARCReaction object instance.
 
     Returns:
         Optional[Reaction]: An RMG Reaction instance with atom-labeled reactants and products.
     """
-    reactants_copy, products_copy = [r.copy(deep=True) for r in reactants], [p.copy(deep=True) for p in products]
-    reaction = Reaction(reactants=reactants_copy, products=products_copy)
+    # Assure Molecule object instances:
+    reactant_mols, product_mols = list(), list()
+    for reactant in reactants:
+        reactant_mols.append(reactant.copy(deep=True) if isinstance(reactant, Molecule) else reactant.molecule[0].copy(deep=True))
+    for product in products:
+        product_mols.append(product.copy(deep=True) if isinstance(product, Molecule) else product.molecule[0].copy(deep=True))
+    reactants_copy, products_copy = [r.copy(deep=True) for r in reactant_mols], [p.copy(deep=True) for p in product_mols]
+
     try:
-        family.add_atom_labels_for_reaction(reaction=reaction,
-                                            output_with_resonance=output_with_resonance,
-                                            save_order=True,
-                                            )
+        reactions = family.generate_reactions(reactants=reactants_copy,
+                                              products=products_copy,
+                                              prod_resonance=False,
+                                              delete_labels=False,
+                                              relabel_atoms=False,
+                                              )
     except (ActionError, ValueError):
         return None
 
-    reactant_mols, product_mols = list(), list()
-    for reactant in reactants:
-        if isinstance(reactant, Molecule):
-            reactant_mols.append(reactant.copy(deep=True))
-        elif isinstance(reactant, Species):
-            reactant_mols.append(reactant.molecule[0].copy(deep=True))
-    for product in products:
-        if isinstance(product, Molecule):
-            product_mols.append(product)
-        elif isinstance(product, Species):
-            product_mols.append(product.molecule[0])
+    for i in range(len(reactions)):
+        r_map, p_map = map_arc_rmg_species(arc_reaction=arc_reaction, rmg_reaction=reactions[i], concatenate=False)
+        ordered_rmg_reactants = [reactions[i].reactants[r_map[j]] for j in range(len(reactions[i].reactants))]
+        ordered_rmg_products = [reactions[i].products[p_map[j]] for j in range(len(reactions[i].products))]
+        reactions[i].reactants = ordered_rmg_reactants
+        reactions[i].products = ordered_rmg_products
 
-    # Use atom mapping, since atoms in the RMG products were shuffled (products re-created from the reactants).
-    for index in range(len(reaction.reactants)):
-        # The RMG molecule will get a random 3D conformer, don't consider chirality when mapping.
-        atom_map = map_two_species(spc_1=reactant_mols[index],
-                                   spc_2=reaction.reactants[index].molecule[0],
-                                   consider_chirality=False,
-                                   )
-        new_atoms_list = list()
-        for i in range(len(reactant_mols[index].atoms)):
-            reactant_mols[index].atoms[i].id = reaction.reactants[index].molecule[0].atoms[atom_map[i]].id
-            reactant_mols[index].atoms[i].label = reaction.reactants[index].molecule[0].atoms[atom_map[i]].label
-            new_atoms_list.append(reactant_mols[index].atoms[i])
-        reaction.reactants[index].molecule[0].atoms = new_atoms_list
-    for index in range(len(reaction.products)):
-        # The RMG molecule will get a random 3D conformer, don't consider chirality when mapping.
-        atom_map = map_two_species(spc_1=product_mols[index],
-                                   spc_2=reaction.products[index].molecule[0],
-                                   consider_chirality=False,
-                                   )
-        new_atoms_list = list()
-        for i in range(len(product_mols[index].atoms)):
-            product_mols[index].atoms[i].id = reaction.products[index].molecule[0].atoms[atom_map[i]].id
-            product_mols[index].atoms[i].label = reaction.products[index].molecule[0].atoms[atom_map[i]].label
-            new_atoms_list.append(product_mols[index].atoms[i])
-        reaction.products[index].molecule[0].atoms = new_atoms_list
-    return reaction
+    # Re-map all molecules since atoms in the RMG products were shuffled (products re-created from the reactants).
+    output, label_dicts = list(), list()
+    for reaction in reactions:
+        for index in range(len(reaction.reactants)):
+            # The RMG molecule will get a random 3D conformer, don't consider chirality when mapping.
+            atom_map = map_two_species(spc_1=reactant_mols[index],
+                                       spc_2=reaction.reactants[index],
+                                       consider_chirality=False,
+                                       )
+            if atom_map is None:
+                break
+            new_atoms_list = list()
+            for i in range(len(reactant_mols[index].atoms)):
+                reactant_mols[index].atoms[i].id = reaction.reactants[index].atoms[atom_map[i]].id
+                reactant_mols[index].atoms[i].label = reaction.reactants[index].atoms[atom_map[i]].label
+                new_atoms_list.append(reactant_mols[index].atoms[i])
+            reaction.reactants[index].atoms = new_atoms_list
+        else:
+            for index in range(len(reaction.products)):
+                # The RMG molecule will get a random 3D conformer, don't consider chirality when mapping.
+                atom_map = map_two_species(spc_1=product_mols[index],
+                                           spc_2=reaction.products[index],
+                                           consider_chirality=False,
+                                           )
+                if atom_map is None:
+                    break
+                new_atoms_list = list()
+                for i in range(len(product_mols[index].atoms)):
+                    product_mols[index].atoms[i].id = reaction.products[index].atoms[atom_map[i]].id
+                    product_mols[index].atoms[i].label = reaction.products[index].atoms[atom_map[i]].label
+                    new_atoms_list.append(product_mols[index].atoms[i])
+                reaction.products[index].atoms = new_atoms_list
+            else:
+                if reaction is not None:
+                    # Check that the RMG reaction atom labels are unique.
+                    label_dict = dict()
+                    for reactant, product in zip(reaction.reactants, reaction.products):
+                        for s, mol in enumerate([reactant, product]):
+                            for i, atom in enumerate(mol.atoms):
+                                if atom.label:
+                                    label_dict[f'{"P" if s else "R"}_{atom.label}'] = i
+                    if label_dict not in label_dicts:
+                        label_dicts.append(label_dict)
+                        output.append(reaction)
+    return output
 
 
 def find_distant_neighbor(rmg_mol: 'Molecule',
@@ -855,17 +879,20 @@ def h_abstraction(arc_reaction: 'ARCReaction',
     Returns: List[dict]
         Entries are Cartesian coordinates of TS guesses for all reactions.
     """
+    if not len(rmg_reactions):
+        raise ValueError('Cannot generate TS guesses without an RMG Reaction object instance.')
+
     xyz_guesses = list()
 
     # Identify R1H and R2H in the "R1H + R2 <=> R1 + R2H" or "R2 + R1H <=> R2H + R1" reaction
     # using the first RMG reaction; all other RMG reactions and the ARC reaction should have the same order.
     # The expected RMG atom labels are: R(*1)-H(*2) + R(*3)j <=> R(*1)j + R(*3)-H(*2).
     reactants_reversed, products_reversed = False, False
-    for atom in rmg_reactions[0].reactants[1].molecule[0].atoms:
+    for atom in rmg_reactions[0].reactants[1].atoms:
         if atom.label == '*2':
             reactants_reversed = True
             break
-    for atom in rmg_reactions[0].products[0].molecule[0].atoms:
+    for atom in rmg_reactions[0].products[0].atoms:
         if atom.label == '*2':
             products_reversed = True
             break
@@ -874,8 +901,8 @@ def h_abstraction(arc_reaction: 'ARCReaction',
     arc_product = arc_reaction.p_species[int(not products_reversed)]  # Get R(*3)-H(*2).
 
     for rmg_reaction in rmg_reactions:
-        rmg_reactant_mol = rmg_reaction.reactants[int(reactants_reversed)].molecule[0]
-        rmg_product_mol = rmg_reaction.products[int(not products_reversed)].molecule[0]
+        rmg_reactant_mol = rmg_reaction.reactants[int(reactants_reversed)]
+        rmg_product_mol = rmg_reaction.products[int(not products_reversed)]
         h1 = rmg_reactant_mol.atoms.index([atom for atom in rmg_reactant_mol.atoms if atom.label == '*2'][0])
         h2 = rmg_product_mol.atoms.index([atom for atom in rmg_product_mol.atoms if atom.label == '*2'][0])
 
