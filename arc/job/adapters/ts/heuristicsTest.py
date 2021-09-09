@@ -513,10 +513,6 @@ class TestHeuristicsAdapter(unittest.TestCase):
         self.assertEqual(rxn7.ts_species.ts_guesses[0].initial_xyz['symbols'],
                          ('C', 'C', 'C', 'C', 'C', 'C', 'C', 'C', 'C', 'C', 'H', 'H', 'H', 'H', 'H', 'H',
                           'H', 'H', 'H', 'H', 'H', 'H', 'C', 'C', 'O', 'O', 'H', 'H', 'H', 'H', 'H'))
-        from arc.species.converter import xyz_to_str
-        print(xyz_to_str(rxn6.ts_species.ts_guesses[0].initial_xyz))
-        print(xyz_to_str(rxn7.ts_species.ts_guesses[0].initial_xyz))
-        raise
 
     def test_keeping_atom_order_in_ts(self):
         """Test that the generated TS has the same atom order as in the reactants"""
