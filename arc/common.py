@@ -828,8 +828,8 @@ def almost_equal_coords(xyz1: dict,
     return True
 
 
-def almost_equal_coords_lists(xyz1: dict,
-                              xyz2: dict,
+def almost_equal_coords_lists(xyz1: Union[List[dict], dict],
+                              xyz2: Union[List[dict], dict],
                               rtol: float = 1e-05,
                               atol: float = 1e-08,
                               ) -> bool:
@@ -838,8 +838,8 @@ def almost_equal_coords_lists(xyz1: dict,
     Useful for comparing xyz's in unit tests.
 
     Args:
-        xyz1 (list, dict): Either a dict-format xyz, or a list of them.
-        xyz2 (list, dict): Either a dict-format xyz, or a list of them.
+        xyz1 (Union[List[dict], dict]): Either a dict-format xyz, or a list of them.
+        xyz2 (Union[List[dict], dict]): Either a dict-format xyz, or a list of them.
         rtol (float, optional): The relative tolerance parameter.
         atol (float, optional): The absolute tolerance parameter.
 
