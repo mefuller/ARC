@@ -499,9 +499,9 @@ class ARCSpecies(object):
     def __str__(self) -> str:
         """Return a string representation of the object"""
         str_representation = 'ARCSpecies('
-        str_representation += f'label={self.label}, '
+        str_representation += f'label="{self.label}", '
         if self.mol is not None:
-            str_representation += f'smiles={self.mol.copy(deep=True).to_smiles()}, '
+            str_representation += f'smiles="{self.mol.copy(deep=True).to_smiles()}", '
         str_representation += f'is_ts={self.is_ts}, '
         str_representation += f'multiplicity={self.multiplicity}, '
         str_representation += f'charge={self.charge})'
@@ -890,11 +890,13 @@ class ARCSpecies(object):
             if all([atom.id == -1 for atom in self.mol.atoms]):
                 self.mol.assign_atom_ids()
             if not self.is_ts:
+                mol_copy = self.mol.copy(deep=True)
+                mol_copy.reactive = True
                 try:
-                    self.mol_list = self.mol.copy(deep=True).generate_resonance_structures(keep_isomorphic=False,
-                                                                                           filter_structures=True,
-                                                                                           save_order=True,
-                                                                                           )
+                    self.mol_list = mol_copy.generate_resonance_structures(keep_isomorphic=False,
+                                                                           filter_structures=True,
+                                                                           save_order=True,
+                                                                           )
                 except (AtomTypeError, ValueError, ILPSolutionError, ResonanceError) as e:
                     logger.warning(f'Could not generate resonance structures for species {self.label}. Got: {e}')
                     self.mol_list = [self.mol]
