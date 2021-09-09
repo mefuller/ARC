@@ -1325,7 +1325,10 @@ H       1.12853146   -0.86793870    0.06973060"""
         mapped_product = rxn_1.get_mapped_product_xyz()
         self.assertEqual(rxn_1.atom_map, [2, 0, 1])
         self.assertTrue(check_atom_map(rxn_1))
-        self.assertEqual(mapped_product.get_xyz(), h2o_xyz_1)
+        expected_xyz = {'symbols': ('O', 'H', 'H'), 'isotopes': (16, 1, 1),
+                        'coords': ((-0.00032832, 0.3978149, 0.0), (-0.76330345, -0.19953755, 0.0),
+                                   (0.76363177, -0.19827735, 0.0))}
+        self.assertEqual(mapped_product.get_xyz(), expected_xyz)
 
         reactant_xyz = """C  -1.3087    0.0068    0.0318
                           C   0.1715   -0.0344    0.0210
