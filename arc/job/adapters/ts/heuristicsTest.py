@@ -30,8 +30,6 @@ from arc.reaction import ARCReaction
 from arc.species.converter import str_to_xyz, zmat_to_xyz
 from arc.species.species import ARCSpecies
 
-# Todo: test NCO + NH2 <=> HNCO + NH
-
 
 class TestHeuristicsAdapter(unittest.TestCase):
     """
@@ -357,6 +355,168 @@ class TestHeuristicsAdapter(unittest.TestCase):
         self.assertEqual(rxn4.ts_species.multiplicity, 2)
         self.assertEqual(len(rxn4.ts_species.ts_guesses), 3)
         self.assertEqual(rxn4.ts_species.ts_guesses[0].initial_xyz['symbols'], ('C', 'C', 'O', 'H', 'H', 'H', 'H', 'H'))
+
+        nco_xyz = """N       1.36620399    0.00000000    0.00000000
+                     C      -0.09510200    0.00000000    0.00000000
+                     O      -1.27110200    0.00000000    0.00000000"""
+        nh2_xyz = """N       0.00022972    0.40059496    0.00000000
+                     H      -0.83174214   -0.19982058    0.00000000
+                     H       0.83151242   -0.20077438    0.00000000"""
+        hnco_xyz = """N      -0.70061553    0.28289128   -0.18856549
+                      C       0.42761869    0.11537693    0.07336374
+                      O       1.55063087   -0.07323229    0.35677630
+                      H      -1.27763403   -0.32503592    0.39725197"""
+        nh_xyz = """N       0.50949998    0.00000000    0.00000000
+                    H      -0.50949998    0.00000000    0.00000000"""
+        nco = ARCSpecies(label='NCO', smiles='[N]=C=O', xyz=nco_xyz)
+        nh2 = ARCSpecies(label='NH2', smiles='[NH2]', xyz=nh2_xyz)
+        hnco = ARCSpecies(label='HNCO', smiles='N=C=O', xyz=hnco_xyz)
+        nh = ARCSpecies(label='NH', smiles='[NH]', xyz=nh_xyz)
+        rxn5 = ARCReaction(r_species=[nco, nh2], p_species=[hnco, nh])
+        rxn5.determine_family(rmg_database=self.rmgdb)
+        self.assertEqual(rxn5.family.label, 'H_Abstraction')
+        heuristics_5 = HeuristicsAdapter(job_type='tsg',
+                                         reactions=[rxn5],
+                                         testing=True,
+                                         project='test',
+                                         project_directory=os.path.join(ARC_PATH, 'arc', 'testing', 'heuristics'),
+                                         dihedral_increment=120,
+                                         )
+        heuristics_5.execute_incore()
+        self.assertTrue(rxn5.ts_species.is_ts)
+        self.assertEqual(rxn5.ts_species.charge, 0)
+        self.assertEqual(rxn5.ts_species.multiplicity, 3)
+        self.assertEqual(len(rxn5.ts_species.ts_guesses), 9)
+        self.assertEqual(rxn5.ts_species.ts_guesses[0].initial_xyz['symbols'], ('N', 'C', 'O', 'N', 'H', 'H'))
+
+        butenylnebzene_xyz = """C      -1.71226453   -0.84554485    0.38526063
+                                C      -3.04422965   -0.42914264    0.41012166
+                                C      -3.42029899    0.74723413   -0.23559352
+                                C      -2.46544277    1.50753989   -0.90818256
+                                C      -1.13299223    1.09288376   -0.93424603
+                                C      -0.74341165   -0.08513522   -0.28306031
+                                C       0.69357354   -0.54411184   -0.32741768
+                                C       0.96111341   -1.45397252   -1.53003141
+                                C       2.38975018   -1.92155599   -1.55932472
+                                C       3.25117244   -1.64080060   -2.54512753
+                                H      -1.43447830   -1.76767058    0.89062734
+                                H      -3.78886508   -1.02369999    0.93270709
+                                H      -4.45754439    1.07063686   -0.21594061
+                                H      -2.75843025    2.42373310   -1.41396154
+                                H      -0.39940594    1.69445181   -1.46624302
+                                H       0.93550160   -1.06555454    0.60815996
+                                H       1.35380726    0.33269483   -0.35901826
+                                H       0.70851184   -0.92832434   -2.45979346
+                                H       0.31045732   -2.33637041   -1.48650631
+                                H       2.72442421   -2.53507765   -0.72507466
+                                H       2.96318630   -1.03906198   -3.40168902
+                                H       4.27083810   -2.01270921   -2.51458029"""
+        peroxyl_xyz = """C      -1.05582103   -0.03329574   -0.10080257
+                         C       0.41792695    0.17831205    0.21035514
+                         O       1.19234020   -0.65389683   -0.61111443
+                         O       2.44749684   -0.41401220   -0.28381363
+                         H      -1.33614002   -1.09151783    0.08714882
+                         H      -1.25953618    0.21489046   -1.16411897
+                         H      -1.67410396    0.62341419    0.54699514
+                         H       0.59566350   -0.06437686    1.28256640
+                         H       0.67254676    1.24676329    0.02676370"""
+        peroxide_xyz = """C      -1.34047532   -0.03188958    0.16703197
+                          C       0.07658214   -0.19298564   -0.34334978
+                          O       0.27374087    0.70670928   -1.43275058
+                          O       1.64704173    0.49781461   -1.86879814
+                          H      -2.06314673   -0.24194344   -0.62839800
+                          H      -1.53242454   -0.70687225    1.00574309
+                          H      -1.51781587    0.99794893    0.49424821
+                          H       0.24018222   -1.21958121   -0.68782344
+                          H       0.79344780    0.03863434    0.45152272
+                          H       1.95991273    1.39912383   -1.67215155"""
+        butenylnebzene_rad1_xyz = """C      -1.88266976   -0.87687529   -0.63607576
+                                     C      -3.06025073   -0.20236914   -0.30870889
+                                     C      -3.07096712    0.71611053    0.73950868
+                                     C      -1.90403911    0.96368054    1.45998739
+                                     C      -0.72563713    0.29023608    1.13460173
+                                     C      -0.70473521   -0.64221365    0.08717649
+                                     C       0.57567571   -1.35823396   -0.27232070
+                                     C       1.47982006   -0.51744899   -1.11962456
+                                     C       2.90883262   -0.59134257   -0.96873657
+                                     C       3.75183420    0.10706027   -1.73634793
+                                     H      -1.88917338   -1.58645450   -1.46031384
+                                     H      -3.96913141   -0.39219681   -0.87352986
+                                     H      -3.98783434    1.24160615    0.99265871
+                                     H      -1.91005379    1.68377589    2.27388853
+                                     H       0.18057426    0.49821548    1.69940227
+                                     H       0.34051301   -2.28273463   -0.81410484
+                                     H       1.07516828   -1.66856944    0.65418851
+                                     H       1.05110536    0.09965361   -1.90323723
+                                     H       3.30722691   -1.24504321   -0.19595001
+                                     H       4.82473956    0.02594832   -1.59289339
+                                     H       3.40309973    0.77336779   -2.51917155"""
+        butenylnebzene_rad2_xyz = """C       0.86557186    0.88201467    0.63421602
+                                     C       2.10949019    1.51449365    0.71246655
+                                     C       3.25224601    0.86186581    0.25912210
+                                     C       3.14957012   -0.42059281   -0.27342877
+                                     C       1.90421947   -1.05251000   -0.35083861
+                                     C       0.74699841   -0.41118094    0.10593634
+                                     C      -0.58479314   -1.01936532    0.04460380
+                                     C      -0.85980476   -2.42967089   -0.36144757
+                                     C      -1.19954275   -2.52225943   -1.82034160
+                                     C      -2.37408626   -2.95334594   -2.29914371
+                                     H      -0.01246578    1.41307286    0.99522772
+                                     H       2.18292853    2.51633055    1.12713435
+                                     H       4.22023612    1.35204102    0.31838735
+                                     H       4.03880532   -0.93210312   -0.63266934
+                                     H       1.86256917   -2.04849879   -0.78187681
+                                     H      -1.44058451   -0.38162928    0.24463988
+                                     H      -0.01456714   -3.08941132   -0.14056348
+                                     H      -1.69219098   -2.80180034    0.24897564
+                                     H      -0.42576150   -2.21925087   -2.52323755
+                                     H      -2.55420789   -2.99614384   -3.36897081
+                                     H      -3.17872709   -3.26780622   -1.64194211"""
+        butenylnebzene = ARCSpecies(label='butenylnebzene', smiles='c1ccccc1CCC=C', xyz=butenylnebzene_xyz)
+        peroxyl = ARCSpecies(label='CCOO', smiles='CCO[O]', xyz=peroxyl_xyz)
+        peroxide = ARCSpecies(label='CCOOH', smiles='CCOO', xyz=peroxide_xyz)
+        butenylnebzene_rad1 = ARCSpecies(label='butenylnebzene_rad1', smiles='c1ccccc1C[CH]C=C', xyz=butenylnebzene_rad1_xyz)
+        butenylnebzene_rad2 = ARCSpecies(label='butenylnebzene_rad2', smiles='c1ccccc1[CH]CC=C', xyz=butenylnebzene_rad2_xyz)
+        rxn6 = ARCReaction(r_species=[butenylnebzene, peroxyl], p_species=[peroxide, butenylnebzene_rad1])
+        rxn7 = ARCReaction(r_species=[butenylnebzene, peroxyl], p_species=[peroxide, butenylnebzene_rad2])
+        rxn6.determine_family(rmg_database=self.rmgdb)
+        rxn7.determine_family(rmg_database=self.rmgdb)
+        self.assertEqual(rxn6.family.label, 'H_Abstraction')
+        self.assertEqual(rxn7.family.label, 'H_Abstraction')
+        heuristics_6 = HeuristicsAdapter(job_type='tsg',
+                                         reactions=[rxn6],
+                                         testing=True,
+                                         project='test',
+                                         project_directory=os.path.join(ARC_PATH, 'arc', 'testing', 'heuristics'),
+                                         dihedral_increment=120,
+                                         )
+        heuristics_6.execute_incore()
+        self.assertTrue(rxn6.ts_species.is_ts)
+        self.assertEqual(rxn6.ts_species.charge, 0)
+        self.assertEqual(rxn6.ts_species.multiplicity, 2)
+        self.assertEqual(len(rxn6.ts_species.ts_guesses), 16)
+        self.assertEqual(rxn6.ts_species.ts_guesses[0].initial_xyz['symbols'],
+                         ('C', 'C', 'C', 'C', 'C', 'C', 'C', 'C', 'C', 'C', 'H', 'H', 'H', 'H', 'H', 'H',
+                          'H', 'H', 'H', 'H', 'H', 'H', 'C', 'C', 'O', 'O', 'H', 'H', 'H', 'H', 'H'))
+        heuristics_7 = HeuristicsAdapter(job_type='tsg',
+                                         reactions=[rxn7],
+                                         testing=True,
+                                         project='test',
+                                         project_directory=os.path.join(ARC_PATH, 'arc', 'testing', 'heuristics'),
+                                         dihedral_increment=120,
+                                         )
+        heuristics_7.execute_incore()
+        self.assertTrue(rxn7.ts_species.is_ts)
+        self.assertEqual(rxn7.ts_species.charge, 0)
+        self.assertEqual(rxn7.ts_species.multiplicity, 2)
+        self.assertEqual(len(rxn7.ts_species.ts_guesses), 9)
+        self.assertEqual(rxn7.ts_species.ts_guesses[0].initial_xyz['symbols'],
+                         ('C', 'C', 'C', 'C', 'C', 'C', 'C', 'C', 'C', 'C', 'H', 'H', 'H', 'H', 'H', 'H',
+                          'H', 'H', 'H', 'H', 'H', 'H', 'C', 'C', 'O', 'O', 'H', 'H', 'H', 'H', 'H'))
+        from arc.species.converter import xyz_to_str
+        print(xyz_to_str(rxn6.ts_species.ts_guesses[0].initial_xyz))
+        print(xyz_to_str(rxn7.ts_species.ts_guesses[0].initial_xyz))
+        raise
 
     def test_keeping_atom_order_in_ts(self):
         """Test that the generated TS has the same atom order as in the reactants"""
