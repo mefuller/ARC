@@ -876,7 +876,6 @@ class TestMapping(unittest.TestCase):
         r_map, p_map = mapping.map_arc_rmg_species(rmg_reaction=rmg_reaction_3, arc_reaction=arc_reaction)
         self.assertEqual(r_map, {0: [0], 1: [1]})
         self.assertEqual(p_map, {0: [1], 1: [0]})
-
         rmg_reaction = Reaction(reactants=[Species(smiles='[CH3]'), Species(smiles='[CH3]')],
                                 products=[Species(smiles='CC')])
         arc_reaction = ARCReaction(r_species=[ARCSpecies(label='CH3', smiles='[CH3]'),
@@ -886,6 +885,19 @@ class TestMapping(unittest.TestCase):
         r_map, p_map = mapping.map_arc_rmg_species(rmg_reaction=rmg_reaction, arc_reaction=arc_reaction)
         self.assertEqual(r_map, {0: [0, 1], 1: [0, 1]})
         self.assertEqual(p_map, {0: [0]})
+
+        rmg_reaction = Reaction(reactants=[Species(smiles='c1ccccc1CCC=C'), Species(smiles='CCO[O]')],
+                                products=[Species(smiles='c1ccccc1[CH]CC=C'), Species(smiles='CCOO')])
+        arc_reaction = ARCReaction(r_species=[ARCSpecies(label='butenylbenzene', smiles='c1ccccc1CCC=C'),
+                                              ARCSpecies(label='peroxyl', smiles='CCO[O]')],
+                                   p_species=[ARCSpecies(label='peroxide', smiles='CCOO'),
+                                              ARCSpecies(label='butenylbenzene_rad', smiles='c1ccccc1[CH]CC=C')])
+        r_map, p_map = mapping.map_arc_rmg_species(rmg_reaction=rmg_reaction,
+                                                   arc_reaction=arc_reaction,
+                                                   concatenate=False,
+                                                   )
+        self.assertEqual(r_map, {0: 0, 1: 1})
+        self.assertEqual(p_map, {0: 1, 1: 0})
 
     def test_find_equivalent_atoms_in_reactants_and_products(self):
         """Test the find_equivalent_atoms_in_reactants_and_products() function"""

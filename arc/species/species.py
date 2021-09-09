@@ -409,6 +409,8 @@ class ARCSpecies(object):
                     self.label = self.rmg_species.label
                 if self.mol is None:
                     self.mol = self.rmg_species.molecule[0]
+                    if all([atom.id == -1 for atom in self.mol.atoms]):
+                        self.mol.assign_atom_ids()
                 self.multiplicity = self.rmg_species.molecule[0].multiplicity
                 self.charge = self.rmg_species.molecule[0].get_net_charge()
 
@@ -434,6 +436,8 @@ class ARCSpecies(object):
                         self.multiplicity = self.mol.multiplicity
                     if self.charge is None:
                         self.charge = self.mol.get_net_charge()
+                    if all([atom.id == -1 for atom in self.mol.atoms]):
+                        self.mol.assign_atom_ids()
             # Perceive molecule from xyz coordinates. This also populates the .mol attribute of the Species.
             # It overrides self.mol generated from adjlist or smiles so xyz and mol will have the same atom order.
             if self.final_xyz or self.initial_xyz or self.most_stable_conformer or self.conformers:
@@ -499,9 +503,9 @@ class ARCSpecies(object):
     def __str__(self) -> str:
         """Return a string representation of the object"""
         str_representation = 'ARCSpecies('
-        str_representation += f'label={self.label}, '
+        str_representation += f'label="{self.label}", '
         if self.mol is not None:
-            str_representation += f'smiles={self.mol.copy(deep=True).to_smiles()}, '
+            str_representation += f'smiles="{self.mol.copy(deep=True).to_smiles()}", '
         str_representation += f'is_ts={self.is_ts}, '
         str_representation += f'multiplicity={self.multiplicity}, '
         str_representation += f'charge={self.charge})'
@@ -791,6 +795,8 @@ class ARCSpecies(object):
                 self.multiplicity = self.mol.multiplicity
             if self.charge is None:
                 self.charge = self.mol.get_net_charge()
+            if all([atom.id == -1 for atom in self.mol.atoms]):
+                self.mol.assign_atom_ids()
         if 'conformers' in species_dict:
             self.conformers = [str_to_xyz(conf) for conf in species_dict['conformers']]
             self.conformer_energies = species_dict['conformer_energies'] if 'conformer_energies' in species_dict \
@@ -864,6 +870,8 @@ class ARCSpecies(object):
         if self.mol is not None:
             self.multiplicity = self.mol.multiplicity
             self.charge = self.mol.get_net_charge()
+            if all([atom.id == -1 for atom in self.mol.atoms]):
+                self.mol.assign_atom_ids()
         if self.multiplicity is None:
             self.multiplicity = arkane_spc.conformer.spin_multiplicity
         if self.optical_isomers is None:
@@ -890,19 +898,24 @@ class ARCSpecies(object):
             if all([atom.id == -1 for atom in self.mol.atoms]):
                 self.mol.assign_atom_ids()
             if not self.is_ts:
+                mol_copy = self.mol.copy(deep=True)
+                mol_copy.reactive = True
                 try:
-                    self.mol_list = self.mol.copy(deep=True).generate_resonance_structures(keep_isomorphic=False,
-                                                                                           filter_structures=True,
-                                                                                           save_order=True,
-                                                                                           )
+                    self.mol_list = mol_copy.generate_resonance_structures(keep_isomorphic=False,
+                                                                           filter_structures=True,
+                                                                           save_order=True,
+                                                                           )
                 except (AtomTypeError, ValueError, ILPSolutionError, ResonanceError) as e:
                     logger.warning(f'Could not generate resonance structures for species {self.label}. Got: {e}')
                     self.mol_list = [self.mol]
             else:
                 self.mol_list = [self.mol]
+            for mol in self.mol_list:
+                if all([atom.id == -1 for atom in mol.atoms]):
+                    mol.assign_atom_ids()
             success = order_atoms_in_mol_list(ref_mol=self.mol.copy(deep=True), mol_list=self.mol_list)
             if not success:
-                # try sorting by IDs, repeat object creation to make sure the original instances remain unchanged
+                # Try sorting by IDs, repeat object creation to make sure the original instances remain unchanged.
                 mol_copy = self.mol.copy(deep=True)
                 mol_copy.assign_atom_ids()
                 mol_list = mol_copy.generate_resonance_structures(keep_isomorphic=False,
@@ -910,7 +923,7 @@ class ARCSpecies(object):
                                                                   save_order=True,
                                                                   )
                 for i in range(len(mol_list)):
-                    mol = mol_list[i]  # not looping with mol so the iterator won't change within the loop
+                    mol = mol_list[i]
                     atoms = list()
                     for atom1 in mol_copy.atoms:
                         for atom2 in mol.atoms:

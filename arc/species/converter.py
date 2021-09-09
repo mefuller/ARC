@@ -1234,6 +1234,8 @@ def molecules_from_xyz(xyz: Optional[Union[dict, str]],
         except SpeciesError as e:
             logger.warning(f'Cannot infer 2D graph connectivity, failed to set species multiplicity with the '
                            f'following error:\n{e}')
+        if all([atom.id == -1 for atom in mol_bo.atoms]):
+            mol_bo.assign_atom_ids()
 
     return mol_s1_updated, mol_bo
 
@@ -1488,6 +1490,8 @@ def update_molecule(mol, to_single_bonds=False):
     except KeyError:
         pass
     new_mol.multiplicity = mol.multiplicity
+    if all([atom.id == -1 for atom in new_mol.atoms]):
+        new_mol.assign_atom_ids()
     return new_mol
 
 

@@ -720,7 +720,30 @@ H       1.98414750   -0.79355889   -0.24492049"""  # colliding atoms
 
     def test_rmg_mol_to_dict_repr(self):
         """Test the rmg_mol_to_dict_repr() function."""
+        mol = Molecule(smiles='CC')
+        for atom in mol.atoms:
+            atom.id = -1
+        representation = common.rmg_mol_to_dict_repr(mol)
+        c_dict = {'element': {'number': 6, 'symbol': 'C', 'name': 'carbon',
+                              'mass': 0.01201064046472311, 'isotope': -1},
+                  'radical_electrons': 0, 'charge': 0, 'label': '', 'lone_pairs': 0, 'id': -1,
+                  'props': {'inRing': False}, 'edges': {-1: 1.0}}
+        h_dict = {'element': {'number': 1, 'symbol': 'H', 'name': 'hydrogen',
+                              'mass': 0.0010079710045829415, 'isotope': -1},
+                  'radical_electrons': 0, 'charge': 0, 'label': '', 'lone_pairs': 0, 'id': -1,
+                  'props': {'inRing': False}, 'edges': {-1: 1.0}}
+        expected_repr = {'atoms': [{'element': {'number': 7, 'symbol': 'N', 'name': 'nitrogen',
+                                                'mass': 0.014006859622895718, 'isotope': -1},
+                                    'radical_electrons': 0, 'charge': 0, 'label': '', 'lone_pairs': 1, 'id': -1,
+                                    'props': {'inRing': False}, 'edges': {-1: 1.0}},
+                                   c_dict, c_dict,
+                                   h_dict, h_dict, h_dict, h_dict, h_dict, h_dict, h_dict],
+                         'multiplicity': 1, 'props': {}}
+        self.assertEqual(representation, expected_repr)
+
         mol = Molecule(smiles='NCC')
+        for atom in mol.atoms:
+            atom.id = -1
         representation = common.rmg_mol_to_dict_repr(mol)
         c_dict = {'element': {'number': 6, 'symbol': 'C', 'name': 'carbon',
                               'mass': 0.01201064046472311, 'isotope': -1},
@@ -788,6 +811,12 @@ H       1.98414750   -0.79355889   -0.24492049"""  # colliding atoms
         self.assertEqual(len(smiles), 3)
         self.assertEqual(smiles.count('C'), 2)
         self.assertEqual(smiles.count('N'), 1)
+
+        # Test round trip:
+        mol = Molecule(smiles='CC')
+        representation = common.rmg_mol_to_dict_repr(mol)
+        new_mol = common.rmg_mol_from_dict_repr(representation, is_ts=False)
+        self.assertEqual(new_mol.to_smiles(), 'CC')
 
     def test_check_r_n_p_symbols_between_rmg_and_arc_rxns(self):
         """Test the check_r_n_p_symbols_between_rmg_and_arc_rxns() function"""

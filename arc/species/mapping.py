@@ -517,22 +517,24 @@ def map_arc_rmg_species(arc_reaction: 'ARCReaction',
                                               (p_map, rmg_reaction.products, arc_products)]:
         for i, arc_spc in enumerate(arc_species):
             for j, rmg_obj in enumerate(rmg_species):
-                if isinstance(rmg_obj, Molecule):
-                    rmg_spc = Species(molecule=[rmg_obj])
-                elif isinstance(rmg_obj, Species):
-                    rmg_spc = rmg_obj
-                else:
-                    raise ValueError(f'Expected an RMG object instance of Molecule() or Species(),'
+                rmg_spc = Species(molecule=[rmg_obj]) if isinstance(rmg_obj, Molecule) else rmg_obj
+                if not isinstance(rmg_spc, Species):
+                    raise ValueError(f'Expected an RMG object instances of Molecule or Species, '
                                      f'got {rmg_obj} which is a {type(rmg_obj)}.')
                 rmg_spc.generate_resonance_structures(save_order=True)
-                if rmg_spc.is_isomorphic(arc_spc.mol, save_order=True):
+                rmg_spc_based_on_arc_spc = Species(molecule=arc_spc.mol_list)
+                rmg_spc_based_on_arc_spc.generate_resonance_structures(save_order=True)
+                if rmg_spc.is_isomorphic(rmg_spc_based_on_arc_spc, save_order=True):
                     if i in spc_map.keys() and concatenate:
                         spc_map[i].append(j)
-                    elif concatenate:
-                        spc_map[i] = [j]
-                    else:
-                        spc_map[i] = j
                         break
+                    if concatenate:
+                        spc_map[i] = [j]
+                        break
+                    spc_map[i] = j
+                    break
+            else:
+                raise ValueError(f'Could not match any of the RMG species {rmg_species} to the ARC species {arc_spc}.')
     return r_map, p_map
 
 
@@ -651,6 +653,10 @@ def map_two_species(spc_1: Union[ARCSpecies, Species, Molecule],
             If the map is of ``dict`` type, keys are atom indices of ``spc_1``, values are atom indices of ``spc_2``.
     """
     spc_1, spc_2 = get_arc_species(spc_1), get_arc_species(spc_2)
+    if not check_species_before_mapping(spc_1, spc_2, verbose=verbose):
+        if verbose:
+            logger.warning(f'Could not map species {spc_1} and {spc_2}.')
+        return None
 
     # A shortcut for mono-atomic species.
     if spc_1.number_of_atoms == spc_2.number_of_atoms == 1:
@@ -682,10 +688,6 @@ def map_two_species(spc_1: Union[ARCSpecies, Species, Molecule],
     atom_map = None
 
     if backend.lower() == 'arc':
-        if not check_species_before_mapping(spc_1, spc_2, verbose=verbose):
-            if verbose:
-                logger.warning(f'Could not map species {spc_1} and {spc_2}.')
-            return None
         fingerprint_1 = fingerprint(spc_1, consider_chirality=consider_chirality)
         fingerprint_2 = fingerprint(spc_2, consider_chirality=consider_chirality)
         candidates = identify_superimposable_candidates(fingerprint_1, fingerprint_2)
