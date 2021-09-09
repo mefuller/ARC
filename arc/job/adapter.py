@@ -23,7 +23,7 @@ import pandas as pd
 
 from arc.common import ARC_PATH, get_logger
 from arc.exceptions import JobError
-from arc.imports import pipe_submit, settings, submit_scripts
+from arc.imports import local_arc_path, pipe_submit, settings, submit_scripts
 from arc.job.local import (change_mode,
                            check_job_status,
                            delete_job,
@@ -613,7 +613,8 @@ class JobAdapter(ABC):
         This is not an abstract method and should not be overwritten.
         """
         # job_number
-        csv_path = os.path.join(ARC_PATH, 'initiated_jobs.csv')
+        local_arc_path_ = local_arc_path if os.path.isdir(local_arc_path) else ARC_PATH
+        csv_path = os.path.join(local_arc_path_, 'initiated_jobs.csv')
         if os.path.isfile(csv_path):
             # check that this is the updated version
             with open(csv_path, 'r') as f:
@@ -655,7 +656,8 @@ class JobAdapter(ABC):
         Write an initiated ARC job into the initiated_jobs.csv file.
         """
         if not self.testing:
-            csv_path = os.path.join(ARC_PATH, 'initiated_jobs.csv')
+            local_arc_path_ = local_arc_path if os.path.isdir(local_arc_path) else ARC_PATH
+            csv_path = os.path.join(local_arc_path_, 'initiated_jobs.csv')
             with open(csv_path, 'a') as f:
                 writer = csv.writer(f, dialect='excel')
                 row = [self.job_num, self.project, self.species_label, self.job_type, self.is_ts, self.charge,
@@ -670,7 +672,8 @@ class JobAdapter(ABC):
         if not self.testing:
             if self.job_status[0] != 'done' or self.job_status[1]['status'] != 'done':
                 self.determine_job_status()
-            csv_path = os.path.join(ARC_PATH, 'completed_jobs.csv')
+            local_arc_path_ = local_arc_path if os.path.isdir(local_arc_path) else ARC_PATH
+            csv_path = os.path.join(local_arc_path_, 'completed_jobs.csv')
             if os.path.isfile(csv_path):
                 # check that this is the updated version
                 with open(csv_path, 'r') as f:
@@ -687,7 +690,7 @@ class JobAdapter(ABC):
                            'final_time', 'run_time', 'job_status_(server)', 'job_status_(ESS)',
                            'ESS troubleshooting methods used']
                     writer.writerow(row)
-            csv_path = os.path.join(ARC_PATH, 'completed_jobs.csv')
+            csv_path = os.path.join(local_arc_path_, 'completed_jobs.csv')
             with open(csv_path, 'a') as f:
                 writer = csv.writer(f, dialect='excel')
                 job_type = self.job_type
