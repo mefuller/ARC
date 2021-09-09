@@ -1245,16 +1245,27 @@ def convert_list_index_0_to_1(_list: Union[list, tuple], direction: int = 1) -> 
     return new_list
 
 
-def rmg_mol_to_dict_repr(mol: Molecule) -> dict:
+def rmg_mol_to_dict_repr(mol: Molecule,
+                         testing: bool = False,
+                         ) -> dict:
     """
     Generate a dict representation of an RMG ``Molecule`` object instance.
 
     Args:
         mol (Molecule): The RMG ``Molecule`` object instance.
+        testing (bool, optional): Whether this is called during a test, in which case atom IDs should be deterministic.
 
     Returns:
         dict: The corresponding dict representation.
     """
+    if all([atom.id == -1 for atom in mol.atoms]):
+        if testing:
+            counter = 0
+            for atom in mol.atoms:
+                atom.id = counter
+                counter += 1
+        else:
+            mol.assign_atom_ids()
     return {'atoms': [{'element': {'number': atom.element.number,
                                    'symbol': atom.element.symbol,
                                    'name': atom.element.name,
