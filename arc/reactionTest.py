@@ -710,7 +710,7 @@ class TestARCReaction(unittest.TestCase):
 
         These are FAILING tests that should be fixed by implementing respective family-specific atom mapping functions.
         """
-        # 1,2_Insertion_CO: C4H10 + CO <=> C5H10O  # todo: WIP
+        # 1,2_Insertion_CO: C4H10 + CO <=> C5H10O
         c4h10_xyz = {'coords': ((-0.5828455298013108, 1.3281531294599287, -0.04960015063595639),
                                 (0.20452033859928953, 0.05503751610159247, -0.351590668388836),
                                 (1.2187217734495472, -0.22435034939324036, 0.7553438935018645),
@@ -770,7 +770,7 @@ class TestARCReaction(unittest.TestCase):
         self.assertEqual(rxn.atom_map[15], 7)
         self.assertTrue(check_atom_map(rxn_rev))
 
-        # 1,2_Insertion_carbene: CH2 + CH3CHCH2 <=> CH2C(CH3)CH3  # todo: WIP
+        # 1,2_Insertion_carbene: CH2 + CH3CHCH2 <=> CH2C(CH3)CH3
         ch3chch2_xyz = {'coords': ((1.1254127400230443, -0.3017844766611556, -0.7510291174036663),
                                    (0.28418579724689313, 0.4695373959408027, -0.051603271988589404),
                                    (-0.9765320571742121, -0.022861128064798977, 0.5796557618407167),
@@ -810,7 +810,7 @@ class TestARCReaction(unittest.TestCase):
         self.assertEqual(rxn.atom_map[9:], [11, 9, 10])
         self.assertTrue(check_atom_map(rxn))
 
-        # 1,2_NH3_elimination: NCC <=> C2H4 + NH3  # todo: WIP
+        # 1,2_NH3_elimination: NCC <=> C2H4 + NH3
         ncc_xyz = {'coords': ((1.1517341397735719, -0.37601689454792764, -0.5230788502681245),
                               (0.2893395715754821, 0.449973844025586, 0.3114935868175311),
                               (-1.1415136758153028, -0.05605900830417449, 0.25915656466172177),
@@ -845,7 +845,7 @@ class TestARCReaction(unittest.TestCase):
         self.assertEqual(rxn.atom_map, [6, 0, 1, 3, 2, 9, 5, 8, 4, 7])
         self.assertTrue(check_atom_map(rxn))
 
-        # Cyclopentadiene_scission: C6H6 <=> C6H6_2  # todo: WIP
+        # Cyclopentadiene_scission: C6H6 <=> C6H6_2
         c6h6_a_xyz = {'coords': ((1.465264096022479, 0.3555098886638667, 0.15268159347190322),
                                  (0.4583546746026421, 1.1352991023740606, -0.26555553330413073),
                                  (-0.7550043760214846, 0.35970165318809594, -0.5698935045151712),
@@ -892,7 +892,7 @@ class TestARCReaction(unittest.TestCase):
         self.assertEqual(rxn.atom_map, [1, 4, 2, 0, 5, 3, 10, 9, 8, 7, 6, 11])
         self.assertTrue(check_atom_map(rxn))
 
-        # Diels_alder_addition: C5H8 + C6H10 <=> C11H18  # todo: WIP
+        # Diels_alder_addition: C5H8 + C6H10 <=> C11H18
         c5h8_xyz = {'coords': ((2.388426506127341, -0.6020682478448856, -0.8986239521455471),
                                (1.396815470095451, 0.2559764141247285, -0.632876393172657),
                                (0.15313289103802616, -0.14573699483201027, -0.021031021618524288),
@@ -967,7 +967,7 @@ class TestARCReaction(unittest.TestCase):
                                         3, 6, 7, 8, 22, 19, 26, 21, 24, 23, 28, 13, 12, 11])
         self.assertTrue(check_atom_map(rxn))
 
-        # Disproportionation: C4H7 + O2 <=> HO2 + C4H6  # todo: WIP
+        # Disproportionation: C4H7 + O2 <=> HO2 + C4H6
         c4h7_xyz = {'coords': ((-2.040921404503424, -0.12903384637698798, 0.1559892045303822),
                                (-0.7546540332943176, -0.4098957103161423, -0.07681407943731554),
                                (0.3137517227573887, 0.47379064315829633, 0.303025839828397),
@@ -1013,7 +1013,7 @@ class TestARCReaction(unittest.TestCase):
             self.assertIn(rxn.atom_map[index], [0, 1])
         self.assertTrue(check_atom_map(rxn))
 
-        # Disproportionation: HO2 + NHOH <=> NH2OH + O2  # todo: WIP
+        # Disproportionation: HO2 + NHOH <=> NH2OH + O2
         nhoh_xyz = {'coords': ((0.5055094877826753, 0.03248552573561613, -0.443416250587286),
                                (1.392367115364475, -0.021750569314658803, 0.07321920788090872),
                                (-0.570163178752975, -0.035696714715839996, 0.48914535186936214),
@@ -1040,7 +1040,7 @@ class TestARCReaction(unittest.TestCase):
             self.assertIn(rxn.atom_map[index], [0, 1])
         self.assertTrue(check_atom_map(rxn))
 
-        # HO2_Elimination_from_PeroxyRadical: C2H5O3 <=> HO2 + C2H4O  # todo: WIP
+        # HO2_Elimination_from_PeroxyRadical: C2H5O3 <=> HO2 + C2H4O
         c2h5o3_xyz = {'coords': ((-1.3476727508427788, -0.49923624257482285, -0.3366372557370102),
                                  (-0.11626816111736853, 0.3110915299407186, 0.018860985632263887),
                                  (0.7531175607750088, 0.3366822240291409, -1.1050387236863213),
@@ -1074,7 +1074,7 @@ class TestARCReaction(unittest.TestCase):
         self.assertEqual(rxn.atom_map[9], 2)
         self.assertTrue(check_atom_map(rxn))
 
-        # Intra_Disproportionation: C10H10_a <=> C10H10_b  # todo: WIP
+        # Intra_Disproportionation: C10H10_a <=> C10H10_b
         c10h10_a_xyz = {'coords': ((3.1623638230700997, 0.39331289450005563, -0.031839117414963584),
                                    (1.8784852381397288, 0.037685951926618944, -0.13659028131444134),
                                    (0.9737380560194014, 0.5278617594060281, -1.1526858375270472),
@@ -1128,7 +1128,7 @@ class TestARCReaction(unittest.TestCase):
         self.assertEqual(rxn.atom_map, [0, 1, 8, 13, 3, 2, 7, 6, 5, 4, 9, 10, 17, 12, 11, 16, 15, 14, 19, 18])
         self.assertTrue(check_atom_map(rxn))
 
-        # Intra_R_Add_Endocyclic: C9H15_a <=> C9H15_b  # todo: WIP
+        # Intra_R_Add_Endocyclic: C9H15_a <=> C9H15_b
         c9h15_a_xyz = {'coords': ((3.2994642637411093, -0.9763218631003405, -0.6681519125224107),
                                   (2.092867397835492, -0.585345209944081, -1.094234941414971),
                                   (1.1613654936979811, 0.23706312530825574, -0.350374400298155),
@@ -1191,7 +1191,7 @@ class TestARCReaction(unittest.TestCase):
                                         20, 21, 14, 23, 12, 15, 19, 13, 17, 18])
         self.assertTrue(check_atom_map(rxn))
 
-        # R_Addition_COm: C6H5 + CO <=> C7H5O  # todo: WIP
+        # R_Addition_COm: C6H5 + CO <=> C7H5O
         c6h5_xyz = {'coords': ((0.1817676212163122, -1.6072341699404684, -0.014610043584505971),
                                (1.3027386938520413, -0.7802649159703986, -0.0076490984025043415),
                                (1.1475642728457944, 0.6058877336062989, 0.0049505291900821605),
@@ -1228,7 +1228,7 @@ class TestARCReaction(unittest.TestCase):
         self.assertEqual(rxn.atom_map, [1, 5, 6, 7, 3, 4, 12, 11, 10, 9, 8, 2, 0])
         self.assertTrue(check_atom_map(rxn))
 
-        # intra_NO2_ONO_conversion: C2H5NO2 <=> C2H5ONO  # todo: WIP
+        # intra_NO2_ONO_conversion: C2H5NO2 <=> C2H5ONO
         c6h5_xyz = {'coords': ((1.8953828083622057, 0.8695975650550358, 0.6461465212661076),
                                (1.3601473931706598, -0.04212583715410005, 0.0034200061443233247),
                                (1.8529583069008781, -0.6310931351538215, -0.9666668585141432),
@@ -1325,7 +1325,7 @@ H       1.12853146   -0.86793870    0.06973060"""
         mapped_product = rxn_1.get_mapped_product_xyz()
         self.assertEqual(rxn_1.atom_map, [2, 0, 1])
         self.assertTrue(check_atom_map(rxn_1))
-        self.assertTrue(mapped_product.get_xyz(), h2o_xyz_1)
+        self.assertEqual(mapped_product.get_xyz(), h2o_xyz_1)
 
         reactant_xyz = """C  -1.3087    0.0068    0.0318
                           C   0.1715   -0.0344    0.0210
@@ -1348,10 +1348,18 @@ H       1.12853146   -0.86793870    0.06973060"""
                          H  -1.4329   -0.1554    0.9349"""
         product = ARCSpecies(label='product', smiles='[N-]=[N+]=C(N=O)C', xyz=product_xyz)
         rxn_2 = ARCReaction(r_species=[reactant], p_species=[product])
-        mapped_product = rxn_2.get_mapped_product_xyz()
-        self.assertEqual(rxn_2.atom_map, [2, 0, 1])
         self.assertTrue(check_atom_map(rxn_2))
-        self.assertTrue(mapped_product.get_xyz(), h2o_xyz_1)
+        mapped_product = rxn_2.get_mapped_product_xyz()
+        self.assertEqual(rxn_2.atom_map[:6], [0, 1, 2, 3, 4, 5])
+        self.assertIn(rxn_2.atom_map[6], [6, 8])
+        self.assertIn(rxn_2.atom_map[7], [6, 7])
+        self.assertIn(rxn_2.atom_map[8], [7, 8])
+        expected_xyz = {'symbols': ('C', 'C', 'N', 'O', 'N', 'N', 'H', 'H', 'H'),
+                        'isotopes': (12, 12, 14, 16, 14, 14, 1, 1, 1),
+                        'coords': ((-1.0108, -0.0114, -0.061), (0.478, 0.0191, 0.0139), (1.2974, -0.993, 0.4693),
+                                   (0.6928, -1.9845, 0.8337), (1.7456, 1.9701, -0.6976), (1.1642, 1.0763, -0.3716),
+                                   (-1.4329, -0.1554, 0.9349), (-1.402, 0.9134, -0.4821), (-1.3327, -0.8499, -0.6803))}
+        self.assertEqual(mapped_product.get_xyz(), expected_xyz)
 
     def test_check_attributes(self):
         """Test checking the reaction attributes"""
