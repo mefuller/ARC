@@ -2937,7 +2937,7 @@ class Scheduler(object):
                          f"will not troubleshoot for the {next_with_ordinal} time.")
             return trsh_success, actual_actions
         # Increase the trsh_counter.
-        self.species_dict[label].rotors_dict['trsh_counter'] += 1
+        self.species_dict[label].rotors_dict[job.rotor_index]['trsh_counter'] += 1
 
         # A lower conformation was found.
         if 'change conformer' in methods:
