@@ -54,7 +54,7 @@ from rmgpy.molecule.molecule import Atom, Bond, Molecule
 from rmgpy.molecule.element import C as C_ELEMENT, H as H_ELEMENT, F as F_ELEMENT, Cl as Cl_ELEMENT, I as I_ELEMENT
 
 from arc.common import (ARC_PATH,
-                        OB_OUTPUT_NUM,
+                        OB_OUTPUT_NUM,  # Don't remove, it's being used as a glabal variable.
                         logger,
                         convert_list_index_0_to_1,
                         determine_top_group_indices,
@@ -107,6 +107,13 @@ COMBINATION_THRESHOLD = 1000
 
 # Consolidation tolerances for Z matrices
 CONSOLIDATION_TOLS = {'R': 1e-2, 'A': 1e-2, 'D': 1e-2}
+
+CHEAT_SHEET = {'[H][H]': {'xyz': converter.str_to_xyz("""H  0.0  0.0  0.3715170
+                                                         H  0.0  0.0 -0.3715170"""),
+                          'index': 0,
+                          'FF energy': 0,
+                          'source': 'CHEAT_SHEET',
+                          'torsion_dihedrals': {}}}
 
 
 def generate_conformers(mol_list: Union[List[Molecule], Molecule],
@@ -169,14 +176,22 @@ def generate_conformers(mol_list: Union[List[Molecule], Molecule],
         - Lowest conformers
         - Lowest conformers and all new conformers.
     """
+    for mol in mol_list:
+        smiles = mol.copy(deep=True).to_smiles()
+        if smiles in CHEAT_SHEET:
+            if return_all_conformers:
+                return [CHEAT_SHEET[smiles]], [CHEAT_SHEET[smiles]]
+            return [CHEAT_SHEET[smiles]]
     if isinstance(mol_list, Molecule):
         # try generating resonance structures, but strictly keep atom order
         success = False
+        mol_copy = mol_list.copy(deep=True)
+        mol_copy.reactive = True
         try:
-            new_mol_list = mol_list.copy(deep=True).generate_resonance_structures(keep_isomorphic=False,
-                                                                                  filter_structures=True,
-                                                                                  save_order=True,
-                                                                                  )
+            new_mol_list = mol_copy.generate_resonance_structures(keep_isomorphic=False,
+                                                                  filter_structures=True,
+                                                                  save_order=True,
+                                                                  )
             success = converter.order_atoms_in_mol_list(ref_mol=mol_list.copy(deep=True), mol_list=new_mol_list)
         except (ValueError, ILPSolutionError, ResonanceError) as e:
             logger.warning(f'Could not generate resonance structures for species {label}. Got: {e}')
@@ -226,6 +241,7 @@ def generate_conformers(mol_list: Union[List[Molecule], Molecule],
         mol_list=mol_list, label=label, xyzs=xyzs, torsion_num=len(torsions), charge=charge, multiplicity=multiplicity,
         num_confs=num_confs_to_generate, force_field=force_field)
 
+    lowest_confs = list()
     if len(conformers):
         conformers = determine_dihedrals(conformers, torsions)
 
@@ -237,9 +253,9 @@ def generate_conformers(mol_list: Union[List[Molecule], Molecule],
 
         new_conformers = determine_chirality(conformers=new_conformers, label=label, mol=mol_list[0])
 
-        lowest_confs = get_lowest_confs(label, new_conformers, n=n_confs, e=e_confs)
-
-        lowest_confs.sort(key=lambda x: x['FF energy'], reverse=False)  # sort by output confs, lowest to highest energy
+        if len(new_conformers):
+            lowest_confs = get_lowest_confs(label, new_conformers, n=n_confs, e=e_confs)
+            lowest_confs.sort(key=lambda x: x['FF energy'], reverse=False)  # Sort by output confs, lowest to highest energy.
 
         execution_time = time.time() - t0
         t, s = divmod(execution_time, 60)
@@ -357,7 +373,7 @@ def deduce_new_conformers(label, conformers, torsions, tops, mol_list, smeared_s
             multiple_sampling_points_dict=multiple_sampling_points_dict, wells_dict=wells_dict,
             de_threshold=de_threshold, symmetries=symmetries))
 
-    if plot_path is not None:
+    if plot_path is not None and len(new_conformers):
         lowest_conf = get_lowest_confs(label=label, confs=new_conformers, n=1)[0]
         lowest_conf = determine_chirality([lowest_conf], label, mol, force=False)[0]
         diastereomer = f" (diastereomer: {lowest_conf['chirality']})" if 'chirality' in lowest_conf \
@@ -535,9 +551,9 @@ def generate_all_combinations(label, mol, base_xyz, multiple_tors, multiple_samp
     Returns:
         list: New conformer combinations, entries are conformer dictionaries.
     """
-    # generate sampling points combinations
+    # Generate sampling points combinations.
     product_combinations = list(product(*multiple_sampling_points))
-    new_conformers = list()  # will be returned
+    new_conformers = list()
 
     if multiple_tors:
         xyzs, energies = change_dihedrals_and_force_field_it(label, mol, xyz=base_xyz, torsions=multiple_tors,
@@ -550,9 +566,14 @@ def generate_all_combinations(label, mol, base_xyz, multiple_tors, multiple_samp
                                        'FF energy': energy,
                                        'source': 'Generated all combinations from scan map'})
     else:
-        # no multiple torsions (all torsions are symmetric or no torsions in the molecule), this is a trivial case
+        # No multiple torsions (all torsions are symmetric or no torsions in the molecule), this is a trivial case.
         energy = get_force_field_energies(label, mol, num_confs=None, xyz=base_xyz, force_field=force_field,
-                                          optimize=True, suppress_warning=True)[1][0]
+                                          optimize=True, suppress_warning=True)[1]
+        if energy is not None and len(energy):
+            print(energy)
+            energy = energy[0]
+        else:
+            return list()
         new_conformers.append({'index': len_conformers + len(new_conformers),
                                'xyz': base_xyz,
                                'FF energy': energy,
@@ -1066,7 +1087,7 @@ def get_force_field_energies(label: str,
     xyzs, energies = list(), list()
     if force_field.lower() in ['mmff94', 'mmff94s', 'uff']:
         rd_mol = embed_rdkit(label, mol, num_confs=num_confs, xyz=xyz)
-        xyzs, energies = rdkit_force_field(label, rd_mol, force_field=force_field, try_uff=try_uff, optimize=optimize)
+        xyzs, energies = rdkit_force_field(label, rd_mol, mol, force_field=force_field, try_uff=try_uff, optimize=optimize)
     if not len(xyzs) and force_field.lower() in ['gaff', 'mmff94', 'mmff94s', 'uff', 'ghemical'] and try_ob:
         if not suppress_warning:
             logger.warning(f'Using OpenBabel (instead of RDKit) as a fall back method to generate conformers for {label}. '
@@ -1133,7 +1154,8 @@ def mix_rdkit_and_openbabel_force_field(label,
                                                      mol,
                                                      num_confs,
                                                      xyz=xyz,
-                                                     force_field=force_field)
+                                                     force_field=force_field,
+                                                     )
             xyzs.extend(xyzs_)
             energies.extend(energies_)
     return xyzs, energies
@@ -1169,7 +1191,13 @@ def openbabel_force_field(label, mol, num_confs=None, xyz=None, force_field='GAF
     return run_ob_as_subprocess(input_dict)
 
 
-def openbabel_force_field_on_rdkit_conformers(label, mol, num_confs, xyz, force_field='MMFF94s', optimize=True):
+def openbabel_force_field_on_rdkit_conformers(label: str,
+                                              mol: Optional[Molecule] = None,
+                                              num_confs: Optional[int] = None,
+                                              xyz: Optional[dict] = None,
+                                              force_field='MMFF94s',
+                                              optimize=True,
+                                              ) -> Tuple[list, list]:
     """
     Optimize RDKit conformers by OpenBabel using a force field (MMFF94 or MMFF94s are recommended).
     This is a fall back method when RDKit fails to generate force field optimized conformers.
@@ -1326,9 +1354,12 @@ def read_rdkit_embedded_conformer_i(rd_mol, i, rd_index_map=None):
 
 def rdkit_force_field(label: str,
                       rd_mol: RDMol,
+                      mol: Optional[Molecule] = None,
+                      num_confs: Optional[int] = None,
                       force_field: str = 'MMFF94s',
                       try_uff: bool = True,
                       optimize: bool = True,
+                      try_ob: bool = True,
                       ) -> Tuple[list, list]:
     """
     Optimize RDKit conformers using a force field (MMFF94 or MMFF94s are recommended).
@@ -1337,9 +1368,12 @@ def rdkit_force_field(label: str,
     Args:
         label (str): The species' label.
         rd_mol (RDKit RDMol): The RDKit molecule with embedded conformers to optimize.
+        mol (Molecule, optional): The RMG molecule object with connectivity and bond order information.
+        num_confs (int, optional): The number of random 3D conformations to generate.
         force_field (str, optional): The type of force field to use.
         try_uff (bool, optional): Whether to try UFF if MMFF94(s) fails. ``True`` by default.
         optimize (bool, optional): Whether to first optimize the conformer using FF. True to optimize.
+        try_ob (bool, optional): Whether to try OpenBabel if RDKit fails. ``True`` to try, ``False`` by default.
 
     Returns:
         Tuple[list, list]:
@@ -1365,11 +1399,25 @@ def rdkit_force_field(label: str,
                 energies.append(ff.CalcEnergy())
             xyzs.append(read_rdkit_embedded_conformer_i(rd_mol, i))
     if not len(xyzs) and 'MMFF' in force_field and try_uff:
-        output = Chem.AllChem.UFFOptimizeMoleculeConfs(rd_mol,
-                                                       maxIters=200,
-                                                       ignoreInterfragInteractions=True,
-                                                       ) \
-            if optimize else None
+        logging.warning(f'Could not optimize {label} with {force_field} in RDKit.')
+        output = None
+        if optimize:
+            try:
+                output = Chem.AllChem.UFFOptimizeMoleculeConfs(rd_mol,
+                                                               maxIters=200,
+                                                               ignoreInterfragInteractions=True,
+                                                               )
+            except RuntimeError as e:
+                logging.warning(f'Could not optimize {label} with UFF in RDKit. Got:\n{e}')
+                logger.warning(f'Using OpenBabel (instead of RDKit) as a fall back method to generate conformers for {label}. '
+                               f'This is often slower.')
+                if try_ob:
+                    xyzs, energies = openbabel_force_field_on_rdkit_conformers(label,
+                                                                               mol,
+                                                                               num_confs=num_confs,
+                                                                               force_field=force_field,
+                                                                               optimize=optimize,
+                                                                               )
         for i in range(rd_mol.GetNumConformers()):
             if output is not None and output[i][0] == 0:  # The optimization converged.
                 energies.append(output[i][1])
