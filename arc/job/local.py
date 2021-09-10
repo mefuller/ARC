@@ -150,11 +150,11 @@ def check_job_status(job_id):
 
 def delete_job(job_id):
     """
-    Deletes a running job
+    Deletes a running job.
     """
     cmd = f"{delete_command[servers['local']['cluster_soft']]} {job_id}"
     success = bool(execute_command(cmd, no_fail=True)[0])
-    if not success:  # Check if the job is still running. If not then this failure does not matter
+    if not success:
         logger.warning(f'Detected possible error when trying to delete job {job_id}. Checking to see if the job is '
                        f'still running...')
         running_jobs = check_running_jobs_ids()
@@ -297,17 +297,23 @@ def delete_all_local_arc_jobs(jobs: Optional[List[Union[str, int]]] = None):
         for status_line in stdout:
             s = re.search(r' a\d+', status_line)
             if s is not None:
-                job_id = s.group()[1:]
-                if jobs is None or job_id in jobs:
-                    if servers[server]['cluster_soft'].lower() == 'slurm':
+                job_name = s.group()[1:]
+                cluster_soft = servers[server]['cluster_soft'].lower()
+                server_job_id = None
+                if jobs is None or job_name in jobs:
+                    if cluster_soft == 'slurm':
                         server_job_id = status_line.split()[0]
                         delete_job(server_job_id)
-                        print(f'deleted job {job_id} ({server_job_id} on server)')
-                    elif servers[server]['cluster_soft'].lower() == 'pbs':
+                    elif cluster_soft == 'pbs':
                         server_job_id = status_line.split()[0]
                         delete_job(server_job_id)
-                        print(f'deleted job {job_id} ({server_job_id} on server)')
-                    elif servers[server]['cluster_soft'].lower() in ['oge', 'sge', 'htcondor']:
-                        delete_job(job_id)
-                        print(f'deleted job {job_id}')
+                    elif cluster_soft in ['oge', 'sge']:
+                        delete_job(job_name)
+                    elif cluster_soft == 'htcondor':
+                        server_job_id = status_line.split()[0].split('.')[0]
+                        delete_job(server_job_id)
+                    else:
+                        raise ValueError(f'Unrecognized cluster software {cluster_soft}.')
+                    aux_text = f' ({server_job_id} on server)' if server_job_id is not None else ''
+                    print(f'deleted job {job_name}{aux_text}.')
         print('\ndone.')
