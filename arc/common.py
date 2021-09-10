@@ -1344,6 +1344,7 @@ def check_r_n_p_symbols_between_rmg_and_arc_rxns(arc_reaction: 'ARCReaction',
     Returns:
         bool: Whether atom symbols are in the same respective order.
     """
+    result = True
     num_rs, num_ps = len(arc_reaction.r_species), len(arc_reaction.p_species)
     arc_r_symbols = [atom.element.symbol for atom in chain(*tuple(arc_reaction.r_species[i].mol.atoms for i in range(num_rs)))]
     arc_p_symbols = [atom.element.symbol for atom in chain(*tuple(arc_reaction.p_species[i].mol.atoms for i in range(num_ps)))]
@@ -1359,11 +1360,13 @@ def check_r_n_p_symbols_between_rmg_and_arc_rxns(arc_reaction: 'ARCReaction',
                                                   else rmg_reaction.products[i].molecule[0].atoms
                                                   for i in range(num_ps)))]
         if any(symbol_1 != symbol_2 for symbol_1, symbol_2 in zip(arc_r_symbols, rmg_r_symbols)):
-            print(arc_r_symbols)  # Don't modify to logging.
+            print('\nDifferent element order in reactants between ARC and RMG:')  # Don't modify to logging.
+            print(arc_r_symbols)
             print(rmg_r_symbols)
-            return False
+            result = False
         if any(symbol_1 != symbol_2 for symbol_1, symbol_2 in zip(arc_p_symbols, rmg_p_symbols)):
+            print('\nDifferent element order in products between ARC and RMG:')
             print(arc_p_symbols)
             print(rmg_p_symbols)
-            return False
-    return True
+            result = False
+    return result
