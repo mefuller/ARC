@@ -336,6 +336,8 @@ class JobAdapter(ABC):
             # Todo: check that HDF5 is available, else raise error
             # Todo: submit ARC workers with a HDF5 file
             pass
+        if not self.restrarted:
+            self._write_initiated_job_to_csv_file()
 
     def determine_job_array_parameters(self):
         """
