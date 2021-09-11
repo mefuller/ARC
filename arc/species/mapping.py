@@ -149,10 +149,9 @@ def map_isomerization_reaction(rxn: 'ARCReaction',
                 unique_p_keys.append(p_key)
         sorted_symbols_r = sorted([r_fingerprint[key]['self'] for key in unique_r_keys])
         sorted_symbols_p = sorted([p_fingerprint[key]['self'] for key in unique_p_keys])
-        if len(unique_r_keys) == len(unique_p_keys) == 2 \
-                and sorted_symbols_r == sorted_symbols_p:
+        if len(unique_r_keys) == len(unique_p_keys) == 2 and sorted_symbols_r == sorted_symbols_p:
             if len(set(sorted_symbols_p)) == 2:
-                # Two different elements, easy to match.
+                # Only two unique elements, easy to match.
                 if r_fingerprint[unique_r_keys[0]]['self'] == p_fingerprint[unique_p_keys[0]]['self']:
                     pairs = [(unique_r_keys[0], unique_p_keys[0]), (unique_r_keys[1], unique_p_keys[1])]
                 else:
@@ -171,8 +170,8 @@ def map_isomerization_reaction(rxn: 'ARCReaction',
                                             unique_p_keys[1],
                                             allow_first_key_pair_to_disagree=True,
                                             )
-                if bool(candidate_0) != bool(candidate_1):
-                    if not candidate_1:
+                if bool(candidate_0 is None) != bool(candidate_1 is None):
+                    if candidate_1 is None:
                         pairs = [(unique_r_keys[0], unique_p_keys[0]), (unique_r_keys[1], unique_p_keys[1])]
                     else:
                         pairs = [(unique_r_keys[0], unique_p_keys[1]), (unique_r_keys[1], unique_p_keys[0])]
@@ -518,15 +517,14 @@ def map_arc_rmg_species(arc_reaction: 'ARCReaction',
                                               (p_map, rmg_reaction.products, arc_products)]:
         for i, arc_spc in enumerate(arc_species):
             for j, rmg_obj in enumerate(rmg_species):
-                if isinstance(rmg_obj, Molecule):
-                    rmg_spc = Species(molecule=[rmg_obj])
-                elif isinstance(rmg_obj, Species):
-                    rmg_spc = rmg_obj
-                else:
-                    raise ValueError(f'Expected an RMG object instance of Molecule() or Species(),'
+                rmg_spc = Species(molecule=[rmg_obj]) if isinstance(rmg_obj, Molecule) else rmg_obj
+                if not isinstance(rmg_spc, Species):
+                    raise ValueError(f'Expected an RMG object instances of Molecule or Species, '
                                      f'got {rmg_obj} which is a {type(rmg_obj)}.')
                 rmg_spc.generate_resonance_structures(save_order=True)
-                if rmg_spc.is_isomorphic(arc_spc.mol, save_order=True):
+                rmg_spc_based_on_arc_spc = Species(molecule=arc_spc.mol_list)
+                rmg_spc_based_on_arc_spc.generate_resonance_structures(save_order=True)
+                if rmg_spc.is_isomorphic(rmg_spc_based_on_arc_spc, save_order=True):
                     if i in spc_map.keys() and concatenate:
                         spc_map[i].append(j)
                     elif concatenate:
@@ -534,6 +532,8 @@ def map_arc_rmg_species(arc_reaction: 'ARCReaction',
                     else:
                         spc_map[i] = j
                         break
+    if not r_map or not p_map:
+        raise ValueError(f'Could not match some of the RMG Reaction {rmg_reaction} to the ARC Reaction {arc_reaction}.')
     return r_map, p_map
 
 
@@ -652,6 +652,10 @@ def map_two_species(spc_1: Union[ARCSpecies, Species, Molecule],
             If the map is of ``dict`` type, keys are atom indices of ``spc_1``, values are atom indices of ``spc_2``.
     """
     spc_1, spc_2 = get_arc_species(spc_1), get_arc_species(spc_2)
+    if not check_species_before_mapping(spc_1, spc_2, verbose=verbose):
+        if verbose:
+            logger.warning(f'Could not map species {spc_1} and {spc_2}.')
+        return None
 
     # A shortcut for mono-atomic species.
     if spc_1.number_of_atoms == spc_2.number_of_atoms == 1:
@@ -683,10 +687,6 @@ def map_two_species(spc_1: Union[ARCSpecies, Species, Molecule],
     atom_map = None
 
     if backend.lower() == 'arc':
-        if not check_species_before_mapping(spc_1, spc_2, verbose=verbose):
-            if verbose:
-                logger.warning(f'Could not map species {spc_1} and {spc_2}.')
-            return None
         fingerprint_1 = fingerprint(spc_1, consider_chirality=consider_chirality)
         fingerprint_2 = fingerprint(spc_2, consider_chirality=consider_chirality)
         candidates = identify_superimposable_candidates(fingerprint_1, fingerprint_2)
@@ -901,10 +901,13 @@ def fingerprint(spc: ARCSpecies,
                 for key, val in chirality_dict.items():
                     if i in key:
                         atom_fingerprint['chirality'] = val
+            # if atom_1.label:
+            #     atom_fingerprint['label'] = atom_1.label
             for atom_2 in atom_1.edges.keys():
                 if atom_2.element.symbol not in atom_fingerprint .keys():
                     atom_fingerprint[atom_2.element.symbol] = list()
-                atom_fingerprint[atom_2.element.symbol].append(spc.mol.atoms.index(atom_2))
+                atom_fingerprint[atom_2.element.symbol] = sorted(atom_fingerprint[atom_2.element.symbol]
+                                                                 + [spc.mol.atoms.index(atom_2)])
             fingerprint_dict[i] = atom_fingerprint
     return fingerprint_dict
 
@@ -928,7 +931,7 @@ def identify_superimposable_candidates(fingerprint_1: Dict[int, Dict[str, Union[
         for key_2, val_2 in fingerprint_2.items():
             # Try all combinations of heavy atoms.
             result = iterative_dfs(fingerprint_1, fingerprint_2, key_1, key_2)
-            if result:
+            if result is not None:
                 candidates.append(result)
     return prune_identical_dicts(candidates)
 
@@ -967,7 +970,7 @@ def iterative_dfs(fingerprint_1: Dict[int, Dict[str, List[int]]],
                   key_1: int,
                   key_2: int,
                   allow_first_key_pair_to_disagree: bool = False,
-                  ) -> Dict[int, int]:
+                  ) -> Optional[Dict[int, int]]:
     """
     A depth first search (DFS) graph traversal algorithm to determine possible superimposable ordering of heavy atoms.
     This is an iterative and not a recursive algorithm since Python doesn't have a great support for recursion
@@ -982,8 +985,8 @@ def iterative_dfs(fingerprint_1: Dict[int, Dict[str, List[int]]],
                                                            of ``key_1`` and ``key_2``.
 
     Returns:
-        Dict[int, int]: ``None`` if this is not a valid superimposable candidate. Keys are atom indices of
-                        heavy atoms of species 1, values are potentially mapped atom indices of species 2.
+        Optional[Dict[int, int]]: ``None`` if this is an invalid superimposable candidate. Keys are atom indices of
+                                  heavy atoms of species 1, values are potentially mapped atom indices of species 2.
     """
     visited_1, visited_2 = list(), list()
     stack_1, stack_2 = deque(), deque()
@@ -1010,6 +1013,8 @@ def iterative_dfs(fingerprint_1: Dict[int, Dict[str, List[int]]],
                     if combination_tuple[0] not in visited_1 and combination_tuple[1] not in visited_2:
                         stack_1.append(combination_tuple[0])
                         stack_2.append(combination_tuple[1])
+    if len(result.keys()) != len(fingerprint_1.keys()):
+        return None
     return result
 
 
