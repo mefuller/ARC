@@ -1258,14 +1258,13 @@ def rmg_mol_to_dict_repr(mol: Molecule,
     Returns:
         dict: The corresponding dict representation.
     """
-    if all([atom.id == -1 for atom in mol.atoms]):
-        if testing:
-            counter = 0
-            for atom in mol.atoms:
-                atom.id = counter
-                counter += 1
-        else:
-            mol.assign_atom_ids()
+    if testing:
+        counter = 0
+        for atom in mol.atoms:
+            atom.id = counter
+            counter += 1
+    elif len(mol.atoms) > 1 and mol.atoms[0].id == mol.atoms[1].id:
+        mol.assign_atom_ids()
     return {'atoms': [{'element': {'number': atom.element.number,
                                    'symbol': atom.element.symbol,
                                    'name': atom.element.name,
