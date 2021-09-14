@@ -191,7 +191,7 @@ class TestHeuristicsAdapter(unittest.TestCase):
         self.assertTrue(rxn1.ts_species.is_ts)
         self.assertEqual(rxn1.ts_species.charge, 0)
         self.assertEqual(rxn1.ts_species.multiplicity, 2)
-        self.assertEqual(len(rxn1.ts_species.ts_guesses), 3)
+        self.assertEqual(len(rxn1.ts_species.ts_guesses), 1)  # No dihedral scans for H attacking at 180 degrees.
         self.assertEqual(rxn1.ts_species.ts_guesses[0].initial_xyz['symbols'], ('C', 'H', 'H', 'H', 'H', 'H'))
         self.assertEqual(len(rxn1.ts_species.ts_guesses[0].initial_xyz['coords']), 6)
         self.assertTrue(rxn1.ts_species.ts_guesses[0].success)
@@ -350,7 +350,7 @@ class TestHeuristicsAdapter(unittest.TestCase):
         self.assertTrue(rxn4.ts_species.is_ts)
         self.assertEqual(rxn4.ts_species.charge, 0)
         self.assertEqual(rxn4.ts_species.multiplicity, 2)
-        self.assertEqual(len(rxn4.ts_species.ts_guesses), 3)
+        self.assertEqual(len(rxn4.ts_species.ts_guesses), 1)  # No dihedral scans for H attacking at 180 degrees.
         self.assertEqual(rxn4.ts_species.ts_guesses[0].initial_xyz['symbols'], ('C', 'C', 'O', 'H', 'H', 'H', 'H', 'H'))
 
         nco_xyz = """N       1.36620399    0.00000000    0.00000000
