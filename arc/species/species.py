@@ -903,7 +903,7 @@ class ARCSpecies(object):
                 self.mol_list = [self.mol]
             success = order_atoms_in_mol_list(ref_mol=self.mol.copy(deep=True), mol_list=self.mol_list)
             if not success:
-                # try sorting by IDs, repeat object creation to make sure the original instances remain unchanged
+                # Try sorting by IDs, repeat object creation to make sure the original instances remain unchanged.
                 mol_copy = self.mol.copy(deep=True)
                 mol_copy.assign_atom_ids()
                 mol_list = mol_copy.generate_resonance_structures(keep_isomorphic=False,
@@ -911,7 +911,7 @@ class ARCSpecies(object):
                                                                   save_order=True,
                                                                   )
                 for i in range(len(mol_list)):
-                    mol = mol_list[i]  # not looping with mol so the iterator won't change within the loop
+                    mol = mol_list[i]
                     atoms = list()
                     for atom1 in mol_copy.atoms:
                         for atom2 in mol.atoms:
@@ -955,7 +955,8 @@ class ARCSpecies(object):
                                                           e_confs=e_confs,
                                                           return_all_conformers=False,
                                                           plot_path=plot_path,
-                                                          diastereomers=diastereomers)
+                                                          diastereomers=diastereomers,
+                                                          )
             if len(lowest_confs):
                 self.conformers.extend([conf['xyz'] for conf in lowest_confs])
                 self.conformer_energies.extend([None] * len(lowest_confs))
