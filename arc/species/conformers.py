@@ -1399,7 +1399,6 @@ def rdkit_force_field(label: str,
                 energies.append(ff.CalcEnergy())
             xyzs.append(read_rdkit_embedded_conformer_i(rd_mol, i))
     if not len(xyzs) and 'MMFF' in force_field and try_uff:
-        logging.warning(f'Could not optimize {label} with {force_field} in RDKit.')
         output = None
         if optimize:
             try:
@@ -1408,9 +1407,8 @@ def rdkit_force_field(label: str,
                                                                ignoreInterfragInteractions=True,
                                                                )
             except RuntimeError as e:
-                logging.warning(f'Could not optimize {label} with UFF in RDKit. Got:\n{e}')
-                logger.warning(f'Using OpenBabel (instead of RDKit) as a fall back method to generate conformers for {label}. '
-                               f'This is often slower.')
+                logger.warning(f'Using OpenBabel (instead of RDKit) as a fall back method to generate conformers '
+                               f'for {label}. This is often slower.')
                 if try_ob:
                     xyzs, energies = openbabel_force_field_on_rdkit_conformers(label,
                                                                                mol,
