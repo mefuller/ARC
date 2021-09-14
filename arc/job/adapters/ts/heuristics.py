@@ -250,7 +250,9 @@ class HeuristicsAdapter(JobAdapter):
         supported_families = [key for key, val in ts_adapters_by_rmg_family.items() if 'heuristics' in val]
 
         self.reactions = [self.reactions] if not isinstance(self.reactions, list) else self.reactions
+        print(f'num reactions: {len(self.reactions)}')
         for rxn in self.reactions:
+            print(rxn.label)
             family_label = rxn.family.label
             if family_label not in supported_families:
                 logger.warning(f'The heuristics TS search adapter does not support the {family_label} reaction family.')
@@ -298,6 +300,7 @@ class HeuristicsAdapter(JobAdapter):
                                      rmg_reactions=reaction_list,
                                      dihedral_increment=self.dihedral_increment,
                                      )
+                print(f'len xyzs: {len(xyzs)}')
                 tsg.tok()
 
             for method_index, xyz in enumerate(xyzs):
