@@ -570,7 +570,6 @@ def generate_all_combinations(label, mol, base_xyz, multiple_tors, multiple_samp
         energy = get_force_field_energies(label, mol, num_confs=None, xyz=base_xyz, force_field=force_field,
                                           optimize=True, suppress_warning=True)[1]
         if energy is not None and len(energy):
-            print(energy)
             energy = energy[0]
         else:
             return list()
