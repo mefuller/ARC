@@ -1021,14 +1021,14 @@ def _add_nth_atom_to_coords(zmat, coords, i, coords_to_skip=None):
     """
     coords_to_skip = coords_to_skip or list()
     if i == 0:
-        # add the 1st atom
+        # Add the 1st atom.
         coords.append((0.0, 0.0, 0.0))  # atom A is placed at the origin
     elif i == 1:
         # add the 2nd atom
         r_key = zmat['coords'][i][0]
         coords.append((0.0, 0.0, zmat['vars'][r_key]))  # atom B is placed on axis Z, distant by the AB bond length
     elif i == 2:
-        # add the 3rd atom (atom "C")
+        # Add the 3rd atom (atom "C").
         r_key, a_key = zmat['coords'][i][0], zmat['coords'][i][1]
         bc_length = zmat['vars'][r_key]
         alpha = zmat['vars'][a_key]
@@ -1036,7 +1036,7 @@ def _add_nth_atom_to_coords(zmat, coords, i, coords_to_skip=None):
         b_index = [indices for indices in get_atom_indices_from_zmat_parameter(r_key) if indices[0] == i][0][1]
         b_z = coords[b_index][2]
         c_y = bc_length * math.sin(alpha)
-        # we differentiate between two cases for c_z:
+        # We differentiate between two cases for c_z:
         # Either atom A is at the origin (case 1), or atom B is at the origin (case 2).
         # One of them has to be at the origin (0, 0, 0), since we're adding the 3rd atom (so either A or B were 1st)
         #  y
@@ -1052,18 +1052,21 @@ def _add_nth_atom_to_coords(zmat, coords, i, coords_to_skip=None):
         d_indices = [indices for indices in get_atom_indices_from_zmat_parameter(zmat['coords'][i][2])
                      if indices[0] == i][0]
         a_index, b_index, c_index = d_indices[3], d_indices[2], d_indices[1]
-        # atoms B and C aren't necessarily connected in the zmat, calculate from coords
+        # Atoms B and C aren't necessarily connected in the zmat, calculate from coords.
         bc_length = get_vector_length([coords[c_index][0] - coords[b_index][0],
                                        coords[c_index][1] - coords[b_index][1],
                                        coords[c_index][2] - coords[b_index][2]])
+        if bc_length == 0:
+            raise ValueError(f"Got a vector length (bc_length) of 0. "
+                             f"Check the {zmat['coords'][i][2]} param in the zmat.")
         cd_length = zmat['vars'][zmat['coords'][i][0]]
         bcd_angle = math.radians(zmat['vars'][zmat['coords'][i][1]])
         abcd_dihedral = math.radians(zmat['vars'][zmat['coords'][i][2]])
-        # a vector pointing from atom A to atom B:
+        # A vector pointing from atom A to atom B:
         ab = [(coords[b_index][0] - coords[a_index][0]),
               (coords[b_index][1] - coords[a_index][1]),
               (coords[b_index][2] - coords[a_index][2])]
-        # a normalized vector pointing from atom B to atom C:
+        # A normalized vector pointing from atom B to atom C:
         ubc = [(coords[c_index][0] - coords[b_index][0]) / bc_length,
                (coords[c_index][1] - coords[b_index][1]) / bc_length,
                (coords[c_index][2] - coords[b_index][2]) / bc_length]
@@ -1071,22 +1074,22 @@ def _add_nth_atom_to_coords(zmat, coords, i, coords_to_skip=None):
         un = n / get_vector_length(n)
         un_cross_ubc = np.cross(un, ubc)
 
-        # the transformation matrix:
+        # The transformation matrix:
         m = np.array([[ubc[0], un_cross_ubc[0], un[0]],
                       [ubc[1], un_cross_ubc[1], un[1]],
                       [ubc[2], un_cross_ubc[2], un[2]]], np.float64)
 
-        # place atom D in a default coordinate system
+        # Place atom D in a default coordinate system
         d = np.array([- cd_length * math.cos(bcd_angle),
                       cd_length * math.sin(bcd_angle) * math.cos(abcd_dihedral),
                       cd_length * math.sin(bcd_angle) * math.sin(abcd_dihedral)])
         d = m.dot(d)  # rotate the coordinate system into the reference frame of orientation defined by A, B, C
-        # add the coordinates of atom C the the resulting atom D:
+        # Add the coordinates of atom C the the resulting atom D:
         coords.append((d[0] + coords[c_index][0], d[1] + coords[c_index][1], d[2] + coords[c_index][2]))
     return coords
 
 
-def check_atom_r_constraints(atom_index, constraints):
+def check_atom_r_constraints(atom_index, constraints) -> Tuple[Optional[tuple], Optional[str]]:
     """
     Check distance constraints for an atom.
     'R' constraints are a list of tuples with length 2.
@@ -1097,13 +1100,13 @@ def check_atom_r_constraints(atom_index, constraints):
         atom_index (int): The 0-indexed atom index to check.
         constraints (dict): The 'R', 'A', 'D' constraints dict. Values are lists of constraints.
 
-    Returns:
-        tuple: The atom index to which the atom being checked is constrained. ``None`` if it is not constrained.
-    Returns:
-        str: The constraint type ('R_atom', or 'R_group').
-
     Raises:
         ZMatError: If the R constraint lengths do not equal two, or if the atom is constrained more than once.
+
+    Returns:
+        Tuple[Optional[tuple], Optional[str]]:
+            - The atom index to which the atom being checked is constrained. ``None`` if it is not constrained.
+            - The constraint type ('R_atom', or 'R_group').
     """
     if not any(['R' in key for key in constraints.keys()]):
         return None, None
@@ -1121,7 +1124,7 @@ def check_atom_r_constraints(atom_index, constraints):
     if occurrences > 1:
         raise ZMatError(f'A single atom cannot be constrained more than once. Atom {atom_index} is constrained '
                         f'{occurrences} times in "R" constraints.')
-    # at this point there's only one occurrence of this constraint, find it and report the constraining atom
+    # At this point there's only one occurrence of this constraint, find it and report the constraining atom.
     for constraint_type, r_constraint_list in r_constraints.items():
         for r_constraint in r_constraint_list:
             if r_constraint[0] == atom_index:
@@ -1139,13 +1142,13 @@ def check_atom_a_constraints(atom_index, constraints):
         atom_index (int): The 0-indexed atom index to check.
         constraints (dict): The 'R', 'A', 'D' constraints dict. Values are lists of constraints.
 
+    Raises:
+        ZMatError: If the A constraint lengths do not equal three, or if the atom is constrained more than once.
+
     Returns:
         tuple: The atom indices to which the atom being checked is constrained. ``None`` if it is not constrained.
     Returns:
         str: The constraint type ('A_atom', or 'A_group'). ``None`` if it is not constrained.
-
-    Raises:
-        ZMatError: If the A constraint lengths do not equal three, or if the atom is constrained more than once.
     """
     if not any(['A' in key for key in constraints.keys()]):
         return None, None
