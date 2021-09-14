@@ -16,10 +16,13 @@ import itertools
 import os
 from typing import TYPE_CHECKING, Dict, List, Optional, Tuple, Union
 
+import numpy as np
+
 from rmgpy.exceptions import ActionError
 from rmgpy.molecule.molecule import Molecule
 from rmgpy.reaction import Reaction
 from rmgpy.species import Species
+from arkane.statmech import is_linear
 
 from arc.common import almost_equal_coords, get_logger, key_by_val
 from arc.job.adapter import JobAdapter
@@ -250,9 +253,7 @@ class HeuristicsAdapter(JobAdapter):
         supported_families = [key for key, val in ts_adapters_by_rmg_family.items() if 'heuristics' in val]
 
         self.reactions = [self.reactions] if not isinstance(self.reactions, list) else self.reactions
-        print(f'*******************************************************\n\n\n\n\nnum reactions: {len(self.reactions)}')
         for rxn in self.reactions:
-            print(rxn.label)
             family_label = rxn.family.label
             if family_label not in supported_families:
                 logger.warning(f'The heuristics TS search adapter does not support the {family_label} reaction family.')
@@ -300,7 +301,6 @@ class HeuristicsAdapter(JobAdapter):
                                      rmg_reactions=reaction_list,
                                      dihedral_increment=self.dihedral_increment,
                                      )
-                print(f'\n\n\n\n\n***************************     len xyzs: {len(xyzs)}\n\n\n\n\n')
                 tsg.tok()
 
             for method_index, xyz in enumerate(xyzs):
@@ -891,7 +891,6 @@ def h_abstraction(arc_reaction: 'ARCReaction',
     Returns: List[dict]
         Entries are Cartesian coordinates of TS guesses for all reactions.
     """
-    print(f'\n\n\n\n\nrunning h_abstraction with dihedral_increment = {dihedral_increment}')
     if not len(rmg_reactions):
         raise ValueError('Cannot generate TS guesses without an RMG Reaction object instance.')
 
@@ -912,6 +911,11 @@ def h_abstraction(arc_reaction: 'ARCReaction',
 
     arc_reactant = arc_reaction.r_species[int(reactants_reversed)]  # Get R(*1)-H(*2).
     arc_product = arc_reaction.p_species[int(not products_reversed)]  # Get R(*3)-H(*2).
+
+    if any([is_linear(coordinates=np.array(arc_reactant.get_xyz()['coords'])),
+            is_linear(coordinates=np.array(arc_product.get_xyz()['coords']))]) and is_angle_linear(a2):
+        # Don't modify dihedrals for an attacking H (or other linear radical) at a linear angle, C ~ A -- H1 - H2 -- H.
+        dihedral_increment = 360
 
     for rmg_reaction in rmg_reactions:
         rmg_reactant_mol = rmg_reaction.reactants[int(reactants_reversed)].molecule[0]
