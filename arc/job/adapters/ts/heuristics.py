@@ -250,7 +250,7 @@ class HeuristicsAdapter(JobAdapter):
         supported_families = [key for key, val in ts_adapters_by_rmg_family.items() if 'heuristics' in val]
 
         self.reactions = [self.reactions] if not isinstance(self.reactions, list) else self.reactions
-        print(f'num reactions: {len(self.reactions)}')
+        print(f'*******************************************************\n\n\n\n\nnum reactions: {len(self.reactions)}')
         for rxn in self.reactions:
             print(rxn.label)
             family_label = rxn.family.label
@@ -300,7 +300,7 @@ class HeuristicsAdapter(JobAdapter):
                                      rmg_reactions=reaction_list,
                                      dihedral_increment=self.dihedral_increment,
                                      )
-                print(f'len xyzs: {len(xyzs)}')
+                print(f'\n\n\n\n\n***************************     len xyzs: {len(xyzs)}\n\n\n\n\n')
                 tsg.tok()
 
             for method_index, xyz in enumerate(xyzs):
@@ -891,7 +891,7 @@ def h_abstraction(arc_reaction: 'ARCReaction',
     Returns: List[dict]
         Entries are Cartesian coordinates of TS guesses for all reactions.
     """
-    print(f'running h_abstraction with dihedral_increment = {dihedral_increment}')
+    print(f'\n\n\n\n\nrunning h_abstraction with dihedral_increment = {dihedral_increment}')
     if not len(rmg_reactions):
         raise ValueError('Cannot generate TS guesses without an RMG Reaction object instance.')
 
