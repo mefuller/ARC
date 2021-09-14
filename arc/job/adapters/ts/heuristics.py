@@ -871,7 +871,7 @@ def h_abstraction(arc_reaction: 'ARCReaction',
                   r1_stretch: float = 1.2,
                   r2_stretch: float = 1.2,
                   a2: float = 180,
-                  dihedral_increment: int = 120,
+                  dihedral_increment: int = 20,
                   ) -> List[dict]:
     """
     Generate TS guesses for reactions of the RMG ``H_Abstraction`` family.
