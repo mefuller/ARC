@@ -38,7 +38,7 @@ if TYPE_CHECKING:
     from arc.species import ARCSpecies
 
 
-DIHEDRAL_INCREMENT = 20
+DIHEDRAL_INCREMENT = 120
 
 logger = get_logger()
 
