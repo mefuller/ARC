@@ -3153,7 +3153,7 @@ class Scheduler(object):
         for output_error in output_errors:
             self.output[label]['errors'] += output_error
             if 'Could not troubleshoot' in output_error and self.species_dict[label].is_ts:
-                self.species_dict[label].ts_guesses[self.species_dict[label].chosen_ts].errors.append(output_error)
+                self.species_dict[label].ts_guesses[self.species_dict[label].chosen_ts].errors += '; ' + output_error
         if remove_checkfile:
             self.species_dict[label].checkfile = None
         job.ess_trsh_methods = ess_trsh_methods
