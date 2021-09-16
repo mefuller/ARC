@@ -54,44 +54,61 @@ class JobEnum(str, Enum):
     The supported job software adapters.
     The available adapters are a finite set.
 
-    Todo: Add missing adapters
+    Todo: Add the following adapters:
+        - cfour
+        - cosmo
+        - onedmin
+        - openbabel
+        - rdkit
+        - terachem
+        - torchani
+        - turbomol
+        - xtb
+        - gsm
+        - pygsm
+        - neb_ase
+        - neb_terachem
+        - neb_gpr
+        - qst2
+        - user
+        - readuct
+        - copenhagen
+        - fsm
+        - gan
     """
     # ESS
-    arc = 'arc'  # Todo
-    cfour = 'cfour'  # Todo
-    cosmo = 'cosmo'  # Todo
+    cfour = 'cfour'
+    cosmo = 'cosmo'
     gaussian = 'gaussian'
     molpro = 'molpro'
-    onedmin = 'onedmin'  # Todo
-    openbabel = 'openbabel'  # Todo
+    onedmin = 'onedmin'
+    openbabel = 'openbabel'
     orca = 'orca'
-    psi4 = 'psi4'  # Todo
+    psi4 = 'psi4'
     qchem = 'qchem'
-    rdkit = 'rdkit'  # Todo
+    rdkit = 'rdkit'
     terachem = 'terachem'
-    torchani = 'torchani'  # Todo
+    torchani = 'torchani'
     turbomol = 'turbomol'
-    xtb = 'xtb'  # Todo
+    xtb = 'xtb'
 
     # TS search methods
-    # Todo: see https://doi.org/10.1021/acs.jctc.7b00764
-    autotst = 'autotst'  # AutoTST
-    gsm = 'gsm'  # Todo  # double ended growing string method (DE-GSM)
-    pygsm = 'pygsm'  # Todo  # double ended growing string method (DE-GSM): pyGSM: https://github.com/ZimmermanGroup/molecularGSM/wiki
-    heuristics = 'heuristics'  # Todo  # brute force heuristics
-    kinbot = 'kinbot'  # KinBot
+    autotst = 'autotst'  # AutoTST, 10.1021/acs.jpca.7b07361, 10.26434/chemrxiv.13277870.v2
+    gsm = 'gsm'  # Double ended growing string method (DE-GSM), [10.1021/ct400319w, 10.1063/1.4804162]
+    pygsm = 'pygsm'  # Double ended growing string method (DE-GSM): pyGSM: https://github.com/ZimmermanGroup/molecularGSM/wiki
+    heuristics = 'heuristics'  # ARC's heuristics
+    kinbot = 'kinbot'  # KinBot, 10.1016/j.cpc.2019.106947
     gcn = 'gcn'  # Graph neural network for isomerization, https://doi.org/10.1021/acs.jpclett.0c00500
-    neb_ase = 'neb_ase'  # Todo  # NEB in ASE: https://www.scm.com/doc/Tutorials/ADF/Transition_State_with_ASE.html, https://wiki.fysik.dtu.dk/ase/ase/neb.html, https://wiki.fysik.dtu.dk/ase/tutorials/neb/idpp.html#idpp-tutorial., ASE autoNEB: https://wiki.fysik.dtu.dk/ase/dev/_modules/ase/autoneb.html
-    neb_terachem = 'neb_terachem'  # Todo  # NEB in TeraChem
-    # # Todo  NEB GPR:  https://journals.aps.org/prl/abstract/10.1103/PhysRevLett.122.156001
-    qst2 = 'qst2'  # Todo  # Synchronous Transit-Guided Quasi-Newton (STQN) implemented in Gaussian
-    user = 'user'  # Todo  # user guesses
-    #  # Todo   TodoReaDuct: https://doi.org/10.1021/acs.jctc.8b00169
-    # # Todo  Copenhagen: https://chemrxiv.org/articles/Fast_and_Automatic_Estimation_of_Transition_State_Structures_Using_Tight_Binding_Quantum_Chemical_Calculations/12600443/1
-    # # Todo  FSM in QChem: http://www.q-chem.com/qchem-website/manual/qchem43_manual/sect-approx_hess.html
-    # # Todo  NEBTERPOLATION using MD to find TSs: https://pubs.acs.org/doi/full/10.1021/acs.jctc.5b00830?src=recsys
-    # # Todo  https://chemrxiv.org/articles/preprint/Fast_and_Automatic_Estimation_of_Transition_State_Structures_Using_Tight_Binding_Quantum_Chemical_Calculations/12600443
-    # # Todo  (growing string method [10.1021/ct400319w, 10.1063/1.4804162], nudge elastic band [10.1063/1.1329672, 10.1063/1.1323224], synchronous transit and quasi‐Newton methods [https://onlinelibrary.wiley.com/doi/epdf/10.1002/ijch.199300051], KinBot [10.1016/j.cpc.2019.106947], AutoTST [10.1021/acs.jpca.7b07361, 10.26434/chemrxiv.13277870.v2], tight binding reaction path [10.26434/chemrxiv.12600443.v1], freezing string method [10.1021/acs.jctc.5b00407, 10.1063/1.3664901], and deep learning [10.26434/chemrxiv.12302084.v2])
+    neb_ase = 'neb_ase'  # NEB in ASE: https://www.scm.com/doc/Tutorials/ADF/Transition_State_with_ASE.html, https://wiki.fysik.dtu.dk/ase/ase/neb.html, https://wiki.fysik.dtu.dk/ase/tutorials/neb/idpp.html#idpp-tutorial., ASE autoNEB: https://wiki.fysik.dtu.dk/ase/dev/_modules/ase/autoneb.html
+    neb_terachem = 'neb_terachem'  # NEB in TeraChem, [10.1063/1.1329672, 10.1063/1.1323224]
+    neb_gpr = 'neb_gpr'  # NEB GPR:  https://journals.aps.org/prl/abstract/10.1103/PhysRevLett.122.156001
+    neb_terpolation = 'neb_terpolation'  # NEBTERPOLATION using MD to find TSs: https://pubs.acs.org/doi/full/10.1021/acs.jctc.5b00830?src=recsys
+    qst2 = 'qst2'  # Synchronous Transit-Guided Quasi-Newton (STQN) implemented in Gaussian, https://onlinelibrary.wiley.com/doi/epdf/10.1002/ijch.199300051
+    user = 'user'  # user guesses
+    readuct = 'readuct'  # ReaDuct: https://doi.org/10.1021/acs.jctc.8b00169
+    copenhagen = 'copenhagen'  # Copenhagen: https://chemrxiv.org/articles/Fast_and_Automatic_Estimation_of_Transition_State_Structures_Using_Tight_Binding_Quantum_Chemical_Calculations/12600443/1
+    fsm = 'fsm'  # FSM in QChem: http://www.q-chem.com/qchem-website/manual/qchem43_manual/sect-approx_hess.html, 10.1021/acs.jctc.5b00407, 10.1063/1.3664901
+    gan = 'gan'  # Generative adversarial networks, https://doi.org/10.1063/5.0055094
 
 
 class JobTypeEnum(str, Enum):
@@ -317,11 +334,8 @@ class JobAdapter(ABC):
 
         A 'pipe' execution type assumes an array of jobs and submits several ARC instances (workers)
         with an HDF5 file with directions.
-        The output is returned within the HDF5 file (Todo: or leave it in the calcs folder?).
+        The output is returned within the HDF5 file.
         The new ARC instance will run all of its jobs incore (it represents one worker).
-
-        Todo:
-            - write pipe submit
         """
         self.upload_files()
         execution_type = JobExecutionTypeEnum(self.execution_type)
@@ -333,8 +347,8 @@ class JobAdapter(ABC):
         elif execution_type == JobExecutionTypeEnum.queue:
             self.execute_queue()
         elif execution_type == JobExecutionTypeEnum.pipe:
-            # Todo: check that HDF5 is available, else raise error
-            # Todo: submit ARC workers with a HDF5 file
+            # Check that the HDF5 file is available, else raise an error.
+            # Submit ARC workers with the HDF5 file.
             pass
         if not self.restrarted:
             self._write_initiated_job_to_csv_file()
@@ -514,7 +528,7 @@ class JobAdapter(ABC):
             os.makedirs(self.local_path)
 
         if self.server is not None:
-            # parentheses don't play well in folder names:
+            # Parentheses don't play well in folder names:
             species_name_remote = self.species_label.replace('(', '_').replace(')', '_')  # todo: why only remote?
             path = servers[self.server].get('path', '').lower()
             path = os.path.join(path, servers[self.server]['un']) if path else ''
