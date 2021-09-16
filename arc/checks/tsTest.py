@@ -133,7 +133,29 @@ H                 -1.28677889    1.04716138   -1.01532486"""
         cls.rxn_4 = ARCReaction(r_species=[ccooj, ARCSpecies(label='CC', smiles='CC')],
                                 p_species=[ARCSpecies(label='CCOOH', smiles='CCOO'), ARCSpecies(label='CCj', smiles='[CH2]C')])
         cls.rxn_4.ts_species = ARCSpecies(label='TS4', is_ts=True,
-                                          xyz=os.path.join(ts.ARC_PATH, 'arc', 'testing', 'composite', 'TS0_composite7691.out'))
+                                          xyz=os.path.join(ts.ARC_PATH, 'arc', 'testing', 'composite', 'TS0_composite_2043.out'))
+
+        ea_xyz = """N                  1.27511929   -0.21413688   -0.09829069
+                    C                  0.04568411    0.51479456    0.24529057
+                    C                 -1.17314611   -0.39875221    0.01838707
+                    H                  1.35437220   -1.02559828    0.48071654
+                    H                  1.24076865   -0.49175940   -1.05836661
+                    H                 -0.03911651    1.38305825   -0.37424716
+                    H                  0.08243929    0.81185065    1.27257181
+                    H                 -1.08834550   -1.26701591    0.63792481
+                    H                 -2.06804111    0.13183054    0.26847684
+                    H                 -1.20990129   -0.69580830   -1.00889416"""
+        ea = ARCSpecies(label='EA', smiles='NCC', xyz=ea_xyz)
+        cls.rxn_5 = ARCReaction(r_species=[ea, ARCSpecies(label='H', smiles='[H]')],
+                                p_species=[ARCSpecies(label='CH3CHNH2', smiles='C[CH]N'), ARCSpecies(label='H2', smiles='[H][H]')])
+        cls.rxn_5.ts_species = ARCSpecies(label='TS5', is_ts=True,
+                                          xyz=os.path.join(ts.ARC_PATH, 'arc', 'testing', 'composite', 'TS0_composite_2044.out'))
+
+        cls.rxn_2a.determine_family(rmg_database=cls.rmgdb, save_order=True)
+        cls.rxn_2b.determine_family(rmg_database=cls.rmgdb, save_order=True)
+        cls.rxn_3.determine_family(rmg_database=cls.rmgdb, save_order=True)
+        cls.rxn_4.determine_family(rmg_database=cls.rmgdb, save_order=True)
+        cls.rxn_5.determine_family(rmg_database=cls.rmgdb, save_order=True)
 
     def test_check_ts(self):
         """Test the check_ts() function."""
@@ -329,13 +351,26 @@ H                 -1.28677889    1.04716138   -1.01532486"""
         ts.check_normal_mode_displacement(reaction=self.rxn_3, job=self.job1)
         self.assertTrue(self.rxn_3.ts_species.ts_checks['normal_mode_displacement'])
 
-        # todo: fix test, the problem is a mismatch of the inputs, get a new composite created according to the reactants atom order
-
+        # CCO[O] + CC <=> CCOO + [CH2]C, incorrect TS:
         self.job1.local_path_to_output_file = os.path.join(ts.ARC_PATH, 'arc', 'testing', 'composite',
-                                                           'TS0_composite7691.out')  # CCO[O] + CC <=> CCOO + [CH2]C
+                                                           'TS0_composite_2043.out')
+        self.rxn_4.ts_species.populate_ts_checks()
+        ts.check_normal_mode_displacement(reaction=self.rxn_4, job=self.job1)
+        self.assertFalse(self.rxn_4.ts_species.ts_checks['normal_mode_displacement'])
+
+        # CCO[O] + CC <=> CCOO + [CH2]C, correct TS:
+        self.job1.local_path_to_output_file = os.path.join(ts.ARC_PATH, 'arc', 'testing', 'composite',
+                                                           'TS0_composite_2102.out')
         self.rxn_4.ts_species.populate_ts_checks()
         ts.check_normal_mode_displacement(reaction=self.rxn_4, job=self.job1)
         self.assertTrue(self.rxn_4.ts_species.ts_checks['normal_mode_displacement'])
+
+        # NCC + H <=> CH3CHNH2 + H2, correct TS:
+        self.job1.local_path_to_output_file = os.path.join(ts.ARC_PATH, 'arc', 'testing', 'composite',
+                                                           'TS0_composite_2044.out')
+        self.rxn_5.ts_species.populate_ts_checks()
+        ts.check_normal_mode_displacement(reaction=self.rxn_5, job=self.job1)
+        self.assertTrue(self.rxn_5.ts_species.ts_checks['normal_mode_displacement'])
 
     def test_invalidate_rotors_with_both_pivots_in_a_reactive_zone(self):
         """Test the invalidate_rotors_with_both_pivots_in_a_reactive_zone() function"""
@@ -380,6 +415,18 @@ H                 -1.28677889    1.04716138   -1.01532486"""
         self.assertEqual(self.rxn_2a.ts_species.rotors_dict[1]['invalidation_reason'],
                          'Pivots participate in the TS reaction zone (code: pivTS). ')
         self.assertEqual(self.rxn_2a.ts_species.rotors_dict[1]['success'], False)
+
+    def test_get_rxn_zone_atom_indices(self):
+        """Test the get_rxn_zone_atom_indices() function"""
+        self.job1.local_path_to_output_file = os.path.join(ts.ARC_PATH, 'arc', 'testing', 'composite',
+                                                           'TS0_composite_2102.out')
+        rxn_zone_atom_indices = ts.get_rxn_zone_atom_indices(reaction=self.rxn_4, job=self.job1)
+        self.assertEqual(rxn_zone_atom_indices, [10, 14, 3])
+
+        self.job1.local_path_to_output_file = os.path.join(ts.ARC_PATH, 'arc', 'testing', 'composite',
+                                                           'TS0_composite_2044.out')
+        rxn_zone_atom_indices = ts.get_rxn_zone_atom_indices(reaction=self.rxn_5, job=self.job1)
+        self.assertEqual(rxn_zone_atom_indices, [1, 5, 10])
 
     def test_get_rms_from_normal_modes_disp(self):
         """Test the get_rms_from_normal_modes_disp() function"""
