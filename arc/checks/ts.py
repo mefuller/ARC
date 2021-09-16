@@ -180,10 +180,13 @@ def check_normal_mode_displacement(reaction: 'ARCReaction',
     if job is None:
         return
 
-    rmgdb.determine_family(reaction)
+    if reaction.family is None:
+        rmgdb.determine_family(reaction)
+
     rxn_zone_atom_indices = rxn_zone_atom_indices or get_rxn_zone_atom_indices(reaction, job)
     reaction.ts_species.ts_checks['normal_mode_displacement'] = False
     rmg_rxn = reaction.rmg_reaction.copy()
+
     try:
         reaction.family.add_atom_labels_for_reaction(reaction=rmg_rxn, output_with_resonance=False, save_order=True)
     except (ActionError, ValueError):
@@ -248,11 +251,21 @@ def get_rxn_zone_atom_indices(reaction: 'ARCReaction',  # todo check_ts_freq_job
     freqs, normal_mode_disp = parser.parse_normal_mode_displacement(path=job.local_path_to_output_file,
                                                                     raise_error=False)
     normal_disp_mode_rms = get_rms_from_normal_mode_disp(normal_mode_disp, freqs)
+    element_weighted_normal_disp_mode_rms = list()
+    r_i, r_atoms_i = 0, 0
+    for i in range(len(normal_disp_mode_rms)):
+        if i >= sum([len(reaction.r_species[j].mol.atoms) for j in range(r_i + 1)]):
+            r_i += 1
+            r_atoms_i = 0
+        element_weighted_normal_disp_mode_rms.append(reaction.r_species[r_i].mol.atoms[r_atoms_i].element.mass
+                                                     * normal_disp_mode_rms[i])
+        r_atoms_i += 1
     num_of_atoms = get_expected_num_atoms_with_largest_normal_mode_disp(normal_disp_mode_rms=normal_disp_mode_rms,
                                                                         ts_guesses=reaction.ts_species.ts_guesses,
                                                                         reaction=reaction,
                                                                         )
-    return sorted(range(len(normal_disp_mode_rms)), key=lambda i: normal_disp_mode_rms[i], reverse=True)[:num_of_atoms]
+    return sorted(range(len(element_weighted_normal_disp_mode_rms)),
+                  key=lambda i: element_weighted_normal_disp_mode_rms[i], reverse=True)[:num_of_atoms]
 
 
 def get_rms_from_normal_mode_disp(normal_mode_disp: np.ndarray,
