@@ -2585,7 +2585,7 @@ class Scheduler(object):
                     original_xyz=self.species_dict[label].final_xyz,
                 )
 
-                if len(actions) \
+                if len(list(actions.keys())) \
                         and 'pivTS' not in self.species_dict[label].rotors_dict[job.rotor_index]['invalidation_reason']:
                     # The rotor scan is problematic (and does not block a TS reaction zone), troubleshooting is required.
                     logger.info(f'Trying to troubleshoot rotor '
@@ -2597,10 +2597,10 @@ class Scheduler(object):
                     # The actual actions will be an empty list, indicating invalid rotor.
                     trsh_success, actions = self.troubleshoot_scan_job(job=job, methods=actions)
                     if not trsh_success:
-                        # Detailed reasons are logged in the troubleshoot_scan_job()
+                        # Detailed reasons are logged in the troubleshoot_scan_job().
                         invalidation_reason += ' But unable to propose troubleshooting methods.'
                     else:
-                        # record actions, only if the method is valid
+                        # Record actions, only if the method is valid.
                         self.species_dict[label].rotors_dict[job.rotor_index]['trsh_methods'].append(actions)
 
                 if not invalidate:
@@ -2930,8 +2930,8 @@ class Scheduler(object):
         label = job.species_label
         trsh_success = False
         actual_actions = dict()  # If troubleshooting fails, there will be no action.
-        used_trsh_methods = self.species_dict[label].rotors_dict[job.rotor_index] \
-            if job.rotor_index in self.species_dict[label].rotors_dict else None
+        used_trsh_methods = self.species_dict[label].rotors_dict[job.rotor_index]['trsh_methods'] \
+            if job.rotor_index in self.species_dict[label].rotors_dict else list()
 
         # Check trsh_counter to avoid infinite rotor trsh looping.
         if self.species_dict[label].rotors_dict[job.rotor_index]['trsh_counter'] >= max_rotor_trsh:
@@ -3019,20 +3019,24 @@ class Scheduler(object):
             except InputError as e:
                 logger.debug(f'Got invalid input for trsh_scan_job: {e}\nJob info:\n{job}')
             else:
-                if scan_trsh or job.scan_res != scan_res \
-                        and {'scan_trsh': scan_trsh, 'scan_res': scan_res} not in used_trsh_methods:
-                    # Valid troubleshooting method for freezing or increasing resolution.
-                    trsh_success = True
-                    actual_actions = {'scan_trsh': scan_trsh, 'scan_res': scan_res}
-                    self.run_job(label=label,
-                                 xyz=job.xyz,
-                                 level_of_theory=job.level,
-                                 job_type='scan',
-                                 torsions=job.torsions,
-                                 scan_trsh=scan_trsh,
-                                 trsh={'scan_res': scan_res} if scan_res is not None else None,
-                                 rotor_index=job.rotor_index,
-                                 )
+                if scan_trsh or job.scan_res != scan_res:
+                    for action in used_trsh_methods:
+                        if isinstance(action, dict) and 'scan_trsh' in action and 'scan_res' in action  \
+                                and action['scan_trsh'] == scan_trsh and action['scan_res'] == scan_res:
+                            break
+                    else:
+                        # Valid troubleshooting method for freezing or increasing resolution.
+                        trsh_success = True
+                        actual_actions = {'scan_trsh': scan_trsh, 'scan_res': scan_res}
+                        self.run_job(label=label,
+                                     xyz=job.xyz,
+                                     level_of_theory=job.level,
+                                     job_type='scan',
+                                     torsions=job.torsions,
+                                     scan_trsh=scan_trsh,
+                                     trsh={'scan_res': scan_res} if scan_res is not None else None,
+                                     rotor_index=job.rotor_index,
+                                     )
         return trsh_success, actual_actions
 
     def troubleshoot_opt_jobs(self, label):
