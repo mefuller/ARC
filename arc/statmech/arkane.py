@@ -186,9 +186,9 @@ class ArkaneAdapter(StatmechAdapter):
                 logger.error(f'Could not run statmech job for TS species {ts_species.label} '
                              f'of reaction {self.reaction.label}')
             else:
-                ts_species.e0 = arkane_ts_species.conformer.E0.value_si * 0.001  # convert to kJ/mol
+                ts_species.e0 = arkane_ts_species.conformer.E0.value_si * 0.001  # Convert to kJ/mol.
                 check_ts(reaction=self.reaction)
-                if not ts_passed_all_checks(species=self.reaction.ts_species):
+                if not ts_passed_all_checks(species=self.reaction.ts_species, exemptions=['E0', 'warnings', 'IRC']):
                     logger.error(f'TS {self.reaction.ts_species.label} did not pass all checks, '
                                  f'not computing rate coefficient.')
                     return None
