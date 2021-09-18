@@ -1795,6 +1795,7 @@ class ARCSpecies(object):
                               'normal_mode_displacement': False,
                               'warnings': '',
                               }
+            logger.info(f'populated ts_checks for {self.label}:\n{self.ts_checks}')
 
 
 class TSGuess(object):
