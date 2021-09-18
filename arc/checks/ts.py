@@ -84,16 +84,13 @@ def ts_passed_all_checks(species: 'ARCSpecies',
     Returns:
         bool: Whether the TS species passed all checks.
     """
-    result = True
     exemptions = exemptions or list()
     for check, value in species.ts_checks.items():
         if check not in exemptions and not value and not (check == 'e_elect' and species.ts_checks['E0']):
-            result = False
             if verbose:
-                logger.warning(f'TS {species.label} did not pass the {check} check')
-            else:
-                return result
-    return result
+                logger.warning(f'TS {species.label} did not pass the all checks, status is:\n{species.ts_checks}')
+            return False
+    return True
 
 
 def check_ts_energy(reaction: 'ARCReaction',
