@@ -2391,6 +2391,7 @@ class Scheduler(object):
                     self.save_restart_dict()
                 # Set the ts_checks attribute of the TS species:
                 self.species_dict[label].ts_checks['freq'] = True
+                logger.info(f"Setting ts_checks freq of {label} to True:\n{self.species_dict[label].ts_checks['freq']}")
                 return True
 
     def switch_ts(self, label: str):
