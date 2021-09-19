@@ -153,11 +153,16 @@ def delete_job(job_id):
     Deletes a running job.
     """
     cmd = f"{delete_command[servers['local']['cluster_soft']]} {job_id}"
+    logger.info('\n\n\n\n\n\n'
+                'In delete_job, cmd = {cmd'
+                '\n\n\n\n\n\n')
     success = bool(execute_command(cmd, no_fail=True)[0])
+    logger.info(f'success: {success}')
     if not success:
         logger.warning(f'Detected possible error when trying to delete job {job_id}. Checking to see if the job is '
                        f'still running...')
         running_jobs = check_running_jobs_ids()
+        print(running_jobs)
         if job_id in running_jobs:
             logger.error(f'Job {job_id} was scheduled for deletion, but the deletion command has appeared to errored, '
                          f'and is still running')
