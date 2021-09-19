@@ -50,6 +50,16 @@ class TestLocal(unittest.TestCase):
         self.assertTrue(os.path.isfile(path2))
         shutil.rmtree(os.path.join(ARC_PATH, 'scratch'), ignore_errors=True)
 
+    def test_parse_running_jobs_ids(self):
+        """Test the parse_running_jobs_ids() function"""
+        # Slurm:
+        stdout = ['             JOBID PARTITION     NAME     USER ST       TIME  NODES NODELIST(REASON)',
+                  '          10990729    normal     a207   alongd PD       0:00      1 (None)',
+                  '          10990728   xeon-p8  xa1001d   alongd  R       0:05      1 d-19-14-2',
+                  ]
+        running_job_ids = local.parse_running_jobs_ids(stdout)
+        self.assertEqual(running_job_ids, ['10990729', '10990728'])
+
 
 if __name__ == '__main__':
     unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))
