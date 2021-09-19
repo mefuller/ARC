@@ -10,7 +10,7 @@ import re
 import shutil
 import subprocess
 import time
-from typing import List, Optional, Union
+from typing import List, Optional, Tuple, Union
 
 from arc.common import get_logger
 from arc.exceptions import SettingsError
@@ -25,7 +25,10 @@ servers, check_status_command, submit_command, submit_filenames, delete_command,
     settings['delete_command'], settings['output_filenames']
 
 
-def execute_command(command, shell=True, no_fail=False):
+def execute_command(command,
+                    shell=True,
+                    no_fail=False,
+                    ) -> Tuple[Optional[list], Optional[list]]:
     """
     Execute a command.
 
@@ -42,32 +45,35 @@ def execute_command(command, shell=True, no_fail=False):
         - A list of lines of standard output stream.
         - A list of lines of the standard error stream.
     """
-    # Initialize variables
+    logger.info('In execute_command():')
     error = None
 
     if not isinstance(command, list):
         command = [command]
     command = [' && '.join(command)]
     i, max_times_to_try = 1, 30
-    sleep_time = 60  # seconds
+    sleep_time = 60  # Seconds
     while i < max_times_to_try:
         try:
             completed_process = subprocess.run(command, shell=shell, capture_output=True)
+            logger.info(f'success! completed_process = {completed_process}')
+            logger.info(f'stdout: {[_format_stdout(completed_process.stdout)]}')
+            logger.info(f'stderr: {[_format_stdout(completed_process.stderr)]}')
             return _format_stdout(completed_process.stdout), _format_stdout(completed_process.stderr)
         except subprocess.CalledProcessError as e:
-            error = e  # Store the error so we can raise the SettingsError if need be
+            error = e  # Store the error so we can raise a SettingsError if needed.
             if no_fail:
                 _output_command_error_message(command, e, logger.warning)
-                return False
+                return None, None
             else:
                 _output_command_error_message(command, e, logger.error)
                 logger.error(f'ARC is sleeping for {sleep_time * i} seconds before retrying.\nPlease check whether '
                              f'this is a server issue by executing the command manually on the server.')
                 logger.info('ZZZZZ..... ZZZZZ.....')
-                time.sleep(sleep_time * i)  # in seconds
+                time.sleep(sleep_time * i)  # In seconds
                 i += 1
 
-    # If not successful
+    # If unsuccessful:
     raise SettingsError(f'The command "{command}" is erroneous, got: \n{error}'
                         f'\nThis maybe either a server issue or the command is wrong.'
                         f'\nTo check if this is a server issue, please run the command on server and restart ARC.'
