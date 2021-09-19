@@ -203,6 +203,7 @@ def parse_running_jobs_ids(stdout: List[str]) -> list:
     Returns:
         List(str): List of job IDs.
     """
+    print(f'in parse_running_jobs_ids\nstdout = {stdout}')
     cluster_soft = servers['local']['cluster_soft'].lower()
     i_dict = {'slurm': 0, 'oge': 1, 'sge': 1, 'pbs': 4, 'htcondor': -1}
     split_by_dict = {'slurm': ' ', 'oge': ' ', 'sge': ' ', 'pbs': '.', 'htcondor': '.'}
