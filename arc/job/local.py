@@ -153,9 +153,9 @@ def delete_job(job_id):
     Deletes a running job.
     """
     cmd = f"{delete_command[servers['local']['cluster_soft']]} {job_id}"
-    logger.info('\n\n\n\n\n\n'
-                'In delete_job, cmd = {cmd'
-                '\n\n\n\n\n\n')
+    logger.info(f'\n\n\n\n\n\n'
+                f'In delete_job, cmd = {cmd}'
+                f'\n\n\n\n\n\n')
     success = bool(execute_command(cmd, no_fail=True)[0])
     logger.info(f'success: {success}')
     if not success:
