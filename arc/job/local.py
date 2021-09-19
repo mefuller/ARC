@@ -45,7 +45,6 @@ def execute_command(command,
         - A list of lines of standard output stream.
         - A list of lines of the standard error stream.
     """
-    logger.info('In execute_command():')
     error = None
 
     if not isinstance(command, list):
@@ -56,9 +55,6 @@ def execute_command(command,
     while i < max_times_to_try:
         try:
             completed_process = subprocess.run(command, shell=shell, capture_output=True)
-            logger.info(f'success! completed_process = {completed_process}')
-            logger.info(f'stdout: {[_format_stdout(completed_process.stdout)]}')
-            logger.info(f'stderr: {[_format_stdout(completed_process.stderr)]}')
             return _format_stdout(completed_process.stdout), _format_stdout(completed_process.stderr)
         except subprocess.CalledProcessError as e:
             error = e  # Store the error so we can raise a SettingsError if needed.
@@ -159,22 +155,17 @@ def delete_job(job_id):
     Deletes a running job.
     """
     cmd = f"{delete_command[servers['local']['cluster_soft']]} {job_id}"
-    print(f'\n\n\n\n\n\n'
-                f'In delete_job, cmd = {cmd}'
-                f'\n\n\n\n\n\n')
     success = not bool(execute_command(cmd, no_fail=True)[1])
-    print(f'success: {success}')
     if not success:
         logger.warning(f'Detected possible error when trying to delete job {job_id}. Checking to see if the job is '
                        f'still running...')
         running_jobs = check_running_jobs_ids()
-        print(running_jobs)
         if job_id in running_jobs:
-            print(f'Job {job_id} was scheduled for deletion, but the deletion command has appeared to errored. '
+            logger.error(f'Job {job_id} was scheduled for deletion, but the deletion command has appeared to errored. '
                          f'The job is still running.')
             raise RuntimeError(f'Could not delete job {job_id}')
         else:
-            print(f'Job {job_id} is no longer running.')
+            logger.info(f'Job {job_id} is no longer running.')
 
 
 def check_running_jobs_ids() -> list:
