@@ -162,7 +162,7 @@ def delete_job(job_id):
     logger.info(f'\n\n\n\n\n\n'
                 f'In delete_job, cmd = {cmd}'
                 f'\n\n\n\n\n\n')
-    success = bool(execute_command(cmd, no_fail=True)[0])
+    success = not bool(execute_command(cmd, no_fail=True)[1])
     logger.info(f'success: {success}')
     if not success:
         logger.warning(f'Detected possible error when trying to delete job {job_id}. Checking to see if the job is '
@@ -170,8 +170,8 @@ def delete_job(job_id):
         running_jobs = check_running_jobs_ids()
         print(running_jobs)
         if job_id in running_jobs:
-            logger.error(f'Job {job_id} was scheduled for deletion, but the deletion command has appeared to errored, '
-                         f'and is still running')
+            logger.error(f'Job {job_id} was scheduled for deletion, but the deletion command has appeared to errored. '
+                         f'The job is still running.')
             raise RuntimeError(f'Could not delete job {job_id}')
         else:
             logger.info(f'Job {job_id} is no longer running.')
