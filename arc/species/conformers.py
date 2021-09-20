@@ -1213,8 +1213,6 @@ def openbabel_force_field(label, mol, num_confs=None, xyz=None, force_field='GAF
             - Entries are optimized xyz's in a list format.
             - Entries are float numbers representing the energies in kJ/mol.
     """
-<<<<<<< d85507387fcda9074aa1990d2fcee7ede2988a20
-=======
     mol.assign_atom_ids()
     input_dict = {'function': 'openbabel_force_field',
                   'label': label,
@@ -1276,7 +1274,6 @@ def run_ob_as_subprocess(input_dict: dict) -> Tuple[list, list]:
             - Entries are float numbers representing the energies in kJ/mol.
     """
     global OB_OUTPUT_NUM
->>>>>>> Try UFF if MMFF94 doesn't work when optimizing conformers
     xyzs, energies = list(), list()
     ff = ob.OBForceField.FindForceField(force_field)
 
