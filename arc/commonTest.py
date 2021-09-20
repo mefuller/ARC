@@ -11,6 +11,7 @@ import os
 import time
 import unittest
 
+import numpy as np
 import pandas as pd
 
 from rmgpy.molecule.molecule import Molecule
@@ -22,7 +23,6 @@ from arc.reaction import ARCReaction
 from arc.rmgdb import make_rmg_database_object, load_families_only, rmg_database_instance_only_fams
 from arc.species.mapping import get_rmg_reactions_from_arc_reaction
 from arc.species.species import ARCSpecies
-import arc.species.converter as converter
 
 
 servers = settings['servers']
@@ -750,6 +750,36 @@ class TestCommon(unittest.TestCase):
                               p_species=[ARCSpecies(label='CH3', smiles='[CH3]'), ARCSpecies(label='H2O', smiles='O')])
         rmg_reactions = get_rmg_reactions_from_arc_reaction(arc_reaction=arc_rxn, db=self.rmgdb)
         self.assertTrue(common.check_r_n_p_symbols_between_rmg_and_arc_rxns(arc_rxn, rmg_reactions))
+
+    def test_calc_rmsd(self):
+        """Test compute the root-mean-square deviation between two matrices."""
+        # Test a np.array type input:
+        a_1 = np.array([1, 2, 3, 4])
+        b_1 = np.array([1, 2, 3, 4])
+        rmsd_1 = common.calc_rmsd(a_1, b_1)
+        self.assertEqual(rmsd_1, 0.0)
+
+        # Test a list type input:
+        a_2 = [1, 2, 3, 4]
+        b_2 = [1, 2, 3, 4]
+        rmsd_2 = common.calc_rmsd(a_2, b_2)
+        self.assertEqual(rmsd_2, 0.0)
+
+        # Test a 1-length list:
+        a_3 = [1]
+        b_3 = [2]
+        rmsd_3 = common.calc_rmsd(a_3, b_3)
+        self.assertEqual(rmsd_3, 1.0)
+
+        a_4 = np.array([1, 2, 3, 4])
+        b_4 = np.array([4, 3, 2, 1])
+        rmsd_4 = common.calc_rmsd(a_4, b_4)
+        self.assertAlmostEqual(rmsd_4, 2.23606797749979)
+
+        a_5 = np.array([[1, 2], [3, 4]])
+        b_5 = np.array([[4, 3], [2, 1]])
+        rmsd_5 = common.calc_rmsd(a_5, b_5)
+        self.assertAlmostEqual(rmsd_5, 3.1622776601683795)
 
     @classmethod
     def tearDownClass(cls):
