@@ -1348,3 +1348,25 @@ def check_r_n_p_symbols_between_rmg_and_arc_rxns(arc_reaction: 'ARCReaction',
             print(rmg_p_symbols)
             result = False
     return result
+
+
+def calc_rmsd(x: Union[list, np.array],
+              y: Union[list, np.array],
+              ) -> float:
+    """
+    Compute the root-mean-square deviation between two matrices.
+
+    Args:
+        x (np.array): Matrix 1.
+        y (np.array): Matrix 2.
+
+    Returns:
+        float: The RMSD score of two matrices.
+    """
+    x = np.array(x) if isinstance(x, list) else x
+    y = np.array(y) if isinstance(y, list) else y
+    d = x - y
+    n = x.shape[0]
+    sqr_sum = (d**2).sum()
+    rmsd = np.sqrt(sqr_sum/n)
+    return float(rmsd)
