@@ -357,7 +357,7 @@
 <span class="sd">        project_directory (str, optional): The path to the project directory.</span>
 <span class="sd">        verbose (int, optional): Specify the amount of log text seen.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># backup and delete an existing log file if needed</span>
+    <span class="c1"># Backup and delete an existing log file if needed.</span>
     <span class="k">if</span> <span class="n">project_directory</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">log_file</span><span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">project_directory</span><span class="p">,</span> <span class="s1">&#39;log_and_restart_archive&#39;</span><span class="p">)):</span>
             <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">project_directory</span><span class="p">,</span> <span class="s1">&#39;log_and_restart_archive&#39;</span><span class="p">))</span>
@@ -369,7 +369,7 @@
     <span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">verbose</span><span class="p">)</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">propagate</span> <span class="o">=</span> <span class="kc">False</span>
 
-    <span class="c1"># Use custom level names for cleaner log output</span>
+    <span class="c1"># Use custom level names for cleaner log output.</span>
     <span class="n">logging</span><span class="o">.</span><span class="n">addLevelName</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">CRITICAL</span><span class="p">,</span> <span class="s1">&#39;Critical: &#39;</span><span class="p">)</span>
     <span class="n">logging</span><span class="o">.</span><span class="n">addLevelName</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">ERROR</span><span class="p">,</span> <span class="s1">&#39;Error: &#39;</span><span class="p">)</span>
     <span class="n">logging</span><span class="o">.</span><span class="n">addLevelName</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">WARNING</span><span class="p">,</span> <span class="s1">&#39;Warning: &#39;</span><span class="p">)</span>
@@ -377,27 +377,27 @@
     <span class="n">logging</span><span class="o">.</span><span class="n">addLevelName</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
     <span class="n">logging</span><span class="o">.</span><span class="n">addLevelName</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
 
-    <span class="c1"># Create formatter and add to handlers</span>
+    <span class="c1"># Create formatter and add to handlers.</span>
     <span class="n">formatter</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">Formatter</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%(levelname)s%(message)s</span><span class="s1">&#39;</span><span class="p">)</span>
 
-    <span class="c1"># Remove old handlers before adding ours</span>
+    <span class="c1"># Remove old handlers before adding ours.</span>
     <span class="k">while</span> <span class="n">logger</span><span class="o">.</span><span class="n">handlers</span><span class="p">:</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">removeHandler</span><span class="p">(</span><span class="n">logger</span><span class="o">.</span><span class="n">handlers</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 
-    <span class="c1"># Create console handler; send everything to stdout rather than stderr</span>
+    <span class="c1"># Create console handler; send everything to stdout rather than stderr.</span>
     <span class="n">ch</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">StreamHandler</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">)</span>
     <span class="n">ch</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">verbose</span><span class="p">)</span>
     <span class="n">ch</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span><span class="n">formatter</span><span class="p">)</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">ch</span><span class="p">)</span>
 
-    <span class="c1"># Create file handler</span>
+    <span class="c1"># Create file handler.</span>
     <span class="n">fh</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">FileHandler</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="n">log_file</span><span class="p">)</span>
     <span class="n">fh</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">verbose</span><span class="p">)</span>
     <span class="n">fh</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span><span class="n">formatter</span><span class="p">)</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">fh</span><span class="p">)</span>
     <span class="n">log_header</span><span class="p">(</span><span class="n">project</span><span class="o">=</span><span class="n">project</span><span class="p">)</span>
 
-    <span class="c1"># ignore Paramiko, cclib, and matplotlib warnings:</span>
+    <span class="c1"># Ignore Paramiko, cclib, and matplotlib warnings:</span>
     <span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="n">action</span><span class="o">=</span><span class="s1">&#39;ignore&#39;</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="s1">&#39;.*paramiko.*&#39;</span><span class="p">)</span>
     <span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="n">action</span><span class="o">=</span><span class="s1">&#39;ignore&#39;</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="s1">&#39;.*cclib.*&#39;</span><span class="p">)</span>
     <span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="n">action</span><span class="o">=</span><span class="s1">&#39;ignore&#39;</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="s1">&#39;.*matplotlib.*&#39;</span><span class="p">)</span>
@@ -419,7 +419,7 @@
 
 <span class="sd">    Args:</span>
 <span class="sd">        project (str): The ARC project name to be logged in the header.</span>
-<span class="sd">        level: The desired logging level.</span>
+<span class="sd">        level (int, optional): The desired logging level.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">level</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;ARC execution initiated on </span><span class="si">{</span><span class="n">time</span><span class="o">.</span><span class="n">asctime</span><span class="p">()</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">level</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
@@ -435,7 +435,7 @@
 
     <span class="n">paths_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;ARC&#39;</span><span class="p">:</span> <span class="n">ARC_PATH</span><span class="p">,</span> <span class="s1">&#39;RMG-Py&#39;</span><span class="p">:</span> <span class="n">RMG_PATH</span><span class="p">,</span> <span class="s1">&#39;RMG-database&#39;</span><span class="p">:</span> <span class="n">RMG_DATABASE_PATH</span><span class="p">}</span>
     <span class="k">for</span> <span class="n">repo</span><span class="p">,</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">paths_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-        <span class="c1"># Extract HEAD git commit</span>
+        <span class="c1"># Extract HEAD git commit.</span>
         <span class="n">head</span><span class="p">,</span> <span class="n">date</span> <span class="o">=</span> <span class="n">get_git_commit</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
         <span class="n">branch_name</span> <span class="o">=</span> <span class="n">get_git_branch</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">head</span> <span class="o">!=</span> <span class="s1">&#39;&#39;</span> <span class="ow">and</span> <span class="n">date</span> <span class="o">!=</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
@@ -457,7 +457,7 @@
 
 <span class="sd">    Args:</span>
 <span class="sd">        execution_time (str): The overall execution time for ARC.</span>
-<span class="sd">        level: The desired logging level.</span>
+<span class="sd">        level (int, optional): The desired logging level.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">level</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">level</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;Total execution time: </span><span class="si">{</span><span class="n">execution_time</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
