@@ -425,7 +425,7 @@
 <span class="sd">    Convert Cartesian coordinates to a distance matrix.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        xyz_dict (dict): The Cartesian coordinates,</span>
+<span class="sd">        xyz_dict (dict): The Cartesian coordinates.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        Optional[np.array]: The distance matrix.</span>
@@ -527,9 +527,11 @@
                            <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Sort the tuples in an xyz dict according to the given indices.</span>
+
 <span class="sd">    Args:</span>
 <span class="sd">        xyz_dict (dict): The Cartesian coordinates.</span>
 <span class="sd">        indices (List[int]): Entries are 0-indices of the desired order.</span>
+
 <span class="sd">    Returns:</span>
 <span class="sd">        dict: The ordered xyz.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -537,7 +539,7 @@
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The number of indices </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">indices</span><span class="p">)</span><span class="si">}</span><span class="s2"> does not match &quot;</span>
                          <span class="sa">f</span><span class="s2">&quot;the number of coordinates </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">xyz_dict</span><span class="p">[</span><span class="s1">&#39;coords&#39;</span><span class="p">])</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">i</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">xyz_dict</span><span class="p">[</span><span class="s1">&#39;coords&#39;</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">indices</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;All indices must be lower than the length of the coordinates tuple.&quot;</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;All indices must be lower than the length of the coordinates tuple. &quot;</span>
                          <span class="sa">f</span><span class="s2">&quot;Got </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">xyz_dict</span><span class="p">[</span><span class="s1">&#39;coords&#39;</span><span class="p">])</span><span class="si">}</span><span class="s2"> coordinates, and indices of:</span><span class="se">\n</span><span class="si">{</span><span class="n">indices</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="n">coords</span><span class="p">,</span> <span class="n">symbols</span><span class="p">,</span> <span class="n">isotopes</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(),</span> <span class="nb">list</span><span class="p">(),</span> <span class="nb">list</span><span class="p">()</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">indices</span><span class="p">:</span>
@@ -589,7 +591,7 @@
 <span class="sd">        xyz_dict (dict): The ARC dict xyz style coordinates</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        Optional[Conformer]: An rmgpy.statmech.Conformer object containing the desired xyz coordinates</span>
+<span class="sd">        Optional[Conformer]: An rmgpy.statmech.Conformer object containing the desired xyz coordinates.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">xyz_dict</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">None</span>
@@ -747,7 +749,7 @@
 <span class="sd">        mol (Molecule, optional): The corresponding RMG Molecule with connectivity information.</span>
 <span class="sd">        constraints (dict, optional): Accepted keys are:</span>
 <span class="sd">                                      &#39;R_atom&#39;, &#39;R_group&#39;, &#39;A_atom&#39;, &#39;A_group&#39;, &#39;D_atom&#39;, &#39;D_group&#39;, or &#39;D_groups&#39;.</span>
-<span class="sd">                                      &#39;R&#39;, &#39;A&#39;, and &#39;D&#39;, constraining distances, angles, and dihedrals, respectively.</span>
+<span class="sd">                                      &#39;R&#39;, &#39;A&#39;, and &#39;D&#39; constrain distances, angles, and dihedrals, respectively.</span>
 <span class="sd">                                      Values are lists of atom indices (0-indexed) tuples.</span>
 <span class="sd">                                      The atom indices order matters.</span>
 <span class="sd">                                      Specifying &#39;_atom&#39; will cause only the last atom in the specified list values</span>
@@ -760,14 +762,13 @@
 <span class="sd">        consolidation_tols (dict, optional): Keys are &#39;R&#39;, &#39;A&#39;, &#39;D&#39;, values are floats representing absolute tolerance</span>
 <span class="sd">                                             for consolidating almost equal internal coordinates.</span>
 
+<span class="sd">    Raises:</span>
+<span class="sd">        InputError: If ``xyz`` if of a wrong type.</span>
+
 <span class="sd">    Returns:</span>
 <span class="sd">        dict: The Z matrix.</span>
-
-<span class="sd">    Raises:</span>
-<span class="sd">        InputError: If ``xyz`` if of wrong type.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">xyz</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-        <span class="n">xyz</span> <span class="o">=</span> <span class="n">str_to_xyz</span><span class="p">(</span><span class="n">xyz</span><span class="p">)</span>
+    <span class="n">xyz</span> <span class="o">=</span> <span class="n">str_to_xyz</span><span class="p">(</span><span class="n">xyz</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">xyz</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="n">xyz</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">xyz</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
         <span class="k">raise</span> <span class="n">InputError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;xyz must be a dictionary, got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">xyz</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
     <span class="n">xyz</span> <span class="o">=</span> <span class="n">remove_dummies</span><span class="p">(</span><span class="n">xyz</span><span class="p">)</span>
@@ -1204,8 +1205,8 @@
 <span class="sd">    Args:</span>
 <span class="sd">        xyz (dict): ARC&#39;s xyz dictionary format.</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        Optional[OBmol]: An Open Babel molecule.</span>
+<span class="sd">    Returns: Optional[OBmol]</span>
+<span class="sd">        An Open Babel molecule.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">xyz</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">None</span>
@@ -1693,6 +1694,8 @@
 <span class="sd">            - Conformer: An RDKit Conformer object.</span>
 <span class="sd">            - RDMol: An RDKit Molecule object.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">mol</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">ConverterError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;A mol argument must be given, got None.&#39;</span><span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">xyz</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
         <span class="k">raise</span> <span class="n">ConverterError</span><span class="p">(</span><span class="s1">&#39;The xyz argument seem to be of wrong type. Expected a dictionary, &#39;</span>
                              <span class="s1">&#39;got</span><span class="se">\n</span><span class="si">{0}</span><span class="se">\n</span><span class="s1">which is a </span><span class="si">{1}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">xyz</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">xyz</span><span class="p">)))</span>

@@ -837,17 +837,19 @@ Either <code class="docutils literal notranslate"><span class="pre">deg_incremen
 <dl class="py function">
 <dt id="arc.species.converter.sort_xyz_using_indices">
 <code class="sig-prename descclassname">arc.species.converter.</code><code class="sig-name descname">sort_xyz_using_indices</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">xyz_dict</span><span class="p">:</span> <span class="n">dict</span></em>, <em class="sig-param"><span class="n">indices</span><span class="p">:</span> <span class="n">List<span class="p">[</span>int<span class="p">]</span></span></em><span class="sig-paren">)</span> &#x2192; dict<a class="reference internal" href="../_modules/arc/species/converter.html#sort_xyz_using_indices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.converter.sort_xyz_using_indices" title="Permalink to this definition">¶</a></dt>
-<dd><p>Sort the tuples in an xyz dict according to the given indices.
-:param xyz_dict: The Cartesian coordinates.
-:type xyz_dict: dict
-:param indices: Entries are 0-indices of the desired order.
-:type indices: List[int]</p>
+<dd><p>Sort the tuples in an xyz dict according to the given indices.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>The ordered xyz.</p>
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>xyz_dict</strong> (<em>dict</em>) – The Cartesian coordinates.</p></li>
+<li><p><strong>indices</strong> (<em>List</em><em>[</em><em>int</em><em>]</em>) – Entries are 0-indices of the desired order.</p></li>
+</ul>
 </dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>dict</p>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The ordered xyz.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1108,7 +1110,7 @@ If <code class="docutils literal notranslate"><span class="pre">isotopes</span><
 <dd><p>Convert Cartesian coordinates to a distance matrix.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>xyz_dict</strong> (<em>dict</em>) – The Cartesian coordinates,</p>
+<dd class="field-odd"><p><strong>xyz_dict</strong> (<em>dict</em>) – The Cartesian coordinates.</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>The distance matrix.</p>
@@ -1142,11 +1144,9 @@ If <code class="docutils literal notranslate"><span class="pre">isotopes</span><
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>xyz</strong> (<em>dict</em>) – ARC’s xyz dictionary format.</p>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>An Open Babel molecule.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>Optional[OBmol]</p>
+</dl>
+<dl class="simple">
+<dt>Returns: Optional[OBmol]</dt><dd><p>An Open Babel molecule.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1162,7 +1162,7 @@ If <code class="docutils literal notranslate"><span class="pre">isotopes</span><
 <dd class="field-odd"><p><strong>xyz_dict</strong> (<em>dict</em>) – The ARC dict xyz style coordinates</p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>An rmgpy.statmech.Conformer object containing the desired xyz coordinates</p>
+<dd class="field-even"><p>An rmgpy.statmech.Conformer object containing the desired xyz coordinates.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>Optional[Conformer]</p>
@@ -1261,7 +1261,7 @@ This function does not consider isotopes.</p>
 <li><p><strong>mol</strong> (<em>Molecule</em><em>, </em><em>optional</em>) – The corresponding RMG Molecule with connectivity information.</p></li>
 <li><p><strong>constraints</strong> (<em>dict</em><em>, </em><em>optional</em>) – Accepted keys are:
 ‘R_atom’, ‘R_group’, ‘A_atom’, ‘A_group’, ‘D_atom’, ‘D_group’, or ‘D_groups’.
-‘R’, ‘A’, and ‘D’, constraining distances, angles, and dihedrals, respectively.
+‘R’, ‘A’, and ‘D’ constrain distances, angles, and dihedrals, respectively.
 Values are lists of atom indices (0-indexed) tuples.
 The atom indices order matters.
 Specifying ‘_atom’ will cause only the last atom in the specified list values
@@ -1275,14 +1275,14 @@ the last two atoms to translate/rotate if the corresponding parameter is changed
 for consolidating almost equal internal coordinates.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>The Z matrix.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>dict</p>
-</dd>
 <dt class="field-even">Raises</dt>
-<dd class="field-even"><p><strong>InputError</strong> – If <code class="docutils literal notranslate"><span class="pre">xyz</span></code> if of wrong type.</p>
+<dd class="field-even"><p><strong>InputError</strong> – If <code class="docutils literal notranslate"><span class="pre">xyz</span></code> if of a wrong type.</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The Z matrix.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>dict</p>
 </dd>
 </dl>
 </dd></dl>

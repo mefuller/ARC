@@ -1104,7 +1104,7 @@ bond order information, only does not necessitates a molecule object, directly c
 
 <dl class="py method">
 <dt id="arc.species.species.ARCSpecies.determine_rotors">
-<code class="sig-name descname">determine_rotors</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="../_modules/arc/species/species.html#ARCSpecies.determine_rotors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.species.ARCSpecies.determine_rotors" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">determine_rotors</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">verbose</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="../_modules/arc/species/species.html#ARCSpecies.determine_rotors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.species.ARCSpecies.determine_rotors" title="Permalink to this definition">¶</a></dt>
 <dd><p>Determine possible unique rotors in the species to be treated as hindered rotors,
 taking into account all localized structures.
 The resulting rotors are saved in a <code class="docutils literal notranslate"><span class="pre">{'pivots':</span> <span class="pre">[1,</span> <span class="pre">3],</span> <span class="pre">'top':</span> <span class="pre">[3,</span> <span class="pre">7],</span> <span class="pre">'scan':</span> <span class="pre">[2,</span> <span class="pre">1,</span> <span class="pre">3,</span> <span class="pre">7]}</span></code> format
@@ -1579,7 +1579,7 @@ Near-future supported families might be:
 
 <dl class="py method">
 <dt id="arc.species.species.TSGuess.process_xyz">
-<code class="sig-name descname">process_xyz</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">xyz</span><span class="p">:</span> <span class="n">dict</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/species/species.html#TSGuess.process_xyz"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.species.TSGuess.process_xyz" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">process_xyz</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">xyz</span><span class="p">:</span> <span class="n">Union<span class="p">[</span>dict<span class="p">, </span>str<span class="p">]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/species/species.html#TSGuess.process_xyz"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.species.TSGuess.process_xyz" title="Permalink to this definition">¶</a></dt>
 <dd><p>Process the user’s input. If <code class="docutils literal notranslate"><span class="pre">xyz</span></code> represents a file path, parse it.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>

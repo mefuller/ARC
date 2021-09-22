@@ -552,16 +552,16 @@
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Using the following adaptive levels of theory:</span><span class="se">\n</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">adaptive_levels</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ess_settings</span> <span class="o">=</span> <span class="n">check_ess_settings</span><span class="p">(</span><span class="n">ess_settings</span> <span class="ow">or</span> <span class="n">global_ess_settings</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">ess_settings</span><span class="p">:</span>
-            <span class="c1"># use the &quot;radar&quot; feature if ess_settings are still unavailable</span>
+            <span class="c1"># Use the &quot;radar&quot; feature if ess_settings are still unavailable.</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">determine_ess_settings</span><span class="p">()</span>
 
-        <span class="c1"># Determine if fine-only behavior is requested before determining chemistry for job types</span>
+        <span class="c1"># Determine if fine-only behavior is requested before determining chemistry for job types.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fine_only</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">job_types</span><span class="p">[</span><span class="s1">&#39;fine&#39;</span><span class="p">]</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">job_types</span><span class="p">[</span><span class="s1">&#39;opt&#39;</span><span class="p">]:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">fine_only</span> <span class="o">=</span> <span class="kc">True</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">job_types</span><span class="p">[</span><span class="s1">&#39;opt&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1"># Run the optimizations, self.fine_only will make sure that they are fine</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">job_types</span><span class="p">[</span><span class="s1">&#39;opt&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1"># Run the optimizations, self.fine_only will make sure that they are fine.</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">set_levels_of_theory</span><span class="p">()</span>  <span class="c1"># all level of theories should be Level types after this call</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_levels_of_theory</span><span class="p">()</span>  <span class="c1"># All level of theories should be Level types after this call.</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">thermo_adapter</span> <span class="o">==</span> <span class="s1">&#39;Arkane&#39;</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">check_arkane_level_of_theory</span><span class="p">()</span>
 
@@ -978,7 +978,7 @@
         <span class="k">for</span> <span class="n">char</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">char</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">valid_chars</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="n">InputError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;A project name (used to naming folders) must contain only valid characters. &#39;</span>
-                                 <span class="sa">f</span><span class="s1">&#39;Got </span><span class="si">{</span><span class="n">char</span><span class="si">}</span><span class="s1"> in </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">)</span></div>
+                                 <span class="sa">f</span><span class="s1">&#39;Got &quot;</span><span class="si">{</span><span class="n">char</span><span class="si">}</span><span class="s1">&quot; in </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="ARC.check_freq_scaling_factor"><a class="viewcode-back" href="../../api/main.html#arc.main.ARC.check_freq_scaling_factor">[docs]</a>    <span class="k">def</span> <span class="nf">check_freq_scaling_factor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -986,13 +986,13 @@
 <span class="sd">        otherwise, and if ``calc_freq_factor`` is set to ``True``, spawn a calculation for it using Truhlar&#39;s method.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">freq_scale_factor</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="c1"># the user did not specify a scaling factor, see if Arkane has it</span>
+            <span class="c1"># The user did not specify a scaling factor, see if Arkane has it.</span>
             <span class="n">freq_level</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">composite_method</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">composite_method</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> \
                 <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">freq_level</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">freq_level</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
             <span class="k">if</span> <span class="n">freq_level</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">arkane_freq_lot</span> <span class="o">=</span> <span class="n">freq_level</span><span class="o">.</span><span class="n">to_arkane_level_of_theory</span><span class="p">(</span><span class="n">variant</span><span class="o">=</span><span class="s1">&#39;freq&#39;</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">arkane_freq_lot</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="c1"># Arkane has this harmonic frequencies scaling factor</span>
+                    <span class="c1"># Arkane has this harmonic frequencies scaling factor.</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">freq_scale_factor</span> <span class="o">=</span> <span class="n">assign_frequency_scale_factor</span><span class="p">(</span><span class="n">level_of_theory</span><span class="o">=</span><span class="n">arkane_freq_lot</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Could not determine the harmonic frequencies scaling factor for &#39;</span>

@@ -279,7 +279,7 @@
                         <span class="n">return_all_conformers</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                         <span class="n">plot_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                         <span class="n">print_logs</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                        <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">list</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">list</span><span class="p">,</span> <span class="nb">list</span><span class="p">],</span> <span class="kc">None</span><span class="p">]:</span>
+                        <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">list</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">list</span><span class="p">,</span> <span class="nb">list</span><span class="p">]]]:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Generate conformers for (non-TS) species starting from a list of RMG Molecules.</span>
 <span class="sd">    (resonance structures are assumed to have already been generated and included in the molecule list)</span>
@@ -316,8 +316,9 @@
 <span class="sd">        ConformerError: If something goes wrong.</span>
 <span class="sd">        TypeError: If xyzs has entries of a wrong type.</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        list: Lowest conformers.</span>
+<span class="sd">    Returns: Optional[Union[list, Tuple[list, list]]]</span>
+<span class="sd">        - Lowest conformers</span>
+<span class="sd">        - Lowest conformers and all new conformers.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mol_list</span><span class="p">,</span> <span class="n">Molecule</span><span class="p">):</span>
         <span class="c1"># try generating resonance structures, but strictly keep atom order</span>
@@ -557,8 +558,8 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">de_threshold</span> <span class="o">=</span> <span class="n">de_threshold</span> <span class="ow">or</span> <span class="n">DE_THRESHOLD</span>
     <span class="k">if</span> <span class="n">hypothetical_num_comb</span> <span class="o">&gt;</span> <span class="n">combination_threshold</span><span class="p">:</span>
-        <span class="c1"># don&#39;t generate all combinations, there are simply too many</span>
-        <span class="c1"># iteratively modify the lowest conformer until it converges.</span>
+        <span class="c1"># Don&#39;t generate all combinations, there are simply too many.</span>
+        <span class="c1"># Iteratively modify the lowest conformer until it converges.</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;hypothetical_num_comb for </span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s1"> is &gt; </span><span class="si">{</span><span class="n">combination_threshold</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
         <span class="n">new_conformers</span> <span class="o">=</span> <span class="n">conformers_combinations_by_lowest_conformer</span><span class="p">(</span>
             <span class="n">label</span><span class="p">,</span> <span class="n">mol</span><span class="o">=</span><span class="n">mol</span><span class="p">,</span> <span class="n">base_xyz</span><span class="o">=</span><span class="n">base_xyz</span><span class="p">,</span> <span class="n">multiple_tors</span><span class="o">=</span><span class="n">multiple_tors</span><span class="p">,</span>
@@ -567,7 +568,7 @@
             <span class="n">torsion_angles</span><span class="o">=</span><span class="n">torsion_angles</span><span class="p">,</span> <span class="n">multiple_sampling_points_dict</span><span class="o">=</span><span class="n">multiple_sampling_points_dict</span><span class="p">,</span>
             <span class="n">wells_dict</span><span class="o">=</span><span class="n">wells_dict</span><span class="p">,</span> <span class="n">symmetries</span><span class="o">=</span><span class="n">symmetries</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="c1"># just generate all combinations and get their FF energies</span>
+        <span class="c1"># Just generate all combinations and get their FF energies.</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;hypothetical_num_comb for </span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s1"> is &lt; </span><span class="si">{</span><span class="n">combination_threshold</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
         <span class="n">new_conformers</span> <span class="o">=</span> <span class="n">generate_all_combinations</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">mol</span><span class="p">,</span> <span class="n">base_xyz</span><span class="p">,</span> <span class="n">multiple_tors</span><span class="p">,</span> <span class="n">multiple_sampling_points</span><span class="p">,</span>
                                                    <span class="n">len_conformers</span><span class="o">=</span><span class="n">len_conformers</span><span class="p">,</span> <span class="n">force_field</span><span class="o">=</span><span class="n">force_field</span><span class="p">,</span>
@@ -613,15 +614,15 @@
         <span class="k">return</span> <span class="nb">list</span><span class="p">()</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">base_energy</span> <span class="o">=</span> <span class="n">base_energy</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">new_conformers</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>  <span class="c1"># will be returned</span>
+    <span class="n">new_conformers</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
     <span class="n">lowest_conf_i</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">max_combination_iterations</span><span class="p">):</span>
-        <span class="n">newest_conformers_dict</span><span class="p">,</span> <span class="n">newest_conformer_list</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(),</span> <span class="nb">list</span><span class="p">()</span>  <span class="c1"># conformers from the current iteration</span>
+        <span class="n">newest_conformers_dict</span><span class="p">,</span> <span class="n">newest_conformer_list</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(),</span> <span class="nb">list</span><span class="p">()</span>  <span class="c1"># Conformers from the current iteration.</span>
         <span class="k">for</span> <span class="n">tor</span><span class="p">,</span> <span class="n">sampling_points</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">multiple_tors</span><span class="p">,</span> <span class="n">multiple_sampling_points</span><span class="p">):</span>
             <span class="n">xyzs</span><span class="p">,</span> <span class="n">energies</span> <span class="o">=</span> <span class="n">change_dihedrals_and_force_field_it</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">mol</span><span class="p">,</span> <span class="n">xyz</span><span class="o">=</span><span class="n">base_xyz</span><span class="p">,</span> <span class="n">torsions</span><span class="o">=</span><span class="p">[</span><span class="n">tor</span><span class="p">],</span>
                                                                  <span class="n">new_dihedrals</span><span class="o">=</span><span class="p">[[</span><span class="n">sp</span><span class="p">]</span> <span class="k">for</span> <span class="n">sp</span> <span class="ow">in</span> <span class="n">sampling_points</span><span class="p">],</span>
                                                                  <span class="n">force_field</span><span class="o">=</span><span class="n">force_field</span><span class="p">,</span> <span class="n">optimize</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-            <span class="n">newest_conformers_dict</span><span class="p">[</span><span class="n">tor</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>  <span class="c1"># keys are torsions for plotting</span>
+            <span class="n">newest_conformers_dict</span><span class="p">[</span><span class="n">tor</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>  <span class="c1"># Keys are torsions for plotting.</span>
             <span class="k">for</span> <span class="n">xyz</span><span class="p">,</span> <span class="n">energy</span><span class="p">,</span> <span class="n">dihedral</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">xyzs</span><span class="p">,</span> <span class="n">energies</span><span class="p">,</span> <span class="n">sampling_points</span><span class="p">):</span>
                 <span class="n">exists</span> <span class="o">=</span> <span class="kc">False</span>
                 <span class="k">if</span> <span class="nb">any</span><span class="p">([</span><span class="n">converter</span><span class="o">.</span><span class="n">compare_confs</span><span class="p">(</span><span class="n">xyz</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="s1">&#39;xyz&#39;</span><span class="p">])</span> <span class="k">for</span> <span class="n">conf</span> <span class="ow">in</span> <span class="n">new_conformers</span> <span class="o">+</span> <span class="n">newest_conformer_list</span><span class="p">]):</span>
@@ -637,10 +638,8 @@
                     <span class="k">if</span> <span class="ow">not</span> <span class="n">exists</span><span class="p">:</span>
                         <span class="n">newest_conformer_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">conformer</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="c1"># if xyz is None, atoms have collided</span>
-                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="se">\n\n</span><span class="s1">atoms colliding in </span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s1"> for torsion </span><span class="si">{</span><span class="n">tor</span><span class="si">}</span><span class="s1"> and dihedral </span><span class="si">{</span><span class="n">dihedral</span><span class="si">}</span><span class="s1">:&#39;</span><span class="p">)</span>
-                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">xyz</span><span class="p">)</span>
-                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n\n</span><span class="s1">&#39;</span><span class="p">)</span>
+                    <span class="c1"># If xyz is None, atoms have collided.</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="se">\n\n</span><span class="s1">atoms colliding in </span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s1"> for torsion </span><span class="si">{</span><span class="n">tor</span><span class="si">}</span><span class="s1"> and dihedral </span><span class="si">{</span><span class="n">dihedral</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
         <span class="n">new_conformers</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">newest_conformer_list</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">newest_conformer_list</span><span class="p">:</span>
             <span class="n">newest_conformer_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">lowest_conf_i</span><span class="p">]</span>
@@ -1227,7 +1226,6 @@
         <span class="k">if</span> <span class="n">force_field</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;mmff94&#39;</span><span class="p">,</span> <span class="s1">&#39;mmff94s&#39;</span><span class="p">,</span> <span class="s1">&#39;uff&#39;</span><span class="p">,</span> <span class="s1">&#39;gaff&#39;</span><span class="p">,</span> <span class="s1">&#39;ghemical&#39;</span><span class="p">]:</span>
             <span class="k">raise</span> <span class="n">ConformerError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Unrecognized force field for </span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s1">. Should be either MMFF94, MMFF94s, UFF, &#39;</span>
                                  <span class="sa">f</span><span class="s1">&#39;Ghemical, or GAFF. Got: </span><span class="si">{</span><span class="n">force_field</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">)</span>
-        <span class="c1"># raise ConformerError(f&#39;Could not generate conformers for species {label}.&#39;)</span>
     <span class="k">return</span> <span class="n">xyzs</span><span class="p">,</span> <span class="n">energies</span></div>
 
 

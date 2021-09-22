@@ -629,12 +629,12 @@ ARCSpecies: ARCSpecies object created from mapped coordinates.</p>
 <dt id="arc.reaction.ARCReaction.get_products_xyz">
 <code class="sig-name descname">get_products_xyz</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">return_format</span><span class="o">=</span><span class="default_value">'str'</span></em><span class="sig-paren">)</span> &#x2192; Union<span class="p">[</span>dict<span class="p">, </span>str<span class="p">]</span><a class="reference internal" href="../_modules/arc/reaction.html#ARCReaction.get_products_xyz"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.reaction.ARCReaction.get_products_xyz" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get a combined string/dict representation of the cartesian coordinates of all product species.
-The resulting coordinates are ordered as the reactants using an atom map.
-:param return_format: Either <code class="docutils literal notranslate"><span class="pre">'dict'</span></code> to return a dict format or <code class="docutils literal notranslate"><span class="pre">'str'</span></code> to return a string format.</p>
-<blockquote>
-<div><p>Default: <code class="docutils literal notranslate"><span class="pre">'str'</span></code>.</p>
-</div></blockquote>
+The resulting coordinates are ordered as the reactants using an atom map.</p>
 <dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>return_format</strong> (<em>str</em>) – Either <code class="docutils literal notranslate"><span class="pre">'dict'</span></code> to return a dict format or <code class="docutils literal notranslate"><span class="pre">'str'</span></code> to return a string format.
+Default: <code class="docutils literal notranslate"><span class="pre">'str'</span></code>.</p>
+</dd>
 </dl>
 <dl class="simple">
 <dt>Returns: Union[dict, str]</dt><dd><p>The combined cartesian coordinates</p>
@@ -646,7 +646,7 @@ The resulting coordinates are ordered as the reactants using an atom map.
 <dt id="arc.reaction.ARCReaction.get_reactants_and_products">
 <code class="sig-name descname">get_reactants_and_products</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">arc</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em><span class="sig-paren">)</span> &#x2192; Tuple<span class="p">[</span>List<span class="p">[</span>Union<span class="p">[</span><a class="reference internal" href="species.html#arc.species.species.ARCSpecies" title="arc.species.species.ARCSpecies">arc.species.species.ARCSpecies</a><span class="p">, </span>rmgpy.species.Species<span class="p">]</span><span class="p">]</span><span class="p">, </span>List<span class="p">[</span>Union<span class="p">[</span><a class="reference internal" href="species.html#arc.species.species.ARCSpecies" title="arc.species.species.ARCSpecies">arc.species.species.ARCSpecies</a><span class="p">, </span>rmgpy.species.Species<span class="p">]</span><span class="p">]</span><span class="p">]</span><a class="reference internal" href="../_modules/arc/reaction.html#ARCReaction.get_reactants_and_products"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.reaction.ARCReaction.get_reactants_and_products" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get a list of reactant and product species including duplicate species, if any.
-The species could either be ARCSpecies or RMGSpecies.</p>
+The species could either be <code class="docutils literal notranslate"><span class="pre">ARCSpecies</span></code> or <code class="docutils literal notranslate"><span class="pre">RMGSpecies</span></code> object instance.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>arc</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to return the species as ARCSpecies (<code class="docutils literal notranslate"><span class="pre">True</span></code>) or as RMG Species (<code class="docutils literal notranslate"><span class="pre">False</span></code>).</p>
@@ -725,7 +725,7 @@ The same species in the reactants/products is considered through get_species_cou
 <dt id="arc.reaction.ARCReaction.rmg_reaction_from_arc_species">
 <code class="sig-name descname">rmg_reaction_from_arc_species</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/reaction.html#ARCReaction.rmg_reaction_from_arc_species"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.reaction.ARCReaction.rmg_reaction_from_arc_species" title="Permalink to this definition">¶</a></dt>
 <dd><p>A helper function for generating the RMG Reaction object from ARCSpecies
-Used for determining the family</p>
+Used for determining the family.</p>
 </dd></dl>
 
 <dl class="py method">

@@ -197,11 +197,11 @@
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;arc&#39;</span><span class="p">)</span>
 
-<span class="c1"># absolute path to the ARC folder</span>
+<span class="c1"># Absolute path to the ARC folder.</span>
 <span class="n">ARC_PATH</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)))</span>
-<span class="c1"># absolute path to RMG-Py folder</span>
+<span class="c1"># Absolute path to RMG-Py folder.</span>
 <span class="n">RMG_PATH</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">rmgpy</span><span class="o">.</span><span class="vm">__file__</span><span class="p">)))</span>
-<span class="c1"># absolute path to RMG-database folder</span>
+<span class="c1"># Absolute path to RMG-database folder.</span>
 <span class="n">RMG_DATABASE_PATH</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">rmgpy</span><span class="o">.</span><span class="n">settings</span><span class="p">[</span><span class="s1">&#39;database.directory&#39;</span><span class="p">]))</span>
 
 <span class="n">VERSION</span> <span class="o">=</span> <span class="s1">&#39;1.1.0&#39;</span>
@@ -548,7 +548,6 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
         <span class="k">raise</span> <span class="n">InputError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;path must be a string, got </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s1"> which is a </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Creating a restart file...&#39;</span><span class="p">)</span>
     <span class="n">yaml_str</span> <span class="o">=</span> <span class="n">to_yaml</span><span class="p">(</span><span class="n">py_content</span><span class="o">=</span><span class="n">content</span><span class="p">)</span>
     <span class="k">if</span> <span class="s1">&#39;/&#39;</span> <span class="ow">in</span> <span class="n">path</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">path</span><span class="p">)):</span>
         <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">path</span><span class="p">))</span>
@@ -710,17 +709,14 @@
 <span class="sd">        xyz (dict): The Cartesian coordinates.</span>
 <span class="sd">        threshold (float, optional): The collision threshold to use.</span>
 
-<span class="sd">    Returns: bool</span>
-<span class="sd">        ``True`` if they are colliding, ``False`` otherwise.</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        bool: ``True`` if they are colliding, ``False`` otherwise.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">xyz</span><span class="p">[</span><span class="s1">&#39;symbols&#39;</span><span class="p">])</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
         <span class="c1"># monoatomic</span>
         <span class="k">return</span> <span class="kc">False</span>
-
-    <span class="n">geometry</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">coord</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1.8897259886</span> <span class="k">for</span> <span class="n">coord</span> <span class="ow">in</span> <span class="n">xyz</span><span class="p">[</span><span class="s1">&#39;coords&#39;</span><span class="p">]])</span>  <span class="c1"># convert A to Bohr</span>
+    <span class="n">geometry</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">coord</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1.8897259886</span> <span class="k">for</span> <span class="n">coord</span> <span class="ow">in</span> <span class="n">xyz</span><span class="p">[</span><span class="s1">&#39;coords&#39;</span><span class="p">]])</span>  <span class="c1"># Convert A to Bohr.</span>
     <span class="n">qcel_out</span> <span class="o">=</span> <span class="n">qcel</span><span class="o">.</span><span class="n">molutil</span><span class="o">.</span><span class="n">guess_connectivity</span><span class="p">(</span><span class="n">symbols</span><span class="o">=</span><span class="n">xyz</span><span class="p">[</span><span class="s1">&#39;symbols&#39;</span><span class="p">],</span> <span class="n">geometry</span><span class="o">=</span><span class="n">geometry</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="n">threshold</span><span class="p">)</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">qcel_out</span><span class="p">)</span>
-
     <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">qcel_out</span><span class="p">))</span></div>
 
 
@@ -991,8 +987,8 @@
     <span class="k">return</span> <span class="kc">True</span></div>
 
 
-<div class="viewcode-block" id="almost_equal_coords_lists"><a class="viewcode-back" href="../../api/common.html#arc.common.almost_equal_coords_lists">[docs]</a><span class="k">def</span> <span class="nf">almost_equal_coords_lists</span><span class="p">(</span><span class="n">xyz1</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
-                              <span class="n">xyz2</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
+<div class="viewcode-block" id="almost_equal_coords_lists"><a class="viewcode-back" href="../../api/common.html#arc.common.almost_equal_coords_lists">[docs]</a><span class="k">def</span> <span class="nf">almost_equal_coords_lists</span><span class="p">(</span><span class="n">xyz1</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">dict</span><span class="p">],</span> <span class="nb">dict</span><span class="p">],</span>
+                              <span class="n">xyz2</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">dict</span><span class="p">],</span> <span class="nb">dict</span><span class="p">],</span>
                               <span class="n">rtol</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-05</span><span class="p">,</span>
                               <span class="n">atol</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-08</span><span class="p">,</span>
                               <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
@@ -1001,8 +997,8 @@
 <span class="sd">    Useful for comparing xyz&#39;s in unit tests.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        xyz1 (list, dict): Either a dict-format xyz, or a list of them.</span>
-<span class="sd">        xyz2 (list, dict): Either a dict-format xyz, or a list of them.</span>
+<span class="sd">        xyz1 (Union[List[dict], dict]): Either a dict-format xyz, or a list of them.</span>
+<span class="sd">        xyz2 (Union[List[dict], dict]): Either a dict-format xyz, or a list of them.</span>
 <span class="sd">        rtol (float, optional): The relative tolerance parameter.</span>
 <span class="sd">        atol (float, optional): The absolute tolerance parameter.</span>
 
@@ -1378,7 +1374,7 @@
         <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Expected a list, got </span><span class="si">{</span><span class="n">descriptor</span><span class="si">}</span><span class="s1"> which is a </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">descriptor</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">descriptor</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
         <span class="n">descriptor</span> <span class="o">=</span> <span class="p">[</span><span class="n">descriptor</span><span class="p">]</span>
-    <span class="n">direction</span> <span class="o">=</span> <span class="n">direction</span> <span class="k">if</span> <span class="n">direction</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="o">-</span><span class="mi">1</span>  <span class="c1"># anything other than 1 is translated to -1</span>
+    <span class="n">direction</span> <span class="o">=</span> <span class="n">direction</span> <span class="k">if</span> <span class="n">direction</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="o">-</span><span class="mi">1</span>  <span class="c1"># Anything other than 1 is translated to -1.</span>
     <span class="n">new_descriptor</span> <span class="o">=</span> <span class="p">[</span><span class="n">convert_list_index_0_to_1</span><span class="p">(</span><span class="n">entry</span><span class="p">,</span> <span class="n">direction</span><span class="p">)</span> <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">descriptor</span><span class="p">]</span>
     <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="nb">any</span><span class="p">(</span><span class="n">item</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">entry</span><span class="p">)</span> <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">new_descriptor</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Got an illegal value when converting:</span><span class="se">\n</span><span class="si">{</span><span class="n">descriptor</span><span class="si">}</span><span class="se">\n</span><span class="s1">into:</span><span class="se">\n</span><span class="si">{</span><span class="n">new_descriptor</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
