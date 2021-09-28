@@ -24,6 +24,7 @@ from rmgpy.statmech import Conformer
 from arc.common import almost_equal_lists, calc_rmsd, get_atom_radius, get_logger, is_str_float
 from arc.exceptions import ConverterError, InputError, SanitizationError, SpeciesError
 from arc.species.xyz_to_2d import MolGraph
+from arc.species.xyz_to_smiles import xyz_to_smiles
 from arc.species.zmat import (KEY_FROM_LEN,
                               _compare_zmats,
                               get_all_neighbors,
@@ -672,8 +673,13 @@ def zmat_from_xyz(xyz, mol=None, constraints=None, consolidate=True, consolidati
     if not isinstance(xyz, dict):
         raise InputError(f'xyz must be a dictionary, got {type(xyz)}')
     xyz = remove_dummies(xyz)
-    return xyz_to_zmat(xyz, mol=mol, constraints=constraints, consolidate=consolidate,
-                       consolidation_tols=consolidation_tols)
+    mol = mol or molecules_from_xyz(xyz=xyz)[1]
+    return xyz_to_zmat(xyz,
+                       mol=mol,
+                       constraints=constraints,
+                       consolidate=consolidate,
+                       consolidation_tols=consolidation_tols,
+                       )
 
 
 def zmat_to_xyz(zmat, keep_dummy=False, xyz_isotopes=None):
@@ -1206,15 +1212,17 @@ def molecules_from_xyz(xyz: Optional[Union[dict, str]],
         mol_s1.multiplicity = multiplicity
     mol_s1_updated = update_molecule(mol_s1, to_single_bonds=True)
 
-    # 2. A. Generate a molecule with bond order information using pybel:
+    # 2. Generate a molecule with bond order information using pybel:
     pybel_mol = xyz_to_pybel_mol(xyz)
     if pybel_mol is not None:
         inchi = pybel_to_inchi(pybel_mol, has_h=bool(len([atom.is_hydrogen() for atom in mol_s1_updated.atoms])))
-        mol_bo = rmg_mol_from_inchi(inchi)  # An RMG Molecule with bond orders, but without preserved atom order
+        mol_bo = rmg_mol_from_inchi(inchi)  # An RMG Molecule with bond orders, but without preserved atom order.
 
-    # TODO 2. B. Deduce bond orders from xyz distances (fallback method)
-    # else:
-    #     mol_bo = deduce_bond_orders_from_distances(xyz)
+    # 3. Generate a molecule with bond order information using xyz_to_smiles.
+    if mol_bo is None:
+        smiles_list = xyz_to_smiles(xyz=xyz, charge=charge)
+        if smiles_list is not None:
+            mol_bo = Molecule(smiles=smiles_list[0])
 
     if mol_bo is not None:
         if multiplicity is not None:
