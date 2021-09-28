@@ -175,6 +175,7 @@
 <span class="kn">import</span> <span class="nn">shutil</span>
 <span class="kn">import</span> <span class="nn">time</span>
 <span class="kn">from</span> <span class="nn">distutils.spawn</span> <span class="kn">import</span> <span class="n">find_executable</span>
+<span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
 <span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">display</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
 
@@ -210,6 +211,16 @@
 <span class="n">default_levels_of_theory</span><span class="p">,</span> <span class="n">servers</span><span class="p">,</span> <span class="n">valid_chars</span><span class="p">,</span> <span class="n">default_job_types</span><span class="p">,</span> <span class="n">default_job_settings</span><span class="p">,</span> <span class="n">global_ess_settings</span> <span class="o">=</span> \
     <span class="n">settings</span><span class="p">[</span><span class="s1">&#39;default_levels_of_theory&#39;</span><span class="p">],</span> <span class="n">settings</span><span class="p">[</span><span class="s1">&#39;servers&#39;</span><span class="p">],</span> <span class="n">settings</span><span class="p">[</span><span class="s1">&#39;valid_chars&#39;</span><span class="p">],</span> <span class="n">settings</span><span class="p">[</span><span class="s1">&#39;default_job_types&#39;</span><span class="p">],</span> \
     <span class="n">settings</span><span class="p">[</span><span class="s1">&#39;default_job_settings&#39;</span><span class="p">],</span> <span class="n">settings</span><span class="p">[</span><span class="s1">&#39;global_ess_settings&#39;</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="StatmechEnum"><a class="viewcode-back" href="../../api/main.html#arc.main.StatmechEnum">[docs]</a><span class="k">class</span> <span class="nc">StatmechEnum</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">Enum</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The supported statmech software adapters.</span>
+<span class="sd">    The available adapters are a finite set.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">arkane</span> <span class="o">=</span> <span class="s1">&#39;arkane&#39;</span></div>
+    <span class="c1"># mesmer = &#39;mesmer&#39;</span>
+    <span class="c1"># mess = &#39;mess&#39;</span>
 
 
 <div class="viewcode-block" id="ARC"><a class="viewcode-back" href="../../api/main.html#arc.main.ARC">[docs]</a><span class="k">class</span> <span class="nc">ARC</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
@@ -440,8 +451,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">compute_rates</span> <span class="o">=</span> <span class="n">compute_rates</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">three_params</span> <span class="o">=</span> <span class="n">three_params</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">compute_transport</span> <span class="o">=</span> <span class="n">compute_transport</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">thermo_adapter</span> <span class="o">=</span> <span class="n">thermo_adapter</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">kinetics_adapter</span> <span class="o">=</span> <span class="n">kinetics_adapter</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">thermo_adapter</span> <span class="o">=</span> <span class="n">StatmechEnum</span><span class="p">(</span><span class="n">thermo_adapter</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span><span class="o">.</span><span class="n">value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kinetics_adapter</span> <span class="o">=</span> <span class="n">StatmechEnum</span><span class="p">(</span><span class="n">kinetics_adapter</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span><span class="o">.</span><span class="n">value</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">T_min</span> <span class="o">=</span> <span class="n">T_min</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">T_max</span> <span class="o">=</span> <span class="n">T_max</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">T_count</span> <span class="o">=</span> <span class="n">T_count</span>
@@ -562,7 +573,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">job_types</span><span class="p">[</span><span class="s1">&#39;opt&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1"># Run the optimizations, self.fine_only will make sure that they are fine.</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">set_levels_of_theory</span><span class="p">()</span>  <span class="c1"># All level of theories should be Level types after this call.</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">thermo_adapter</span> <span class="o">==</span> <span class="s1">&#39;Arkane&#39;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">thermo_adapter</span> <span class="o">==</span> <span class="s1">&#39;arkane&#39;</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">check_arkane_level_of_theory</span><span class="p">()</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">job_types</span><span class="p">[</span><span class="s1">&#39;freq&#39;</span><span class="p">]</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">composite_method</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>

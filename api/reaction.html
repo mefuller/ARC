@@ -637,7 +637,7 @@ Default: <code class="docutils literal notranslate"><span class="pre">'str'</spa
 </dd>
 </dl>
 <dl class="simple">
-<dt>Returns: Union[dict, str]</dt><dd><p>The combined cartesian coordinates</p>
+<dt>Returns: Union[dict, str]</dt><dd><p>The combined cartesian coordinates.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -656,6 +656,22 @@ The species could either be <code class="docutils literal notranslate"><span cla
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>Tuple[List[Union[<a class="reference internal" href="species.html#arc.species.species.ARCSpecies" title="arc.species.species.ARCSpecies">ARCSpecies</a>, Species]], List[Union[<a class="reference internal" href="species.html#arc.species.species.ARCSpecies" title="arc.species.species.ARCSpecies">ARCSpecies</a>, Species]]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="arc.reaction.ARCReaction.get_reactants_xyz">
+<code class="sig-name descname">get_reactants_xyz</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">return_format</span><span class="o">=</span><span class="default_value">'str'</span></em><span class="sig-paren">)</span> &#x2192; Union<span class="p">[</span>dict<span class="p">, </span>str<span class="p">]</span><a class="reference internal" href="../_modules/arc/reaction.html#ARCReaction.get_reactants_xyz"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.reaction.ARCReaction.get_reactants_xyz" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a combined string/dict representation of the cartesian coordinates of all reactant species.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>return_format</strong> (<em>str</em>) – Either <code class="docutils literal notranslate"><span class="pre">'dict'</span></code> to return a dict format or <code class="docutils literal notranslate"><span class="pre">'str'</span></code> to return a string format.
+Default: <code class="docutils literal notranslate"><span class="pre">'str'</span></code>.</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Returns: Union[dict, str]</dt><dd><p>The combined cartesian coordinates.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -709,8 +725,8 @@ Either <code class="docutils literal notranslate"><span class="pre">species</spa
 </dd></dl>
 
 <dl class="py method">
-<dt id="id3">
-<em class="property">property </em><code class="sig-name descname">multiplicity</code><a class="headerlink" href="#id3" title="Permalink to this definition">¶</a></dt>
+<dt id="id4">
+<em class="property">property </em><code class="sig-name descname">multiplicity</code><a class="headerlink" href="#id4" title="Permalink to this definition">¶</a></dt>
 <dd><p>The electron spin multiplicity of the reaction PES</p>
 </dd></dl>
 

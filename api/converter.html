@@ -216,26 +216,6 @@ Note: This implementation might also be problematic for aromatic species with un
 </dd></dl>
 
 <dl class="py function">
-<dt id="arc.species.converter.calc_rmsd">
-<code class="sig-prename descclassname">arc.species.converter.</code><code class="sig-name descname">calc_rmsd</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span><span class="p">:</span> <span class="n">numpy.core.multiarray.array</span></em>, <em class="sig-param"><span class="n">y</span><span class="p">:</span> <span class="n">numpy.core.multiarray.array</span></em><span class="sig-paren">)</span> &#x2192; float<a class="reference internal" href="../_modules/arc/species/converter.html#calc_rmsd"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.converter.calc_rmsd" title="Permalink to this definition">¶</a></dt>
-<dd><p>Compute the root-mean-square deviation between two matrices.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>x</strong> (<em>np.array</em>) – Matrix 1.</p></li>
-<li><p><strong>y</strong> (<em>np.array</em>) – Matrix 2.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>The RMSD score of two matrices.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>float</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
 <dt id="arc.species.converter.check_isomorphism">
 <code class="sig-prename descclassname">arc.species.converter.</code><code class="sig-name descname">check_isomorphism</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mol1</span></em>, <em class="sig-param"><span class="n">mol2</span></em>, <em class="sig-param"><span class="n">filter_structures</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">convert_to_single_bonds</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/species/converter.html#check_isomorphism"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.converter.check_isomorphism" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert <code class="docutils literal notranslate"><span class="pre">mol1</span></code> and <code class="docutils literal notranslate"><span class="pre">mol2</span></code> to RMG Species objects, and generate resonance structures.
@@ -399,7 +379,7 @@ integer number of 360 degrees / sigma are considered identical.</p></li>
 <dl class="py function">
 <dt id="arc.species.converter.elementize">
 <code class="sig-prename descclassname">arc.species.converter.</code><code class="sig-name descname">elementize</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">atom</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/species/converter.html#elementize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.converter.elementize" title="Permalink to this definition">¶</a></dt>
-<dd><p>Convert the atom type of an RMG:Atom object into its general parent element atom type (e.g., <cite>S4d</cite> into <cite>S</cite>).</p>
+<dd><p>Convert the atom type of an RMG <code class="docutils literal notranslate"><span class="pre">Atom</span></code> object into its general parent element atom type (e.g., ‘S4d’ into ‘S’).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>atom</strong> (<em>Atom</em>) – The atom to process.</p>
@@ -836,13 +816,13 @@ Either <code class="docutils literal notranslate"><span class="pre">deg_incremen
 
 <dl class="py function">
 <dt id="arc.species.converter.sort_xyz_using_indices">
-<code class="sig-prename descclassname">arc.species.converter.</code><code class="sig-name descname">sort_xyz_using_indices</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">xyz_dict</span><span class="p">:</span> <span class="n">dict</span></em>, <em class="sig-param"><span class="n">indices</span><span class="p">:</span> <span class="n">List<span class="p">[</span>int<span class="p">]</span></span></em><span class="sig-paren">)</span> &#x2192; dict<a class="reference internal" href="../_modules/arc/species/converter.html#sort_xyz_using_indices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.converter.sort_xyz_using_indices" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">arc.species.converter.</code><code class="sig-name descname">sort_xyz_using_indices</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">xyz_dict</span><span class="p">:</span> <span class="n">dict</span></em>, <em class="sig-param"><span class="n">indices</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>List<span class="p">[</span>int<span class="p">]</span><span class="p">]</span></span></em><span class="sig-paren">)</span> &#x2192; dict<a class="reference internal" href="../_modules/arc/species/converter.html#sort_xyz_using_indices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.converter.sort_xyz_using_indices" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sort the tuples in an xyz dict according to the given indices.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>xyz_dict</strong> (<em>dict</em>) – The Cartesian coordinates.</p></li>
-<li><p><strong>indices</strong> (<em>List</em><em>[</em><em>int</em><em>]</em>) – Entries are 0-indices of the desired order.</p></li>
+<li><p><strong>indices</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><em>int</em><em>]</em><em>]</em>) – Entries are 0-indices of the desired order.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -1023,6 +1003,26 @@ Adopted from rmgpy/molecule/converter.py</p>
 </dd></dl>
 
 <dl class="py function">
+<dt id="arc.species.converter.translate_xyz">
+<code class="sig-prename descclassname">arc.species.converter.</code><code class="sig-name descname">translate_xyz</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">xyz_dict</span><span class="p">:</span> <span class="n">dict</span></em>, <em class="sig-param"><span class="n">translation</span><span class="p">:</span> <span class="n">Tuple<span class="p">[</span>float<span class="p">, </span>float<span class="p">, </span>float<span class="p">]</span></span></em><span class="sig-paren">)</span> &#x2192; dict<a class="reference internal" href="../_modules/arc/species/converter.html#translate_xyz"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.converter.translate_xyz" title="Permalink to this definition">¶</a></dt>
+<dd><p>Translate xyz.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>xyz_dict</strong> (<em>dict</em>) – The ARC xyz format.</p></li>
+<li><p><strong>translation</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>]</em>) – The x, y, z translation vector.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The translated xyz.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt id="arc.species.converter.update_molecule">
 <code class="sig-prename descclassname">arc.species.converter.</code><code class="sig-name descname">update_molecule</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mol</span></em>, <em class="sig-param"><span class="n">to_single_bonds</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/arc/species/converter.html#update_molecule"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.converter.update_molecule" title="Permalink to this definition">¶</a></dt>
 <dd><p>Updates the molecule, useful for isomorphism comparison.</p>
@@ -1090,6 +1090,23 @@ If <code class="docutils literal notranslate"><span class="pre">isotopes</span><
 </dd></dl>
 
 <dl class="py function">
+<dt id="arc.species.converter.xyz_to_ase">
+<code class="sig-prename descclassname">arc.species.converter.</code><code class="sig-name descname">xyz_to_ase</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">xyz_dict</span><span class="p">:</span> <span class="n">dict</span></em><span class="sig-paren">)</span> &#x2192; ase.atoms.Atoms<a class="reference internal" href="../_modules/arc/species/converter.html#xyz_to_ase"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.converter.xyz_to_ase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert an xyz dict to an ASE Atoms object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>xyz_dict</strong> (<em>dict</em>) – The ARC xyz format.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The corresponding ASE Atom object.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Type[Atoms]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt id="arc.species.converter.xyz_to_coords_list">
 <code class="sig-prename descclassname">arc.species.converter.</code><code class="sig-name descname">xyz_to_coords_list</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">xyz_dict</span><span class="p">:</span> <span class="n">dict</span></em><span class="sig-paren">)</span> &#x2192; Optional<span class="p">[</span>List<span class="p">[</span>List<span class="p">[</span>float<span class="p">]</span><span class="p">]</span><span class="p">]</span><a class="reference internal" href="../_modules/arc/species/converter.html#xyz_to_coords_list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.converter.xyz_to_coords_list" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the coords part of an xyz dict as a (mutable) list of lists (rather than a tuple of tuples).</p>
@@ -1117,6 +1134,22 @@ If <code class="docutils literal notranslate"><span class="pre">isotopes</span><
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>Optional[np.array]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="arc.species.converter.xyz_to_kinbot_list">
+<code class="sig-prename descclassname">arc.species.converter.</code><code class="sig-name descname">xyz_to_kinbot_list</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">xyz_dict</span><span class="p">:</span> <span class="n">dict</span></em><span class="sig-paren">)</span> &#x2192; List<span class="p">[</span>Union<span class="p">[</span>str<span class="p">, </span>float<span class="p">]</span><span class="p">]</span><a class="reference internal" href="../_modules/arc/species/converter.html#xyz_to_kinbot_list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.converter.xyz_to_kinbot_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the KinBot xyz format of a single running list of:
+[symbol0, x0, y0, z0, symbol1, x1, y1, z1,…]</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>xyz_dict</strong> (<em>dict</em>) – The ARC xyz format.</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Returns: List[Union[str, float]]</dt><dd><p>The respective KinBot xyz format.</p>
 </dd>
 </dl>
 </dd></dl>

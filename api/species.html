@@ -1165,21 +1165,24 @@ this could very well not be the best (lowest) one.</p>
 
 <dl class="py method">
 <dt id="arc.species.species.ARCSpecies.get_xyz">
-<code class="sig-name descname">get_xyz</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">generate</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em><span class="sig-paren">)</span> &#x2192; Optional<span class="p">[</span>dict<span class="p">]</span><a class="reference internal" href="../_modules/arc/species/species.html#ARCSpecies.get_xyz"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.species.ARCSpecies.get_xyz" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_xyz</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">generate</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">return_format</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">'dict'</span></em><span class="sig-paren">)</span> &#x2192; Optional<span class="p">[</span>Union<span class="p">[</span>dict<span class="p">, </span>str<span class="p">]</span><span class="p">]</span><a class="reference internal" href="../_modules/arc/species/species.html#ARCSpecies.get_xyz"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.species.ARCSpecies.get_xyz" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the highest quality xyz the species has.
 If it doesn’t have any 3D information, and if <code class="docutils literal notranslate"><span class="pre">generate</span></code> is <code class="docutils literal notranslate"><span class="pre">True</span></code>, cheaply generate it.
 Returns <code class="docutils literal notranslate"><span class="pre">None</span></code> if no xyz can be retrieved nor generated.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>generate</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to cheaply generate an FF conformer if no xyz is found.
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>generate</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to cheaply generate an FF conformer if no xyz is found.
 <code class="docutils literal notranslate"><span class="pre">True</span></code> to generate. If generate is <code class="docutils literal notranslate"><span class="pre">False</span></code> and the species has no xyz data,
-the method will return None.</p>
+the method will return None.</p></li>
+<li><p><strong>return_format</strong> (<em>str</em><em>, </em><em>optional</em>) – Whether to output a ‘dict’ or a ‘str’ representation of the respective xyz.</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>The xyz coordinates.</p>
+<dd class="field-even"><p>The xyz coordinates in the requested representation.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>dict</p>
+<dd class="field-odd"><p>Optional[Union[dict, str]]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1680,6 +1683,34 @@ below 120% of the single bond length of the respective elements.</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>Whether the input arguments are all in agreement. True if they are.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="arc.species.species.colliding_atoms">
+<code class="sig-prename descclassname">arc.species.species.</code><code class="sig-name descname">colliding_atoms</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">xyz</span><span class="p">:</span> <span class="n">dict</span></em>, <em class="sig-param"><span class="n">mol</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>rmgpy.molecule.molecule.Molecule<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">threshold</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">0.55</span></em><span class="sig-paren">)</span> &#x2192; bool<a class="reference internal" href="../_modules/arc/species/species.html#colliding_atoms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.species.species.colliding_atoms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check whether atoms are too close to each other.
+A default threshold of 55% the covalent radii of two atoms is used.
+For example:
+- C-O collide at 55% * 1.42 A = 0.781 A
+- N-N collide at 55% * 1.42 A = 0.781 A
+- C-N collide at 55% * 1.47 A = 0.808 A
+- C-H collide at 55% * 1.07 A = 0.588 A
+- H-H collide at 55% * 0.74 A = 0.588 A</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>xyz</strong> (<em>dict</em>) – The Cartesian coordinates.</p></li>
+<li><p><strong>mol</strong> (<em>Molecule</em><em>, </em><em>optional</em>) – The corresponding Molecule object instance with formal charge information.</p></li>
+<li><p><strong>threshold</strong> (<em>float</em><em>, </em><em>optional</em>) – The collision threshold to use.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">True</span></code> if they are colliding, <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>bool</p>

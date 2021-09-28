@@ -215,8 +215,8 @@ to avoid circular imports.</p>
 <dl class="py function">
 <dt id="arc.common.almost_equal_coords_lists">
 <code class="sig-prename descclassname">arc.common.</code><code class="sig-name descname">almost_equal_coords_lists</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">xyz1</span><span class="p">:</span> <span class="n">Union<span class="p">[</span>List<span class="p">[</span>dict<span class="p">]</span><span class="p">, </span>dict<span class="p">]</span></span></em>, <em class="sig-param"><span class="n">xyz2</span><span class="p">:</span> <span class="n">Union<span class="p">[</span>List<span class="p">[</span>dict<span class="p">]</span><span class="p">, </span>dict<span class="p">]</span></span></em>, <em class="sig-param"><span class="n">rtol</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">1e-05</span></em>, <em class="sig-param"><span class="n">atol</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">1e-08</span></em><span class="sig-paren">)</span> &#x2192; bool<a class="reference internal" href="../_modules/arc/common.html#almost_equal_coords_lists"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.common.almost_equal_coords_lists" title="Permalink to this definition">¶</a></dt>
-<dd><p>A helper function for checking two lists of xyz’s has at least one entry in each that is almost equal.
-Useful for comparing xyz’s in unit tests.</p>
+<dd><p>A helper function for checking two lists of xyzs has at least one entry in each that is almost equal.
+Useful for comparing xyzs in unit tests.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -228,7 +228,7 @@ Useful for comparing xyz’s in unit tests.</p>
 </dd>
 </dl>
 <dl class="simple">
-<dt>Returns: bool</dt><dd><p>Whether at least one entry in each input xyz’s is almost equal to an entry in the other xyz.</p>
+<dt>Returns: bool</dt><dd><p>Whether at least one entry in each input xyzs is almost equal to an entry in the other xyz.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -249,6 +249,26 @@ Useful for comparing xyz’s in unit tests.</p>
 </dl>
 <dl class="simple">
 <dt>Returns: bool</dt><dd><p><code class="docutils literal notranslate"><span class="pre">True</span></code> if they are almost equal, <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="arc.common.calc_rmsd">
+<code class="sig-prename descclassname">arc.common.</code><code class="sig-name descname">calc_rmsd</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span><span class="p">:</span> <span class="n">Union<span class="p">[</span>list<span class="p">, </span>numpy.core.multiarray.array<span class="p">]</span></span></em>, <em class="sig-param"><span class="n">y</span><span class="p">:</span> <span class="n">Union<span class="p">[</span>list<span class="p">, </span>numpy.core.multiarray.array<span class="p">]</span></span></em><span class="sig-paren">)</span> &#x2192; float<a class="reference internal" href="../_modules/arc/common.html#calc_rmsd"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.common.calc_rmsd" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the root-mean-square deviation between two matrices.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>np.array</em>) – Matrix 1.</p></li>
+<li><p><strong>y</strong> (<em>np.array</em>) – Matrix 2.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The RMSD score of two matrices.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
 </dd>
 </dl>
 </dd></dl>
@@ -293,32 +313,6 @@ differences are equal to the scan resolution.</p></li>
 <dl class="simple">
 <dt>Returns: pd.DataFrame</dt><dd><p>A DataFrame consisting of <code class="docutils literal notranslate"><span class="pre">True</span></code>/<code class="docutils literal notranslate"><span class="pre">False</span></code>, indicating
 which torsions changed significantly. <code class="docutils literal notranslate"><span class="pre">True</span></code> for significant change.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt id="arc.common.colliding_atoms">
-<code class="sig-prename descclassname">arc.common.</code><code class="sig-name descname">colliding_atoms</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">xyz</span><span class="p">:</span> <span class="n">dict</span></em>, <em class="sig-param"><span class="n">threshold</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">0.55</span></em><span class="sig-paren">)</span> &#x2192; bool<a class="reference internal" href="../_modules/arc/common.html#colliding_atoms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.common.colliding_atoms" title="Permalink to this definition">¶</a></dt>
-<dd><p>Check whether atoms are too close to each other.
-A default threshold of 55% the covalent radii of two atoms is used.
-For example:
-- C-O collide at 55% * 1.42 A = 0.781 A
-- N-N collide at 55% * 1.42 A = 0.781 A
-- C-N collide at 55% * 1.47 A = 0.808 A
-- C-H collide at 55% * 1.07 A = 0.588 A</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>xyz</strong> (<em>dict</em>) – The Cartesian coordinates.</p></li>
-<li><p><strong>threshold</strong> (<em>float</em><em>, </em><em>optional</em>) – The collision threshold to use.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">True</span></code> if they are colliding, <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>bool</p>
 </dd>
 </dl>
 </dd></dl>
@@ -619,13 +613,15 @@ Even if just one of the items in the key has a close match, use the close value.
 
 <dl class="py function">
 <dt id="arc.common.get_single_bond_length">
-<code class="sig-prename descclassname">arc.common.</code><code class="sig-name descname">get_single_bond_length</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">symbol1</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">symbol2</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span> &#x2192; float<a class="reference internal" href="../_modules/arc/common.html#get_single_bond_length"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.common.get_single_bond_length" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">arc.common.</code><code class="sig-name descname">get_single_bond_length</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">symbol_1</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">symbol_2</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">charge_1</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">0</span></em>, <em class="sig-param"><span class="n">charge_2</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">0</span></em><span class="sig-paren">)</span> &#x2192; float<a class="reference internal" href="../_modules/arc/common.html#get_single_bond_length"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.common.get_single_bond_length" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the an approximate for a single bond length between two elements.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>symbol1</strong> (<em>str</em>) – Symbol 1.</p></li>
-<li><p><strong>symbol2</strong> (<em>str</em>) – Symbol 2.</p></li>
+<li><p><strong>symbol_1</strong> (<em>str</em>) – Symbol 1.</p></li>
+<li><p><strong>symbol_2</strong> (<em>str</em>) – Symbol 2.</p></li>
+<li><p><strong>charge_1</strong> (<em>int</em><em>, </em><em>optional</em>) – The partial charge of the atom represented by <code class="docutils literal notranslate"><span class="pre">symbol_1</span></code>.</p></li>
+<li><p><strong>charge_2</strong> (<em>int</em><em>, </em><em>optional</em>) – The partial charge of the atom represented by <code class="docutils literal notranslate"><span class="pre">symbol_2</span></code>.</p></li>
 </ul>
 </dd>
 </dl>
@@ -855,6 +851,43 @@ and return the parameters as python variables.</p>
 </dl>
 <dl class="simple">
 <dt>Returns: Union[dict, list]</dt><dd><p>The content read from the file.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="arc.common.rmg_mol_from_dict_repr">
+<code class="sig-prename descclassname">arc.common.</code><code class="sig-name descname">rmg_mol_from_dict_repr</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">representation</span><span class="p">:</span> <span class="n">dict</span></em>, <em class="sig-param"><span class="n">is_ts</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em><span class="sig-paren">)</span> &#x2192; Optional<span class="p">[</span>rmgpy.molecule.molecule.Molecule<span class="p">]</span><a class="reference internal" href="../_modules/arc/common.html#rmg_mol_from_dict_repr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.common.rmg_mol_from_dict_repr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a dict representation of an RMG <code class="docutils literal notranslate"><span class="pre">Molecule</span></code> object instance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>representation</strong> (<em>dict</em>) – A dict representation of an RMG <code class="docutils literal notranslate"><span class="pre">Molecule</span></code> object instance.</p></li>
+<li><p><strong>is_ts</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether the <code class="docutils literal notranslate"><span class="pre">Molecule</span></code> represents a TS.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">Molecule</span></code>: The corresponding RMG <code class="docutils literal notranslate"><span class="pre">Molecule</span></code> object instance.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="arc.common.rmg_mol_to_dict_repr">
+<code class="sig-prename descclassname">arc.common.</code><code class="sig-name descname">rmg_mol_to_dict_repr</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mol</span><span class="p">:</span> <span class="n">rmgpy.molecule.molecule.Molecule</span></em>, <em class="sig-param"><span class="n">testing</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em><span class="sig-paren">)</span> &#x2192; dict<a class="reference internal" href="../_modules/arc/common.html#rmg_mol_to_dict_repr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#arc.common.rmg_mol_to_dict_repr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a dict representation of an RMG <code class="docutils literal notranslate"><span class="pre">Molecule</span></code> object instance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mol</strong> (<em>Molecule</em>) – The RMG <code class="docutils literal notranslate"><span class="pre">Molecule</span></code> object instance.</p></li>
+<li><p><strong>testing</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether this is called during a test, in which case atom IDs should be deterministic.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The corresponding dict representation.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
 </dd>
 </dl>
 </dd></dl>
