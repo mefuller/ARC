@@ -16,7 +16,6 @@ from rdkit.Chem import rdEHTTools
 from rdkit import Chem
 
 from arc.common import logger
-from arc.species.converter import check_xyz_dict
 
 
 global ATOM_LIST
@@ -89,7 +88,6 @@ def xyz_to_smiles(xyz: Union[dict, str],
         List[str]: Entries are respective SMILES representation.
     """
     global ATOM_LIST
-    xyz = check_xyz_dict(xyz)
     atoms = [ATOM_LIST.index(symbol.lower()) + 1 for symbol in xyz['symbols']]
     mols = xyz2mol(atoms=atoms,
                    coordinates=xyz['coords'],
