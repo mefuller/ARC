@@ -1155,7 +1155,7 @@ def rmg_mol_from_inchi(inchi: str):
     try:
         rmg_mol = Molecule().from_inchi(inchi, raise_atomtype_exception=False)
     except (AtomTypeError, ValueError, KeyError, TypeError) as e:
-        logger.warning(f'Got an Error when trying to create an RMG Molecule object from InChI "{inchi}":\n{e}')
+        logger.debug(f'Got an Error when trying to create an RMG Molecule object from InChI "{inchi}":\n{e}')
         if 'got an unexpected keyword argument' in str(e):
             raise ConverterError('Make sure RMG-Py is up to date and compiled!')
         return None
