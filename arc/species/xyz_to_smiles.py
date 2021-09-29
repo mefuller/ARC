@@ -101,10 +101,13 @@ def xyz_to_smiles(xyz: Union[dict, str],
         return None
     smiles_list = list()
     for mol in mols:
-        smiles = Chem.MolToSmiles(mol, isomericSmiles=embed_chiral)
-        m = Chem.MolFromSmiles(smiles)
-        smiles_list.append(Chem.MolToSmiles(m, isomericSmiles=embed_chiral))
-    return smiles_list
+        try:
+            smiles = Chem.MolToSmiles(mol, isomericSmiles=embed_chiral)
+            m = Chem.MolFromSmiles(smiles)
+            smiles_list.append(Chem.MolToSmiles(m, isomericSmiles=embed_chiral))
+        except Exception:
+            pass
+    return smiles_list or None
 
 
 def get_ua(max_valence_list: list,
