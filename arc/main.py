@@ -423,7 +423,9 @@ class ARC(object):
             self.check_freq_scaling_factor()
 
         if not self.trsh_ess_jobs:
-            logger.warning('\nNot troubleshooting ESS jobs!\n')
+            logger.info('\n')
+            logger.warning('Not troubleshooting ESS jobs!')
+            logger.info('\n')
 
         self.scheduler = None
         self.restart_dict = self.as_dict()
