@@ -422,6 +422,9 @@ class ARC(object):
         if self.job_types['freq'] or self.composite_method is not None:
             self.check_freq_scaling_factor()
 
+        if not self.trsh_ess_jobs:
+            logger.warning('\nNot troubleshooting ESS jobs!\n')
+
         self.scheduler = None
         self.restart_dict = self.as_dict()
         self.backup_restart()
