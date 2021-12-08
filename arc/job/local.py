@@ -226,7 +226,7 @@ def submit_job(path):
         time.sleep(10)
         stdout, stderr = execute_command(cmd)
     if not len(stdout):
-        return None
+        return None, None
     if stderr == 0:
         logger.warning(f'Got the following error when trying to submit job:\n{stderr}.')
         job_status = 'errored'
